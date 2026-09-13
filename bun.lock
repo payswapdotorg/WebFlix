@@ -53,6 +53,9 @@
     "packages/recommendation": {
       "name": "@wfx/recommendation",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+      },
     },
   },
   "packages": {
