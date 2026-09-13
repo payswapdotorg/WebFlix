@@ -46,6 +46,9 @@
     "packages/native-media": {
       "name": "@wfx/native-media",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+      },
     },
     "packages/recommendation": {
       "name": "@wfx/recommendation",
