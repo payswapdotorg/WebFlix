@@ -38,6 +38,9 @@
     "packages/experience": {
       "name": "@wfx/experience",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+      },
     },
     "packages/model-fabric": {
       "name": "@wfx/model-fabric",
