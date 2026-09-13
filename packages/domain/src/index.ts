@@ -8,3 +8,4 @@ export * from "./ids";
 export * from "./events";
 export * from "./device";
 export * from "./validation";
+export * from "./intent/index";
