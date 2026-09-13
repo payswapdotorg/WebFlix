@@ -27,6 +27,9 @@
     "packages/connectors": {
       "name": "@wfx/connectors",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+      },
     },
     "packages/domain": {
       "name": "@wfx/domain",

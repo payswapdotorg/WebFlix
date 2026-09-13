@@ -1,3 +1,30 @@
-// @wfx/connectors — implementation governed by docs/plans/2026-09-13-webflix-implementation-plan.md
+/**
+ * @wfx/connectors — the Connector SDK public entry (WFX-003, Lane B).
+ *
+ * Surface (all re-exported here; import ONLY from "@wfx/connectors"):
+ * - result.ts      — `ConnectorResult` / `ConnectorError` + constructors,
+ *                    type guards, result helpers
+ * - descriptor.ts  — `CAPABILITIES` truth constant, `defineDescriptor`
+ *                    strict validation, `DescriptorValidationError`
+ * - lifecycle.ts   — `ConnectorLifecycle` state machine,
+ *                    `assertOperational`, `LifecycleError`
+ * - base.ts        — `BaseConnector` (dual surface: typed result surface +
+ *                    frozen-contract plain shims), `asyncResult`
+ * - registry.ts    — `ConnectorRegistry`, `CapabilityMatrixRow`,
+ *                    `DuplicateConnectorError`
+ * - testing.ts     — TEST FIXTURES (`makeStubConnector`, `StubTestConnector`)
+ *                    — never register as production sources
+ *
+ * Domain types (`Capability`, `SourceConnector`, `SearchResult`, ...) are
+ * imported from `@wfx/domain`, the frozen public entry — never deep paths.
+ *
+ * Provider-specific connectors are OUT of scope here: this package is the
+ * NEUTRAL SDK only (see docs/work-items: WFX-012/013 build on it).
+ */
 
-export {};
+export * from "./result";
+export * from "./descriptor";
+export * from "./lifecycle";
+export * from "./base";
+export * from "./registry";
+export * from "./testing";
