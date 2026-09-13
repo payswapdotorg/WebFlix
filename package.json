@@ -1,0 +1,23 @@
+{
+  "name": "webflix",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["packages/*", "apps/*"],
+  "engines": { "bun": ">=1.1" },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "bun test",
+    "contract-check": "node scripts/check-contracts.mjs",
+    "lane-check": "node scripts/check-lanes.mjs",
+    "scaffold": "node scripts/scaffold.mjs",
+    "ci": "bun run lint && bun run typecheck && bun run test && bun run contract-check && bun run lane-check"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "bun-types": "latest",
+    "eslint": "^9.0.0",
+    "typescript": "^5.6.0"
+  }
+}

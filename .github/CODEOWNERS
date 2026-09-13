@@ -1,0 +1,29 @@
+# WebFlix lane ownership (WFX-001)
+# Workers may only modify paths owned by their lane; everything else needs lead review.
+
+# Lead-owned: frozen docs, governance, release
+/docs/                    @payswapdotorg/tech-lead
+/.github/                 @payswapdotorg/tech-lead
+/scripts/                 @payswapdotorg/tech-lead
+/packages/domain/src/contracts/  @payswapdotorg/tech-lead
+/tests/                   @payswapdotorg/tech-lead
+
+# Lane A — Intelligence
+/packages/domain/src/graph/        @payswapdotorg/lane-a
+/packages/domain/src/intent/       @payswapdotorg/lane-a
+/packages/recommendation/          @payswapdotorg/lane-a
+/packages/model-fabric/            @payswapdotorg/lane-a
+
+# Lane B — Sources / Native Media
+/packages/connectors/              @payswapdotorg/lane-b
+/packages/native-media/            @payswapdotorg/lane-b
+/packages/actions/                 @payswapdotorg/lane-b
+
+# Lane C — Experience / Clients
+/packages/experience/              @payswapdotorg/lane-c
+/apps/web/                         @payswapdotorg/lane-c
+/apps/desktop/                     @payswapdotorg/lane-c
+/apps/mobile/                      @payswapdotorg/lane-c
+
+# Shared domain extension types: refined by lanes, semantics lead-reviewed
+/packages/domain/src/contracts/extensions.ts  @payswapdotorg/tech-lead
