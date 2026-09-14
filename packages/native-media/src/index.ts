@@ -17,6 +17,10 @@
  * - fixtures.ts  — TEST FIXTURES (`stubEngine`, `sampleSessions`,
  *                  `sampleErrors`, `sampleRangeRequests`) — never wired
  *                  as production
+ * - engine/      — WFX-014 engine module: process boundary / wire contract
+ *                  (`process.ts`), SIMULATION engine (`simulation.ts`,
+ *                  TEST/DEV only), engine adapter + in-process pipe
+ *                  (`adapter.ts`), pure cache policy (`cache.ts`)
  *
  * Domain types (`NativeMediaSession`, `NativeMediaEngine`) come from
  * `@wfx/domain`, the frozen public entry — never deep paths.
@@ -27,3 +31,4 @@ export * from "./session";
 export * from "./range";
 export * from "./service";
 export * from "./fixtures";
+export * from "./engine/index";
