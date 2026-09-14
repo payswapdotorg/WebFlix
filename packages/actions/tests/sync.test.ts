@@ -11,7 +11,13 @@ import type {
   SourceItem,
   UserAction,
 } from "@wfx/domain";
-import { BaseConnector, ConnectorRegistry, makeStubConnector } from "@wfx/connectors";
+import {
+  BaseConnector,
+  ConnectorRegistry,
+  REFERENCE_CONNECTOR_ID,
+  createReferenceConnector,
+  makeStubConnector,
+} from "@wfx/connectors";
 
 import {
   ActionOutbox,
@@ -291,8 +297,48 @@ describe("ActionOutbox — enqueue and idempotency", () => {
 // ---------------------------------------------------------------------------
 
 describe("SyncDispatcher — capability honesty", () => {
-  it("read-only connector: every mutating verb lands unsupported (terminal) with the capability named; the driver is never called", async () => {
-    // The SDK's read-only fixture: catalogSearch | metadata | playEmbed only.
+  it("read-only REFERENCE connector (WFX-013): every mutating verb lands unsupported (terminal) with the capability named; the driver is never called", async () => {
+    // The SDK's REAL read-only reference connector: catalogSearch |
+    // metadata | playEmbed | playBrowser | playExternal | availability |
+    // libraryRead — and deliberately NO action capability.
+    const reference = createReferenceConnector();
+    await reference.initialize();
+    const { outbox, driver, dispatcher } = makeHarness({
+      connector: reference,
+      // NO script entries: if the gate ever leaked a call, the unscripted-key
+      // error would surface as `failed`, failing this test loudly.
+    });
+
+    const verbs: UserAction["type"][] = ["like", "save", "follow", "comment", "download", "transform"];
+    for (const verb of verbs) {
+      const result = outbox.enqueue(entry({ action: verb, connectorId: REFERENCE_CONNECTOR_ID }));
+      expect(result.outcome).toBe("enqueued");
+    }
+
+    const report = await dispatcher.tick(T0);
+    expect(report.dueCount).toBe(6);
+    expect(report.outcomes.every((outcome) => outcome.to === "unsupported")).toBe(true);
+
+    for (const record of outbox.all()) {
+      expect(record.status).toBe("unsupported");
+      expect(record.attempts).toBe(0);
+      expect(record.lastCause?.kind).toBe("unsupported-capability");
+      if (record.lastCause?.kind === "unsupported-capability") {
+        expect(record.lastCause.capability).toBe(record.action.type);
+        expect(record.lastCause.detail).toBe(
+          `connector 'wfx-reference' does not declare '${record.action.type}'`,
+        );
+      }
+    }
+
+    // Terminal: a later tick does nothing.
+    const again = await dispatcher.tick(T0 + 10_000);
+    expect(again.dueCount).toBe(0);
+    expect(driver.calls).toHaveLength(0);
+  });
+
+  it("read-only STUB fixture: the same law holds for every mutating verb", async () => {
+    // The SDK's stub fixture: catalogSearch | metadata | playEmbed only.
     const stub = makeStubConnector();
     const { outbox, driver, dispatcher } = makeHarness({
       connector: stub,
@@ -326,6 +372,29 @@ describe("SyncDispatcher — capability honesty", () => {
     const again = await dispatcher.tick(T0 + 10_000);
     expect(again.dueCount).toBe(0);
     expect(driver.calls).toHaveLength(0);
+  });
+
+  it("the production seam adapter over the reference connector answers typed unsupported at the SDK level too (belt and braces)", async () => {
+    const reference = createReferenceConnector();
+    await reference.initialize();
+    const driver = createConnectorDriver(reference);
+    const result = await driver.execute({
+      idempotencyKey: "k",
+      recordId: "r",
+      userId: "user-1",
+      attempt: 1,
+      ctx: { userId: "user-1", locale: "en" },
+      action: { type: "save", connectorId: REFERENCE_CONNECTOR_ID, externalRef: "ref:movie-aurora" },
+    });
+    // The SDK's own capability gate (inside executeActionResult) answers
+    // typed unsupported BEFORE the read-only hook could ever fake success.
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error.kind).toBe("unsupported");
+      if (result.error.kind === "unsupported") {
+        expect(result.error.capability).toBe("save");
+      }
+    }
   });
 });
 
@@ -1033,6 +1102,56 @@ describe("reconcile — drift detection", () => {
     } else {
       throw new Error("expected a success report");
     }
+  });
+
+  it("reconciles against the REAL reference connector (WFX-013): unsupported-local / present-remote drift over fixture library data, outbox untouched", async () => {
+    // A save for a ref the reference connector's fixture library already
+    // contains — but the reference connector is read-only, so the dispatcher's
+    // capability gate settles the record `unsupported` locally. Reconcile
+    // must FLAG the disagreement and suggest accept-remote, never mutate.
+    const reference = createReferenceConnector();
+    await reference.initialize();
+    const clock = new ManualClock(T0);
+    const outbox = new ActionOutbox({ clock });
+    const registry = new ConnectorRegistry();
+    registry.register(reference);
+    const dispatcher = new SyncDispatcher({
+      outbox,
+      registry,
+      clock,
+      resolveDriver: () => undefined, // read-only source: no driver ever wires up
+    });
+    outbox.enqueue(
+      entry({ connectorId: REFERENCE_CONNECTOR_ID, externalRef: "ref:movie-aurora" }),
+    );
+    await dispatcher.tick(T0);
+    expect(outbox.all()[0]?.status).toBe("unsupported");
+
+    const before = JSON.stringify(outbox.all());
+    const report = await reconcile(outbox, reference, "user-1");
+    const after = JSON.stringify(outbox.all());
+
+    expect(report.ok).toBe(true);
+    if (report.ok) {
+      expect(report.surface).toBe("typed");
+      // The reference fixture library: ref:audio-aurora-score,
+      // ref:movie-aurora, ref:series-lighthouse (sorted).
+      expect(report.remoteRefs).toEqual([
+        "ref:audio-aurora-score",
+        "ref:movie-aurora",
+        "ref:series-lighthouse",
+      ]);
+      expect(report.drift).toHaveLength(1);
+      const drift = report.drift[0];
+      expect(drift?.kind).toBe("absent-local-present-remote");
+      expect(drift?.resolution).toBe("accept-remote");
+      expect(drift?.externalRef).toBe("ref:movie-aurora");
+      expect(drift?.action).toBe("save");
+    } else {
+      throw new Error("expected a success report");
+    }
+    // NO auto-mutation: the outbox is byte-identical after reconciliation.
+    expect(after).toBe(before);
   });
 
   it("non-library-evidenced verbs (like) drift with a manual suggestion when compared", async () => {
