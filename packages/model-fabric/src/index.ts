@@ -35,3 +35,4 @@ export * from "./registry";
 export * from "./router";
 export * from "./fabric";
 export * from "./testing";
+export * from "./wfx-model"; // WFX-031 — the first-party recommendation model adapter (Lane A).

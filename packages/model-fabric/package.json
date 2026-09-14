@@ -5,6 +5,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "devDependencies": {
-    "@wfx/domain": "workspace:*"
+    "@wfx/domain": "workspace:*",
+    "@wfx/recommendation": "workspace:*"
   }
 }
