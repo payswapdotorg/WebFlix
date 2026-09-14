@@ -4,3 +4,4 @@ export {};
 
 // WFX-020 — candidate retrieval/index (Lane A — intelligence).
 export * from "./retrieval/index";
+export * from "./os"; // WFX-021 — recommendation OS (Lane A — intelligence).
