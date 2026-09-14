@@ -27,6 +27,7 @@ export * from "./use-cases/library";
 export * from "./use-cases/actions";
 export * from "./fixtures";
 export * from "./library";
+export * from "./surface";
 
 import type {
   ActionReceipt,
