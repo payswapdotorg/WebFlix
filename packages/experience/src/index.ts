@@ -29,6 +29,7 @@ export * from "./fixtures";
 export * from "./library";
 export * from "./surface";
 export * from "./watch";
+export * from "./browser";
 
 import type {
   ActionReceipt,
