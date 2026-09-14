@@ -28,6 +28,7 @@ export * from "./use-cases/actions";
 export * from "./fixtures";
 export * from "./library";
 export * from "./surface";
+export * from "./watch";
 
 import type {
   ActionReceipt,
