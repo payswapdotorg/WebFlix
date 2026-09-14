@@ -35,3 +35,8 @@ export * from "./registry";
 export * from "./router";
 export * from "./fabric";
 export * from "./testing";
+export * from "./transform/subtitle";
+export * from "./transform/tasks";
+export * from "./transform/permissions";
+export * from "./transform/pipeline";
+export * from "./transform/fakes";
