@@ -1,0 +1,11 @@
+{
+  "name": "@wfx/actions",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "devDependencies": {
+    "@wfx/connectors": "workspace:*",
+    "@wfx/domain": "workspace:*"
+  }
+}
