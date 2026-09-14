@@ -41,3 +41,4 @@ export * from "./transform/permissions";
 export * from "./transform/pipeline";
 export * from "./transform/fakes";
 export * from "./wfx-model"; // WFX-031 — the first-party recommendation model adapter (Lane A).
+export * from "./byom"; // WFX-032 — the BYOM (bring-your-own-model) adapter (Lane A).
