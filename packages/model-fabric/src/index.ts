@@ -1,3 +1,37 @@
-// @wfx/model-fabric — implementation governed by docs/plans/2026-09-13-webflix-implementation-plan.md
+/**
+ * @wfx/model-fabric — public entry (WFX-030, Lane A).
+ *
+ * Surface (all re-exported here; import ONLY from "@wfx/model-fabric"):
+ * - types.ts    — `FabricResult`, `FabricError` (closed six-kind union) with
+ *                 constructors, guards, and `describeFabricError`;
+ *                 `InvocationTrace` + invocation-id scheme; runtime
+ *                 vocabularies (`MODEL_TASKS`, `MODEL_POLICY_PRIVACIES`)
+ * - registry.ts — `ModelFabricRegistry` (capability indexing by ModelTask,
+ *                 duplicate-id rejection, `describe()` id × task matrix),
+ *                 `RegisteredModelProvider` (frozen `ModelProvider` + the
+ *                 documented `privacy: 'local' | 'cloud'` registration field
+ *                 + `costPerOperation(task)`), `ProviderDirectory`,
+ *                 `declaredCostFor`, registration error classes
+ * - router.ts   — `ModelRouter.route(task, policy)` → `RoutePlan`
+ *                 (preferred + fallbacks, filtered by capability, privacy,
+ *                 cost), `RoutePlanner` seam, `RoutePolicyError`
+ * - fabric.ts   — `ModelFabric.invoke()` gateway: ordered attempts,
+ *                 per-provider timeout (default 30s), fallback on
+ *                 provider-error/timeout, cost budget skip, privacy
+ *                 defense-in-depth, full `InvocationTrace` on success AND
+ *                 failure
+ * - testing.ts  — TEST FIXTURES (`makeEchoProvider`, `makeFailingProvider`,
+ *                 `makeSlowProvider`) — never production providers
+ *
+ * NO real model providers ship in this package: the fabric routes to
+ * REGISTERED providers; concrete cloud/local providers arrive in later work
+ * items (WFX-031/032/033). Frozen domain types (`ModelTask`, `ModelProvider`,
+ * `ModelPolicy`) come from `@wfx/domain`, the frozen public entry — never
+ * deep paths.
+ */
 
-export {};
+export * from "./types";
+export * from "./registry";
+export * from "./router";
+export * from "./fabric";
+export * from "./testing";
