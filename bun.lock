@@ -45,6 +45,9 @@
     "packages/model-fabric": {
       "name": "@wfx/model-fabric",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+      },
     },
     "packages/native-media": {
       "name": "@wfx/native-media",
