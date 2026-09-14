@@ -14,6 +14,17 @@
  *                    `DuplicateConnectorError`
  * - testing.ts     — TEST FIXTURES (`makeStubConnector`, `StubTestConnector`)
  *                    — never register as production sources
+ * - auth/secrets.ts   — `CredentialVault`, `SecretHandle`,
+ *                    `createInMemoryVault` (XOR-obfuscated, zero-on-delete;
+ *                    PRODUCTION: back the interface with a real secret
+ *                    manager)
+ * - auth/session.ts   — `AuthSession` state machine (signedOut →
+ *                    authorizing → signedIn, + expired/failed),
+ *                    `AuthStateError`
+ * - auth/flows.ts     — `AuthFlow` descriptors (none | oauth | device |
+ *                    local), `defineAuthFlow`, `flowFor`
+ * - auth/service.ts   — `ConnectorAuthService` (binds vault + sessions +
+ *                    registry; typed `AuthResult` outcomes)
  *
  * Domain types (`Capability`, `SourceConnector`, `SearchResult`, ...) are
  * imported from `@wfx/domain`, the frozen public entry — never deep paths.
@@ -28,3 +39,7 @@ export * from "./lifecycle";
 export * from "./base";
 export * from "./registry";
 export * from "./testing";
+export * from "./auth/secrets";
+export * from "./auth/session";
+export * from "./auth/flows";
+export * from "./auth/service";
