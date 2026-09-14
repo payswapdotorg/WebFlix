@@ -17,6 +17,20 @@
  * - fixtures.ts  — TEST FIXTURES (`stubEngine`, `sampleSessions`,
  *                  `sampleErrors`, `sampleRangeRequests`) — never wired
  *                  as production
+ * - engine/process.ts     — WFX-014 engine process boundary: versioned
+ *                  wire DTOs (`EngineCommand`/`EngineEvent`,
+ *                  `PROTOCOL_VERSION`), `NativeEngineProcess`/
+ *                  `EngineHandle`, runtime guards, DTO mappers
+ * - engine/simulation.ts  — WFX-014 SIMULATION engine (TEST/DEV only):
+ *                  frozen interface + range extension over a fake asset
+ *                  registry with deterministic timer-driven buffering
+ * - engine/adapter.ts     — WFX-014 engine adapter: any
+ *                  `NativeEngineProcess` → frozen `NativeMediaEngine`
+ *                  (marshalling, event→state mapping, timeouts, crash
+ *                  detection) + the in-process simulation pipe
+ * - engine/cache.ts       — WFX-014 pure cache policy accounting
+ *                  (`CachePolicy`, `CacheTracker`, `shouldAdmit`,
+ *                  `evictList`) — no I/O, the real engine owns the bytes
  *
  * Domain types (`NativeMediaSession`, `NativeMediaEngine`) come from
  * `@wfx/domain`, the frozen public entry — never deep paths.
@@ -27,3 +41,7 @@ export * from "./session";
 export * from "./range";
 export * from "./service";
 export * from "./fixtures";
+export * from "./engine/process";
+export * from "./engine/simulation";
+export * from "./engine/adapter";
+export * from "./engine/cache";
