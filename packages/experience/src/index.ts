@@ -26,6 +26,7 @@ export * from "./use-cases/playback";
 export * from "./use-cases/library";
 export * from "./use-cases/actions";
 export * from "./fixtures";
+export * from "./library";
 
 import type {
   ActionReceipt,
