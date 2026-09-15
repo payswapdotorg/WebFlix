@@ -15,14 +15,30 @@
     "apps/desktop": {
       "name": "@wfx/app-desktop",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/app-web": "workspace:*",
+        "@wfx/domain": "workspace:*",
+        "@wfx/experience": "workspace:*",
+        "@wfx/native-media": "workspace:*",
+      },
     },
     "apps/mobile": {
       "name": "@wfx/app-mobile",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/app-web": "workspace:*",
+        "@wfx/domain": "workspace:*",
+        "@wfx/experience": "workspace:*",
+      },
     },
     "apps/web": {
       "name": "@wfx/app-web",
       "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+        "@wfx/experience": "workspace:*",
+        "@wfx/native-media": "workspace:*",
+      },
     },
     "packages/actions": {
       "name": "@wfx/actions",
