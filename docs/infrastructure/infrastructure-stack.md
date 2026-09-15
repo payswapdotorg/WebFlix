@@ -12,7 +12,7 @@
 | Primary datastore | Neon (PostgreSQL) | org `webflix` → project `webflix` → database `webflix` | `aws-us-east-1` | 2026-09-15 |
 | Object storage | Cloudflare R2 | bucket `webflix-media` | `auto` (account default) | 2026-09-15 |
 | Cache (optional) | Upstash Redis | **not provisioned** — contract only | n/a | — |
-| Web host | Vercel | team verified, project **deliberately not created** (WFX-056) | default `iad1` (us-east) | — |
+| Web host | Vercel | team `team_4KOoA5CgtYaOF85yFXPeMXLt` → project **`webflix`** (WFX-056 — see §5) | default `iad1` (us-east) | 2026-09-15 |
 
 Region coherence: Neon `aws-us-east-1` and Vercel's default `iad1` region are both US-East, minimizing app↔database latency when the WFX-056 deployment lands.
 
@@ -93,6 +93,18 @@ The application-side contract (wave 2/3) is defined in [degradation-behavior.md]
 | Existing projects | 20 (unrelated repos: `adcos`, `mos-product`, `payswap3`, `replay2`, …). None named `webflix`. ⚠️ A project named `web` already exists on this team (different repo) — WFX-056 must avoid that name collision when importing WebFlix's `apps/web`. |
 
 `VERCEL_TOKEN` is deployment-tooling-only and must never be an app runtime variable (see environment inventory).
+
+## 5. Vercel project `webflix` (added by WFX-056, 2026-09-15)
+
+The web host project was created and the production deployment is live. Full record — project ids, build settings, production/preview URLs, environment-variable decisions, rollback runbook, CI/CD wiring, and Git-integration status — lives in [deployment.md](./deployment.md). Summary:
+
+| Field | Value |
+|---|---|
+| Project | `webflix` — `prj_Ylm0ROs2ZxwxxHWCMAroSPH8HWp5` (team `team_4KOoA5CgtYaOF85yFXPeMXLt`, hobby, region `iad1`) |
+| Git link | `github.com/payswapdotorg/webflix` (repo id `1367978616`), production branch `main`; ref deployments work via API/CLI, auto-deploy on push awaits the Vercel GitHub App (see deployment.md §7) |
+| Production deployment | `dpl_ErDZyEfQADkDUzdbHct4QbNtqrXa` from `main` @ `7bd3136` — READY; **https://webflix-steel.vercel.app** (`/api/health` → `200 {"ok":true,...}`; home page in its documented typed-error interim state until the Experience API service lane lands) |
+| Env vars | none set (least privilege — see deployment.md §3 for every decision) |
+| CI | `.github/workflows/ci.yml` — the six gates (lint, typecheck, test, contract-check, lane-check, apps/web build) on every push/PR to `main` |
 
 ## Operations notes
 
