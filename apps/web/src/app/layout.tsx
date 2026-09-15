@@ -1,12 +1,17 @@
 /**
- * @wfx/app-web — the root layout (WFX-050).
+ * @wfx/app-web — the root layout (WFX-050; WFX-051 restyle).
  *
- * Server component: global document shell. No CSS imports (the minimal
- * home surface styles are inline in `HomeSurface`), no client JS.
+ * Server component: the global document shell. The WFX-051 visual identity
+ * lives in `globals.css` (custom properties + component classes, dark theme
+ * with the WebFlix rose accent — no CSS framework, no runtime CSS-in-JS).
+ * No client JS at this level; the persistent chrome (`AppShell`) renders
+ * per-route so every surface can bind its active nav entry and main layout.
  */
 
 import type { Metadata } from "next";
 import type { JSX, ReactNode } from "react";
+
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "WebFlix",
@@ -16,18 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
   return (
     <html lang="en">
-      <body
-        style={{
-          margin: 0,
-          minHeight: "100vh",
-          background: "#0c0a09",
-          color: "#e7e5e4",
-          fontFamily:
-            "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        }}
-      >
-        {children}
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
