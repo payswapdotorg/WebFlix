@@ -101,7 +101,7 @@ The web host project was created and the production deployment is live. Full rec
 | Field | Value |
 |---|---|
 | Project | `webflix` — `prj_Ylm0ROs2ZxwxxHWCMAroSPH8HWp5` (team `team_4KOoA5CgtYaOF85yFXPeMXLt`, hobby, region `iad1`) |
-| Git link | `github.com/payswapdotorg/webflix` (repo id `1367978616`), production branch `main`; ref deployments work via API/CLI, auto-deploy on push awaits the Vercel GitHub App (see deployment.md §7) |
+| Git link | `github.com/payswapdotorg/webflix` (repo id `1367978616`), production branch `main`; push-to-deploy CONFIRMED on both branch pushes (auto-preview) and `main` pushes (auto-production — observed on merges `9468977` and `a906086`) |
 | Production deployment | `dpl_ErDZyEfQADkDUzdbHct4QbNtqrXa` from `main` @ `7bd3136` — READY; **https://webflix-steel.vercel.app** (`/api/health` → `200 {"ok":true,...}`; home page in its documented typed-error interim state until the Experience API service lane lands) |
 | Env vars | none set (least privilege — see deployment.md §3 for every decision) |
 | CI | `.github/workflows/ci.yml` — the six gates (lint, typecheck, test, contract-check, lane-check, apps/web build) on every push/PR to `main` |
