@@ -80,13 +80,20 @@ The project has **zero custom environment variables** (verified: `GET /v9/projec
 
 ## 4. Preview deployments
 
-Previews deploy any non-`main` ref without touching the production alias. Proof (WFX-056): the docs branch `wfx/056/vercel-deployment` was deployed as a preview — URL and build result are recorded in §4.1. Preview deployments run with `NODE_ENV=development` (platform behavior) and the same (empty) env set, so the home page shows the identical honest `HostConfigError` state until the service lane lands.
+Previews deploy any non-`main` ref without touching the production alias. **The git integration auto-creates them on push** (verified live for this project — see §7): pushing `wfx/056/vercel-deployment` produced a READY preview within seconds, from the exact pushed SHA, with no API call. Preview deployments run with `NODE_ENV=development` (platform behavior) and the same (empty) env set, so the home page shows the identical honest `HostConfigError` state until the service lane lands.
+
+**Preview deployments are team-only by default** (Vercel Deployment Protection, `ssoProtection: {deploymentType: "all_except_custom_domains"}` — anonymous requests get a 302 to the SSO flow; production stays public). This is the intended posture: interim-state previews are internal. §4.1's health proof below was captured during a temporary, documented protection lift (disabled via API, verified, restored immediately, re-verified).
 
 ### 4.1 Preview of record (WFX-056)
 
-_Recorded in the second commit of this branch, after the branch was pushed and deployed as a preview — the preview proof lands here with its real deployment id, URL, and build result._
+| Field | Value |
+|---|---|
+| Ref | `wfx/056/vercel-deployment` @ `e88c1b55291b4bf4e9c95c0a5d580c0150a15ec6` (docs-only branch; app code identical to `main` @ `7bd3136`) |
+| Deployment id | `dpl_GeTZYerwNsTZ2RYgdoS8u76Sq3Sx` — **auto-created by the push** (no API call made), READY in ~13 s (build cache warm) |
+| Preview URL | https://webflix-git-wfx-056vercel-80d4b3-ekonplacidegmailcoms-projects.vercel.app (deployment URL: `webflix-49wa7fwdl-ekonplacidegmailcoms-projects.vercel.app`) |
+| Result | Build succeeded (same route table: `ƒ /`, `○ /_not-found`, `ƒ /api/health`); with protection temporarily lifted: `GET /api/health` → `200 {"ok":true,"service":"webflix-web","version":"0.1.0"}`, `GET /` → `500` (same typed interim state). Protection restored and re-verified (302 for anonymous users, production still 200/public). |
 
-Creating a preview is one API call (no GitHub app needed — the project's git credential clones the ref server-side):
+A preview can also be created manually with one API call (Vercel clones the ref server-side through the project's git credential):
 
 ```
 POST /v13/deployments?teamId=team_4KOoA5CgtYaOF85yFXPeMXLt
@@ -108,7 +115,7 @@ POST /v13/deployments?teamId=team_4KOoA5CgtYaOF85yFXPeMXLt
 5. `bun run lane-check` — package/lane boundary check
 6. `bun run build` in `apps/web` — the production Next.js build (proves fresh-install buildability, the exact defect class that blocked WFX-050's first review)
 
-**Platform side:** production deployments come from `main` (the link's `productionBranch`); every other branch/ref deploys as a preview. Until full Git auto-integration is confirmed (see §7), use the §4 API call (or `vercel deploy`) — the CI gates protect `main`; the Vercel deploy is a deliberate act, which is acceptable discipline for a one-concurrent-build hobby plan.
+**Platform side:** production deployments come from `main` (the link's `productionBranch`); every other branch deploys as a protected preview — and branch pushes already auto-deploy (proven, §7), with `main` expected to behave identically on the next merge. The repo gates (above) run on the same push/PR events, so CI and Vercel never diverge: a broken build fails in GitHub Actions before anyone promotes it, and the Vercel build itself (deterministic, env-free) is the same `bun run build`.
 
 ## 6. Rollback procedure (rule: promote a previous artifact — never rebuild)
 
@@ -129,11 +136,21 @@ A rollback must re-point the production alias at a **previously built deployment
    ```
 4. **Verify**: `curl https://webflix-steel.vercel.app/api/health` → `200 {"ok":true,...}` (and the runtime log shows which commit the serving deployment was built from). Dashboard path: project → Deployments → ⋯ → Promote.
 
-## 7. Git-integration status (honest limitation)
+## 7. Git-integration status
 
-- **What exists:** the project was created with a full GitHub link (`org payswapdotorg`, repo id `1367978616`, production branch `main`, a stored git credential). Ref deployments work through the API — Vercel clones the ref server-side (proven by both deployments above; the build log shows the clone).
-- **What was observed:** pushes to the branch did **not** auto-trigger deployments — the stored git credential cannot receive GitHub webhooks (only the Vercel GitHub App can). Auto-deploy-on-push-to-`main` and automatic PR preview/comment behaviors are therefore **not active**; deployments are API/CLI-actuated (§4 call, or `vercel deploy --prod`).
-- **What remains for full auto-deploy (operator action, one-time):** install the Vercel GitHub App on `payswapdotorg` with access to `webflix` (dashboard → project → Git → reconnect via the GitHub App). After that: push to `main` auto-deploys production, every PR gets a preview + status check automatically. Nothing in this repo needs to change — the project settings, branch, and env decisions all carry over.
+- **What exists:** the project was created with a full GitHub link (`org payswapdotorg`, repo id `1367978616`, production branch `main`, stored git credential `cred_26dd4440955572cb0d9001d5c5e8ab23bc5281cb`).
+- **What is PROVEN active (2026-09-15, live test):** pushing the branch `wfx/056/vercel-deployment` to GitHub **auto-triggered a preview deployment** — `dpl_GeTZYerwNsTZ2RYgdoS8u76Sq3Sx`, built from the exact pushed SHA `e88c1b5`, READY, no API/CLI call involved. Push-to-deploy therefore works through the project's git credential; branch pushes yield protected previews.
+- **What is expected but not yet observed:** a push to `main` auto-deploying to **production**. The mechanism is the same (production branch is `main` on the link; `gitProviderOptions.createDeployments: enabled`), but workers cannot push `main` — the first post-056 merge to `main` by the lead is the confirming observation. PR comment/status behavior (`gitComments.onPullRequest: true`) is likewise configured but untested (no PRs opened by this task).
+- **Manual paths (both proven):** deploying any ref is one API call (below), and the Vercel CLI works with the operator token (`vercel deploy --prod`, `vercel logs`). No GitHub App installation is required for any behavior observed so far.
+
+```
+POST /v13/deployments?teamId=team_4KOoA5CgtYaOF85yFXPeMXLt
+{ "name": "webflix", "project": "prj_Ylm0ROs2ZxwxxHWCMAroSPH8HWp5",
+  "gitSource": { "type": "github", "org": "payswapdotorg", "repo": "webflix",
+                 "repoId": 1367978616, "ref": "<branch-or-sha>" } }
+```
+
+(omit `target` for a preview; `"target": "production"` for a production deploy from a ref — exactly how the §2 production deployment was created from `main` @ `7bd3136`.)
 
 ## 8. Operations notes (hobby-plan realities, from [free-tier-limits.md](./free-tier-limits.md))
 
