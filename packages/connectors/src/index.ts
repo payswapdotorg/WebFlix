@@ -44,3 +44,8 @@ export * from "./auth/session";
 export * from "./auth/flows";
 export * from "./auth/service";
 export * from "./reference";
+// WFX-054: the first REAL provider connector. Same extension pattern as the
+// WFX-013 reference connector — the barrel grows one export line; provider
+// modules stay under their own directory with the SDK's laws enforced by
+// BaseConnector exactly as for the reference implementation.
+export * from "./youtube";
