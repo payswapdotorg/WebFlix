@@ -6,3 +6,5 @@ dist/
 !.env.example
 coverage/
 .DS_Store
+# WFX-053: worker scratch space (provisioning scripts; may hold transient state)
+.scratch/
