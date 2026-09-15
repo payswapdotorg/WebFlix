@@ -1,17 +1,16 @@
 # WFX-043 — Release Acceptance (Lead)
 
-Status: **ACCEPTED (conditional on WFX-024)** — verified against the merged
-tree at `main @ e73798f` (26/30 + WFX-042 audit final-pending-024). The four
-frozen acceptance dimensions are verified below from direct evidence
-(existing golden test suites + fresh-clone gate runs), per the frozen
-handoff's Final Verification rule. Final sign-off follows the WFX-024 merge
-re-run.
+Status: **ACCEPTED — FINAL.** Verified against the complete merged tree
+at `main @ 386e674` (ALL worker items: 001-005, 010-015, 020-024, 025-029,
+030-033, 040, 041; WFX-042 audit CLOSED). The four frozen acceptance
+dimensions verify green with machine-checked evidence; the fresh-clone
+golden journey passes on the final tree.
 
 ## 1. Golden journeys
 
 | Journey | Evidence | Result |
 |---------|----------|--------|
-| Repo boot (the lead's golden path) | fresh `git clone` from the canonical remote (the sole source of truth) @ `e73798f` → `bun install` → full gate suite | **PASS** — 1694 tests, 0 fail, contract/lane checks OK |
+| Repo boot (the lead's golden path) | fresh `git clone` from the canonical remote (the sole source of truth) @ `386e674` → `bun install` → full gate suite | **PASS** — 1757 tests, 0 fail, contract/lane checks OK |
 | Watch journey (feed → playback → resume) | `packages/experience/tests/watch.test.ts` golden sequences (episodic continuity, resume 5%/95% band law, honest control descriptors) | **PASS** (in suite) |
 | Short journey (stack → swipe → replacement) | `packages/experience/tests/short.test.ts` golden flows (never-wraps swipes, 5-law replacement, typed unused) | **PASS** (in suite) |
 | Action journey (intent → outbox → sync) | `packages/actions/tests/sync.test.ts` goldens (idempotent outbox, deterministic backoff, reconciliation) | **PASS** (in suite) |
@@ -77,28 +76,27 @@ Verified by the recommendation suites (WFX-020/021/041):
   extending chains) are detected; compliant feeds verify clean; unprovable
   checks degrade typed (never guessed).
 
-## 5. Full gate results (release candidate `e73798f`)
+## 5. Full gate results (final `386e674`)
 
 ```
 lint            — 0 errors (1 pre-existing cosmetic warning in GENERATED frozen.ts)
 typecheck       — clean (tsc --noEmit, strict)
-test            — 1694 pass / 0 fail / 8917 expect() calls / 61 files
+test            — 1757 pass / 0 fail / 9500 expect() calls / 62 files
 contract-check  — OK — 7 frozen blocks in sync, 7 extension types present
-lane-check      — OK — 213 files, no cross-lane private imports
+lane-check      — OK — 217 files, no cross-lane private imports
 ci              — green (all of the above chained)
-fresh clone     — PASS (remote @ e73798f → install → 1694/1694)
+fresh clone     — PASS (remote @ 386e674 → install → 1757/1757)
 ```
 
 ## 6. Outstanding
 
-- **WFX-024** (background completion + storage policy) — the single
-  remaining worker item, in flight at acceptance time. On its merge: re-run
-  the full gate suite + the mechanical drift greps, close WFX-042's final
-  line, re-run this acceptance, and sign off.
+None. WFX-024 merged (386e674) with 6/6 gates + direct review
+(pause-never-cancel resumable completion, never-evict storage governor,
+63 new tests); the drift greps re-ran clean and WFX-042 is CLOSED.
 
 ## Verdict
 
-**ACCEPTED — conditional on WFX-024.** All four frozen acceptance
-dimensions verify green on the merged tree with machine-checked evidence;
-the release candidate boots and passes from a fresh clone of the canonical
-remote. Final sign-off is a mechanical re-run after WFX-024 lands.
+**ACCEPTED — FINAL.** All four frozen acceptance dimensions verify green
+on the complete tree with machine-checked evidence; the release boots and
+passes from a fresh clone of the canonical remote. The Universal
+Entertainment OS roadmap is complete.

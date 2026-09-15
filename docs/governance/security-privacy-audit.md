@@ -1,9 +1,11 @@
 # WFX-042 — Security / Privacy Audit (Lead)
 
-Status: **FINAL (pending WFX-024 only)** — covers the merged tree at
-`main @ 2265b69` (26/30 items: 001-005, 010-015, 020-023, 025-028,
-029-033, 040, 041). Every merge passed the same drift gates before
-entering `main`; the audit extends with the WFX-024 merge when it lands.
+Status: **FINAL — CLOSED.** Covers the complete merged tree at
+`main @ 386e674` (ALL worker items: 001-005, 010-015, 020-024, 025-029,
+030-033, 040, 041). Every merge passed the same drift gates before
+entering `main`; WFX-024's merge review re-ran the mechanical drift greps
+clean (no provider SDK strings, no local-DB replacement, no swallowed
+fake-success, apps thin) and this audit closes with it.
 
 Method: direct inspection (source, imports, schemas, persistence, platform
 behavior) per the frozen handoff's Final Verification rule — never worker
@@ -86,20 +88,28 @@ summaries alone. Mechanical checks re-runnable at any tree state.
   small-N suppression with typed marker — never a fake zero); every
   transformation audited in the RedactionReport; zero nondeterminism
   (no Math.random/Date.now in any telemetry source).
+- WFX-024: background completion is PAUSE-NEVER-CANCEL for environment
+  causes (resumable by construction — wifi/charging hints are INJECTED
+  inputs, never assumed); terminal sessions cancel with typed reasons;
+  storage governor reuses the MERGED WFX-014 accounting (imported, never
+  reimplemented — no duplicated domain rules); NEVER-EVICT protected set
+  enforced (eviction skips, release refuses, persistence restricted to
+  protected assets — all typed); impossible plans are typed refusals with
+  shortfall and protected keys (never silently over-ceiling, never fake
+  success); concurrency cap pauses excess sessions RESUMABLE in arrival
+  order; zero nondeterminism.
 
 ## 5. Open items
 
-- WFX-024 (background completion + storage policy): the ONLY remaining
-  worker item. Its merge review re-runs the mechanical drift greps + the
-  storage-policy privacy review (background completion must honor the same
-  honest-capability and no-fake-success laws; library/model.ts's typed
-  integration gap closes with it). Audit finalization follows its merge.
+None. WFX-024 merged (386e674); its review re-ran the mechanical drift
+checks clean. The library/model.ts typed integration gap from the frozen
+comment closes with the background module's availability.
 
 ## Verdict
 
-**No drift found on the merged tree (26/30).** All nine frozen
+**CLOSED — no drift found on the complete tree.** All nine frozen
 drift-rejection patterns are clean; determinism, purity, frozen-contract,
-and typed-failure laws hold across every merged package; the six
+and typed-failure laws hold across every merged package; the seven
 security-relevant merge families (SSRF/isolation, process boundary, range
-gateway, scheduler, clients, telemetry redaction) all passed direct code
-review with golden-tested laws. The audit closes when WFX-024 merges.
+gateway, scheduler, clients, telemetry redaction, background storage) all
+passed direct code review with golden-tested laws.
