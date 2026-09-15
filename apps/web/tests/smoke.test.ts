@@ -1,15 +1,20 @@
 /**
- * WFX-040 web client smoke test (bun:test).
+ * WFX-040 web client smoke test (bun:test), WFX-050 productionized.
  *
  * Proves the WEB shell boots the shared client runtime and that a feed
  * call returns TYPED data with browser-constrained realizations: native is
  * excluded by capability (the resolver rejects it with a recorded reason),
  * and the precedence trace carries that audit.
+ *
+ * WFX-050: ports are passed EXPLICITLY (the deterministic fixture bundle —
+ * this is a test). The default-selection law (fixtures only behind
+ * `WFX_DEV_FIXTURES=1`, otherwise the `WFX_API_BASE` service ports, else
+ * a typed `HostConfigError`) is proven in `tests/host-boot.test.ts`.
  */
 
 import { describe, expect, it } from "bun:test";
 
-import { FIXTURE_CONNECTOR_ID } from "@wfx/experience";
+import { FIXTURE_CONNECTOR_ID, makeFixturePorts } from "@wfx/experience";
 
 import { bootWebClient } from "../src/main";
 
@@ -17,7 +22,7 @@ const ctx = { userId: "wfx-web-smoke-user", sessionId: "wfx-web-smoke-session", 
 
 describe("@wfx/app-web smoke (WFX-040)", () => {
   it("the web client boots the shared runtime on the web capability profile", () => {
-    const client = bootWebClient();
+    const client = bootWebClient({ ports: makeFixturePorts() });
     expect(client.platform).toBe("web");
     expect(client.runtime.platform).toBe("web");
     expect(client.runtime.profile.device.playbackModes).toEqual(["embed", "browser", "external"]);
@@ -28,7 +33,7 @@ describe("@wfx/app-web smoke (WFX-040)", () => {
   });
 
   it("a feed call returns typed data through the same Experience API", async () => {
-    const client = bootWebClient();
+    const client = bootWebClient({ ports: makeFixturePorts() });
     const page = await client.runtime.getFeed(ctx, "watch", "drift");
     expect(page.surface).toBe("watch");
     const card = page.cards[0];
@@ -39,7 +44,7 @@ describe("@wfx/app-web smoke (WFX-040)", () => {
   });
 
   it("playback resolves browser-constrained: native excluded by capability, trace recorded", async () => {
-    const client = bootWebClient();
+    const client = bootWebClient({ ports: makeFixturePorts() });
     const page = await client.runtime.getFeed(ctx, "watch", "drift");
     const card = page.cards[0];
     if (card === undefined) throw new Error("smoke fixture produced no watch cards");

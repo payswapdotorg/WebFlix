@@ -1,5 +1,15 @@
 {
   "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // WFX-050: the Next.js App Router alias for apps/web. Route files sit
+    // deep (src/app/api/health/route.ts), where relative escapes to the
+    // package's own src/ would violate the lane rule. The alias maps into
+    // the web package's src/ only — other packages never use it.
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/web/src/*"]
+    }
+  },
   "include": [
     "packages/*/src",
     "packages/*/tests",

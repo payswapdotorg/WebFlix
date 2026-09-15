@@ -8,3 +8,7 @@ coverage/
 .DS_Store
 # WFX-053: worker scratch space (provisioning scripts; may hold transient state)
 .scratch/
+# WFX-050: Next.js host artifacts (generated per-machine by next dev/build)
+apps/web/next-env.d.ts
+*.tsbuildinfo
+.vercel
