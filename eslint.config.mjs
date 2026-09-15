@@ -26,5 +26,9 @@ export default [
     files: ["**/*.test.ts", "tests/**"],
     rules: { "no-console": "off" },
   },
-  { ignores: ["node_modules/**", "dist/**", ".next/**"] },
+  {
+    // WFX-050: Next.js hosting artifacts — the generated tsconfig shim and
+    // the build output (at any workspace depth) are never lint targets.
+    ignores: ["node_modules/**", "dist/**", "**/.next/**", "apps/web/next-env.d.ts"],
+  },
 ];
