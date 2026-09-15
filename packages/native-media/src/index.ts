@@ -45,3 +45,8 @@ export * from "./engine/process";
 export * from "./engine/simulation";
 export * from "./engine/adapter";
 export * from "./engine/cache";
+export * from "./gateway/bytes";
+export * from "./gateway/request";
+export * from "./gateway/response";
+export * from "./gateway/server";
+export * from "./gateway/test-server";
