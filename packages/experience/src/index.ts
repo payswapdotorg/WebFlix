@@ -30,6 +30,7 @@ export * from "./library";
 export * from "./surface";
 export * from "./watch";
 export * from "./browser";
+export * from "./short";
 
 import type {
   ActionReceipt,
