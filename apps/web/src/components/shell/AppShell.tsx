@@ -13,11 +13,19 @@
  * (header/nav/main/footer), a skip link, `aria-current="page"` on the
  * active nav entry, 44px minimum targets, visible focus rings
  * (globals.css), and labeled controls.
+ *
+ * WFX-057: the PWA client islands mount here — the smallest surface
+ * change that gives every booted page the install affordance + the
+ * visible service-worker update flow (the same server-renders-client-
+ * island pattern the shorts/actions surfaces use). Service mode only:
+ * fixtures mode is dev-only content and never a PWA surface.
  */
 
 import type { JSX, ReactNode } from "react";
 
 import { Icon } from "./Icon";
+import { InstallPrompt } from "./InstallPrompt";
+import { UpdatePrompt } from "./UpdatePrompt";
 
 /** One shell navigation entry. */
 export interface NavEntry {
@@ -148,6 +156,12 @@ export function AppShell({
           sources; capability truth is always shown, never guessed.
         </p>
       </footer>
+      {mode === "service" ? (
+        <>
+          <UpdatePrompt enabled />
+          <InstallPrompt />
+        </>
+      ) : null}
     </div>
   );
 }

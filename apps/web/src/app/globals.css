@@ -1289,3 +1289,85 @@ body {
     bottom: calc(1rem + 3.25rem); /* clear the swipe hint + touch law */
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * WFX-057: PWA install + update affordances (client islands in the shell).
+ *
+ * Non-blocking by law: fixed corners, never an overlay, never a modal —
+ * content stays fully operable underneath. Install region: bottom-right
+ * (above the mobile bottom nav); update region: top-right below the
+ * topbar (the two can never collide). Controls ride the .wfx-btn system
+ * (44px targets, focus rings). The regions are aria-live=polite.
+ * ------------------------------------------------------------------------- */
+
+.wfx-pwa-region {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 150;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: min(360px, calc(100vw - 2rem));
+}
+
+.wfx-pwa-region--update {
+  top: calc(var(--wfx-topbar-h) + 0.75rem);
+  bottom: auto;
+}
+
+@media (max-width: 767px) {
+  .wfx-pwa-region {
+    /* never cover the mobile bottom nav (44px law) */
+    bottom: calc(var(--wfx-bottomnav-h) + 0.75rem);
+  }
+}
+
+.wfx-pwa-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--wfx-bg-raised);
+  border: 1px solid var(--wfx-border-strong);
+  border-radius: var(--wfx-radius);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.wfx-pwa-card__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--wfx-text);
+}
+
+.wfx-pwa-card__detail {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-pwa-card__steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--wfx-text-dim);
+  text-align: left;
+}
+
+.wfx-pwa-card__steps strong {
+  color: var(--wfx-text);
+}
+
+.wfx-pwa-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.wfx-pwa-card--ok {
+  border-color: var(--wfx-ok);
+}

@@ -1,0 +1,25 @@
+{
+  "name": "WebFlix",
+  "short_name": "WebFlix",
+  "id": "/",
+  "description": "WebFlix — the universal entertainment surface: browse, search, and watch movies, series, and shorts from the sources you connect. Capability truth is always shown, never guessed.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b0a10",
+  "theme_color": "#0b0a10",
+  "icons": [
+    {
+      "src": "/icon-main.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
