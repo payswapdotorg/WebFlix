@@ -22,7 +22,7 @@
  * watch-state pollution must be avoided. No network.
  */
 
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -33,9 +33,20 @@ import { ActionButtons } from "../src/components/player/ActionButtons";
 import { bootWebClient } from "../src/main";
 import { canonicalItemId } from "../src/host/canon";
 import { withWatchStateRecording } from "../src/host/watch-state";
+import { resetExperienceHostProcessState } from "../src/host/testing";
 import { runAction } from "../src/host/views";
 import { POST as postAction } from "../src/app/api/actions/route";
 import { POST as postEvent } from "../src/app/api/events/route";
+
+// Hermeticity law (WFX-CI-FIX): the /api/events route test records events
+// into the process-lifetime watch-state buffer and every like joins canon
+// ids; bun:test's file→process grouping varies with the machine, so every
+// test resets the host process state first — this file must neither read
+// other files' leftovers nor leave any for whichever file runs next in the
+// same process.
+beforeEach(() => {
+  resetExperienceHostProcessState();
+});
 
 /** Run an async `body` with a controlled environment, restoring the real one after. */
 async function withEnv(overrides: Record<string, string>, body: () => Promise<void>): Promise<void> {

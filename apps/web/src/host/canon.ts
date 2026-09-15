@@ -101,3 +101,21 @@ export function joinFeedCard(card: FeedCard): FeedCard {
 export function joinFeedCards(cards: readonly FeedCard[]): FeedCard[] {
   return cards.map(joinFeedCard);
 }
+
+/**
+ * TEST-ONLY: clear the join map and restart the mint counter at zero.
+ *
+ * Consumed EXCLUSIVELY by `host/testing.ts` (the host test seam) — never
+ * by a production path (grep-provable: no other import site exists). It
+ * exists because bun:test groups test files into worker PROCESSES whose
+ * grouping varies with the machine: when several apps/web test files share
+ * one process, ids minted by earlier files sit in this PROCESS-LIFETIME
+ * map and shift the counter later files' first-sight mints start from
+ * (the CI test-hermeticity fix, WFX-CI-FIX). Tests fetch ids through
+ * `canonicalItemId(...)` so they ADAPT to re-minting; production behavior
+ * is untouched — the documented per-process laws above stand.
+ */
+export function resetCanonicalItemJoinForTests(): void {
+  joinedIds.clear();
+  joinCounter = 0;
+}

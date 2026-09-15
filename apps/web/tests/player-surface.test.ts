@@ -20,7 +20,7 @@
  * Deterministic: fixture ports, controlled env. No network.
  */
 
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -32,8 +32,19 @@ import { bootWebClient } from "../src/main";
 import { bootExperienceHost, EXPERIENCE_CONTEXT } from "../src/host/experience";
 import { recordedWatchEvents } from "../src/host/watch-state";
 import { withWatchStateRecording } from "../src/host/watch-state";
+import { resetExperienceHostProcessState } from "../src/host/testing";
 import { loadCardViews, startPlayerView, type PlayerView } from "../src/host/views";
 import type { FakeCatalogItem } from "@wfx/experience";
+
+// Hermeticity law (WFX-CI-FIX): this file RECORDS playback events into the
+// process-lifetime watch-state buffer (and joins canon ids); bun:test's
+// file→process grouping varies with the machine, so every test resets the
+// host process state first — both to keep THIS file's watch-state evidence
+// absolute and to leave a pristine buffer for whichever file runs next in
+// the same process.
+beforeEach(() => {
+  resetExperienceHostProcessState();
+});
 
 /** Run an async `body` with a controlled environment, restoring the real one after. */
 async function withEnv(overrides: Record<string, string>, body: () => Promise<void>): Promise<void> {
