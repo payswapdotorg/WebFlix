@@ -1,0 +1,15 @@
+{
+  "name": "@wfx/persistence",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@wfx/domain": "workspace:*",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.2.17",
+    "@wfx/experience": "workspace:*"
+  }
+}
