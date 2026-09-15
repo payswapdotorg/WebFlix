@@ -14,6 +14,12 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
+      - name: Cache bun install store
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+          restore-keys: bun-${{ runner.os }}-
       - name: Install
         run: bun install --frozen-lockfile
       - name: Lint
@@ -26,3 +32,8 @@ jobs:
         run: bun run contract-check
       - name: Lane boundary check
         run: bun run lane-check
+      - name: Build web host (apps/web)
+        run: bun run build
+        working-directory: apps/web
+        env:
+          NEXT_TELEMETRY_DISABLED: 1
