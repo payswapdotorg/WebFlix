@@ -58,3 +58,6 @@ export * from "./scheduler/model";
 export * from "./scheduler/plan";
 export * from "./scheduler/drive";
 export * from "./scheduler/stall-guard";
+export * from "./background/policy";
+export * from "./background/storage";
+export * from "./background/completion-driver";
