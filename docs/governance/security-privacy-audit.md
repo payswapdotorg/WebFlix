@@ -1,9 +1,9 @@
 # WFX-042 — Security / Privacy Audit (Lead)
 
-Status: **IN PROGRESS** — covers the merged tree at `main @ a8a14e8`
-(20/30 items: 001-005, 010-013, 020-022, 025-027, 029-033). The audit
-EXTENDS mechanically with every subsequent merge (014/015/023/024/028/040/041);
-each merge already passes the same drift gates before entering `main`.
+Status: **FINAL (pending WFX-024 only)** — covers the merged tree at
+`main @ 2265b69` (26/30 items: 001-005, 010-015, 020-023, 025-028,
+029-033, 040, 041). Every merge passed the same drift gates before
+entering `main`; the audit extends with the WFX-024 merge when it lands.
 
 Method: direct inspection (source, imports, schemas, persistence, platform
 behavior) per the frozen handoff's Final Verification rule — never worker
@@ -40,8 +40,8 @@ summaries alone. Mechanical checks re-runnable at any tree state.
 - `contract-check`: 7 frozen blocks in sync, 7 extension types present
   (re-verified at every merge gate run, including the WFX-026 merge).
 - `frozen.ts` is GENERATED (regenerated, never hand-edited).
-- `lane-check`: 172 files, no cross-lane private imports (re-verified at
-  every merge).
+- `lane-check`: 213 files, no cross-lane private imports (re-verified at
+  every merge; grows with each item).
 
 ## 4. Security-relevant merge-review findings (history)
 
@@ -54,23 +54,52 @@ summaries alone. Mechanical checks re-runnable at any tree state.
 - WFX-032: privacy redaction goldens (BYOM), FIPS-pinned SHA-256, output
   validation, policy enforcement, cost ceiling.
 - WFX-033: hard permission laws on media transformation tools.
+- WFX-014: frozen process boundary (versioned DTOs, runtime guards, no
+  optimistic parsing); torrentBytes and range access typed
+  UNSUPPORTED_SOURCE (honest capability, no fake transport); cache policy
+  pure accounting with logical-clock LRU (deterministic eviction, honest
+  rejection); process crash → typed INTERNAL for all live sessions.
+- WFX-015: RFC range semantics with typed errors — malformed Range NEVER
+  silently falls back to 200 (players rely on status semantics); loopback-
+  only (127.0.0.1) test binding; transport-agnostic handler reusing the
+  merged WFX-004 parser (no duplicated domain rules); 200/206/304/404/416/503
+  semantics golden-tested.
+- WFX-023: deterministic deadline-aware scheduling; injected clock and
+  network estimate (no hidden time); relative piece ordinals documented as
+  honest limitation (no fake precision anchors); idempotent ticks; stall
+  guard with typed stall detection (no fabricated progress).
+- WFX-028: rapid replacement 5-law policy; reorder-only rerank scope
+  (strictly additive intents — anti-tunnel-vision law); TYPED-NOT-FIRED
+  engagement events with closed vocabulary (backward swipe honestly emits
+  nothing); capability honesty (absent like/save typed-null).
+- WFX-040: honest capability profiles (web native honestly undeclared;
+  mobile OS-constrained background with safe-side pause); BrowserHost
+  cookie-isolation contract honored and tested on desktop+mobile adapters
+  (closes this audit's open item); machine-checked parity invariant
+  (byte-identical events — platform identity never leaks); quota-exceeded
+  typed failure (never fake success).
+- WFX-041: pure telemetry derivation with honest degraded markers (absent
+  fields named, never fabricated); attention-mode compliance re-verified
+  from composed feeds (not trusted from traces); cumulative privacy
+  redaction levels (free-text drop, deterministic cohort bucketing
+  documented as non-cryptographic, deterministic session pseudonymization,
+  small-N suppression with typed marker — never a fake zero); every
+  transformation audited in the RedactionReport; zero nondeterminism
+  (no Math.random/Date.now in any telemetry source).
 
-## 5. Open items (audit extends when they merge)
+## 5. Open items
 
-- WFX-014/015/023/024 (native media chain): SSRF-adjacent surface = local
-  HTTP gateway binding rules (015 binds where? loopback-only expected),
-  scheduler authority boundaries (023), background completion + storage
-  policy privacy (024 — the library/model.ts comment already anticipates it).
-- WFX-028 (Short Feed): same laws as 027 (typed transparency, no fabrication).
-- WFX-040 (clients): platform adapters must enforce the `BrowserHost`
-  cookie-isolation contract; capability parity must be honest (typed
-  unsupported, never greyed-out lies).
-- WFX-041 (telemetry): QoE events must respect the frozen event envelope
-  and privacy redaction laws (no user-identifying payloads).
+- WFX-024 (background completion + storage policy): the ONLY remaining
+  worker item. Its merge review re-runs the mechanical drift greps + the
+  storage-policy privacy review (background completion must honor the same
+  honest-capability and no-fake-success laws; library/model.ts's typed
+  integration gap closes with it). Audit finalization follows its merge.
 
-## Verdict (current tree)
+## Verdict
 
-**No drift found.** All nine frozen drift-rejection patterns are clean on
-the merged tree; determinism, purity, frozen-contract, and typed-failure
-laws hold. Audit re-runs mechanically (`grep` sets + contract-check +
-lane-check) and is extended by the per-merge direct reviews.
+**No drift found on the merged tree (26/30).** All nine frozen
+drift-rejection patterns are clean; determinism, purity, frozen-contract,
+and typed-failure laws hold across every merged package; the six
+security-relevant merge families (SSRF/isolation, process boundary, range
+gateway, scheduler, clients, telemetry redaction) all passed direct code
+review with golden-tested laws. The audit closes when WFX-024 merges.
