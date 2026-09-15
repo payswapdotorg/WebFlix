@@ -1,11 +1,36 @@
-# WebFlix Web Host — Deployment Guide (WFX-050)
+# WebFlix Web Host — Deployment Guide (WFX-050; WFX-051 experience shell)
 
 **Status:** canonical deployment contract for `apps/web` (the Next.js web host), written for WFX-056 (Vercel deployment lane). The app is a standard Next.js App Router application — no custom bundler plugins, no exotic output. Everything below is exact.
 
 ## What this app is (and is not)
 
-- **Is:** the production Next.js host that boots the frozen shared client runtime (`@wfx/experience` + `@wfx/domain` through `src/shared/` → `bootWebClient`) and renders the minimal-but-real home surface plus `GET /api/health`. Full UI polish is WFX-051 (next wave).
+- **Is:** the production Next.js host that boots the frozen shared client runtime (`@wfx/experience` + `@wfx/domain` through `src/shared/` → `bootWebClient`) and renders the WFX-051 experience shell: the persistent app chrome + home (hero/continue/rows), search, the long-form watch browse, the short-form vertical feed, content detail, and the player surface — plus the internal API routes below. All data flows through the 050 boot law (fixtures behind `WFX_DEV_FIXTURES=1` dev-only; the `WFX_API_BASE` remote ports in service mode).
 - **Is not:** the Experience API service, the persistence layer, or the sources backend. This host **consumes** `WFX_API_BASE` (split-runtime service consumption); it contains **no SQL, no database driver, no provider SDK**. Those belong to the service lanes (WFX-052/054) and their packages — never to this dependency closure.
+
+## Route inventory (what WFX-056 deploys)
+
+Pages (all `force-dynamic` server components except where noted; every page renders inside the persistent `AppShell` chrome):
+
+| Route | Surface | Notes |
+|---|---|---|
+| `/` | Home | Hero (resume-or-start) + continue-watching + For you / Trending rows + shorts rail. |
+| `/watch` | Long-form browse (WFX-027 mode) | Continue row first, then composed browse rows. |
+| `/shorts` | Short feed (WFX-028 mode) | Server-composed boot payload + the client vertical stack island. |
+| `/search` | Search | `?q=<query>` → both surfaces browsed (watch first) → results grid. |
+| `/item` | Content detail | `?connector=&ref=&title=` → connector metadata + capabilities + related. |
+| `/player` | Player | Starts a REAL playback session; renders the resolved Media Surface mode (embed iframe / visible browser panel / visible external handoff — never fake playback). |
+| `/_not-found` | Static | Next default. |
+
+Internal API routes (same-origin; the client islands' bridges):
+
+| Route | Method | Purpose | Failure law |
+|---|---|---|---|
+| `/api/health` | GET | Deployment verification (`{ok,service,version}`). | Deterministic, dependency-free. |
+| `/api/actions` | POST | Like/save through the actions use-case; answers the frozen `ActionReceipt` verbatim. | Malformed body → 400; port violation → 502. |
+| `/api/events` | POST | Watch-state/engagement reports (progress/complete/skip/share only — a CLOSED vocabulary; `start` and `like`/`save` are use-case-emitted and rejected here with the reason). | Sink rejection → 502 — a lost watch-state event is never a silent success. |
+| `/api/shorts` | GET | Fresh projected OS short page for the short feed's re-rank loop. | Load failure → 502. |
+
+Client JS is limited to three small islands (`ShortsFeed`, `ActionButtons`, `WatchStateReporter`) — everything else is server-rendered; the search box and avatar menu are plain HTML (form + `details`).
 
 ## Vercel project settings (for WFX-056)
 
@@ -93,4 +118,4 @@ WFX_API_BASE=http://localhost:PORT bun run dev
 bun run build && WFX_API_BASE=https://host bun run start
 ```
 
-Tests: `bun test` from the repo root (host boot laws, remote transport with stubbed fetch, home surface composition — all offline and deterministic).
+Tests: `bun test` from the repo root (host boot laws, remote transport with stubbed fetch, and the WFX-051 surface composition suites — home/search/player/shorts/actions — all offline and deterministic).
