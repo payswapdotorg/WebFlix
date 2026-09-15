@@ -31,6 +31,10 @@
  * - engine/cache.ts       — WFX-014 pure cache policy accounting
  *                  (`CachePolicy`, `CacheTracker`, `shouldAdmit`,
  *                  `evictList`) — no I/O, the real engine owns the bytes
+ * - scheduler/*           — WFX-023 deadline-aware playback scheduler:
+ *                  model (demand/priority/config), pure `planPriorities`,
+ *                  `createScheduler` driver (injected clock, idempotent
+ *                  foreground-first ticks), `shouldStallProtect` signal
  *
  * Domain types (`NativeMediaSession`, `NativeMediaEngine`) come from
  * `@wfx/domain`, the frozen public entry — never deep paths.
@@ -50,3 +54,7 @@ export * from "./gateway/request";
 export * from "./gateway/response";
 export * from "./gateway/server";
 export * from "./gateway/test-server";
+export * from "./scheduler/model";
+export * from "./scheduler/plan";
+export * from "./scheduler/drive";
+export * from "./scheduler/stall-guard";
