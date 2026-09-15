@@ -20,7 +20,7 @@
  * No network.
  */
 
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -33,8 +33,18 @@ import { bootExperienceHost, EXPERIENCE_CONTEXT } from "../src/host/experience";
 import { canonicalItemId } from "../src/host/canon";
 import { recordedWatchEvents } from "../src/host/watch-state";
 import { withWatchStateRecording } from "../src/host/watch-state";
+import { resetExperienceHostProcessState } from "../src/host/testing";
 import { loadHomeView, startPlayerView } from "../src/host/views";
 import { POST as postEvent } from "../src/app/api/events/route";
+
+// Hermeticity law (WFX-CI-FIX): the watch-state buffer and the canon join
+// are PROCESS-LIFETIME host state; bun:test's file→process grouping varies
+// with the machine, so every test resets them to pristine first — these
+// assertions are absolute counts/lists and must not see other files'
+// playback events or minted ids, whichever process they run in.
+beforeEach(() => {
+  resetExperienceHostProcessState();
+});
 
 /** Run an async `body` with a controlled environment, restoring the real one after. */
 async function withEnv(overrides: Record<string, string>, body: () => Promise<void>): Promise<void> {
@@ -84,8 +94,8 @@ describe("WFX-051 home surface composition (through the shared runtime)", () => 
       const view = await loadHomeView(host);
 
       expect(view.mode).toBe("fixtures");
-      // Fresh session: no continue entries yet — the hero is a start hero
-      // (this test file is the FIRST to touch the anonymous watch state).
+      // Pristine process state (the beforeEach reset): no continue entries
+      // yet — the hero is a start hero, whichever files shared this process.
       expect(view.continueEntries).toEqual([]);
       expect(view.hero).not.toBeNull();
       expect(view.hero?.kind).toBe("start");

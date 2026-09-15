@@ -18,7 +18,7 @@
  * Deterministic: controlled env (restored), stubbed transport. No network.
  */
 
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -26,9 +26,20 @@ import { AppShell } from "../src/components/shell/AppShell";
 import { SearchSurface } from "../src/components/search/SearchSurface";
 import { bootExperienceHost } from "../src/host/experience";
 import { withWatchStateRecording } from "../src/host/watch-state";
+import { resetExperienceHostProcessState } from "../src/host/testing";
 import { loadSearchView } from "../src/host/views";
 import { createRemotePorts } from "../src/host/remote-ports";
 import { bootWebClient } from "../src/main";
+
+// Hermeticity law (WFX-CI-FIX): every query joins canonical identities in
+// the process-lifetime host state and the results dedupe by joined id;
+// bun:test's file→process grouping varies with the machine, so every test
+// resets the host process state first — the dedupe/laws under test are
+// this test's own, never another file's leftovers, whichever process this
+// file runs in.
+beforeEach(() => {
+  resetExperienceHostProcessState();
+});
 
 /** Run an async `body` with a controlled environment, restoring the real one after. */
 async function withEnv(overrides: Record<string, string>, body: () => Promise<void>): Promise<void> {

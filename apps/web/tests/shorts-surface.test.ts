@@ -24,7 +24,7 @@
  * ports. No network, no real time.
  */
 
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -46,6 +46,16 @@ import { bootWebClient } from "../src/main";
 import { EXPERIENCE_CONTEXT, SESSION_POLICY } from "../src/host/experience";
 import { projectShortsPage } from "../src/host/shorts";
 import { withWatchStateRecording } from "../src/host/watch-state";
+import { resetExperienceHostProcessState } from "../src/host/testing";
+
+// Hermeticity law (WFX-CI-FIX): the boot-payload test joins canon ids in
+// the process-lifetime host state (the scripted tests build their own ids
+// and never touch it); bun:test's file→process grouping varies with the
+// machine, so every test resets the host process state first — whichever
+// files share this process, each test starts from pristine joins.
+beforeEach(() => {
+  resetExperienceHostProcessState();
+});
 
 /** Run an async `body` with a controlled environment, restoring the real one after. */
 async function withEnv(overrides: Record<string, string>, body: () => Promise<void>): Promise<void> {

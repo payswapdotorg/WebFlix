@@ -98,3 +98,19 @@ export function recordedWatchStates(
   if (events.length === 0) return [];
   return deriveWatchHistory(events, [], items);
 }
+
+/**
+ * TEST-ONLY: clear the recorded-events buffer (every user's bucket).
+ *
+ * Consumed EXCLUSIVELY by `host/testing.ts` (the host test seam) — never
+ * by a production path (grep-provable: no other import site exists). It
+ * exists because bun:test groups test files into worker PROCESSES whose
+ * grouping varies with the machine: when several apps/web test files share
+ * one process, playback events recorded by earlier files accumulate in
+ * this PROCESS-LIFETIME buffer and break later files' absolute-count
+ * assertions (the CI test-hermeticity fix, WFX-CI-FIX). Production
+ * behavior is untouched — the documented per-process laws above stand.
+ */
+export function resetWatchStateRecordingForTests(): void {
+  recordedEvents.clear();
+}
