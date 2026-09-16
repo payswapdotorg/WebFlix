@@ -1,0 +1,448 @@
+/**
+ * @wfx/app-desktop — ServerPort against the Experience API (R08).
+ *
+ * The Desktop server transport seam: the SAME frozen `WFX_API_BASE`
+ * transport contract the web adapter's host maps
+ * (`apps/web/src/host/remote-ports.ts`), consumed from the desktop
+ * adapter — identical endpoints, identical identity channel, IDENTICAL
+ * payload guards, but answering the R01 `ServerPort`'s TYPED
+ * `ServerResult` failures (the R01 refinement: an adapter implementing
+ * THIS port answers `ok: false` with the typed `ServerFailure` instead
+ * of silently degrading reads to empty answers — a network-down search
+ * is an ERROR STATE in the runtime, never a fake empty result).
+ *
+ * ENDPOINT MAPPING (the frozen transport contract, verbatim):
+ *
+ * | ServerPort call       | HTTP                                  | Body / query             |
+ * |-----------------------|---------------------------------------|--------------------------|
+ * | `search`              | `GET  {base}/experience/search`       | `?query=<q>`             |
+ * | `shorts`              | `GET  {base}/experience/shorts`       | `?query=<q>` (optional)  |
+ * | `metadata`            | `GET  {base}/experience/metadata`     | `?ref=<ref>`             |
+ * | `resolve`             | `GET  {base}/experience/resolve`      | `?ref=<ref>`             |
+ * | `executeAction`       | `POST {base}/experience/actions`      | `UserAction` JSON        |
+ * | `readLibrary`         | `GET  {base}/experience/library`      | —                        |
+ * | `writeLibrary`        | `POST {base}/experience/library`      | `LibraryCommand` JSON    |
+ * | `emitEvent`           | `POST {base}/experience/events`       | `EntertainmentEvent` JSON|
+ *
+ * (`shorts` is the R01 ServerPort's shorts-surface operation; the frozen
+ * web transport table has no row for it yet — the desktop adapter maps
+ * the natural `GET /experience/shorts` and flags it for R07's lead
+ * ratification, documented in the adapter README.)
+ *
+ * Failure semantics (the R01 laws):
+ * - READ-SHAPED CALLS answer `{ ok: false, failure }` with the typed kind:
+ *   transport did not complete → `"network"`; HTTP 401/403 →
+ *   `"unauthorized"`; HTTP 5xx → `"unavailable"`; non-JSON or malformed
+ *   payload → `"malformed"`. Never a silent empty answer.
+ * - ACTION-SHAPED CALLS answer `ok: false` on transport failure; a
+ *   service answer that fails the receipt guard answers a `"malformed"`
+ *   failure — the runtime settles the action `failed`, never a fabricated
+ *   success.
+ * - THE EVENT SINK LAW (frozen verbatim): `emitEvent` answers its failure
+ *   (`ok: false`) — the runtime keeps the event pending in its
+ *   at-least-once outbox; a lost watch-state event is NEVER a silent
+ *   success.
+ * - Identity rides as headers (`x-wfx-user-id`, `x-wfx-session-id`,
+ *   `x-wfx-locale`, `x-wfx-region`) — never in URLs.
+ *
+ * Injectability (the same seams as the web host): the `fetch`
+ * implementation, the clock, and the id source are options — tests inject
+ * a stub fetch and run fully offline and deterministically. The clock is
+ * the adapter's ONE wall-clock read (receipt timestamps); ids are
+ * canonical Crockford ULID bodies from `crypto.getRandomValues`.
+ */
+
+import type {
+  ActionReceipt,
+  EntertainmentEvent,
+  LibraryCommand,
+  LibraryEntry,
+  PlaybackRealization,
+  SearchResult,
+  SourceItem,
+  UserAction,
+} from "@wfx/domain";
+import { isIso8601, isRecord, validatePlaybackRealization } from "@wfx/domain";
+import type {
+  RuntimeContext,
+  RuntimeClock,
+  RuntimeIdGen,
+  ServerFailure,
+  ServerFailureKind,
+  ServerPort,
+  ServerResult,
+} from "@wfx/client-runtime";
+
+// ---------------------------------------------------------------------------
+// The production seams (clock + ids — the same discipline as the web host)
+// ---------------------------------------------------------------------------
+
+/**
+ * The production `RuntimeClock`: the real wall clock. This is the ONE
+ * place in the desktop adapter that reads `Date.now()` — the runtime and
+ * the domain stay deterministic and time-injected.
+ */
+export class SystemClock implements RuntimeClock {
+  now(): number {
+    return Date.now();
+  }
+}
+
+/** The Crockford Base32 alphabet (excludes I, L, O, U) — 32 symbols. */
+const CROCKFORD_ALPHABET = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+
+/** Canonical ULID body shape (mirrors @wfx/domain `ids.ts`). */
+const ULID_BODY_RE = /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/;
+
+/**
+ * The production `RuntimeIdGen`: cryptographically random 26-char
+ * Crockford Base32 ULID bodies (first char in `[0-7]`, 32 divides 256 so
+ * `byte % 32` is uniform). No `Math.random()` anywhere.
+ */
+export class CryptoUlidGen implements RuntimeIdGen {
+  next(): string {
+    const bytes = new Uint8Array(26);
+    crypto.getRandomValues(bytes);
+    let body = CROCKFORD_ALPHABET[bytes[0]! % 8]!;
+    for (let index = 1; index < 26; index += 1) {
+      body += CROCKFORD_ALPHABET[bytes[index]! % 32];
+    }
+    return body;
+  }
+}
+
+/** Is this a canonical 26-char Crockford ULID body? */
+export function isUlidBody(value: string): boolean {
+  return ULID_BODY_RE.test(value);
+}
+
+// ---------------------------------------------------------------------------
+// Options
+// ---------------------------------------------------------------------------
+
+/** Options for {@link createDesktopServerPort}. */
+export interface DesktopServerPortOptions {
+  /** The validated base URL of the Experience API (`WFX_API_BASE`). */
+  readonly apiBase: URL;
+  /** The identity context stamped onto every request's headers. */
+  readonly context: RuntimeContext;
+  /** The fetch implementation (default: the platform `fetch`). */
+  readonly fetchImpl?: FetchLike;
+  /**
+   * Per-request timeout in milliseconds (default 10 000; `0` disables).
+   * Bounds a hung service from pinning the desktop app.
+   */
+  readonly timeoutMs?: number;
+}
+
+/**
+ * The structural fetch seam this transport consumes (the call signature
+ * only — tests inject a stub; production passes the platform `fetch`).
+ */
+export type FetchLike = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+
+/** The connector-style id this transport presents (stable, honest). */
+export const DESKTOP_SERVICE_CONNECTOR_ID = "wfx-experience-service";
+
+// ---------------------------------------------------------------------------
+// Payload guards (a malformed service answer never becomes domain data —
+// the same guards the frozen web host applies, mirrored for this adapter)
+// ---------------------------------------------------------------------------
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isNonNegativeFinite(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+}
+
+function isOptionalString(value: unknown): value is string | undefined {
+  return value === undefined || typeof value === "string";
+}
+
+/** Transport guard for one `SearchResult` (the feed-use-case mirror). */
+function isUsableSearchResult(value: unknown): value is SearchResult {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.connectorId)) return false;
+  if (!isNonEmptyString(value.externalRef)) return false;
+  if (typeof value.title !== "string") return false;
+  if (!isOptionalString(value.canonicalType)) return false;
+  if (value.durationMs !== undefined && !isNonNegativeFinite(value.durationMs)) return false;
+  if (!isOptionalString(value.orientation)) return false;
+  return true;
+}
+
+/** Transport guard for one `SourceItem`. */
+function isUsableSourceItem(value: unknown): value is SourceItem {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.connectorId)) return false;
+  if (!isNonEmptyString(value.externalRef)) return false;
+  if (typeof value.title !== "string") return false;
+  if (!isOptionalString(value.canonicalType)) return false;
+  if (value.durationMs !== undefined && !isNonNegativeFinite(value.durationMs)) return false;
+  if (!isOptionalString(value.orientation)) return false;
+  if (
+    value.availability !== "available" &&
+    value.availability !== "unknown" &&
+    value.availability !== "unavailable"
+  ) {
+    return false;
+  }
+  if (!Array.isArray(value.capabilities) || !value.capabilities.every((cap) => typeof cap === "string")) {
+    return false;
+  }
+  return true;
+}
+
+/** Transport guard for one `LibraryEntry`. */
+function isUsableLibraryEntry(value: unknown): value is LibraryEntry {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.connectorId)) return false;
+  if (!isNonEmptyString(value.externalRef)) return false;
+  if (typeof value.title !== "string") return false;
+  if (value.addedAt !== undefined && (typeof value.addedAt !== "string" || !isIso8601(value.addedAt))) {
+    return false;
+  }
+  return true;
+}
+
+/** Transport guard for one usable `ActionReceipt` (the frozen statuses). */
+function isUsableReceipt(value: unknown): value is ActionReceipt {
+  if (!isRecord(value)) return false;
+  if (
+    value.status !== "confirmed" &&
+    value.status !== "confirmed-locally" &&
+    value.status !== "unsupported" &&
+    value.status !== "failed"
+  ) {
+    return false;
+  }
+  if (typeof value.occurredAt !== "string" || !isIso8601(value.occurredAt)) return false;
+  if (value.detail !== undefined && typeof value.detail !== "string") return false;
+  if (value.externalId !== undefined && typeof value.externalId !== "string") return false;
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// The transport core
+// ---------------------------------------------------------------------------
+
+type RequestOutcome =
+  | { readonly ok: true; readonly value: unknown }
+  | { readonly ok: false; readonly failure: ServerFailure };
+
+/**
+ * Build the Desktop `ServerPort` against the frozen `WFX_API_BASE`
+ * transport. Failures are typed per the R01 refinement (see module doc);
+ * identity rides as headers, never in URLs.
+ */
+export function createDesktopServerPort(options: DesktopServerPortOptions): ServerPort {
+  const base = options.apiBase;
+  const context = options.context;
+  const fetchImpl: FetchLike = options.fetchImpl ?? ((input, init) => fetch(input, init));
+  const timeoutMs = options.timeoutMs ?? 10_000;
+
+  const serviceId = `${DESKTOP_SERVICE_CONNECTOR_ID}@${base.origin}`;
+
+  function endpoint(path: string, query?: URLSearchParams): string {
+    const url = new URL(`${base.pathname === "/" ? "" : base.pathname}${path}`, base);
+    if (query !== undefined) {
+      for (const [key, value] of query.entries()) url.searchParams.set(key, value);
+    }
+    return url.toString();
+  }
+
+  function contextHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      "x-wfx-user-id": context.userId,
+      "x-wfx-session-id": context.sessionId,
+      "x-wfx-locale": context.locale,
+    };
+    if (context.region !== undefined) headers["x-wfx-region"] = context.region;
+    return headers;
+  }
+
+  async function request(
+    method: "GET" | "POST",
+    url: string,
+    body?: string,
+  ): Promise<RequestOutcome> {
+    const headers: Record<string, string> = { accept: "application/json", ...contextHeaders() };
+    let signal: AbortSignal | undefined;
+    if (timeoutMs > 0) signal = AbortSignal.timeout(timeoutMs);
+    if (body !== undefined) headers["content-type"] = "application/json";
+    const init: RequestInit = { method, headers };
+    if (body !== undefined) init.body = body;
+    if (signal !== undefined) init.signal = signal;
+    let response: Response;
+    try {
+      response = await fetchImpl(url, init);
+    } catch (thrown) {
+      const name = thrown instanceof Error ? thrown.name : "unknown";
+      const message = thrown instanceof Error ? thrown.message : String(thrown);
+      return {
+        ok: false,
+        failure: {
+          kind: "network",
+          detail: `${method} ${url} did not complete (${name}: ${message})`,
+        },
+      };
+    }
+    if (!response.ok) {
+      const kind: ServerFailureKind =
+        response.status === 401 || response.status === 403
+          ? "unauthorized"
+          : response.status >= 500
+            ? "unavailable"
+            : "malformed";
+      return {
+        ok: false,
+        failure: {
+          kind,
+          detail: `${method} ${url} answered HTTP ${response.status}`,
+        },
+      };
+    }
+    try {
+      return { ok: true, value: await response.json() };
+    } catch (thrown) {
+      const message = thrown instanceof Error ? thrown.message : String(thrown);
+      return {
+        ok: false,
+        failure: {
+          kind: "malformed",
+          detail: `${method} ${url} answered a non-JSON body (${message})`,
+        },
+      };
+    }
+  }
+
+  /** Read-shaped array fetch with element-level guards (malformed filtered, honest). */
+  async function readArray(
+    url: string,
+    guard: (value: unknown) => boolean,
+    label: string,
+  ): Promise<ServerResult<readonly unknown[]>> {
+    const result = await request("GET", url);
+    if (!result.ok) return { ok: false, failure: result.failure };
+    if (!Array.isArray(result.value)) {
+      return {
+        ok: false,
+        failure: { kind: "malformed", detail: `${label} answered a non-array payload` },
+      };
+    }
+    // Malformed ELEMENTS are filtered (garbage never becomes a card); the
+    // array shape itself was checked — the runtime's own registry re-checks
+    // what it consumes.
+    return { ok: true, value: result.value.filter((entry) => guard(entry)) };
+  }
+
+  return {
+    serviceId,
+
+    async search(query: string): Promise<ServerResult<readonly SearchResult[]>> {
+      const result = await readArray(
+        endpoint("/experience/search", new URLSearchParams({ query })),
+        isUsableSearchResult,
+        "GET /experience/search",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly SearchResult[] };
+    },
+
+    async shorts(query?: string): Promise<ServerResult<readonly SearchResult[]>> {
+      const search = new URLSearchParams();
+      if (query !== undefined && query.length > 0) search.set("query", query);
+      const result = await readArray(
+        endpoint("/experience/shorts", search),
+        isUsableSearchResult,
+        "GET /experience/shorts",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly SearchResult[] };
+    },
+
+    async metadata(ref: string): Promise<ServerResult<SourceItem | null>> {
+      const result = await request(
+        "GET",
+        endpoint("/experience/metadata", new URLSearchParams({ ref })),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (result.value === null) return { ok: true, value: null };
+      if (!isUsableSourceItem(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "GET /experience/metadata answered a malformed SourceItem",
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async resolve(ref: string): Promise<ServerResult<readonly PlaybackRealization[]>> {
+      const result = await readArray(
+        endpoint("/experience/resolve", new URLSearchParams({ ref })),
+        (entry) => validatePlaybackRealization(entry).ok,
+        "GET /experience/resolve",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly PlaybackRealization[] };
+    },
+
+    async executeAction(action: UserAction): Promise<ServerResult<ActionReceipt>> {
+      const result = await request("POST", endpoint("/experience/actions"), JSON.stringify(action));
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isUsableReceipt(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "POST /experience/actions answered a malformed ActionReceipt",
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async readLibrary(): Promise<ServerResult<readonly LibraryEntry[]>> {
+      const result = await readArray(
+        endpoint("/experience/library"),
+        isUsableLibraryEntry,
+        "GET /experience/library",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly LibraryEntry[] };
+    },
+
+    async writeLibrary(command: LibraryCommand): Promise<ServerResult<ActionReceipt>> {
+      const result = await request(
+        "POST",
+        endpoint("/experience/library"),
+        JSON.stringify(command),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isUsableReceipt(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "POST /experience/library answered a malformed ActionReceipt",
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async emitEvent(event: EntertainmentEvent): Promise<ServerResult<void>> {
+      // THE EVENT SINK LAW: the event carries its own identity stamps; the
+      // failure answers ok:false so the runtime keeps it pending — a lost
+      // watch-state event is never a silent success.
+      const result = await request("POST", endpoint("/experience/events"), JSON.stringify(event));
+      if (!result.ok) return { ok: false, failure: result.failure };
+      return { ok: true, value: undefined };
+    },
+  };
+}
