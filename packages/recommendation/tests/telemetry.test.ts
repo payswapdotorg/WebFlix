@@ -129,6 +129,7 @@ function sample(
       state,
       bufferedMs,
       positionMs,
+      integrity: "verified",
     },
   };
 }
@@ -496,6 +497,7 @@ describe("deriveQoe — the degraded case (absent fields ⇒ typed markers)", ()
                 state: "teleporting" as unknown as SessionSample["session"]["state"],
                 bufferedMs: 0,
                 positionMs: 0,
+                integrity: "unknown",
               },
             },
           ],

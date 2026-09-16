@@ -420,6 +420,7 @@ export function validateBackgroundSession(
     state,
     bufferedMs,
     positionMs,
+  integrity: "unknown",
   };
 }
 

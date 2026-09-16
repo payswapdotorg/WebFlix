@@ -371,6 +371,7 @@ export function sessionFromDto(dto: unknown): NativeMediaSession {
     state: dto.state,
     bufferedMs: dto.bufferedMs,
     positionMs: dto.positionMs,
+    integrity: "unknown",
   };
 }
 

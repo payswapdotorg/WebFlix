@@ -278,6 +278,7 @@ describe("engine process — wire DTO round-trip", () => {
       state: "background",
       bufferedMs: 12_000,
       positionMs: 3000,
+      integrity: "unknown",
     };
     const wire = JSON.parse(JSON.stringify(sessionToDto(session)));
     expect(isEngineSessionDto(wire)).toBe(true);

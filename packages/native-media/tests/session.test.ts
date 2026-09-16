@@ -94,6 +94,7 @@ describe("transition — pure state machine", () => {
     id: "s1",
     assetId: "asset-1",
     fileId: "file-1",
+    integrity: "unknown",
     state: "resolving",
     bufferedMs: 0,
     positionMs: 0,
@@ -124,6 +125,7 @@ describe("transition — pure state machine", () => {
       id: "s2",
       assetId: "a",
       fileId: "f",
+      integrity: "verified",
       state: "buffering",
       bufferedMs: 12_345,
       positionMs: 6_789,
@@ -175,6 +177,7 @@ describe("makeSession — validated factory", () => {
       state: "resolving",
       bufferedMs: 0,
       positionMs: 0,
+      integrity: "unknown",
     });
   });
 
@@ -186,6 +189,7 @@ describe("makeSession — validated factory", () => {
       assetId: "a",
       fileId: "f",
       state: "playing",
+      integrity: "unknown",
       bufferedMs: 10,
       positionMs: 4,
     });
