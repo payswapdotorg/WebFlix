@@ -1,0 +1,136 @@
+# @wfx/client-runtime
+
+The **shared client runtime** of the WebFlix remediation freeze (R01). One
+runtime, many platform adapters:
+
+```
+Experience Core -> Shared Client Runtime -> Platform Adapter -> (Web | Desktop | Mobile)
+                   ^-- this package
+```
+
+The runtime **owns** navigation, presentation state, playback commands,
+watch state, library semantics, action state, intent submission, and
+error-state semantics. Adapters **own** lifecycle, storage, browser
+embedding, native media, notifications, background work, and sharing —
+injected through `@wfx/platform-contracts` ports.
+
+**Pure TypeScript, UI-framework-agnostic** (no React), no direct fetching
+(adapters inject the `ServerPort`), no wall clock, no randomness (the
+`RuntimeClock`/`RuntimeIdGen` seams), no provider SDK calls, no torrent
+logic (that lives behind the native-media boundary — R10/R11).
+
+## The single public entry
+
+```ts
+import { createRuntime } from "@wfx/client-runtime";
+
+const runtime = createRuntime(platform, server, {
+  context: { userId, sessionId, locale, region? },
+  clock,   // adapter-supplied (e.g. SystemClock) — never a hidden wall clock
+  ids,     // adapter-supplied (e.g. CryptoUlidGen) — no Math.random anywhere
+});
+```
+
+`createRuntime` **truth-checks the capability bundle**
+(`checkCapabilityTruth`) and throws the typed `RuntimeError` on an
+incoherent bundle — it never boots on a lying adapter. It registers a
+lifecycle `shutdown` hook that flushes the at-least-once watch-event outbox
+(adapters await async shutdown hooks before exit).
+
+## The `ServerPort` (the transport seam)
+
+`ServerPort` mirrors the frozen transport contract of
+`apps/web/src/host/remote-ports.ts` one-for-one — search / metadata /
+resolve / actions / library / events — plus `shorts` for the shorts surface.
+**R07's adapter maps the WFX_API_BASE HTTP transport onto it.**
+
+> **Refinement the lead must ratify:** the frozen web host degrades read
+> failures to empty answers ("the frozen plain surface has no error channel
+> for reads"). The ServerPort ADDS that channel: an adapter answers
+> `ok: false` with the typed `ServerFailure` instead of silently degrading,
+> so the runtime renders honest error states (a network-down search is an
+> error section, never a fake empty one). The frozen laws that are preserved
+> verbatim: the event-sink exception (a lost watch-state event is never a
+> silent success) and action honesty (never a fabricated success).
+
+## The semantics (and where their laws are tested)
+
+| Area | Module | Key laws |
+|---|---|---|
+| **Navigation** | `navigation.ts` | Typed states with required payloads; the explicit `NAVIGATION_TRANSITIONS` table; search refines (replace-top), item chains (push), destination surfaces (`settings`/`library`) never re-enter; bounded back-stack (overflow drops oldest); `back()` on empty answers `no-history`; deep-link `reset()` fabricates no history. |
+| **Playback** | `playback.ts` | Capability-filtered resolution (frozen precedence Native > Embed > Browser > External, filtered by platform truth); **no fake progress** (position moves only on surface evidence or accepted seeks); truthful `buffering`/`degraded` states; terminal phases are terminal; `prepare` engages the ports (browser surface open / native session open with the caller's authorized input — the R10 seam, never invented); external handoff cannot be seeked. |
+| **Watch state** | `watch-state.ts` | The WFX-029 fold laws (chronological last-writer-wins, start/progress/complete/skip labels) + the staleness law (older evidence is dropped — at-least-once redelivery never rewinds position) + idempotent per-event application + honest completion ratios; **at-least-once delivery** through the outbox — a failed emit keeps the event pending, THROWS the typed error (never silent), and is retried/flushed. |
+| **Library** | `library.ts` | Canonical-item-keyed (`wfxitm_`) saves; local-first with honest sync states (`synced`/`pending`/`failed`/`unsupported`/`conflict` — the WFX-022 mirror; `local-only` receipts are `conflict`, visibly distinct); watchlist vs history in one read model with typed section statuses; unknown items cannot be saved (typed `not-found` — no fake local-only saves). |
+| **Action state** | `actions.ts` | `requested → confirmed-locally | confirmed-by-provider | unsupported | failed`; **unsupported is never rendered as success** (terminal, own kind, no transition out); platform capability gating BEFORE dispatch (e.g. `download` on Web settles `unsupported` with the limitation named, never dispatched as theater); the frozen `ActionReceipt` statuses map 1:1. |
+| **Intent** | `intent.ts` | The frozen `IntentScope` vocabulary; `temporary` REQUIRES a future `expiresAt`; one objective per scope (re-submission updates); live expiry filtering; session/momentary intents cleared at session end; attention-mode submission validated against the frozen `ATTENTION_MODES`. |
+| **Errors** | `errors.ts` | The closed taxonomy (`invalid-input`, `network`, `unauthorized`, `unavailable`, `unsupported-capability`, `degraded`, `not-found`) with retryability + recovery hints (`retry` / `re-authenticate` / `inspect-capability` / `none`). A missing credential or unavailable realization can never look like silent success. |
+
+### The channel law (how failures travel)
+
+1. `invalid-input` — caller misuse — **thrown** as the typed `RuntimeError`
+   (the `ExperienceError` discipline).
+2. Watch-state delivery failure — **thrown** (the EventSink law); the event
+   stays pending in the at-least-once outbox.
+3. Capability-unsupported operations — **in-band** (`ActionState`
+   `unsupported`, playback terminal phases, `unsupported-capability` results
+   / typed throws from `resolvePlayback`) — never a throw for state the UI
+   must render, never fake success.
+4. Read-model degradation — **in the model** (section statuses carry the
+   typed error kind + detail).
+
+> **Lead ratification item:** the frozen `ClientRuntime` sketch in
+> `contracts.md` returns bare types (`Promise<PlaybackSession>`,
+> `Promise<void>`). This runtime keeps those bare signatures where the
+> sketch specifies them and carries failure through the channels above
+> (typed throws + in-band states). If the lead prefers `RuntimeResult<T>`
+> envelopes, that is a sketch edit + synchronized update.
+
+## The read models
+
+`getHome` / `search` / `shorts` / `library` answer presentation models whose
+sections carry typed statuses — `ready` sections carry real data; a failing
+server read is an `error` section with the failure detail (never a fake
+empty one). `search`/`shorts` hits are joined to **canonical `wfxitm_`
+identities** through the runtime's registry (stable per source key for the
+session — the same stopgap discipline as the experience feed, with the
+stability the runtime's library/watch-state keying needs).
+
+`getHome` assembles what the runtime itself owns (Continue Watching from the
+session fold). The server-backed recommendation feed is R05's lane; when it
+lands, its section joins `HomeModel` without changing the laws.
+
+## Test doubles (`src/testing.ts`) — ⚠️ testing only
+
+`InMemoryServerPort` (programmable answers + failure injection + the
+emitted-event log), `FixedClock`, `SequentialIdGen`, in-memory
+implementations of every platform port, and the truthful per-platform
+capability presets (`makeWebCapabilities` / `makeDesktopCapabilities` /
+`makeMobileCapabilities`). **Production code must never import it** (the
+same discipline as the fixtures modules elsewhere; frozen invariant 10).
+
+## What R02–R09 consume
+
+- **R02 (Identity/profiles):** the `RuntimeContext` (userId/sessionId) is
+  the runtime's identity seam; cross-device continuity keys on it. Server
+  port extensions for profile-scoped reads land in the ServerPort contract
+  (lead-owned).
+- **R03 (Source management):** settings navigation already carries the
+  `sources` section; source capability truth flows through `ActionState`
+  and the descriptor's limitation notes.
+- **R04 (Library/history):** the canonical registry is the join point;
+  server-side history hydration extends `ServerPort` (a `readHistory`
+  operation) and feeds the same fold.
+- **R05 (Recommendation controls):** the intent store + policy view are the
+  client half; the server feed joins `HomeModel`.
+- **R07/R08 (Web/Desktop adapters):** construct `PlatformCapabilities`
+  bundles + a `ServerPort` implementation, then drive the runtime's
+  navigation/playback/watch/library/action/intent surfaces. Honest
+  unsupported states come from the capability truth — never hand-rolled.
+- **R09 (BrowserHost):** browser-mode `prepare()` already drives
+  `BrowserHostPort.open()` with the cookie-isolation contract.
+
+## Drift discipline
+
+This package consumes `@wfx/domain` (frozen contracts) and
+`@wfx/platform-contracts` only — never `@wfx/experience` (its semantics are
+formalized here, not imported), never a deep path (lane-check enforced).
