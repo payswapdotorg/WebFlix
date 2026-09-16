@@ -75,6 +75,14 @@
         "@wfx/domain": "workspace:*",
       },
     },
+    "packages/client-runtime": {
+      "name": "@wfx/client-runtime",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@wfx/domain": "workspace:*",
+        "@wfx/platform-contracts": "workspace:*",
+      },
+    },
     "packages/connectors": {
       "name": "@wfx/connectors",
       "version": "0.1.0",
@@ -123,6 +131,10 @@
         "@electric-sql/pglite": "^0.2.17",
         "@wfx/experience": "workspace:*",
       },
+    },
+    "packages/platform-contracts": {
+      "name": "@wfx/platform-contracts",
+      "version": "0.1.0",
     },
     "packages/recommendation": {
       "name": "@wfx/recommendation",
@@ -279,6 +291,8 @@
 
     "@wfx/app-web": ["@wfx/app-web@workspace:apps/web"],
 
+    "@wfx/client-runtime": ["@wfx/client-runtime@workspace:packages/client-runtime"],
+
     "@wfx/connectors": ["@wfx/connectors@workspace:packages/connectors"],
 
     "@wfx/domain": ["@wfx/domain@workspace:packages/domain"],
@@ -290,6 +304,8 @@
     "@wfx/native-media": ["@wfx/native-media@workspace:packages/native-media"],
 
     "@wfx/persistence": ["@wfx/persistence@workspace:packages/persistence"],
+
+    "@wfx/platform-contracts": ["@wfx/platform-contracts@workspace:packages/platform-contracts"],
 
     "@wfx/recommendation": ["@wfx/recommendation@workspace:packages/recommendation"],
 
