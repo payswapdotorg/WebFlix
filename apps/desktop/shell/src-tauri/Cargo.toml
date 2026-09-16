@@ -1,0 +1,35 @@
+[package]
+name = "wfx-desktop-shell"
+version = "0.1.0"
+description = "The WebFlix Desktop native shell (R08): window lifecycle, filesystem storage, contained webview surfaces, OS notifications, background task registry, OS share sheet, and the native-media engine process host."
+authors = ["WebFlix"]
+edition = "2021"
+rust-version = "1.77"
+
+[lib]
+name = "wfx_desktop_shell"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-notification = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+fs2 = "0.4"
+uuid = { version = "1", features = ["v4"] }
+
+# macOS share sheet backend (NSSharingServicePicker). Other platforms
+# answer the honest `unsupported` outcome through the same seam (the
+# adapter's canShare truthfully reports false there — see share.rs).
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.5"
+objc2-app-kit = { version = "0.2", features = ["NSSharingServicePicker", "NSApplication", "NSWindow", "NSObject"] }
+objc2-foundation = { version = "0.2", features = ["NSString", "NSArray", "NSValue"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+strip = true

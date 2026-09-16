@@ -5,9 +5,9 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "devDependencies": {
-    "@wfx/app-web": "workspace:*",
+    "@wfx/client-runtime": "workspace:*",
     "@wfx/domain": "workspace:*",
-    "@wfx/experience": "workspace:*",
-    "@wfx/native-media": "workspace:*"
+    "@wfx/native-media": "workspace:*",
+    "@wfx/platform-contracts": "workspace:*"
   }
 }
