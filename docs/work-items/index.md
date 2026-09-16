@@ -1,43 +1,38 @@
-# WebFlix Work Item Registry
+# WebFlix Work Item Registry — Remediation Freeze
 
-The complete implementation backlog is the WFX registry below. Each item has one owner lane and explicit dependencies in the implementation plan. GitHub issue titles use WFX IDs where the repository connector permits issue creation; the repository files remain canonical so no work item is lost to tooling limitations.
+**Active execution registry:** R00-R19 in `docs/plans/2026-09-16-webflix-remediation-plan.md`.
 
-| ID | Work item | Lane | Dependencies |
+The earlier WFX-001–043 registry remains historical context only. No worker should treat a legacy WFX item as sufficient proof that the corresponding product capability is complete.
+
+| ID | Work item | Owner | Dependencies |
 |---|---|---|---|
-| WFX-001 | Repository governance + CI baseline | Lead | — |
-| WFX-002 | Shared domain types + event envelope | Lead/A | 001 |
-| WFX-003 | Connector SDK | B | 001,002 |
-| WFX-004 | Native media service contract | B | 001,002 |
-| WFX-005 | Experience API shell | C | 002,003,004 |
-| WFX-010 | Entertainment Graph | A | 002 |
-| WFX-011 | Intent Graph | A | 002 |
-| WFX-012 | Connector registry + secure credentials | B | 003 |
-| WFX-013 | Reference read-only connector | B | 012 |
-| WFX-014 | Native media engine adapter | B | 004 |
-| WFX-015 | Local HTTP range/media gateway | B | 014 |
-| WFX-020 | Candidate retrieval/index | A | 003,010,011 |
-| WFX-021 | Recommendation OS | A | 010,011,020 |
-| WFX-022 | External action synchronization | B | 012,013 |
-| WFX-023 | Deadline-aware playback scheduler | B | 014,015 |
-| WFX-024 | Background completion + storage | B | 023 |
-| WFX-025 | Media Surface resolver | C | 003,005 |
-| WFX-026 | In-app browser surface | C | 025 |
-| WFX-027 | Long-form Watch Feed | C | 005,021,025 |
-| WFX-028 | Short Feed | C | 005,021,025 |
-| WFX-029 | Library/history client | C | 005,022,024 |
-| WFX-030 | Model Fabric | A | 002 |
-| WFX-031 | WebFlix recommendation model | A | 021,030 |
-| WFX-032 | BYOM adapter | A | 021,030 |
-| WFX-033 | Media transformation tools | A | 030 |
-| WFX-040 | Cross-platform clients | C | 026-029 |
-| WFX-041 | QoE + recommendation telemetry | A | 021,025,027,028 |
-| WFX-042 | Security/privacy audit | Lead | Production features |
-| WFX-043 | Release acceptance | Lead | 040-042 |
+| R00 | Repository takeover + golden journey/competitor validation harness | Lead | — |
+| R01 | Shared client runtime + platform capability contracts | Worker 1 | R00 |
+| R02 | Identity + profiles + persistence | Worker 1 | R01 |
+| R03 | Source management + capability UX | Worker 1 | R02 |
+| R04 | Library + history + continuity | Worker 1 | R02 |
+| R05 | Recommendation controls + Intent Graph + anti-tunnel | Worker 1 | R04 |
+| R06 | Model/BYOM/local controls + AI transformation UX | Worker 1 | R05 |
+| R07 | Web platform adapter | Worker 2 | R01; consumes R02-R06 |
+| R08 | Desktop platform adapter + native shell | Worker 3 | R01 |
+| R09 | Media Surface + contained BrowserHost | Worker 2/3; Lead contracts | R01 |
+| R10 | Native Media production path | Worker 3 | R08 |
+| R11 | Full authorized Torrent Engine | Worker 3 | R10 |
+| R12 | Playback-aware torrent scheduler | Worker 3 | R11 |
+| R13 | Torrent persistence/background/recovery | Worker 3 + Worker 1 | R04,R11,R12 |
+| R14 | Native acquisition UX | Worker 1 + Worker 3 | R13 state contract |
+| R15 | External/social action synchronization | Lead + Worker 1 | R03 |
+| R16 | Agent-browser golden journey automation/evidence | Lead | R07-R15 applicable |
+| R17 | Failure/recovery hardening | Lead + workers | R13,R15,R16 |
+| R18 | Security/privacy/authorization audit | Lead | R17 |
+| R19 | Production deployment + release acceptance | Lead | R18 |
 
-## Assignment rule
+## Worker assignment rules
 
-A worker receives one or more WFX IDs only within its lane. The worker may not create a new shared dependency, change a frozen contract, or edit another lane's private paths without lead approval.
+A worker receives only assigned R IDs and their explicitly permitted subpaths. Workers may not change shared contracts, platform boundaries, or architecture without Lead approval.
 
-## GitHub issue status
+Every UI item must run affected golden journeys from `docs/validation/webflix-golden-journeys.md` with agent-browser against a running product. Every native/torrent item needs executable tests plus Desktop journey evidence where applicable.
 
-Current issue-backed work items: WFX-001 -> issue #1, WFX-002 -> #2, WFX-003 -> #3, WFX-004 -> #4. The remaining WFX items are fully defined in the repository plan/registry and should be materialized as issues by the tech lead when GitHub issue mutation is available in the execution environment.
+## Completion truth
+
+A work item is green only when its code, tests, contracts, documentation, real production wiring, and affected journey evidence agree. Worker summaries are not completion evidence.
