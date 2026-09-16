@@ -91,7 +91,14 @@ async function handleRelay(request: Request): Promise<Response> {
   }
 
   try {
-    const result = await runRelayDrain(boot.persistence.db, boot.ports.clock);
+    // R02: the profile service rides the drain — the fold attributes
+    // legacy/anonymous (NULL-profile) rows to the user's effective profile.
+    const result = await runRelayDrain(
+      boot.persistence.db,
+      boot.ports.clock,
+      50,
+      boot.profiles,
+    );
     return Response.json({
       ok: true,
       requeued: result.requeued,

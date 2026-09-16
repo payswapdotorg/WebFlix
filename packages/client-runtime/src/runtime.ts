@@ -152,6 +152,17 @@ export function createRuntime(
   if (session.context?.region !== undefined && typeof session.context.region !== "string") {
     problems.push(`session.context.region: expected a string when present, got ${previewValue(session.context?.region)}`);
   }
+  // R02: the active profile, when the session carries one, must be a sane
+  // opaque token (adapters set it from the auth session's selected profile;
+  // the runtime never fabricates profile ids).
+  if (
+    session.context?.profileId !== undefined &&
+    (typeof session.context.profileId !== "string" || session.context.profileId.length === 0)
+  ) {
+    problems.push(
+      `session.context.profileId: expected a non-empty string when present, got ${previewValue((session.context as { profileId?: unknown })?.profileId)}`,
+    );
+  }
   if (typeof session.clock?.now !== "function") {
     problems.push("session.clock: expected a RuntimeClock (a now(): number function)");
   }

@@ -22,7 +22,14 @@
 
 import { FixedClock, SequentialIdGen } from "@wfx/experience";
 import type { Ports } from "@wfx/experience";
-import { bootPersistence, type PersistenceBoot } from "@wfx/persistence";
+import {
+  bootPersistence,
+  PostgresEventSink,
+  PostgresIdentityService,
+  PostgresProfileService,
+  PostgresSessionService,
+  type PersistenceBoot,
+} from "@wfx/persistence";
 
 import type { ApiBoot } from "../src/host/boot";
 import { resolveApiConfig } from "../src/host/config";
@@ -78,6 +85,14 @@ export async function createApiTestBoot(): Promise<ApiTestBoot> {
     version: API_SERVICE_VERSION,
   });
 
+  // The R02 identity services — the SAME wiring bootApi performs (the
+  // boot's 2.6 step): register/authenticate, session tokens, profiles,
+  // and the profile-aware event sink, all over the shared seams.
+  const identity = new PostgresIdentityService({ db: testDb.db, ids, clock });
+  const sessions = new PostgresSessionService({ db: testDb.db, ids, clock });
+  const profiles = new PostgresProfileService({ db: testDb.db, ids, clock });
+  const profileEvents = new PostgresEventSink({ db: testDb.db, ids, clock });
+
   const ports: Ports = {
     connector,
     events: persistence.ports.events,
@@ -99,6 +114,10 @@ export async function createApiTestBoot(): Promise<ApiTestBoot> {
     // recorded here so the manually-composed ApiBoot tells the truth.
     seed: { seeded: true, itemCount: 57 },
     ports,
+    identity,
+    sessions,
+    profiles,
+    profileEvents,
   };
   return { boot, testDb, clock, ids };
 }

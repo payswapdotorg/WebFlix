@@ -1,17 +1,27 @@
 /**
  * @wfx/app-api — `GET` + `POST /experience/library` (WFX-055A transport
- * contract — BOTH methods in ONE file, the App Router convention).
+ * contract — BOTH methods in ONE file, the App Router convention; R02:
+ * profile scoping).
  *
  * - `GET /experience/library` → `LibraryEntry[]` (JSON array; empty when
  *   the user saved nothing).
  * - `POST /experience/library` body `LibraryCommand` → `ActionReceipt`.
  *
- * Identity rides as headers (see `host/identity.ts`).
+ * R02 — THE SESSION UPGRADE (the anonymous transition preserved):
+ * - With `Authorization: Bearer wfxsess_…`: the reads/writes are
+ *   PROFILE-SCOPED to the session's active profile (`readLibraryForProfile`
+ *   / `writeLibraryForProfile` on the fan-out — the WebFlix-owned service
+ *   library; provider-side libraries are R03's authorization lane).
+ * - Anonymous (`x-wfx-user-id` only): the EXACT pre-R02 behavior (the
+ *   fan-out's merged connector-side read; the persistence layer resolves
+ *   the default-profile fallback per store). R07 re-points the web app.
+ *
+ * Identity rides as headers (see `host/identity.ts`); a presented-but-
+ * malformed Authorization is a 401; both channels present must agree.
  *
  * Typed 400s for garbage bodies; answers are filtered through the frozen
- * client's payload guard (`isUsableRemoteLibraryEntry` /
- * `isUsableReceipt`), so every 200 body passes the client's validators
- * by construction.
+ * client's payload guard (`isUsableRemoteLibraryEntry` / `isUsableReceipt`),
+ * so every 200 body passes the client's validators by construction.
  *
  * Degradation law (052 classify + WFX-003): a LOUD boot failure answers
  * a typed 500; the degradation family (DB down) answers the honest typed
@@ -32,8 +42,10 @@ import {
   logBoundaryDrop,
   logDegradation,
   readJsonBody,
+  unauthorized,
 } from "@api/host/http";
-import { readConnectorContext } from "@api/host/identity";
+import { readBearerToken, readConnectorContext } from "@api/host/identity";
+import { resolveScopedIdentity } from "@api/host/session-identity";
 import { parseLibraryCommand } from "@api/host/validate";
 
 export const dynamic = "force-dynamic";
@@ -45,8 +57,12 @@ function receiptOccurredAt(boot: ApiBoot): string {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const identity = readConnectorContext(request.headers);
-  if (!identity.ok) return badRequest(identity.detail);
+  // A presented-but-malformed Authorization is a 401 (never ignored).
+  const bearer = readBearerToken(request.headers);
+  if (bearer.kind === "malformed") return unauthorized(bearer.detail);
+  // Anonymous requests keep the frozen header law verbatim (absent bearer).
+  const anonymous = bearer.kind === "absent" ? readConnectorContext(request.headers) : null;
+  if (anonymous !== null && !anonymous.ok) return badRequest(anonymous.detail);
 
   let boot: ApiBoot;
   try {
@@ -58,7 +74,29 @@ export async function GET(request: Request): Promise<Response> {
   }
 
   try {
-    const entries = await boot.connector.readLibrary(identity.ctx);
+    let entries: readonly LibraryEntry[];
+    if (bearer.kind === "present") {
+      const resolved = await resolveScopedIdentity(request.headers, boot);
+      if (!resolved.ok) {
+        if (resolved.failure === "degraded") {
+          logDegradation("library.session", resolved.detail);
+          return Response.json([] as LibraryEntry[]); // degrade law
+        }
+        if (resolved.failure === "bad-request") return badRequest(resolved.detail);
+        return unauthorized(resolved.detail);
+      }
+      if (resolved.identity.mode !== "session") {
+        return unauthorized("authorization: a bearer session token is required");
+      }
+      entries = await boot.connector.readLibraryForProfile(resolved.identity.profileId);
+    } else {
+      // The anonymous transition — the exact pre-R02 fan-out read.
+      if (anonymous === null || !anonymous.ok) {
+        return badRequest("x-wfx-user-id: required identity header is absent");
+      }
+      entries = await boot.connector.readLibrary(anonymous.ctx);
+    }
+
     const usable: LibraryEntry[] = [];
     for (const entry of entries) {
       if (isUsableLibraryEntry(entry)) {
@@ -75,8 +113,10 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const identity = readConnectorContext(request.headers);
-  if (!identity.ok) return badRequest(identity.detail);
+  const bearer = readBearerToken(request.headers);
+  if (bearer.kind === "malformed") return unauthorized(bearer.detail);
+  const anonymous = bearer.kind === "absent" ? readConnectorContext(request.headers) : null;
+  if (anonymous !== null && !anonymous.ok) return badRequest(anonymous.detail);
 
   const body = await readJsonBody(request);
   if (!body.ok) return badRequest(body.detail);
@@ -98,7 +138,36 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const receipt = await boot.connector.writeLibrary(identity.ctx, parsed.value);
+    let receipt: ActionReceipt;
+    if (bearer.kind === "present") {
+      const resolved = await resolveScopedIdentity(request.headers, boot);
+      if (!resolved.ok) {
+        if (resolved.failure === "degraded") {
+          logDegradation("library.session", resolved.detail);
+          return Response.json({
+            status: "failed",
+            detail: `the session service is unavailable (${resolved.detail})`,
+            occurredAt: receiptOccurredAt(boot),
+          } satisfies ActionReceipt);
+        }
+        if (resolved.failure === "bad-request") return badRequest(resolved.detail);
+        return unauthorized(resolved.detail);
+      }
+      if (resolved.identity.mode !== "session") {
+        return unauthorized("authorization: a bearer session token is required");
+      }
+      receipt = await boot.connector.writeLibraryForProfile(
+        resolved.identity.ctx,
+        resolved.identity.profileId,
+        parsed.value,
+      );
+    } else {
+      if (anonymous === null || !anonymous.ok) {
+        return badRequest("x-wfx-user-id: required identity header is absent");
+      }
+      receipt = await boot.connector.writeLibrary(anonymous.ctx, parsed.value);
+    }
+
     if (isUsableReceipt(receipt)) return Response.json(receipt);
     logDegradation("library", "the connector answered a malformed ActionReceipt");
     return Response.json({

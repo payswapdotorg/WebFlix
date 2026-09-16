@@ -157,6 +157,51 @@ export interface FanOutConnector extends ConnectorPort {
   readLibrary(ctx: ConnectorContext): Promise<LibraryEntry[]>;
   /** The probed library write (always implemented — see the class doc). */
   writeLibrary(ctx: ConnectorContext, command: LibraryCommand): Promise<ActionReceipt>;
+  /**
+   * R02: the PROFILE-SCOPED library read — the WebFlix-owned service
+   * library for one effective profile (cross-device saves). Sources that
+   * implement {@link ProfileScopedSource} contribute; provider-scoped
+   * libraries (per OAuth account) do not — their profile binding is R03's
+   * authorization lane, honestly out of scope here.
+   */
+  readLibraryForProfile(profileId: string): Promise<LibraryEntry[]>;
+  /** R02: the PROFILE-SCOPED library write (probe order, first non-failed wins). */
+  writeLibraryForProfile(
+    ctx: ConnectorContext,
+    profileId: string,
+    command: LibraryCommand,
+  ): Promise<ActionReceipt>;
+  /**
+   * R02: `executeAction` with an EXPLICIT profile key — the action routes
+   * exactly like `executeAction` (by connectorId, capability-gated), but
+   * profile-aware sources attribute saves/events to the given profile;
+   * sources without profile support take their normal ctx path.
+   */
+  executeActionForProfile(
+    ctx: ConnectorContext,
+    profileId: string,
+    action: UserAction,
+  ): Promise<ActionReceipt>;
+}
+
+/**
+ * R02: the structural seam a source implements to participate in
+ * profile-scoped operations (the 052 `PostgresCatalogConnector` does; a
+ * provider connector whose library is OAuth-account-scoped honestly does
+ * not — its writes ride the normal ctx path).
+ */
+export interface ProfileScopedSource {
+  executeActionForProfile(
+    ctx: ConnectorContext,
+    profileId: string,
+    action: UserAction,
+  ): Promise<ActionReceipt>;
+  readLibraryForProfile(profileId: string): Promise<LibraryEntry[]>;
+  writeLibraryForProfile(
+    ctx: ConnectorContext,
+    profileId: string,
+    command: LibraryCommand,
+  ): Promise<ActionReceipt>;
 }
 
 /** One wired source (the connector plus its cached descriptor). */
@@ -236,6 +281,13 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
   async function readLibraryOf(source: WiredSource, ctx: ConnectorContext): Promise<LibraryEntry[]> {
     if (typeof source.connector.readLibrary !== "function") return [];
     return source.connector.readLibrary(ctx);
+  }
+
+  /** The R02 profile-scoped twin of a source read, when the source supports it. */
+  async function readProfileLibraryOf(source: WiredSource, profileId: string): Promise<LibraryEntry[] | null> {
+    const scoped = source.connector as Partial<ProfileScopedSource>;
+    if (typeof scoped.readLibraryForProfile !== "function") return null;
+    return scoped.readLibraryForProfile(profileId);
   }
 
   const connector: FanOutConnector = {
@@ -422,6 +474,34 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       return merged;
     },
 
+    async readLibraryForProfile(profileId: string): Promise<LibraryEntry[]> {
+      // R02: only sources that OWN a service-side library contribute (the
+      // webflix-catalog); provider-scoped libraries are R03's lane.
+      const perSource = await Promise.all(
+        sources.map((source) =>
+          guardedRead(
+            source,
+            "readLibraryForProfile",
+            () => readProfileLibraryOf(source, profileId),
+            null as LibraryEntry[] | null,
+          ),
+        ),
+      );
+      const seen = new Set<string>();
+      const merged: LibraryEntry[] = [];
+      for (const entries of perSource) {
+        if (!Array.isArray(entries)) continue;
+        for (const entry of entries) {
+          if (!isRecord(entry)) continue;
+          if (typeof entry.externalRef !== "string" || entry.externalRef.length === 0) continue;
+          if (seen.has(entry.externalRef)) continue;
+          seen.add(entry.externalRef);
+          merged.push(rewriteReferring(entry as unknown as LibraryEntry));
+        }
+      }
+      return merged;
+    },
+
     async writeLibrary(ctx: ConnectorContext, command: LibraryCommand): Promise<ActionReceipt> {
       const occurredAt = isoNow(clock);
       if (!isRecord(command) || (command.op !== "add" && command.op !== "remove")) {
@@ -477,6 +557,177 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       return {
         status: "failed",
         detail: `no wired source could execute the library command — ${failures.join("; ")}`,
+        occurredAt,
+      };
+    },
+
+    async writeLibraryForProfile(
+      ctx: ConnectorContext,
+      profileId: string,
+      command: LibraryCommand,
+    ): Promise<ActionReceipt> {
+      const occurredAt = isoNow(clock);
+      if (!isRecord(command) || (command.op !== "add" && command.op !== "remove")) {
+        return {
+          status: "failed",
+          detail: "command.op: expected 'add' or 'remove'",
+          occurredAt,
+        };
+      }
+      if (typeof command.externalRef !== "string" || command.externalRef.length === 0) {
+        return {
+          status: "failed",
+          detail: "command.externalRef: expected a non-empty string",
+          occurredAt,
+        };
+      }
+      if (typeof profileId !== "string" || profileId.length === 0) {
+        return {
+          status: "failed",
+          detail: "profileId: expected a non-empty string",
+          occurredAt,
+        };
+      }
+      if (!union.has("libraryWrite")) {
+        return {
+          status: "unsupported",
+          detail: `capability 'libraryWrite' is not declared by any wired source (${sourceIds.join(", ")})`,
+          occurredAt,
+        };
+      }
+
+      // Same probe law as writeLibrary, but profile-aware sources take the
+      // explicit profile; a source without profile support honestly says so
+      // (it cannot attribute this write).
+      const failures: string[] = [];
+      for (const source of sources) {
+        const scoped = source.connector as Partial<ProfileScopedSource>;
+        if (typeof scoped.writeLibraryForProfile !== "function") {
+          failures.push(`${source.id}: writeLibraryForProfile not implemented`);
+          continue;
+        }
+        let receipt: ActionReceipt;
+        try {
+          receipt = await scoped.writeLibraryForProfile(ctx, profileId, command);
+        } catch (thrown) {
+          const detail = describeThrown(thrown);
+          record(source.id, `writeLibraryForProfile: ${detail}`);
+          failures.push(`${source.id}: ${detail}`);
+          continue;
+        }
+        if (!isUsableReceipt(receipt)) {
+          const detail = "writeLibraryForProfile answered a malformed ActionReceipt";
+          record(source.id, `writeLibraryForProfile: ${detail}`);
+          failures.push(`${source.id}: ${detail}`);
+          continue;
+        }
+        if (receipt.status !== "failed") return receipt;
+        const detail = receipt.detail ?? "failed";
+        record(source.id, `writeLibraryForProfile: ${detail}`);
+        failures.push(`${source.id}: ${detail}`);
+      }
+      return {
+        status: "failed",
+        detail: `no wired source could execute the profile-scoped library command — ${failures.join("; ")}`,
+        occurredAt,
+      };
+    },
+
+    async executeActionForProfile(
+      ctx: ConnectorContext,
+      profileId: string,
+      action: UserAction,
+    ): Promise<ActionReceipt> {
+      const occurredAt = isoNow(clock);
+      if (!isRecord(action) || typeof action.type !== "string") {
+        return { status: "failed", detail: "action: expected a UserAction object", occurredAt };
+      }
+      if (typeof profileId !== "string" || profileId.length === 0) {
+        return {
+          status: "failed",
+          detail: "profileId: expected a non-empty string",
+          occurredAt,
+        };
+      }
+      if (!USER_ACTION_TYPES.includes(action.type)) {
+        return {
+          status: "failed",
+          detail: `action.type: expected one of ${USER_ACTION_TYPES.join(" | ")}, got '${action.type}'`,
+          occurredAt,
+        };
+      }
+      if (typeof action.connectorId !== "string" || action.connectorId.length === 0) {
+        return {
+          status: "failed",
+          detail: "action.connectorId: expected a non-empty string",
+          occurredAt,
+        };
+      }
+      if (typeof action.externalRef !== "string" || action.externalRef.length === 0) {
+        return {
+          status: "failed",
+          detail: "action.externalRef: expected a non-empty string",
+          occurredAt,
+        };
+      }
+      if (!union.has(action.type as Capability)) {
+        return {
+          status: "unsupported",
+          detail: `capability '${action.type}' is not declared by any wired source (${sourceIds.join(", ")})`,
+          occurredAt,
+        };
+      }
+
+      // EXACTLY the executeAction routing (named source > service id probes
+      // > honest failed receipt) — only the per-source call is profile-aware
+      // where the source supports it.
+      const named = sources.find((source) => source.id === action.connectorId);
+      const targets =
+        named !== undefined
+          ? [named]
+          : action.connectorId === EXPERIENCE_SERVICE_CONNECTOR_ID
+            ? sources
+            : null;
+      if (targets === null) {
+        return {
+          status: "failed",
+          detail:
+            `action targets connector '${action.connectorId}' but this service presents ` +
+            `'${EXPERIENCE_SERVICE_CONNECTOR_ID}' (wired sources: ${sourceIds.join(", ")})`,
+          occurredAt,
+        };
+      }
+
+      const failures: string[] = [];
+      for (const source of targets) {
+        const routed: UserAction = { ...action, connectorId: source.id };
+        const scoped = source.connector as Partial<ProfileScopedSource>;
+        let receipt: ActionReceipt;
+        try {
+          receipt =
+            typeof scoped.executeActionForProfile === "function"
+              ? await scoped.executeActionForProfile(ctx, profileId, routed)
+              : await source.connector.executeAction(ctx, routed);
+        } catch (thrown) {
+          const detail = describeThrown(thrown);
+          record(source.id, `executeActionForProfile: ${detail}`);
+          failures.push(`${source.id}: ${detail}`);
+          continue;
+        }
+        if (!isUsableReceipt(receipt)) {
+          const detail = "executeActionForProfile answered a malformed ActionReceipt";
+          record(source.id, `executeActionForProfile: ${detail}`);
+          failures.push(`${source.id}: ${detail}`);
+          continue;
+        }
+        if (receipt.status !== "failed") return receipt;
+        const detail = receipt.detail ?? "failed";
+        record(source.id, `executeActionForProfile: ${detail}`);
+        failures.push(`${source.id}: ${detail}`);
+      }
+      return {
+        status: "failed",
+        detail: `no wired source could execute the action — ${failures.join("; ")}`,
         occurredAt,
       };
     },

@@ -1,12 +1,16 @@
 /**
- * @wfx/persistence — the session service (WFX-052).
+ * @wfx/persistence — the session service (WFX-052; R02 profile extension).
  *
  * Opaque bearer sessions, honestly stored:
  *
- * - TOKEN: 32 bytes from `crypto.randomBytes` (via an injectable token
- *   factory — the ONLY randomness seam, so tests are deterministic). The
- *   token is returned to the caller EXACTLY ONCE at creation; it is never
- *   persisted, never logged.
+ * - TOKEN: the R02 canonical shape `wfxsess_` + 26-char ULID body (the
+ *   domain's `generateUlid` over the INJECTED clock — timestamp-first,
+ *   crypto-random body: opaque, not derivable from the user id, unique).
+ *   The token is returned to the caller EXACTLY ONCE at creation; it is
+ *   never persisted, never logged. The token factory remains the ONLY
+ *   randomness-adjacent seam — tests inject deterministic tokens. (The
+ *   052 shape — 32 raw random bytes — remains accepted on validation:
+ *   stored hashes never expire early; only NEW mints use the R02 shape.)
  * - AT REST: only `sha256(token)` lands in `sessions.token_hash` (UNIQUE).
  *   A database disclosure yields unusable hashes, not usable sessions.
  * - EXPIRY: `expires_at` is checked against the INJECTED clock on every
@@ -16,16 +20,24 @@
  *   `revokeAllSessionsForUser` gives sign-out-everywhere semantics.
  * - TYPED FAILURES: `unknown-token` | `expired` | `revoked` — distinct
  *   reasons, one channel, no exceptions for expected outcomes.
+ * - ACTIVE PROFILE (R02): `active_profile_id` is the profile the session
+ *   currently operates as (`PUT /profiles/:id/select`). Nullable: a fresh
+ *   session resolves to the user's default profile until the user picks
+ *   one — per-request resolution, never a hidden mutation. Selection is
+ *   OWNERSHIP-CHECKED (a session may only select a profile of its own
+ *   user) and carries the typed `unknown-profile` failure.
  *
  * The HTTP/cookie layer that CARRIES these tokens belongs to the web host
  * (later wave); this is the service-function layer the spec asks for.
  */
 
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 
+import { generateUlid } from "@wfx/domain";
 import type { Clock, IdGen } from "@wfx/experience";
 
 import { classifyDriverError } from "./classify";
+import { PersistenceError } from "./errors";
 import { epochMsToIso, toIsoTimestamp, type DbClient } from "./sql";
 
 /** A session as callers may see it — never the token or its hash. */
@@ -35,6 +47,8 @@ export interface SessionRecord {
   readonly createdAt: string;
   readonly expiresAt: string;
   readonly revokedAt: string | null;
+  /** The profile this session operates as (null = the user's default). */
+  readonly activeProfileId: string | null;
 }
 
 /** The one-time answer of `createSession`: the secret token + the record. */
@@ -51,6 +65,12 @@ export type SessionValidation =
   | { ok: false; reason: "expired" }
   | { ok: false; reason: "revoked" };
 
+/** Typed outcome of {@link PostgresSessionService.setActiveProfile}. */
+export type SetActiveProfileResult =
+  | { ok: true; session: SessionRecord }
+  | { ok: false; reason: "unknown-token" | "expired" | "revoked" }
+  | { ok: false; reason: "unknown-profile" };
+
 /** Constructor dependencies. */
 export interface SessionServiceOptions {
   readonly db: DbClient;
@@ -65,8 +85,18 @@ export interface SessionServiceOptions {
 /** Default session TTL: 30 days. */
 export const DEFAULT_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1_000;
 
-/** Default token length in bytes (256 bits of entropy). */
+/** Default token length in bytes (256 bits of entropy — the 052 shape). */
 export const SESSION_TOKEN_BYTES = 32;
+
+/** The R02 canonical session-token prefix. */
+export const SESSION_TOKEN_PREFIX = "wfxsess_";
+
+/** Is this a structurally canonical R02 token (`wfxsess_` + ULID body)? */
+export function isCanonicalSessionToken(token: unknown): token is string {
+  if (typeof token !== "string") return false;
+  if (!token.startsWith(SESSION_TOKEN_PREFIX)) return false;
+  return /^[0-7][0-9A-HJKMNP-TV-Z]{25}$/.test(token.slice(SESSION_TOKEN_PREFIX.length));
+}
 
 function hashToken(token: string): string {
   return createHash("sha256").update(token, "utf8").digest("hex");
@@ -79,6 +109,7 @@ interface SessionSqlRow {
   created_at: unknown;
   expires_at: unknown;
   revoked_at: unknown | null;
+  active_profile_id: unknown | null;
 }
 
 function mapSession(row: SessionSqlRow): SessionRecord {
@@ -88,6 +119,10 @@ function mapSession(row: SessionSqlRow): SessionRecord {
     createdAt: toIsoTimestamp(row.created_at),
     expiresAt: toIsoTimestamp(row.expires_at),
     revokedAt: row.revoked_at === null ? null : toIsoTimestamp(row.revoked_at),
+    activeProfileId:
+      row.active_profile_id === null || row.active_profile_id === undefined
+        ? null
+        : String(row.active_profile_id),
   };
 }
 
@@ -104,8 +139,17 @@ export class PostgresSessionService {
     this.ids = options.ids;
     this.clock = options.clock;
     this.ttlMs = options.ttlMs ?? DEFAULT_SESSION_TTL_MS;
-    this.mintToken =
-      options.tokenFactory ?? (() => randomBytes(SESSION_TOKEN_BYTES).toString("base64url"));
+    this.mintToken = options.tokenFactory ?? (() => this.defaultToken());
+  }
+
+  /**
+   * The R02 default mint: `wfxsess_` + ULID body over the INJECTED clock
+   * (crypto-random 80-bit body; in-process monotonic within one clock
+   * instant — two mints never collide). Opaque, not derivable from any
+   * user data.
+   */
+  private defaultToken(): string {
+    return `${SESSION_TOKEN_PREFIX}${generateUlid(this.clock.now())}`;
   }
 
   /**
@@ -122,7 +166,7 @@ export class PostgresSessionService {
       const rows = await this.db.query<SessionSqlRow>(
         `INSERT INTO sessions (id, user_id, token_hash, created_at, expires_at)
          VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, user_id, token_hash, created_at, expires_at, revoked_at`,
+         RETURNING id, user_id, token_hash, created_at, expires_at, revoked_at, active_profile_id`,
         [id, userId, hashToken(token), nowIso, expiresIso],
       );
       const row = rows[0];
@@ -140,7 +184,7 @@ export class PostgresSessionService {
     let row: SessionSqlRow | undefined;
     try {
       const rows = await this.db.query<SessionSqlRow>(
-        `SELECT id, user_id, token_hash, created_at, expires_at, revoked_at
+        `SELECT id, user_id, token_hash, created_at, expires_at, revoked_at, active_profile_id
          FROM sessions WHERE token_hash = $1`,
         [hashToken(token)],
       );
@@ -187,6 +231,48 @@ export class PostgresSessionService {
       return rows.length;
     } catch (thrown) {
       throw classifyDriverError(thrown, "revokeAllSessionsForUser");
+    }
+  }
+
+  /**
+   * R02: select the session's active profile (`PUT /profiles/:id/select`).
+   * OWNERSHIP-CHECKED in the UPDATE itself: the profile row must belong to
+   * the token's user — a session can never select another account's
+   * profile (the honest `unknown-profile` answer covers both unknown ids
+   * and foreign ids — no cross-account probing). A revoked/expired token
+   * answers its typed session failure.
+   */
+  async setActiveProfile(input: {
+    token: string;
+    profileId: string;
+  }): Promise<SetActiveProfileResult> {
+    if (typeof input.profileId !== "string" || input.profileId.length === 0) {
+      // Caller misuse — typed throw (never a SQL error).
+      throw new PersistenceError("invalid-input", "profileId: expected a non-empty string", {
+        operation: "sessions.setActiveProfile",
+      });
+    }
+    const validation = await this.validateSession(input.token);
+    if (!validation.ok) return { ok: false, reason: validation.reason };
+    const session = validation.session;
+
+    try {
+      const rows = await this.db.query<SessionSqlRow>(
+        `UPDATE sessions s SET active_profile_id = $2
+         WHERE s.id = $3
+           AND EXISTS (
+             SELECT 1 FROM profiles p
+             WHERE p.id = $2 AND p.user_id = $1
+           )
+         RETURNING s.id, s.user_id, s.token_hash, s.created_at, s.expires_at,
+                   s.revoked_at, s.active_profile_id`,
+        [session.userId, input.profileId, session.id],
+      );
+      const row = rows[0];
+      if (row === undefined) return { ok: false, reason: "unknown-profile" };
+      return { ok: true, session: mapSession(row) };
+    } catch (thrown) {
+      throw classifyDriverError(thrown, "sessions.setActiveProfile");
     }
   }
 }

@@ -25,14 +25,14 @@
  * closed mirror `@wfx/experience`'s library model uses — one law, shared).
  */
 
-import type { ActionReceipt, LibraryCommand } from "@wfx/domain";
+import type { ActionReceipt, LibraryCommand, LibraryEntry } from "@wfx/domain";
 import { isEntertainmentItemId, previewValue } from "@wfx/domain";
 import type { Unsubscribe } from "@wfx/platform-contracts";
 
 import type { RuntimeClock } from "./runtime-seams";
-import type { ServerFailure, ServerPort } from "./server-port";
+import type { ProfileHistoryEntry, ServerFailure, ServerPort } from "./server-port";
 import type { CanonicalItemRegistry } from "./registry";
-import type { SessionWatchState, WatchStateEngine } from "./watch-state";
+import type { SessionWatchState, SessionWatchStatus, WatchStateEngine } from "./watch-state";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -334,14 +334,72 @@ export class LibraryEngine {
     const includeWatchlist = query?.includeWatchlist !== false;
     const includeHistory = query?.includeHistory !== false;
 
-    const watchlistSection = includeWatchlist
-      ? {
-          status: { state: "ready" as const },
-          entries: [...this.watchlist.values()].sort((a, b) =>
-            a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : a.itemId < b.itemId ? -1 : 1,
-          ),
-        }
-      : { status: { state: "ready" as const }, entries: [] as readonly WatchlistEntry[] };
+    // — R02: hydrate the PROFILE-SCOPED server state (cross-device) —
+    // A failing server read is an ERROR section (never a fake empty one);
+    // the local session state still renders when the server is unreachable.
+    let serverHistory: readonly ProfileHistoryEntry[] = [];
+    let historyError: string | undefined;
+    if (includeHistory) {
+      const result = await this.server.readHistory();
+      if (result.ok) {
+        serverHistory = result.value;
+      } else {
+        historyError = `${result.failure.kind}: ${result.failure.detail}`;
+      }
+    }
+
+    let serverLibrary: readonly LibraryEntry[] = [];
+    let watchlistError: string | undefined;
+    if (includeWatchlist) {
+      const result = await this.server.readProfileLibrary();
+      if (result.ok) {
+        serverLibrary = result.value;
+      } else {
+        watchlistError = `${result.failure.kind}: ${result.failure.detail}`;
+      }
+    }
+
+    // Watchlist: local-first entries (their sync states are local truth) +
+    // server profile entries the local view does not know (cross-device
+    // saves), joined through the canonical registry.
+    const localWatchlist = includeWatchlist
+      ? [...this.watchlist.values()].sort((a, b) =>
+          a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : a.itemId < b.itemId ? -1 : 1,
+        )
+      : ([] as readonly WatchlistEntry[]);
+    const mergedWatchlist: WatchlistEntry[] = [...localWatchlist];
+    if (includeWatchlist) {
+      for (const entry of serverLibrary) {
+        if (typeof entry?.externalRef !== "string" || entry.externalRef.length === 0) continue;
+        const item = this.registry.register({
+          connectorId: entry.connectorId,
+          externalRef: entry.externalRef,
+          title: entry.title ?? entry.externalRef,
+        });
+        if (this.watchlist.has(item.id)) continue; // local-first: local truth wins
+        const metadata = entry.metadata as Record<string, unknown> | undefined;
+        const list = metadata?.list;
+        mergedWatchlist.push({
+          itemId: item.id,
+          title: entry.title ?? entry.externalRef,
+          listName: typeof list === "string" && list.length > 0 ? list : DEFAULT_WATCHLIST_NAME,
+          sync: "synced" as const, // server-sourced: present at the source
+          // A server entry without addedAt renders as discovered-now (the
+          // injected clock — never a fabricated historical instant).
+          savedAt: entry.addedAt ?? new Date(this.clock.now()).toISOString(),
+        });
+      }
+      mergedWatchlist.sort((a, b) =>
+        a.savedAt < b.savedAt ? 1 : a.savedAt > b.savedAt ? -1 : a.itemId < b.itemId ? -1 : 1,
+      );
+    }
+
+    const watchlistSection = {
+      status: watchlistError === undefined
+        ? { state: "ready" as const }
+        : { state: "error" as const, errorDetail: watchlistError },
+      entries: mergedWatchlist,
+    };
 
     if (!includeHistory) {
       return { watchlist: watchlistSection, history: { status: { state: "ready" }, entries: [] } };
@@ -349,16 +407,60 @@ export class LibraryEngine {
 
     // History: the session watch-state fold joined to canonical titles
     // (honest: unregistered items keep their id as the title — never a
-    // fabricated name).
+    // fabricated name), MERGED with the server's profile-scoped history —
+    // the session fold is the freshest local evidence and wins per item;
+    // server-only entries fill the cross-device view.
     const watchStates = this.watch.operations().all();
+    const sessionItemIds = new Set(watchStates.map((state) => state.itemId));
     const historyEntries: HistoryEntry[] = watchStates.map((state) => ({
       itemId: state.itemId,
       title: this.registry.get(state.itemId)?.title ?? state.itemId,
       watch: state,
     }));
+    for (const entry of serverHistory) {
+      if (typeof entry?.itemId !== "string" || entry.itemId.length === 0) continue;
+      if (sessionItemIds.has(entry.itemId)) continue; // session evidence wins
+      historyEntries.push({
+        itemId: entry.itemId,
+        title: this.registry.get(entry.itemId)?.title ?? entry.itemId,
+        watch: serverHistoryToWatchState(entry),
+      });
+    }
+    historyEntries.sort((a, b) => {
+      const aMs = Date.parse(a.watch.lastWatchedAt);
+      const bMs = Date.parse(b.watch.lastWatchedAt);
+      const aTime = Number.isNaN(aMs) ? Number.NEGATIVE_INFINITY : aMs;
+      const bTime = Number.isNaN(bMs) ? Number.NEGATIVE_INFINITY : bMs;
+      return bTime - aTime || (a.itemId < b.itemId ? -1 : a.itemId > b.itemId ? 1 : 0);
+    });
+
     return {
       watchlist: watchlistSection,
-      history: { status: { state: "ready" }, entries: historyEntries },
+      history: {
+        status: historyError === undefined
+          ? { state: "ready" as const }
+          : { state: "error" as const, errorDetail: historyError },
+        entries: historyEntries,
+      },
     };
   }
+}
+
+/**
+ * Project one server history entry into the session watch-state view (the
+ * cross-device hydration of the R01 fold shape — honest: completion is 1
+ * exactly when completed, `null` when the server reports no duration
+ * basis, positions never fabricated).
+ */
+function serverHistoryToWatchState(entry: ProfileHistoryEntry): SessionWatchState {
+  const status: SessionWatchStatus =
+    entry.completed ? "completed" : entry.lastEventType === "skip" ? "skipped" : "in-progress";
+  return {
+    itemId: entry.itemId,
+    lastPositionMs: entry.positionMs,
+    highestPositionMs: entry.positionMs,
+    completionRatio: entry.completed ? 1 : null,
+    lastWatchedAt: entry.updatedAt,
+    status,
+  };
 }

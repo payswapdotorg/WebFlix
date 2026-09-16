@@ -1,5 +1,6 @@
 /**
- * @wfx/client-runtime — ServerPort, the server transport seam (R01).
+ * @wfx/client-runtime — ServerPort, the server transport seam (R01;
+ * R02 profile extension).
  *
  * The runtime NEVER fetches directly: an adapter injects a `ServerPort`
  * implementation (R07's web adapter maps the frozen WFX_API_BASE HTTP
@@ -29,18 +30,37 @@
  * - Identity rides in the port's bound context (the runtime stamps every
  *   emitted event with the session context; adapters map it to headers like
  *   `x-wfx-user-id`/`x-wfx-session-id` — identity never in URLs).
+ *
+ * THE R02 PROFILE EXTENSION (ADD-ONLY — the documented extension the R02
+ * work item authorizes; every R01 member keeps its exact semantics):
+ *
+ * The runtime session carries an ACTIVE PROFILE (`RuntimeContext.profileId`
+ * — optional: anonymous/transition sessions carry none; R07's adapter sets
+ * it from the auth session's selected profile). The port gains PROFILE-AWARE
+ * reads/writes that operate on that active profile's server-side data
+ * (cross-device continuity: any device with the same profile sees the same
+ * history/library/intents/policy). They answer the SAME typed
+ * `ServerResult` failures — never silent degradation. `readLibrary` (the
+ * R01 member) keeps its UNscoped connector-side semantics; the profile-
+ * scoped library read is `readProfileLibrary` (the spec's "readLibrary"
+ * profile-aware read, renamed to honor the ADD-not-reshape law — flagged
+ * for the lead's ratification).
  */
 
 import type {
   ActionReceipt,
   EntertainmentEvent,
+  IntentRecord,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
+  RecommendationPolicy,
   SearchResult,
   SourceItem,
   UserAction,
 } from "@wfx/domain";
+
+import type { RecommendationPolicyCommand, UserIntentCommand } from "./intent";
 
 // ---------------------------------------------------------------------------
 // The typed failure channel
@@ -86,12 +106,20 @@ export type ServerResult<T> =
  * `ConnectorContext` plus `sessionId` (the same shape the frozen transport
  * carries as `x-wfx-*` headers). The runtime stamps every emitted event
  * with it; adapters map it onto their transport's identity channel.
+ *
+ * R02: `profileId` — the ACTIVE PROFILE the session operates as. OPTIONAL:
+ * anonymous/transition sessions carry none (the server resolves its
+ * default-profile fallback); adapters with an authenticated session set it
+ * from the session's selected profile, and every profile-aware ServerPort
+ * operation (below) reads it from HERE — profile ids never appear in URLs
+ * or operation arguments (the same identity law as userId).
  */
 export interface RuntimeContext {
   readonly userId: string;
   readonly sessionId: string;
   readonly locale: string;
   readonly region?: string;
+  readonly profileId?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -139,4 +167,57 @@ export interface ServerPort {
    * watch-state event is never a silent success.
    */
   emitEvent(event: EntertainmentEvent): Promise<ServerResult<void>>;
+
+  // — the R02 profile extension (ADD-ONLY; see the module doc) —
+
+  /**
+   * The ACTIVE profile's watch history, most recently watched first
+   * (cross-device: the server-side fold, not the session fold). Answers the
+   * typed failures — never a fake empty history.
+   */
+  readHistory(): Promise<ServerResult<readonly ProfileHistoryEntry[]>>;
+
+  /**
+   * The ACTIVE profile's server-side library (cross-device saves). The
+   * profile-scoped twin of `readLibrary` (which keeps its R01 connector-side
+   * semantics).
+   */
+  readProfileLibrary(): Promise<ServerResult<readonly LibraryEntry[]>>;
+
+  /** The ACTIVE profile's durable intent records (the frozen shapes). */
+  readIntents(): Promise<ServerResult<readonly IntentRecord[]>>;
+
+  /**
+   * Write one intent to the ACTIVE profile's durable intent set. The
+   * command shape is the runtime's `UserIntentCommand`; the server mints
+   * ids/bookkeeping. Typed failures — never a fabricated success.
+   */
+  writeIntent(intent: UserIntentCommand): Promise<ServerResult<void>>;
+
+  /** The ACTIVE profile's recommendation policy (null when unset). */
+  readPolicy(): Promise<ServerResult<RecommendationPolicy | null>>;
+
+  /**
+   * Write the ACTIVE profile's recommendation policy (attention mode +
+   * dials). Typed failures — never a fabricated success.
+   */
+  writePolicy(policy: RecommendationPolicyCommand): Promise<ServerResult<void>>;
+}
+
+/**
+ * One profile-scoped watch-history entry read from the server (the durable
+ * projection a resume surface hydrates from — the cross-device twin of
+ * the session fold's `SessionWatchState`).
+ */
+export interface ProfileHistoryEntry {
+  /** The canonical entertainment-item id (`wfxitm_…`). */
+  readonly itemId: string;
+  /** Latest known playback position in ms (>= 0). */
+  readonly positionMs: number;
+  /** Monotone completion flag (once true, always true). */
+  readonly completed: boolean;
+  /** The last folded watch-state event type, when the server reports one. */
+  readonly lastEventType: string | null;
+  /** ISO 8601 instant of the latest update (the recency order key). */
+  readonly updatedAt: string;
 }

@@ -107,10 +107,14 @@ afterAll(async () => {
 });
 
 describe("catalog seed — convergence + idempotency (boot-if-empty, never overwrite)", () => {
-  it("the schema baseline is untouched: the migration set re-verifies clean (six)", async () => {
+  it("the schema baseline is untouched: the migration set re-verifies clean (seven)", async () => {
+    // R02 added migration 0007 (profiles + profile scoping — SCHEMA, not
+    // app-owned data; the seed's never-into-the-migration-dir decision
+    // record is about DATA). The re-verify law is unchanged: nothing new
+    // applies, no drift.
     const again = await runMigrations(first.db);
     expect(again.applied).toEqual([]);
-    expect(again.total).toBe(6);
+    expect(again.total).toBe(7);
   });
 
   it("a second seedCatalogIfEmpty pass seeds NOTHING (the never-overwrite law)", async () => {

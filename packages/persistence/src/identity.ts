@@ -1,8 +1,10 @@
 /**
- * @wfx/persistence — the identity service: register + authenticate (WFX-052).
+ * @wfx/persistence — the identity service: register + authenticate (WFX-052;
+ * R02 composes it into the account surface).
  *
- * Real auth, service-function form (the HTTP/cookie layer belongs to the
- * web host in a later wave — this package delivers typed results):
+ * Real auth, service-function form (the HTTP/bearer layer lives in apps/api
+ * — R02 wires register/login/logout/me over THIS service plus the session
+ * and profile services):
  *
  * - REGISTER: validates email shape + password policy, lowercases + trims
  *   the email, hashes the password with scrypt (src/passwords.ts), mints a
@@ -15,6 +17,13 @@
  *   derivation and both answer `{ ok: false, reason: "invalid-credentials" }`
  *   — no user enumeration through timing or through the result shape.
  * - User records handed out NEVER contain the password hash.
+ *
+ * R02 ACCOUNT COMPOSITION (the API layer's job, documented here because
+ * this is the identity home): `POST /auth/register` = register + create the
+ * account's DEFAULT profile + mint the first session token; `POST
+ * /auth/login` = authenticate + ensure the default profile + mint a
+ * session. The lazy default-profile materialization for pre-R02 data lives
+ * in src/profiles.ts (see its module doc).
  *
  * IDs: `wfxusr_` + 26-char ULID body. The frozen contracts treat `userId`
  * as an opaque string; the prefix keeps operator logs self-describing and

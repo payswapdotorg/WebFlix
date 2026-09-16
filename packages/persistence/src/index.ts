@@ -51,10 +51,11 @@ export * from "./errors";
 export * from "./classify";
 export * from "./env";
 
-// Auth: identity, passwords, sessions.
+// Auth: identity, passwords, sessions, profiles.
 export * from "./passwords";
 export * from "./identity";
 export * from "./sessions";
+export * from "./profiles";
 
 // The transactional outbox (domain events).
 export * from "./outbox";

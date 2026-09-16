@@ -53,6 +53,34 @@ resolve / actions / library / events — plus `shorts` for the shorts surface.
 > verbatim: the event-sink exception (a lost watch-state event is never a
 > silent success) and action honesty (never a fabricated success).
 
+### The R02 profile extension (ADD-ONLY)
+
+R02 (identity + profiles) extends the port with PROFILE-AWARE operations
+bound to the session's ACTIVE PROFILE — `RuntimeContext.profileId`
+(optional: anonymous/transition sessions carry none; an adapter with an
+authenticated session sets it from the session's selected profile, and the
+profile id never appears in URLs or operation arguments — the same identity
+law as `userId`):
+
+- `readHistory()` — the active profile's server-side watch history (the
+  cross-device fold; typed failures, never a fake empty history);
+- `readProfileLibrary()` — the active profile's server-side library
+  (cross-device saves). `readLibrary` (R01) keeps its unscoped
+  connector-side semantics — the rename honors the ADD-not-reshape law
+  (flagged for the lead's ratification alongside the R01 item);
+- `readIntents()` / `writeIntent(command)` — the active profile's durable
+  intent set (frozen `IntentRecord` shapes; the server mints ids);
+- `readPolicy()` / `writePolicy(command)` — the active profile's
+  recommendation policy (the frozen `RecommendationPolicy`; `null` when
+  unset).
+
+The `library()` read model hydrates through them: the history section
+merges the session fold (freshest local evidence, wins per item) with the
+server's profile history; the watchlist merges local-first entries with
+cross-device server saves; a failing server read is an ERROR section —
+never a fake empty one. `getHome`'s Continue Watching stays session-local
+(R04/R05 extend it — documented, not silently changed).
+
 ## The semantics (and where their laws are tested)
 
 | Area | Module | Key laws |
@@ -110,18 +138,22 @@ same discipline as the fixtures modules elsewhere; frozen invariant 10).
 
 ## What R02–R09 consume
 
-- **R02 (Identity/profiles):** the `RuntimeContext` (userId/sessionId) is
-  the runtime's identity seam; cross-device continuity keys on it. Server
-  port extensions for profile-scoped reads land in the ServerPort contract
-  (lead-owned).
+- **R02 (Identity/profiles): DELIVERED.** `RuntimeContext.profileId` is the
+  runtime's active-profile seam (optional — anonymous transition sessions
+  carry none); the ServerPort's profile extension (readHistory /
+  readProfileLibrary / readIntents / writeIntent / readPolicy /
+  writePolicy — see above) is the profile-scoped read/write surface. R07's
+  adapter maps them onto the apps/api auth/profile/session endpoints.
 - **R03 (Source management):** settings navigation already carries the
   `sources` section; source capability truth flows through `ActionState`
   and the descriptor's limitation notes.
 - **R04 (Library/history):** the canonical registry is the join point;
-  server-side history hydration extends `ServerPort` (a `readHistory`
-  operation) and feeds the same fold.
+  server-side history hydration extends the R02 `readHistory` operation
+  into the remaining read models (getHome's Continue Watching is the
+  documented next step).
 - **R05 (Recommendation controls):** the intent store + policy view are the
-  client half; the server feed joins `HomeModel`.
+  client half; `readIntents`/`writeIntent`/`readPolicy`/`writePolicy` are
+  the server seam; the server feed joins `HomeModel`.
 - **R07/R08 (Web/Desktop adapters):** construct `PlatformCapabilities`
   bundles + a `ServerPort` implementation, then drive the runtime's
   navigation/playback/watch/library/action/intent surfaces. Honest

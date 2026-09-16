@@ -61,6 +61,7 @@ import { PersistenceError } from "./errors";
 import { buildEnvelope, enqueueEvent } from "./outbox";
 import { PostgresGraphStore } from "./graph";
 import { PostgresLibraryStore } from "./library";
+import { PostgresProfileService } from "./profiles";
 import { epochMsToIso, type DbClient, type SqlClient } from "./sql";
 
 /** The connector id of the WebFlix local catalog source. */
@@ -125,13 +126,15 @@ export class PostgresCatalogConnector implements ConnectorPort {
   private readonly ids: IdGen;
   private readonly graph: PostgresGraphStore;
   private readonly library: PostgresLibraryStore;
+  private readonly profiles: PostgresProfileService;
 
   constructor(options: CatalogConnectorOptions) {
     this.db = options.db;
     this.clock = options.clock;
     this.ids = options.ids;
     this.graph = new PostgresGraphStore(options.db);
-    this.library = new PostgresLibraryStore({ db: options.db, clock: options.clock });
+    this.library = new PostgresLibraryStore({ db: options.db, clock: options.clock, ids: options.ids });
+    this.profiles = new PostgresProfileService({ db: options.db, ids: options.ids, clock: options.clock });
   }
 
   descriptor(): ConnectorDescriptor {
@@ -249,17 +252,22 @@ export class PostgresCatalogConnector implements ConnectorPort {
 
     const nowMs = this.clock.now();
     try {
+      // R02: the frozen ctx carries no profile — resolve the user's
+      // effective profile key (the default-profile fallback) so the save
+      // and its event are attributed.
+      const profileId = await this.profiles.resolveEffectiveProfileKey(ctx.userId);
       await this.db.begin(async (tx: SqlClient) => {
         const itemId = await this.requireItemIdForRef(tx, action.externalRef);
         if (action.type === "save") {
           await this.library.addWithin(tx, {
             userId: ctx.userId,
+            profileId,
             connectorId: WEBFLIX_CATALOG_CONNECTOR_ID,
             command: { op: "add", externalRef: action.externalRef },
           });
         }
         const event = this.actionEvent(ctx.userId, itemId, action);
-        await enqueueEvent(tx, buildEnvelope(event, this.ids), nowMs);
+        await enqueueEvent(tx, buildEnvelope(event, this.ids), nowMs, profileId);
       });
     } catch (thrown) {
       if (isUnknownRef(thrown)) {
@@ -271,12 +279,96 @@ export class PostgresCatalogConnector implements ConnectorPort {
     return { status: "confirmed", occurredAt };
   }
 
+  /**
+   * R02: `executeAction` with an EXPLICIT profile key (a session's active
+   * profile) — the save lands in THAT profile's library and the event is
+   * attributed to it. Semantics otherwise identical to `executeAction`.
+   */
+  async executeActionForProfile(
+    ctx: ConnectorContext,
+    profileId: string,
+    action: UserAction,
+  ): Promise<ActionReceipt> {
+    const occurredAt = epochMsToIso(this.clock.now());
+    if (!isRecord(action) || typeof action.type !== "string") {
+      return {
+        status: "failed",
+        detail: "action: expected a UserAction object",
+        occurredAt,
+      };
+    }
+    if (action.connectorId !== WEBFLIX_CATALOG_CONNECTOR_ID) {
+      return {
+        status: "failed",
+        detail: `action targets connector '${action.connectorId}' but was sent to '${WEBFLIX_CATALOG_CONNECTOR_ID}'`,
+        occurredAt,
+      };
+    }
+    if (!SUPPORTED_ACTION_TYPES.has(action.type as UserAction["type"])) {
+      return {
+        status: "unsupported",
+        detail: `capability for '${action.type}' is not declared by '${WEBFLIX_CATALOG_CONNECTOR_ID}'`,
+        occurredAt,
+      };
+    }
+    if (typeof action.externalRef !== "string" || action.externalRef.length === 0) {
+      return {
+        status: "failed",
+        detail: "action.externalRef: expected a non-empty string",
+        occurredAt,
+      };
+    }
+
+    const nowMs = this.clock.now();
+    try {
+      await this.db.begin(async (tx: SqlClient) => {
+        const itemId = await this.requireItemIdForRef(tx, action.externalRef);
+        if (action.type === "save") {
+          await this.library.addWithin(tx, {
+            userId: ctx.userId,
+            profileId,
+            connectorId: WEBFLIX_CATALOG_CONNECTOR_ID,
+            command: { op: "add", externalRef: action.externalRef },
+          });
+        }
+        const event = this.actionEvent(ctx.userId, itemId, action);
+        await enqueueEvent(tx, buildEnvelope(event, this.ids), nowMs, profileId);
+      });
+    } catch (thrown) {
+      if (isUnknownRef(thrown)) {
+        return { status: "failed", detail: thrown.message, occurredAt };
+      }
+      if (thrown instanceof PersistenceError) throw thrown;
+      throw classifyDriverError(thrown, "catalog.executeActionForProfile");
+    }
+    return { status: "confirmed", occurredAt };
+  }
+
   async readLibrary(ctx: ConnectorContext): Promise<LibraryEntry[]> {
     const entries = await this.library.list(ctx.userId, WEBFLIX_CATALOG_CONNECTOR_ID);
     return [...entries];
   }
 
+  /** R02: the PROFILE-scoped library read (the explicit form). */
+  async readLibraryForProfile(profileId: string): Promise<LibraryEntry[]> {
+    const entries = await this.library.listForProfile(profileId, WEBFLIX_CATALOG_CONNECTOR_ID);
+    return [...entries];
+  }
+
   async writeLibrary(ctx: ConnectorContext, command: LibraryCommand): Promise<ActionReceipt> {
+    const profileId = await this.profiles.resolveEffectiveProfileKey(ctx.userId);
+    return this.writeLibraryForProfile(ctx, profileId, command);
+  }
+
+  /**
+   * R02: `writeLibrary` with an EXPLICIT profile key — the row and its
+   * `"save"` event land in THAT profile's bucket, in one transaction.
+   */
+  async writeLibraryForProfile(
+    ctx: ConnectorContext,
+    profileId: string,
+    command: LibraryCommand,
+  ): Promise<ActionReceipt> {
     const occurredAt = epochMsToIso(this.clock.now());
     if (command.op !== "add" && command.op !== "remove") {
       return {
@@ -301,6 +393,7 @@ export class PostgresCatalogConnector implements ConnectorPort {
           const itemId = await this.requireItemIdForRef(tx, command.externalRef);
           await this.library.addWithin(tx, {
             userId: ctx.userId,
+            profileId,
             connectorId: WEBFLIX_CATALOG_CONNECTOR_ID,
             command,
           });
@@ -308,6 +401,7 @@ export class PostgresCatalogConnector implements ConnectorPort {
             tx,
             buildEnvelope(this.saveEvent(ctx.userId, itemId), this.ids),
             nowMs,
+            profileId,
           );
         });
         return { status: "confirmed", occurredAt };
@@ -317,6 +411,7 @@ export class PostgresCatalogConnector implements ConnectorPort {
       // event type exists in the frozen vocabulary).
       const removed = await this.library.removeWithin(this.db, {
         userId: ctx.userId,
+        profileId,
         connectorId: WEBFLIX_CATALOG_CONNECTOR_ID,
         externalRef: command.externalRef,
       });

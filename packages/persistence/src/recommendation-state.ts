@@ -1,7 +1,9 @@
 /**
- * @wfx/persistence — the recommendation-state store (WFX-052).
+ * @wfx/persistence — the recommendation-state store (WFX-052; R02
+ * profile scoping).
  *
- * Migration 0004's `recommendation_state`: ONE row per user holding
+ * The `recommendation_state` table (over the migration-0007 profile-scoped
+ * key): ONE row per EFFECTIVE PROFILE holding
  *
  * - the frozen `RecommendationPolicy` (jsonb, validated with the domain's
  *   `validatePolicy` on write and on read — the policy is user-controlled by
@@ -9,17 +11,23 @@
  *   silently accepted fake policy), and
  * - an OPAQUE engine-state blob (jsonb). The Recommendation OS
  *   (`@wfx/recommendation`) is pure and stateless by design; whatever
- *   per-user engine state a later wave chooses to persist (fatigue
+ *   per-profile engine state a later wave chooses to persist (fatigue
  *   accumulators, telemetry aggregates) round-trips verbatim here. This
  *   module never interprets the blob.
+ *
+ * The LEGACY API (`save`/`load` keyed by userId) resolves the effective
+ * profile key first (the default-profile fallback); the R02 profile-aware
+ * forms (`saveForProfile`/`loadForProfile`) take the profile key
+ * explicitly. `userId` remains on the row (the frozen policy carries it).
  */
 
 import { validatePolicy, type RecommendationPolicy } from "@wfx/domain";
 
 import { classifyDriverError } from "./classify";
 import { PersistenceError } from "./errors";
+import { PostgresProfileService } from "./profiles";
 import { epochMsToIso, toIsoTimestamp, type DbClient } from "./sql";
-import type { Clock } from "@wfx/experience";
+import type { Clock, IdGen } from "@wfx/experience";
 
 /** What one user's recommendation state row contains. */
 export interface RecommendationState {
@@ -40,10 +48,16 @@ export interface LoadedRecommendationState {
 export interface RecommendationStateStoreOptions {
   readonly db: DbClient;
   readonly clock: Clock;
+  /** R02: the id seam (profile materialization for registered users). */
+  readonly ids?: IdGen;
 }
+
+/** The migration-0007 effective-profile key expression (single source). */
+const EFFECTIVE_PROFILE = `COALESCE(profile_id, 'user:' || user_id)`;
 
 interface StateSqlRow {
   user_id: string;
+  profile_id: unknown | null;
   policy: unknown;
   state: unknown;
   updated_at: unknown;
@@ -53,24 +67,47 @@ interface StateSqlRow {
 export class PostgresRecommendationStateStore {
   private readonly db: DbClient;
   private readonly clock: Clock;
+  private readonly profiles: PostgresProfileService;
 
   constructor(options: RecommendationStateStoreOptions) {
     this.db = options.db;
     this.clock = options.clock;
+    this.profiles = new PostgresProfileService({
+      db: options.db,
+      ...(options.ids !== undefined ? { ids: options.ids } : {}),
+      clock: options.clock,
+    });
   }
 
   /**
-   * Upsert one user's policy + opaque engine state in a single row write.
-   * The policy is validated with the domain validator (typed invalid-input
-   * on drift); the state blob only needs to be a JSON object.
+   * Upsert one user's policy + opaque engine state (the LEGACY,
+   * userId-resolved form — effective-profile key). The policy is validated
+   * with the domain validator (typed invalid-input on drift); the state
+   * blob only needs to be a JSON object.
    */
   async save(input: {
     userId: string;
     policy: RecommendationPolicy;
     state?: Record<string, unknown>;
   }): Promise<RecommendationState> {
+    const profileId = await this.profiles.resolveEffectiveProfileKey(input.userId);
+    return this.saveForProfile({ ...input, profileId });
+  }
+
+  /** R02: the profile-explicit upsert — one row per effective profile. */
+  async saveForProfile(input: {
+    userId: string;
+    profileId: string;
+    policy: RecommendationPolicy;
+    state?: Record<string, unknown>;
+  }): Promise<RecommendationState> {
     if (typeof input.userId !== "string" || input.userId.length === 0) {
       throw new PersistenceError("invalid-input", "userId: expected a non-empty string", {
+        operation: "recommendationState.save",
+      });
+    }
+    if (typeof input.profileId !== "string" || input.profileId.length === 0) {
+      throw new PersistenceError("invalid-input", "profileId: expected a non-empty string", {
         operation: "recommendationState.save",
       });
     }
@@ -91,15 +128,17 @@ export class PostgresRecommendationStateStore {
     const nowIso = epochMsToIso(this.clock.now());
     try {
       const rows = await this.db.query<StateSqlRow>(
-        `INSERT INTO recommendation_state (user_id, policy, state, updated_at)
-         VALUES ($1, $2::jsonb, $3::jsonb, $4)
-         ON CONFLICT (user_id) DO UPDATE SET
+        `INSERT INTO recommendation_state (user_id, profile_id, policy, state, updated_at)
+         VALUES ($1, $2, $3::jsonb, $4::jsonb, $5)
+         ON CONFLICT (${EFFECTIVE_PROFILE}) DO UPDATE SET
            policy = EXCLUDED.policy,
            state = EXCLUDED.state,
-           updated_at = EXCLUDED.updated_at
+           updated_at = EXCLUDED.updated_at,
+           profile_id = EXCLUDED.profile_id
          RETURNING *`,
         [
           input.userId,
+          input.profileId,
           JSON.stringify(input.policy),
           JSON.stringify(input.state ?? {}),
           nowIso,
@@ -114,16 +153,23 @@ export class PostgresRecommendationStateStore {
   }
 
   /**
-   * Load one user's state. `found: false` (state null) when no row exists —
-   * a query, not an error. A stored policy that no longer validates is a
-   * TYPED failure (schema drift is an incident, not a silent default).
+   * Load one user's state (the LEGACY, userId-resolved form).
+   * `found: false` (state null) when no row exists — a query, not an error.
+   * A stored policy that no longer validates is a TYPED failure (schema
+   * drift is an incident, not a silent default).
    */
   async load(userId: string): Promise<LoadedRecommendationState> {
+    const profileId = await this.profiles.resolveEffectiveProfileKey(userId);
+    return this.loadForProfile(profileId);
+  }
+
+  /** R02: load one PROFILE's state (same laws as `load`). */
+  async loadForProfile(profileId: string): Promise<LoadedRecommendationState> {
     let row: StateSqlRow | undefined;
     try {
       const rows = await this.db.query<StateSqlRow>(
-        `SELECT * FROM recommendation_state WHERE user_id = $1`,
-        [userId],
+        `SELECT * FROM recommendation_state WHERE ${EFFECTIVE_PROFILE} = $1`,
+        [profileId],
       );
       row = rows[0];
     } catch (thrown) {
