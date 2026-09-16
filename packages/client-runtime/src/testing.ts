@@ -17,9 +17,11 @@
 import type {
   ActionReceipt,
   EntertainmentEvent,
+  IntentRecord,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
+  RecommendationPolicy,
   SearchResult,
   SourceItem,
   UserAction,
@@ -58,7 +60,13 @@ import type {
 } from "@wfx/platform-contracts";
 
 import type { RuntimeClock, RuntimeIdGen } from "./runtime-seams";
-import type { ServerFailure, ServerPort, ServerResult } from "./server-port";
+import type {
+  ProfileHistoryEntry,
+  ServerFailure,
+  ServerPort,
+  ServerResult,
+} from "./server-port";
+import type { RecommendationPolicyCommand, UserIntentCommand } from "./intent";
 
 // ---------------------------------------------------------------------------
 // Clock + id doubles
@@ -110,7 +118,9 @@ export type ScriptedServerAnswer<T> =
 /**
  * The in-memory ServerPort double: programmable answers per operation,
  * failure injection, and the emitted-event log (for at-least-once and
- * redelivery assertions). TESTING ONLY.
+ * redelivery assertions). Implements the FULL port INCLUDING the R02
+ * profile-aware reads (programmable + logged — see `intentWrites`,
+ * `policyWrites`). TESTING ONLY.
  */
 export class InMemoryServerPort implements ServerPort {
   readonly serviceId = "in-memory-test-service";
@@ -122,10 +132,20 @@ export class InMemoryServerPort implements ServerPort {
   private readonly actionAnswers: ScriptedServerAnswer<ActionReceipt>[] = [];
   private readonly libraryReadAnswers: ScriptedServerAnswer<readonly LibraryEntry[]>[] = [];
   private readonly libraryWriteAnswers: ScriptedServerAnswer<ActionReceipt>[] = [];
+  private readonly historyAnswers: ScriptedServerAnswer<readonly ProfileHistoryEntry[]>[] = [];
+  private readonly profileLibraryAnswers: ScriptedServerAnswer<readonly LibraryEntry[]>[] = [];
+  private readonly intentsReadAnswers: ScriptedServerAnswer<readonly IntentRecord[]>[] = [];
+  private readonly intentWriteAnswers: ScriptedServerAnswer<void>[] = [];
+  private readonly policyReadAnswers: ScriptedServerAnswer<RecommendationPolicy | null>[] = [];
+  private readonly policyWriteAnswers: ScriptedServerAnswer<void>[] = [];
   private emitFailures: ServerFailure[] = [];
 
   /** Every event the port accepted, in delivery order (duplicates visible). */
   readonly emittedEvents: EntertainmentEvent[] = [];
+  /** Every intent command the port accepted (R02 assertion surface). */
+  readonly intentWrites: UserIntentCommand[] = [];
+  /** Every policy command the port accepted (R02 assertion surface). */
+  readonly policyWrites: RecommendationPolicyCommand[] = [];
 
   // — scripting —
 
@@ -155,6 +175,36 @@ export class InMemoryServerPort implements ServerPort {
 
   scriptLibraryWrite(answer: ScriptedServerAnswer<ActionReceipt>): void {
     this.libraryWriteAnswers.push(answer);
+  }
+
+  /** R02: script the next profile-scoped history read(s). */
+  scriptHistoryRead(answer: ScriptedServerAnswer<readonly ProfileHistoryEntry[]>): void {
+    this.historyAnswers.push(answer);
+  }
+
+  /** R02: script the next profile-scoped library read(s). */
+  scriptProfileLibraryRead(answer: ScriptedServerAnswer<readonly LibraryEntry[]>): void {
+    this.profileLibraryAnswers.push(answer);
+  }
+
+  /** R02: script the next profile-scoped intents read(s). */
+  scriptIntentsRead(answer: ScriptedServerAnswer<readonly IntentRecord[]>): void {
+    this.intentsReadAnswers.push(answer);
+  }
+
+  /** R02: script the next intent write answer(s). */
+  scriptIntentWrite(answer: ScriptedServerAnswer<void>): void {
+    this.intentWriteAnswers.push(answer);
+  }
+
+  /** R02: script the next policy read answer(s) (null = unset policy). */
+  scriptPolicyRead(answer: ScriptedServerAnswer<RecommendationPolicy | null>): void {
+    this.policyReadAnswers.push(answer);
+  }
+
+  /** R02: script the next policy write answer(s). */
+  scriptPolicyWrite(answer: ScriptedServerAnswer<void>): void {
+    this.policyWriteAnswers.push(answer);
   }
 
   /** Queue the NEXT emitEvent failure(s); an empty queue accepts. */
@@ -211,6 +261,47 @@ export class InMemoryServerPort implements ServerPort {
     const failure = this.emitFailures.shift();
     if (failure !== undefined) return { ok: false, failure };
     this.emittedEvents.push(event);
+    return { ok: true, value: undefined };
+  }
+
+  // — the R02 profile extension (unscripted reads answer honest empty
+  // defaults; writes log + answer ok, exactly like the R01 double's law) —
+
+  async readHistory(): Promise<ServerResult<readonly ProfileHistoryEntry[]>> {
+    const scripted = this.historyAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: [] };
+  }
+
+  async readProfileLibrary(): Promise<ServerResult<readonly LibraryEntry[]>> {
+    const scripted = this.profileLibraryAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: [] };
+  }
+
+  async readIntents(): Promise<ServerResult<readonly IntentRecord[]>> {
+    const scripted = this.intentsReadAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: [] };
+  }
+
+  async writeIntent(intent: UserIntentCommand): Promise<ServerResult<void>> {
+    this.intentWrites.push(intent);
+    const scripted = this.intentWriteAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: undefined };
+  }
+
+  async readPolicy(): Promise<ServerResult<RecommendationPolicy | null>> {
+    const scripted = this.policyReadAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: null };
+  }
+
+  async writePolicy(policy: RecommendationPolicyCommand): Promise<ServerResult<void>> {
+    this.policyWrites.push(policy);
+    const scripted = this.policyWriteAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
     return { ok: true, value: undefined };
   }
 }

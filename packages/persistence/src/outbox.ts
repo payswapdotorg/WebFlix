@@ -59,6 +59,12 @@ export interface EventOutboxRow {
   readonly itemId: string;
   readonly eventType: string;
   readonly envelope: EventEnvelope;
+  /**
+   * R02: the profile the event is attributed to at INGEST (the emitting
+   * session's active profile). NULL = legacy/anonymous ingest — the relay
+   * resolves the user's effective profile at delivery time.
+   */
+  readonly profileId: string | null;
   readonly status: EventOutboxStatus;
   readonly attempts: number;
   readonly nextAttemptAt: string;
@@ -100,6 +106,18 @@ export class PostgresEventSink implements EventSink {
     const envelope = buildEnvelope(event, this.ids);
     await enqueueEvent(this.db, envelope, this.clock.now());
   }
+
+  /**
+   * R02: emit with PROFILE ATTRIBUTION — the outbox row records the
+   * profile the event belongs to (the emitting session's active profile),
+   * so the relay folds it into THAT profile's watch history instead of
+   * the default-profile fallback. Additive: `emit` (the frozen `EventSink`
+   * seam) keeps its exact semantics.
+   */
+  async emitForProfile(event: EntertainmentEvent, profileId: string): Promise<void> {
+    const envelope = buildEnvelope(event, this.ids);
+    await enqueueEvent(this.db, envelope, this.clock.now(), profileId);
+  }
 }
 
 /**
@@ -128,18 +146,20 @@ export function buildEnvelope(event: EntertainmentEvent, ids: IdGen): EventEnvel
  * Insert an envelope row into `event_outbox` USING THE CALLER'S
  * transaction handle — the transactional-outbox write side. Call this
  * inside the same `db.begin` block as the state change it describes.
+ * `profileId` (R02, optional): the profile the event is attributed to.
  */
 export async function enqueueEvent(
   tx: SqlClient,
   envelope: EventEnvelope,
   nowMs: number,
+  profileId?: string,
 ): Promise<void> {
   const nowIso = epochMsToIso(nowMs);
   try {
     await tx.query(
       `INSERT INTO event_outbox
-         (id, user_id, item_id, event_type, envelope, status, attempts, next_attempt_at, created_at)
-       VALUES ($1, $2, $3, $4, $5::jsonb, 'pending', 0, $6, $6)`,
+         (id, user_id, item_id, event_type, envelope, status, attempts, next_attempt_at, created_at, profile_id)
+       VALUES ($1, $2, $3, $4, $5::jsonb, 'pending', 0, $6, $6, $7)`,
       [
         envelope.eventId,
         envelope.event.userId,
@@ -147,6 +167,7 @@ export async function enqueueEvent(
         envelope.event.type,
         JSON.stringify(envelope),
         nowIso,
+        profileId ?? null,
       ],
     );
   } catch (thrown) {
@@ -164,6 +185,7 @@ interface OutboxSqlRow {
   item_id: string;
   event_type: string;
   envelope: unknown;
+  profile_id: unknown | null;
   status: string;
   attempts: number;
   next_attempt_at: unknown;
@@ -180,6 +202,10 @@ function mapRow(row: OutboxSqlRow): EventOutboxRow {
     itemId: row.item_id,
     eventType: row.event_type,
     envelope: row.envelope as EventEnvelope,
+    profileId:
+      row.profile_id === null || row.profile_id === undefined
+        ? null
+        : String(row.profile_id),
     status: row.status as EventOutboxStatus,
     attempts: Number(row.attempts),
     nextAttemptAt: toIsoTimestamp(row.next_attempt_at),
@@ -194,8 +220,21 @@ function mapRow(row: OutboxSqlRow): EventOutboxRow {
 // The relay
 // ---------------------------------------------------------------------------
 
-/** Deliverer invoked once per claimed envelope. Rejecting = retry/fail path. */
-export type OutboxDeliverer = (envelope: EventEnvelope) => Promise<void>;
+/** The delivery context handed to a deliverer alongside the envelope. */
+export interface OutboxDeliveryContext {
+  /** R02: the row's ingest-time profile attribution (null = legacy/anonymous). */
+  readonly profileId: string | null;
+}
+
+/**
+ * Deliverer invoked once per claimed envelope. Implementations may ignore
+ * the R02 delivery context (a one-parameter function remains assignable —
+ * the additive law).
+ */
+export type OutboxDeliverer = (
+  envelope: EventEnvelope,
+  context: OutboxDeliveryContext,
+) => Promise<void>;
 
 /** Options for `drainEventOutbox`. */
 export interface DrainEventOutboxOptions {
@@ -260,7 +299,7 @@ export async function drainEventOutbox(
          LIMIT $2
          FOR UPDATE SKIP LOCKED
        )
-       RETURNING id, user_id, item_id, event_type, envelope, status, attempts,
+       RETURNING id, user_id, item_id, event_type, envelope, profile_id, status, attempts,
                  next_attempt_at, created_at, claimed_at, delivered_at, last_error`,
       [nowIso, limit],
     );
@@ -275,7 +314,7 @@ export async function drainEventOutbox(
   for (const sqlRow of claimedRows) {
     const row = mapRow(sqlRow);
     try {
-      await options.deliver(row.envelope);
+      await options.deliver(row.envelope, { profileId: row.profileId });
     } catch (thrown) {
       const detail = thrown instanceof Error ? `${thrown.name}: ${thrown.message}` : String(thrown);
       if (row.attempts >= maxAttempts) {
@@ -364,7 +403,7 @@ export async function listOutboxRowsForUser(
 ): Promise<readonly EventOutboxRow[]> {
   try {
     const rows = await db.query<OutboxSqlRow>(
-      `SELECT id, user_id, item_id, event_type, envelope, status, attempts,
+      `SELECT id, user_id, item_id, event_type, envelope, profile_id, status, attempts,
               next_attempt_at, created_at, claimed_at, delivered_at, last_error
        FROM event_outbox
        WHERE user_id = $1

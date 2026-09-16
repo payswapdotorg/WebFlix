@@ -46,12 +46,63 @@ There is **no fixture fallback**: `WFX_DEV_FIXTURES` is a web-host concern
 | `0004_intents_and_recommendation` | `user_intents`, `recommendation_state` |
 | `0005_connector_accounts` | `connector_accounts` (envelope-encrypted credentials) |
 | `0006_event_outbox` | `event_outbox` |
+| `0007_profiles` (R02) | `profiles`; `sessions.active_profile_id`; `profile_id` scoping on `watch_history` / `library_entries` / `user_intents` / `recommendation_state` / `event_outbox` |
 
 Runner laws (src/migrations.ts): files are applied in lexicographic order,
 each inside ONE transaction together with its `persistence_migrations`
 bookkeeping insert; re-runs verify checksums and apply nothing; an applied
 file whose content changed is a `MigrationError` (forward-only contract —
 fix drift with a NEW migration). No down path, by design.
+
+## Identity + profiles (R02 — identity and profiles)
+
+Server-side identity replacing the anonymous stopgap, with profile
+selection, profile-scoped data, and cross-device continuity:
+
+- **Accounts** (`src/identity.ts`): register/authenticate (scrypt, typed
+  results, no user enumeration). User records NEVER contain the hash.
+- **Sessions** (`src/sessions.ts`): opaque `wfxsess_` + ULID tokens —
+  timestamp-first, crypto-random body, NOT derivable from user data —
+  returned EXACTLY ONCE, stored ONLY as SHA-256 hashes (UNIQUE), expiry
+  checked against the injected clock, revocation an idempotent
+  `revoked_at` stamp, `revokeAllSessionsForUser` = sign-out-everywhere.
+  The 052 raw-32-byte shape remains VALIDATABLE (stored hashes never
+  expire early); only new mints use the R02 shape.
+- **Profiles** (`src/profiles.ts`): `wfxprof_` records per user with ONE
+  designated default (a partial unique index makes it structural).
+  `sessions.active_profile_id` is the session's current selection
+  (`setActiveProfile` — ownership-checked in the UPDATE itself: another
+  account's profile is the same honest `unknown-profile` as an unknown id).
+- **The effective profile key** (`resolveEffectiveProfileKey`): what every
+  profile-scoped read/write resolves first — (1) the user's default
+  profile id once one exists; (2) a freshly MATERIALIZED default for a
+  registered user with none yet (the LAZY LEGACY MIGRATION: the profile
+  insert and the attribution of the user's pre-R02 `profile_id IS NULL`
+  rows across `watch_history` / `library_entries` / `user_intents` /
+  `recommendation_state` commit together); (3) the deterministic pseudo
+  key `'user:' + userId` for ids that are not registered accounts (the
+  anonymous stopgap — NO row is created; migration 0007's COALESCE
+  indexes keep legacy NULL rows readable AND upsertable under exactly
+  this key, so pre-R02 behavior is preserved bit-for-bit).
+- **Profile scoping**: `watch_history`, `library_entries`, `user_intents`,
+  and `recommendation_state` key on
+  `(COALESCE(profile_id, 'user:' || user_id), <old key columns>)` — the
+  SAME expression in the unique indexes, the reads, and the upserts. Two
+  profiles of one user watching/saving the SAME item produce two
+  ISOLATED rows. The LEGACY store APIs (`record`/`list`/`get`/`save`/
+  `load`/`upsertIntent`/`listForUser`, keyed by userId) resolve the
+  effective key internally — pre-R02 callers keep their behavior — while
+  the profile-explicit forms (`*ForProfile`) take the key directly.
+- **Event attribution**: `enqueueEvent`/`PostgresEventSink.emitForProfile`
+  stamp the ACTIVE profile on the outbox ROW at ingest (the frozen
+  `EntertainmentEvent` shape is never edited); the relay's fold uses the
+  row's attribution, falling back to the effective profile for legacy /
+  anonymous (NULL) rows.
+- **Cross-device continuity**: all of the above is server-side state keyed
+  to real profile ids — any device holding a valid session token resolves
+  the same profile and sees the same history/library/intents/policy
+  (the continuity tests prove it: two sessions, one profile, shared watch
+  state).
 
 ## The transactional outbox (and its AT-LEAST-ONCE contract)
 
@@ -76,7 +127,7 @@ initially."* The `event_outbox` table is the durable half for domain events
   canonical `wfxevt_` id is the natural downstream dedupe key. Exactly-once
   is not claimed and not faked.
 
-## Auth (service functions; the HTTP/cookie layer is a later wave)
+## Auth (service functions; the HTTP/bearer layer is apps/api — R02)
 
 - **Passwords:** scrypt (N=16384, r=8, p=1, 64-byte key, 16-byte salt,
   `maxmem` raised) stored as `scrypt$N$r$p$salt$hash`; verification is
@@ -84,11 +135,16 @@ initially."* The `event_outbox` table is the durable half for domain events
   Unknown-email and wrong-password both burn one scrypt derivation and both
   answer `{ ok: false, reason: "invalid-credentials" }` (no user
   enumeration, via `DUMMY_PASSWORD_HASH` timing equalization).
-- **Sessions:** 32-byte `crypto.randomBytes` opaque tokens, returned exactly
-  once, stored ONLY as SHA-256 hashes (unique). Expiry is checked against
-  the injected clock; revocation is an idempotent `revoked_at` timestamp;
-  `revokeAllSessionsForUser` gives sign-out-everywhere. Typed outcomes:
-  `unknown-token` / `expired` / `revoked`.
+- **Sessions:** opaque `wfxsess_` + ULID tokens (R02; the 052 32-byte shape
+  remains validatable), returned exactly once, stored ONLY as SHA-256
+  hashes (unique). Expiry is checked against the injected clock; revocation
+  is an idempotent `revoked_at` timestamp; `revokeAllSessionsForUser`
+  gives sign-out-everywhere. Typed outcomes: `unknown-token` / `expired` /
+  `revoked` (plus `unknown-profile` from `setActiveProfile`).
+- **Profiles:** one designated default per user (structural), lazy
+  materialization + legacy-row attribution for registered users, the
+  `'user:' + userId` pseudo bucket for unregistered ids (the anonymous
+  transition) — see "Identity + profiles (R02)" above.
 
 ## Credentials at rest
 

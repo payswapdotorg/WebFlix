@@ -1,14 +1,22 @@
 /**
- * @wfx/persistence — the durable intent store (WFX-052).
+ * @wfx/persistence — the durable intent store (WFX-052; R02 profile
+ * scoping).
  *
- * Migration 0004's `user_intents` table storing the frozen `UserIntent` plus
- * the `IntentRecord` bookkeeping columns (WFX-011): createdAt / updatedAt /
- * lastReinforcedAt / evidenceCount. The store ROUND-TRIPS records verbatim:
- * weight/confidence decay, snapshot liveness, and the create-or-reinforce
- * law are DOMAIN logic (`@wfx/domain` IntentGraph) — recomputing them here
- * would be provider logic leaking into persistence. Identity is the frozen
- * triple (userId, scope, objective), enforced UNIQUE by the table: the
- * upsert keeps the record's canonical `wfxint_` id stable across merges.
+ * Migration 0004's `user_intents` table (over the migration-0007
+ * profile-scoped key) storing the frozen `UserIntent` plus the
+ * `IntentRecord` bookkeeping columns (WFX-011). The store ROUND-TRIPS
+ * records verbatim: weight/confidence decay, snapshot liveness, and the
+ * create-or-reinforce law are DOMAIN logic (`@wfx/domain` IntentGraph) —
+ * recomputing them here would be provider logic leaking into persistence.
+ * Identity is the frozen triple (scope, objective) PER EFFECTIVE PROFILE
+ * (`(COALESCE(profile_id, 'user:' || user_id), scope, objective)` — what
+ * migration 0007 indexes), enforced UNIQUE by the table: the upsert keeps
+ * the record's canonical `wfxint_` id stable across merges.
+ *
+ * The LEGACY API (`upsertIntent`/`listForUser` keyed by userId) resolves
+ * the effective profile key first (the default-profile fallback); the R02
+ * profile-aware forms (`upsertIntentForProfile`/`listForProfile`) take the
+ * profile key explicitly.
  */
 
 import {
@@ -20,8 +28,11 @@ import {
   type IntentRecord,
 } from "@wfx/domain";
 
+import type { Clock, IdGen } from "@wfx/experience";
+
 import { classifyDriverError } from "./classify";
 import { PersistenceError } from "./errors";
+import { PostgresProfileService } from "./profiles";
 import { toIsoTimestamp, type DbClient } from "./sql";
 
 /** A stored intent record (frozen UserIntent + bookkeeping), ISO timestamps. */
@@ -85,6 +96,7 @@ export function validateIntentRecordInput(input: IntentUpsertInput): readonly st
 interface IntentSqlRow {
   id: string;
   user_id: string;
+  profile_id: unknown | null;
   scope: string;
   objective: string;
   weight: number;
@@ -120,25 +132,63 @@ function mapIntent(row: IntentSqlRow): PersistedIntent {
 /** Constructor dependencies. */
 export interface IntentStoreOptions {
   readonly db: DbClient;
+  /** R02: profile-resolution seams (pass in any materializing path). */
+  readonly ids?: IdGen;
+  readonly clock?: Clock;
 }
+
+/** The migration-0007 effective-profile key expression (single source). */
+const EFFECTIVE_PROFILE = `COALESCE(profile_id, 'user:' || user_id)`;
 
 /** The durable intent store. */
 export class PostgresIntentStore {
   private readonly db: DbClient;
+  private readonly profiles: PostgresProfileService;
 
   constructor(options: IntentStoreOptions) {
     this.db = options.db;
+    this.profiles = new PostgresProfileService({
+      db: options.db,
+      ...(options.ids !== undefined ? { ids: options.ids } : {}),
+      ...(options.clock !== undefined ? { clock: options.clock } : {}),
+    });
   }
 
   /**
    * Insert or merge-update one intent keyed by the frozen identity triple
-   * (userId, scope, objective). On conflict the incoming record's values win
-   * (the domain layer decides WHAT the merged record is; the store persists
-   * it) and the canonical `wfxint_` id stays the one already stored — stable
-   * identity, exactly like graph realizations.
+   * (scope, objective) PER EFFECTIVE PROFILE (the legacy, userId-resolved
+   * form). On conflict the incoming record's values win (the domain layer
+   * decides WHAT the merged record is; the store persists it) and the
+   * canonical `wfxint_` id stays the one already stored — stable identity,
+   * exactly like graph realizations.
    */
   async upsertIntent(input: IntentUpsertInput): Promise<PersistedIntent> {
-    const problems = validateIntentRecordInput(input);
+    // Validate the record FIRST: a malformed record is caller misuse and
+    // must answer the typed invalid-input (operation "upsertIntent") BEFORE
+    // any profile resolution touches the database.
+    const problems = [...validateIntentRecordInput(input)];
+    if (problems.length > 0) {
+      throw new PersistenceError("invalid-input", `intent: ${problems.join("; ")}`, {
+        operation: "upsertIntent",
+      });
+    }
+    const profileId = await this.profiles.resolveEffectiveProfileKey(input.userId);
+    return this.upsertIntentForProfile(input, profileId);
+  }
+
+  /**
+   * R02: the profile-explicit upsert — the effective profile key is the
+   * caller's (a session's active profile, a resolved default, or the
+   * legacy pseudo bucket).
+   */
+  async upsertIntentForProfile(
+    input: IntentUpsertInput,
+    profileId: string,
+  ): Promise<PersistedIntent> {
+    const problems = [...validateIntentRecordInput(input)];
+    if (typeof profileId !== "string" || profileId.length === 0) {
+      problems.push("profileId: expected a non-empty string");
+    }
     if (problems.length > 0) {
       throw new PersistenceError("invalid-input", `intent: ${problems.join("; ")}`, {
         operation: "upsertIntent",
@@ -146,22 +196,24 @@ export class PostgresIntentStore {
     }
     try {
       const rows = await this.db.query<IntentSqlRow>(
-        `INSERT INTO user_intents (id, user_id, scope, objective, weight, confidence, provenance,
+        `INSERT INTO user_intents (id, user_id, profile_id, scope, objective, weight, confidence, provenance,
                                    expires_at, created_at, updated_at, last_reinforced_at,
                                    evidence_count)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-         ON CONFLICT (user_id, scope, objective) DO UPDATE SET
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+         ON CONFLICT (${EFFECTIVE_PROFILE}, scope, objective) DO UPDATE SET
            weight = EXCLUDED.weight,
            confidence = EXCLUDED.confidence,
            provenance = EXCLUDED.provenance,
            expires_at = EXCLUDED.expires_at,
            updated_at = EXCLUDED.updated_at,
            last_reinforced_at = EXCLUDED.last_reinforced_at,
-           evidence_count = EXCLUDED.evidence_count
+           evidence_count = EXCLUDED.evidence_count,
+           profile_id = EXCLUDED.profile_id
          RETURNING *`,
         [
           input.id,
           input.userId,
+          profileId,
           input.scope,
           input.objective,
           input.weight,
@@ -182,16 +234,22 @@ export class PostgresIntentStore {
     }
   }
 
-  /** The user's intents, heaviest first (id ascending as tiebreak). */
+  /** The user's intents (effective-profile resolved), heaviest first (id ascending as tiebreak). */
   async listForUser(userId: string): Promise<readonly PersistedIntent[]> {
+    const profileId = await this.profiles.resolveEffectiveProfileKey(userId);
+    return this.listForProfile(profileId);
+  }
+
+  /** R02: one PROFILE's intents, heaviest first (id ascending as tiebreak). */
+  async listForProfile(profileId: string): Promise<readonly PersistedIntent[]> {
     try {
       const rows = await this.db.query<IntentSqlRow>(
-        `SELECT * FROM user_intents WHERE user_id = $1 ORDER BY weight DESC, id ASC`,
-        [userId],
+        `SELECT * FROM user_intents WHERE ${EFFECTIVE_PROFILE} = $1 ORDER BY weight DESC, id ASC`,
+        [profileId],
       );
       return rows.map(mapIntent);
     } catch (thrown) {
-      throw classifyDriverError(thrown, "listForUser");
+      throw classifyDriverError(thrown, "listForProfile");
     }
   }
 

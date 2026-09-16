@@ -1,8 +1,17 @@
 /**
- * @wfx/app-api — `POST /experience/actions` (WFX-055A transport contract).
+ * @wfx/app-api — `POST /experience/actions` (WFX-055A transport contract;
+ * R02: profile scoping).
  *
  * Body: a `UserAction` JSON object → `ActionReceipt`.
  * Identity rides as headers (see `host/identity.ts`).
+ *
+ * R02 — THE SESSION UPGRADE (the anonymous transition preserved): with
+ * `Authorization: Bearer wfxsess_…`, the action executes PROFILE-SCOPED to
+ * the session's active profile (a `save` lands in THAT profile's library;
+ * the action's event is attributed to it). Anonymous requests keep the
+ * exact pre-R02 behavior (the default-profile fallback resolves inside the
+ * persistence layer). A presented-but-malformed Authorization is a 401;
+ * both channels present must agree.
  *
  * Typed 400s for garbage bodies (one answer naming every problem); a
  * well-formed but UNROUTABLE action (unknown connector id, undeclared
@@ -27,8 +36,10 @@ import {
   isLoudFailure,
   logDegradation,
   readJsonBody,
+  unauthorized,
 } from "@api/host/http";
-import { readConnectorContext } from "@api/host/identity";
+import { readBearerToken, readConnectorContext } from "@api/host/identity";
+import { resolveScopedIdentity } from "@api/host/session-identity";
 import { parseUserAction } from "@api/host/validate";
 
 export const dynamic = "force-dynamic";
@@ -40,8 +51,10 @@ function receiptOccurredAt(boot: ApiBoot): string {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const identity = readConnectorContext(request.headers);
-  if (!identity.ok) return badRequest(identity.detail);
+  const bearer = readBearerToken(request.headers);
+  if (bearer.kind === "malformed") return unauthorized(bearer.detail);
+  const anonymous = bearer.kind === "absent" ? readConnectorContext(request.headers) : null;
+  if (anonymous !== null && !anonymous.ok) return badRequest(anonymous.detail);
 
   const body = await readJsonBody(request);
   if (!body.ok) return badRequest(body.detail);
@@ -63,7 +76,36 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
-    const receipt = await boot.connector.executeAction(identity.ctx, parsed.value);
+    let receipt: ActionReceipt;
+    if (bearer.kind === "present") {
+      const resolved = await resolveScopedIdentity(request.headers, boot);
+      if (!resolved.ok) {
+        if (resolved.failure === "degraded") {
+          logDegradation("actions.session", resolved.detail);
+          return Response.json({
+            status: "failed",
+            detail: `the session service is unavailable (${resolved.detail})`,
+            occurredAt: receiptOccurredAt(boot),
+          } satisfies ActionReceipt);
+        }
+        if (resolved.failure === "bad-request") return badRequest(resolved.detail);
+        return unauthorized(resolved.detail);
+      }
+      if (resolved.identity.mode !== "session") {
+        return unauthorized("authorization: a bearer session token is required");
+      }
+      receipt = await boot.connector.executeActionForProfile(
+        resolved.identity.ctx,
+        resolved.identity.profileId,
+        parsed.value,
+      );
+    } else {
+      if (anonymous === null || !anonymous.ok) {
+        return badRequest("x-wfx-user-id: required identity header is absent");
+      }
+      receipt = await boot.connector.executeAction(anonymous.ctx, parsed.value);
+    }
+
     if (isUsableReceipt(receipt)) return Response.json(receipt);
     logDegradation("actions", "the connector answered a malformed ActionReceipt");
     return Response.json({
