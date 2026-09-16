@@ -99,7 +99,10 @@ beforeAll(async () => {
   first = await createTestDb(); // migrations + the seed convergence step
   rows = await first.db.query<CatalogRow>(CATALOG_SQL);
   second = await createTestDb(); // the determinism twin (fresh engine)
-});
+}, 30_000); // TWO migration-heavy engines: under the full-suite parallel load
+// (R02's DB-heavy API/persistence test files) the twin's creation can exceed
+// Bun's default 7s hook timeout — migrations, not a product defect (verified:
+// 13/13 in isolation). 30s absorbs load variance without masking hangs.
 
 afterAll(async () => {
   await first.close();
