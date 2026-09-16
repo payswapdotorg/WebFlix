@@ -1,42 +1,144 @@
-# WebFlix Tech Lead Handoff
+# WebFlix Tech Lead Handoff — Remediation Freeze
 
-WebFlix is the Universal Entertainment OS. Implement only from the frozen architecture, contracts, dependency graph, and roadmap in `docs/architecture/` and `docs/plans/`.
+WebFlix is the **Universal Entertainment OS**. The repository is the source of truth.
 
-## Read order
+## Canonical read order
 
-1. `webflix-frozen-architecture.md`
-2. `contracts.md`
-3. `product-boundaries.md`
-4. `dependency-graph.md`
-5. `2026-09-13-webflix-implementation-plan.md`
-6. GitHub WFX issues
+1. `docs/architecture/webflix-remediation-architecture.md`
+2. `docs/architecture/webflix-frozen-architecture.md`
+3. `docs/architecture/contracts.md`
+4. `docs/architecture/product-boundaries.md`
+5. `docs/architecture/dependency-graph.md`
+6. `docs/work-items/index.md`
+7. `docs/plans/2026-09-16-webflix-remediation-plan.md`
+8. `docs/validation/webflix-golden-journeys.md`
+9. `docs/validation/competitor-validation.md`
+10. Actual source/tests/imports/configuration in the assigned worktree
 
-## Three worker lanes
+The 2026-09-16 remediation documents supersede the legacy client/native-media sequencing. Do not infer completion from legacy WFX issues or summaries.
 
-**Lane A — Intelligence:** entertainment graph, intent graph, retrieval, recommendation, model fabric, telemetry.
+## Mission
 
-**Lane B — Sources/Media:** connector SDK, registry/auth, native media service, range gateway, external actions, background media.
+Deliver a working product, not merely architecture scaffolding:
 
-**Lane C — Experience:** Experience API, Media Surface, in-app browser, watch feed, short feed, library, web/desktop/mobile.
+- source-neutral entertainment discovery;
+- real account/profile identity;
+- connected source management;
+- Library/history/Continue Watching;
+- long-form and Shorts experiences;
+- explicit recommendation controls and anti-tunnel behavior;
+- WebFlix/BYOM/local model control;
+- AI media transformations;
+- contained BrowserHost where permitted;
+- production Web adapter;
+- production Desktop adapter;
+- real native media service;
+- full authorized torrent engine;
+- playback-aware torrent scheduling;
+- background completion and recovery;
+- one shared runtime that makes future Mobile an adapter rather than a rewrite.
 
-Workers only edit their lane. Shared contracts are lead-owned.
+## Three-worker dispatch
 
-## Dispatch protocol
+### Worker 1 — Shared Experience/Intelligence
 
-Every assignment must include WFX ID, dependencies, frozen interfaces, allowed paths, forbidden scope, tests, and acceptance criteria. Workers report changed files and exact test results. A proposed contract change pauses the item until the lead updates the frozen docs.
+R01-R06, plus assigned R15 work.
 
-## Sequence
+Private paths principally include `packages/client-runtime/**`, `packages/platform-contracts/**`, `packages/experience/**`, `packages/domain/**`, `packages/recommendation/**`, `packages/model-fabric/**`, `packages/persistence/**`, and `packages/actions/**`.
 
-WFX-001 first. Then WFX-002/003/004 in parallel. After those are green, run the three lanes concurrently. Converge at WFX-005, WFX-021, WFX-025, then integrate model/client work. Finish with WFX-041/042/043.
+### Worker 2 — Web
+
+R07, Web portion of R09, and Web journey evidence.
+
+Private paths principally include `apps/web/**` and the Web platform adapter.
+
+### Worker 3 — Desktop/Native/Torrent
+
+R08, R10-R14, Desktop journey evidence, and native recovery work.
+
+Private paths principally include `apps/desktop/**`, `packages/native-media/**`, `packages/torrent-engine/**`, and the Desktop/native platform adapter.
+
+### Lead
+
+R00, shared-contract changes, architecture changes, cross-lane dependencies, R16-R19, integration, browser validation, security/privacy review, deployment, and final acceptance.
+
+## Critical torrent directive
+
+The torrent engine is a first-class product subsystem.
+
+It must support, through a mature protocol implementation:
+
+`authorized magnet/.torrent -> metadata -> file selection -> torrent session -> piece map -> integrity -> playback-aware prioritization -> buffering -> playback -> background completion -> verified local asset -> Library`
+
+It must support interruption/restart/recovery. It must not be implemented as a mock, fixture, copied protocol implementation in TypeScript, or an external-download handoff presented as native playback.
+
+The production Desktop path must not use `stubEngine()`.
+
+## Platform rule
+
+Web/Desktop/Mobile are adapters over the shared Client Runtime. The runtime owns product semantics. Platform adapters own storage, browser, lifecycle, native media, notifications, background work, sharing, and other platform capabilities.
+
+No provider SDK calls belong in shared product logic.
+
+## Browser validation rule
+
+UI-affecting work is not complete without agent-browser evidence.
+
+Worker loop:
+
+```text
+implement -> run app -> agent-browser journey -> snapshot/screenshot -> inspect -> fix -> test -> report
+```
+
+After navigation or DOM changes, workers must obtain fresh snapshots before using element references. The Lead independently reruns affected journeys after integration.
+
+## Dispatch packet required for every assignment
+
+Include:
+
+- R ID;
+- dependency IDs;
+- frozen interfaces consumed/produced;
+- allowed paths;
+- forbidden scope;
+- tests required;
+- affected golden journey IDs;
+- expected evidence;
+- integration handoff requirements.
 
 ## Reject drift
 
-Reject direct provider SDK calls in core code, platform-specific business logic, last-item-only recommendation, model-controlled authorization, native-media internals leaking into domain code, unsafe browser behavior, replacement of canonical server persistence with a local database, fake external success paths, and duplicated cross-platform domain rules.
+Reject:
 
-## Definition of done
+- direct provider SDK calls in shared product/core code;
+- duplicated Web/Desktop product rules;
+- fixture fallback in production;
+- Desktop `stubEngine()` as production behavior;
+- torrent protocol logic escaping `packages/torrent-engine`;
+- unauthorized acquisition;
+- DRM/access-control/captcha/anti-bot circumvention;
+- source capability claims not backed by real adapter behavior;
+- recommendation systems that permanently tunnel on the last topic;
+- model-controlled authorization;
+- credentials entering AI prompts;
+- local storage replacing canonical server persistence;
+- external actions reported successful without provider confirmation;
+- engineering diagnostics presented as the primary entertainment UX.
 
-Tests pass; unsupported behavior is explicit; no private cross-lane imports; fixtures/docs are current; CI is green; no fake integration is called production-ready.
+## Integration sequence
+
+1. Land R00 governance freeze.
+2. Freeze R01 shared runtime/platform contracts.
+3. Dispatch Worker 1 R02-R06, Worker 2 R07, Worker 3 R08 concurrently where dependencies permit.
+4. Dispatch R09 and R10 once their contract seams are frozen.
+5. Worker 3 runs the R10 -> R11 -> R12 -> R13 native/torrent chain.
+6. Worker 1 + 3 integrate R14 native acquisition UX.
+7. Integrate R15 actions.
+8. Lead runs R16 browser/golden journey harness against Web and Desktop.
+9. Run R17 failure/recovery hardening.
+10. Run R18 security/privacy/authorization audit.
+11. Run R19 production/release acceptance.
 
 ## Final verification
 
-Inspect source, tests, imports, schemas, persistence, and platform behavior directly before declaring a phase complete. Do not rely on worker summaries alone.
+Before declaring any item or phase complete, inspect the actual repository state, tests, imports, persistence, schemas, runtime wiring, platform packaging, and browser/native behavior directly. Worker summaries are evidence of intent, not evidence of completion.
