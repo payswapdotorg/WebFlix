@@ -10,5 +10,7 @@ coverage/
 .scratch/
 # WFX-050: Next.js host artifacts (generated per-machine by next dev/build)
 apps/web/next-env.d.ts
+# WFX-055A: the service host's twin artifact (same generation rule)
+apps/api/next-env.d.ts
 *.tsbuildinfo
 .vercel
