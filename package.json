@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "bun test",
+    "test": "bun test --parallel=2",
     "contract-check": "node scripts/check-contracts.mjs",
     "lane-check": "node scripts/check-lanes.mjs",
     "scaffold": "node scripts/scaffold.mjs",

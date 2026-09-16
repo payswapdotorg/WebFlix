@@ -5,9 +5,12 @@
     // deep (src/app/api/health/route.ts), where relative escapes to the
     // package's own src/ would violate the lane rule. The alias maps into
     // the web package's src/ only — other packages never use it.
+    // WFX-055A: the service host's twin alias (@api/*) — same law, same
+    // reason, for apps/api's route handlers.
     "baseUrl": ".",
     "paths": {
-      "@/*": ["apps/web/src/*"]
+      "@/*": ["apps/web/src/*"],
+      "@api/*": ["apps/api/src/*"]
     }
   },
   "include": [

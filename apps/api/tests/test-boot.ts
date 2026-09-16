@@ -1,0 +1,157 @@
+/**
+ * @wfx/app-api — test composition helpers (WFX-055A, slice 3).
+ *
+ * Builds the object under test for the handler/route tests: a COMPLETE
+ * `ApiBoot` composition — the same shape `host/boot.ts` assembles in
+ * production — over a PGlite-backed database, using only PUBLIC package
+ * entry points:
+ *
+ * - `bootPersistence` with the `createClient` seam swapped to PGlite (the
+ *   documented test seam of the 052 boot: env validation, the REAL
+ *   migration run, the REAL `PostgresCatalogConnector` +
+ *   `PostgresEventSink` adapters over the injected client);
+ * - `createFanOutConnector` over the persistence boot's connector (the
+ *   exact wiring `bootApi` performs for the service);
+ * - `resolveApiConfig` over a syntactically valid, never-connected env.
+ *
+ * Deterministic seams: `FixedClock` + `SequentialIdGen` (injected into every
+ * adapter). Handlers under test are exercised by importing their GET/POST
+ * functions directly and constructing `Request` objects — no server, no
+ * network.
+ */
+
+import { FixedClock, SequentialIdGen } from "@wfx/experience";
+import type { Ports } from "@wfx/experience";
+import { bootPersistence, type PersistenceBoot } from "@wfx/persistence";
+
+import type { ApiBoot } from "../src/host/boot";
+import { resolveApiConfig } from "../src/host/config";
+import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
+import { API_SERVICE_VERSION } from "../src/host/version";
+import { createTestDb, TEST_DATABASE_URL, TEST_ENCRYPTION_KEY_BASE64, type TestDb } from "./test-db";
+
+/**
+ * The handler tests' clock base: 30 000 ms (epoch + 30s). Deliberately BELOW
+ * `OPPORTUNISTIC_MIN_INTERVAL_MS` (60s, host/relay.ts) with margin, so the
+ * events endpoint's opportunistic-drain nudge can never fire while these
+ * tests assert outbox row states (the interval trigger reads
+ * `now - lastDrain >= 60s`; from a pristine or recently-drained module state
+ * a 30s clock is never due, and the per-file event-post count stays far
+ * below the every-N-events trigger).
+ */
+export const HANDLER_TEST_CLOCK_MS = 30_000;
+
+/** One fully-wired service boot over PGlite (plus its levers). */
+export interface ApiTestBoot {
+  readonly boot: ApiBoot;
+  readonly testDb: TestDb;
+  readonly clock: FixedClock;
+  readonly ids: SequentialIdGen;
+}
+
+/**
+ * Boot the complete service composition over a FRESH PGlite database (real
+ * migrations incl. the 0007 seed, real adapters, deterministic seams).
+ */
+export async function createApiTestBoot(): Promise<ApiTestBoot> {
+  const testDb = await createTestDb();
+  const clock = new FixedClock(HANDLER_TEST_CLOCK_MS);
+  const ids = new SequentialIdGen();
+
+  // The REAL 052 boot with only the client factory swapped to PGlite: env
+  // validation + the idempotent migration re-run + the real Ports adapters.
+  const persistence: PersistenceBoot = await bootPersistence({
+    env: {
+      DATABASE_URL: TEST_DATABASE_URL,
+      APP_ENCRYPTION_KEY: TEST_ENCRYPTION_KEY_BASE64,
+    },
+    createClient: async () => testDb.db,
+    clock,
+    ids,
+  });
+
+  // The exact fan-out wiring bootApi performs (primary source only — the
+  // PGlite composition stands in for the Neon-backed webflix-catalog).
+  const connector: FanOutConnector = createFanOutConnector({
+    sources: [persistence.ports.connector],
+    clock,
+    version: API_SERVICE_VERSION,
+  });
+
+  const ports: Ports = {
+    connector,
+    events: persistence.ports.events,
+    clock,
+    ids,
+  };
+
+  const config = resolveApiConfig({
+    DATABASE_URL: TEST_DATABASE_URL,
+    APP_ENCRYPTION_KEY: TEST_ENCRYPTION_KEY_BASE64,
+  });
+
+  const boot: ApiBoot = {
+    config,
+    persistence,
+    connector,
+    // The harness DB is already seeded by createTestDb (the same
+    // seedCatalogIfEmpty convergence step the service boot performs) —
+    // recorded here so the manually-composed ApiBoot tells the truth.
+    seed: { seeded: true, itemCount: 57 },
+    ports,
+  };
+  return { boot, testDb, clock, ids };
+}
+
+// ---------------------------------------------------------------------------
+// Request builders (route handlers are plain functions — no server, no net)
+// ---------------------------------------------------------------------------
+
+const API_ORIGIN = "http://api.test";
+
+/** Build a GET request with optional identity/extra headers. */
+export function getRequest(pathAndQuery: string, headers: Record<string, string> = {}): Request {
+  return new Request(`${API_ORIGIN}${pathAndQuery}`, { headers });
+}
+
+/** Build a POST request with a JSON body (string bodies pass through raw). */
+export function postRequest(
+  path: string,
+  body: unknown,
+  headers: Record<string, string> = {},
+): Request {
+  return new Request(`${API_ORIGIN}${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...headers },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+}
+
+/** The standard identity headers every endpoint requires/expects. */
+export function identityHeaders(
+  overrides: Record<string, string> = {},
+): Record<string, string> {
+  return { "x-wfx-user-id": "wfx-api-test-user", ...overrides };
+}
+
+/** A seeded catalog row (real data the 0007 migration inserted). */
+export interface SeededRow {
+  readonly itemId: string;
+  readonly externalRef: string;
+  readonly title: string;
+}
+
+/** Read one seeded row (a long-form item) straight out of the graph. */
+export async function readSeededRow(db: TestDb["db"]): Promise<SeededRow> {
+  const rows = await db.query<{ item_id: string; external_ref: string; canonical_title: string }>(
+    `SELECT i.id AS item_id, r.external_ref, i.canonical_title
+       FROM entertainment_items i
+       JOIN source_realizations r ON r.entertainment_item_id = i.id
+      WHERE i.canonical_type = 'video'
+      ORDER BY i.id
+      LIMIT 1`,
+  );
+  const row = rows[0];
+  if (row === undefined) throw new Error("test setup: no seeded catalog row found");
+  return { itemId: row.item_id, externalRef: row.external_ref, title: row.canonical_title ?? row.external_ref };
+}
