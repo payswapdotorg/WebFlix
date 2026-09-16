@@ -325,12 +325,12 @@ export function stubEngine(options?: StubEngineOptions): StubEngine {
 
 /** One well-formed session per state, covering the whole frozen union. */
 export const sampleSessions: readonly NativeMediaSession[] = [
-  { id: "sample-resolving", assetId: "asset-001", fileId: "file-001", state: "resolving", bufferedMs: 0, positionMs: 0 },
-  { id: "sample-buffering", assetId: "asset-001", fileId: "file-001", state: "buffering", bufferedMs: 5_000, positionMs: 0 },
-  { id: "sample-playing", assetId: "asset-001", fileId: "file-001", state: "playing", bufferedMs: 120_000, positionMs: 30_000 },
-  { id: "sample-background", assetId: "asset-001", fileId: "file-001", state: "background", bufferedMs: 300_000, positionMs: 30_000 },
-  { id: "sample-complete", assetId: "asset-001", fileId: "file-001", state: "complete", bufferedMs: 3_600_000, positionMs: 3_600_000 },
-  { id: "sample-failed", assetId: "asset-001", fileId: "file-001", state: "failed", bufferedMs: 42_000, positionMs: 10_000 },
+  { id: "sample-resolving", assetId: "asset-001", fileId: "file-001", state: "resolving", bufferedMs: 0, positionMs: 0, integrity: "verified" },
+  { id: "sample-buffering", assetId: "asset-001", fileId: "file-001", state: "buffering", bufferedMs: 5_000, positionMs: 0, integrity: "verified" },
+  { id: "sample-playing", assetId: "asset-001", fileId: "file-001", state: "playing", bufferedMs: 120_000, positionMs: 30_000, integrity: "verified" },
+  { id: "sample-background", assetId: "asset-001", fileId: "file-001", state: "background", bufferedMs: 300_000, positionMs: 30_000, integrity: "verified" },
+  { id: "sample-complete", assetId: "asset-001", fileId: "file-001", state: "complete", bufferedMs: 3_600_000, positionMs: 3_600_000, integrity: "verified" },
+  { id: "sample-failed", assetId: "asset-001", fileId: "file-001", state: "failed", bufferedMs: 42_000, positionMs: 10_000, integrity: "failed" },
 ];
 
 /** One `NativeMediaError` per taxonomy code (in code order). */

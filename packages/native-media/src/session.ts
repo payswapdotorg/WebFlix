@@ -128,6 +128,8 @@ export interface MakeSessionInput {
   bufferedMs?: number;
   /** Playback position; defaults to 0. */
   positionMs?: number;
+  /** Content integrity verdict; defaults to `"unknown"` (no verdict claimed). */
+  integrity?: NativeMediaSession["integrity"];
 }
 
 /**
@@ -154,7 +156,7 @@ export function makeSession(input: MakeSessionInput): NativeMediaSession {
   const positionMs = input.positionMs ?? 0;
   requireNonNegativeFinite(bufferedMs, "bufferedMs");
   requireNonNegativeFinite(positionMs, "positionMs");
-  return { id: input.id, assetId: input.assetId, fileId: input.fileId, state, bufferedMs, positionMs };
+  return { id: input.id, assetId: input.assetId, fileId: input.fileId, state, bufferedMs, positionMs, integrity: input.integrity ?? "unknown" };
 }
 
 // ---------------------------------------------------------------------------

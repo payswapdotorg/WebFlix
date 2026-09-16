@@ -78,6 +78,19 @@ export interface PlatformCapabilities {
   notifications:boolean;
 }
 
+export interface SectionStatus { state:'ready'|'error'; error?:{ kind:'invalid-input'|'network'|'unauthorized'|'unavailable'|'unsupported-capability'|'degraded'|'not-found'; detail:string }; }
+export interface HomeQuery { includeContinueWatching?:boolean; }
+export interface HomeModel { continueWatching:{ status:SectionStatus; entries:{ itemId:string; title:string; positionMs:number; completionRatio:number|null; lastWatchedAt:string; status:'in-progress'|'completed'|'skipped' }[] }; }
+export interface SearchQuery { query:string; }
+export interface SearchModel { query:string; status:SectionStatus; hits:{ canonicalItemId:string; result:SearchResult }[]; }
+export interface PlaybackIntent { itemId:string; externalRef?:string; realization?:PlaybackRealization; resumePositionMs?:number; }
+export interface ActionState { actionId:string; action:UserAction; status:'requested'|'confirmed-locally'|'confirmed-by-provider'|'unsupported'|'failed'; requestedAt:string; settledAt?:string; externalId?:string; detail?:string; capabilityGate?:string; }
+export type WatchStateCommand = { kind:'start'; itemId:string; positionMs?:number; playbackSessionId?:string } | { kind:'progress'; itemId:string; positionMs:number; playbackSessionId?:string } | { kind:'complete'; itemId:string; positionMs?:number; playbackSessionId?:string } | { kind:'skip'; itemId:string; positionMs?:number; playbackSessionId?:string };
+export interface LibraryQuery { includeWatchlist?:boolean; includeHistory?:boolean; }
+export interface LibraryModel { watchlist:{ status:SectionStatus; entries:LibraryEntry[] }; history:{ status:SectionStatus; entries:LibraryEntry[] }; }
+export interface UserIntentCommand { objective:string; scope:IntentScope; weight?:number; expiresAt?:string; provenance?:'explicit'|'inferred'|'imported'; }
+export interface RecommendationPolicyCommand { attentionMode:'mindful'|'balanced'|'immersive'|'custom'; exploration?:number; novelty?:number; socialInfluence?:number; }
+
 export interface ClientRuntime {
   platform: PlatformCapabilities['platform'];
   getHome(input:HomeQuery):Promise<HomeModel>;
@@ -92,6 +105,15 @@ export interface ClientRuntime {
 ```
 
 The runtime has no provider SDK calls and no Web/Desktop-specific business rules.
+
+> **Lead ratification (R01, 2026-09-16).** The sketch's input/output types are now defined
+> above (aligned with the delivered, tested `@wfx/client-runtime` shapes). Two semantics are
+> ratified: (1) `ServerPort` implementations return typed failures (`ok:false` with a
+> `ServerFailure`) where the frozen `apps/web` remote-ports degrade reads to empty answers —
+> the runtime must render honest error states, never fake emptiness; (2) the `ClientRuntime`
+> facade carries failures via typed throws + in-band section statuses (the sketch's bare
+> signatures are preserved verbatim). The `native-media` DTO/snapshot builders set
+> `integrity: "unknown"` (no verdict claimed) until R10 owns real verdicts.
 
 ## Native media
 
