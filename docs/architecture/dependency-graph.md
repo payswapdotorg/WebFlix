@@ -1,44 +1,69 @@
-# WebFlix Dependency Graph and Three-Worker Model
+# WebFlix Dependency Graph and Three-Worker Remediation Model
+
+The R-series graph supersedes the earlier WFX-040-centric client sequence. Legacy WFX items remain historical implementation context; the R-series is the active execution order.
 
 ```text
-WFX-001
-  ├─> WFX-002 ──> WFX-010 ──> WFX-020 ──> WFX-021 ──> WFX-031/032
-  │        └────> WFX-011 ────────────────┘
-  ├─> WFX-003 ──> WFX-012 ──> WFX-013 ──> WFX-022
-  │                                  └────> WFX-020
-  ├─> WFX-004 ──> WFX-014 ──> WFX-015 ──> WFX-023 ──> WFX-024
-  └───────────────────────────────> WFX-005 ──> WFX-025 ──> WFX-026
-                                                   ├─> WFX-027
-                                                   └─> WFX-028
-WFX-022 + WFX-024 + WFX-005 ──> WFX-029
-WFX-030 ──> WFX-031/032/033
-WFX-026..029 ──> WFX-040
-WFX-021 + WFX-025 + WFX-027 + WFX-028 ──> WFX-041
-WFX-040 + WFX-041 ──> WFX-042 ──> WFX-043
+R00
+  |
+  v
+R01 Shared Client Runtime
+  +----> R02 Identity/Profile ----> R03 Sources ----> R15 Actions
+  |           |                        
+  |           +----> R04 Library ----> R05 Recommendation/Intent ----> R06 Model/AI
+  |
+  +----> R07 Web Adapter
+  +----> R08 Desktop Adapter
+  +----> R09 Media Surface/BrowserHost
+  |
+  +----> R10 Native Media
+              |
+              v
+            R11 Torrent Engine
+              |
+              v
+            R12 Playback-aware Scheduler
+              |
+              v
+            R13 Torrent Persistence/Recovery
+              |
+            R14 Acquisition UX
+
+R07 + R08 + R09 + R14 -> R16 Golden Journey Harness
+R13 + R15 + R16 -> R17 Recovery Hardening
+R17 -> R18 Security/Privacy/Authorization Audit -> R19 Production Acceptance
 ```
 
-## Lane A — Intelligence
+## Worker 1 — Shared Experience/Intelligence
 
-Owns WFX-010, 011, 020, 021, 030, 031, 032, 033, 041.
+Owns R01-R06 and R15-R18 work delegated within its lane.
 
-Private paths: `packages/domain/graph/**`, `packages/domain/intent/**`, `packages/recommendation/**`, `packages/model-fabric/**`.
+Private paths: `packages/client-runtime/**`, `packages/platform-contracts/**`, `packages/experience/**`, `packages/domain/**`, `packages/recommendation/**`, `packages/model-fabric/**`, `packages/persistence/**`, `packages/actions/**`.
 
-## Lane B — Sources / Native Media
+## Worker 2 — Web Adapter
 
-Owns WFX-003, 004, 012, 013, 014, 015, 022, 023, 024.
+Owns R07 and Web portions of R09 and R16.
 
-Private paths: `packages/connectors/**`, `packages/native-media/**`, `packages/actions/**`.
+Private paths: `apps/web/**` plus the Web platform adapter package.
 
-## Lane C — Experience / Clients
+## Worker 3 — Desktop/Native/Torrent
 
-Owns WFX-005, 025, 026, 027, 028, 029, 040.
+Owns R08, R10-R14 and Desktop portions of R16-R17.
 
-Private paths: `packages/experience/**`, `apps/web/**`, `apps/desktop/**`, `apps/mobile/**`.
+Private paths: `apps/desktop/**`, `packages/native-media/**`, `packages/torrent-engine/**`, and the Desktop/native platform adapter package.
 
 ## Lead-only
 
-WFX-001, contract changes, dependency upgrades affecting multiple lanes, architecture changes, WFX-042, WFX-043.
+R00, shared contract changes, architecture changes, dependency changes affecting multiple lanes, R16 integration harness, R18, R19, and final browser/source verification.
 
-## Parallel execution rule
+## Parallelization rules
 
-Only WFX-001 is mandatory first. WFX-002/003/004 can then run independently. Once those are green, the three lanes fan out. Workers communicate through versioned interfaces and fixtures, not private imports.
+1. R00 is mandatory first.
+2. R01 establishes the shared runtime boundary.
+3. After R01 is frozen, R02-R06, R07, and R08 fan out in parallel.
+4. R09 can proceed in parallel once the playback/platform capability contract is frozen.
+5. R10-R13 remain a native-media dependency chain owned by Worker 3.
+6. R14 can begin once the acquisition state contract is frozen; it does not require the complete torrent engine to design its UX states.
+7. R15 can proceed against the existing connector/action seams after R03.
+8. R16/R17/R18/R19 converge the three lanes.
+
+Workers communicate through versioned contracts and fixtures, not private imports. A contract change pauses affected work until Lead updates the frozen contract document and graph.
