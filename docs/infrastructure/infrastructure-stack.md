@@ -111,3 +111,17 @@ The web host project was created and the production deployment is live. Full rec
 - The operator secrets file `/home/z/.secrets/wfx-infra.json` (mode 600) is the machine-readable source of truth for all ids above; `/home/z/.secrets/env` exports `DATABASE_URL`, `NEON_ORG_ID`, `NEON_PROJECT_ID`, and the R2 credentials.
 - Neon usage baseline at provisioning: consumption period `2026-09-15 → 2026-10-01`, all counters zero.
 - Deleting/recreating resources: the Neon project can be re-created via `POST /api/v2/projects` (org-scoped); the R2 bucket via SigV4 `PUT`. The org must not be deleted without lead approval — it is the billing boundary.
+
+
+## Experience API service — `webflix-api` (WFX-055B, 2026-09-16)
+
+The service lane of the split-runtime architecture, deployed. Full record — project ids, the runtime tracing fix, live verification outputs, the web-host activation, rollback — lives in [deployment.md](./deployment.md) §9. Summary:
+
+| Field | Value |
+|---|---|
+| Project | `webflix-api` — `prj_0otRTms7VsMaJnf2643fqX6jVkmO` (hobby, git-linked, root `apps/api`) |
+| Production | **https://webflix-api.vercel.app** — `dpl_CHVAjaTcXZ5NCpNyK2HoxFwWVrMG` from `main` @ `a303440`, READY |
+| Env | `DATABASE_URL` (Neon pooled) + `APP_ENCRYPTION_KEY` + `CRON_SECRET` (both minted fresh, values only in the Vercel env store); `YOUTUBE_*` unset-with-documentation |
+| Backing data | The SAME Neon database as the web host's persistence lane; catalog = the app-owned 57-video seed (converged at first boot) |
+| Activation | `WFX_API_BASE=https://webflix-api.vercel.app` set on the web project + fresh web production deployment (`dpl_2S6spDpxBD86QW82yDgRUqvkC2oe`) — **https://webflix-steel.vercel.app now serves real content (home 200)** |
+| Cron | `/api/relay` daily 03:00 UTC (hobby limit) + the bounded opportunistic drain lane |

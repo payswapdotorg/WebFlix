@@ -159,3 +159,40 @@ POST /v13/deployments?teamId=team_4KOoA5CgtYaOF85yFXPeMXLt
 - **Runtime logs retention: 1 hour.** Typed errors (like the HostConfigError above) must be captured when investigating, not reconstructed later. Build logs persist indefinitely.
 - **Bandwidth discipline:** media bytes never route through Vercel (R2 serves them — free egress). The 100 GB/month transfer budget is for app shell + API responses.
 - **Non-commercial restriction:** the Hobby plan's terms restrict use to non-commercial personal projects (recorded first by WFX-053; unchanged).
+
+
+---
+
+## 9. The Experience API service — project `webflix-api` (WFX-055B, 2026-09-16)
+
+The service lane's Vercel project, created and verified by WFX-055B (deployed by the lead after dispatch recovery; every output below was captured live).
+
+| Field | Value |
+|---|---|
+| Project | `webflix-api` — `prj_0otRTms7VsMaJnf2643fqX6jVkmO` (team `team_4KOoA5CgtYaOF85yFXPeMXLt`, hobby, git-linked to `github.com/payswapdotorg/webflix` repo id `1367978616`, production branch `main`) |
+| Root directory | `apps/api` — Next.js (App Router, route handlers only), bun install, standard build |
+| Production URL | **https://webflix-api.vercel.app** (aliases: `webflix-api-ekonplacidegmailcoms-projects.vercel.app`, `webflix-api-git-main-…`) |
+| Production deployment | `dpl_CHVAjaTcXZ5NCpNyK2HoxFwWVrMG` from `main` @ `a303440` — READY (auto-triggered by the merge push; the git integration observed working for this project too) |
+| Env vars (production + preview) | `DATABASE_URL` (Neon pooled), `APP_ENCRYPTION_KEY` (fresh 32-byte base64, minted at setup, value only in the Vercel env store), `CRON_SECRET` (minted at setup — REQUIRED: `/api/relay` refuses to run unprotected in production). `YOUTUBE_*` deliberately unset (documented absence — the youtube secondary source stays unwired until the operator provisions credentials). `WFX_DEV_FIXTURES` must never exist on this project (the service has no fixture mode — a typed boot crime). |
+| Runtime fix (deployed) | `outputFileTracingIncludes: { "/**": ["../../packages/persistence/migrations/**"] }` (merged as `a303440`): the 052 migration runner reads its `.sql` files from disk at boot and Next's serverless file tracing cannot see dynamic `fs` reads — the first production deployment (`dpl_CLHHvvR6cZ`, main @ `2ae8029`) built fine but EVERY request failed with the typed `MigrationError: could not read migrations directory (/var/task/packages/persistence/migrations): ENOENT` (observed live). The canonical monorepo fix traces the SQL into the serverless output. Packaging-only; no application logic changes. |
+| Crons | `apps/api/vercel.json`: `GET /api/relay` daily at 03:00 UTC (hobby allows daily only). Vercel sends `Authorization: Bearer <CRON_SECRET>` automatically. The opportunistic drain lane (bounded: 10 events / 60s / ≤20 rows / in-flight-guarded) covers the gap, best-effort. |
+
+### Live verification record (2026-09-16, all real outputs)
+
+- `GET /api/health` → `200 {"ok":true,"service":"webflix-api","version":"0.1.0"}`
+- `GET /experience/search?query=rain` (`x-wfx-user-id: wfx-anonymous`) → `200` with **19 seeded hits** (the app-owned catalog seed converged on production Neon at first boot — `boot-if-empty`, 57 items verified via direct SQL)
+- `GET /experience/metadata?ref=5SRgdyUsuAg` → `200` `SourceItem` ("1,000 Years Of English Monarchy In 4 Hours", available, `[playEmbed, playExternal, like, save]`)
+- `GET /experience/resolve?ref=5SRgdyUsuAg` → `200` realizations: `https://www.youtube.com/embed/5SRgdyUsuAg` + `https://www.youtube.com/watch?v=5SRgdyUsuAg`
+- `POST /experience/events` (valid `EntertainmentEvent`, payload `positionMs: 45000`) → `200 {"ok":true}` — durable at answer time (transactional outbox)
+- `GET /experience/library` → `200 []` (honest empty for the fresh anonymous user)
+- `GET /api/relay` without bearer → `401` (typed); with the true bearer → `200 {"ok":true,"requeued":0,"claimed":0,"delivered":0,…}` — zero claimed because the opportunistic lane had ALREADY delivered the event above (verified via direct Neon SQL: `watch_history` row with `position_ms=45000`, `last_event_type=start`; `event_outbox` shows the row `delivered`)
+
+### The web-host ACTIVATION (executed)
+
+1. `WFX_API_BASE=https://webflix-api.vercel.app` set on the **web** project (`prj_Ylm0ROs2ZxwxxHWCMAroSPH8HWp5`, production + preview; env id `dcJvo5RsbQmp4vYH`).
+2. Fresh production deployment of the web app from `main` @ `a303440` via `POST /v13` gitSource (env changes need a post-env deployment): `dpl_2S6spDpxBD86QW82yDgRUqvkC2oe` — READY.
+3. **END-TO-END PROOF (the mission's first acceptance answer)**: `GET https://webflix-steel.vercel.app/` → **200 with real rendered content rows** (196 KB; seeded titles present, e.g. "1,000 Years Of English Monarchy In 4 Hours", "Rain Bombs | Full Documentary | NOVA | PBS"); `/search?q=lofi` → 200 with Lofi results; `/shorts` → 200 with the vertical shorts feed; `/watch?ref=5SRgdyUsuAg` → 200 (the player surface; realization resolves client-side through the frozen remote ports); `/api/health` → still `200`.
+
+### Rollback (service)
+
+Re-promote a previous READY production deployment (the §6 pattern — promote, never rebuild). The web host degrades honestly if the service is bad: unset/point `WFX_API_BASE` elsewhere + redeploy web → the typed interim state returns (never fabricated content). The catalog seed never overwrites existing data — service rollbacks never touch catalog rows.
