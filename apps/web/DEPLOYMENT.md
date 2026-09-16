@@ -54,7 +54,7 @@ Import the GitHub repo `payswapdotorg/webflix` and configure:
 
 | Name | Value for WFX-056 | Notes |
 |---|---|---|
-| `WFX_API_BASE` | The base URL of the Experience API (e.g. `https://<experience-api-host>`) | **Required.** The host boots its production ports against this base. If unset (and `WFX_DEV_FIXTURES` unset), every request fails LOUDLY: typed `HostConfigError` naming `WFX_API_BASE` → HTTP 500, detail in server logs (`vercel logs`). It is deliberately NOT defaulted — see "Boot law" below. |
+| `WFX_API_BASE` | The base URL of the Experience API (e.g. `https://<experience-api-host>`) | **Required.** The host boots its production ports against this base. If unset (and `WFX_DEV_FIXTURES` unset), every request fails LOUDLY: typed `HostConfigError` naming `WFX_API_BASE` → HTTP 500, detail in server logs (`vercel logs`). It is deliberately NOT defaulted — see "Boot law" below. **[RESOLVED by WFX-055B, 2026-09-16: production + preview now have `WFX_API_BASE=https://webflix-api.vercel.app` (the deployed Experience API service) — the home page serves real content; the typed-500 interim state is retired. Service record: `docs/infrastructure/deployment.md` §9.]** |
 
 ### Required NEVER (production)
 
