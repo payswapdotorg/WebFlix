@@ -80,6 +80,16 @@ export interface YouTubeEnv {
   readonly clientId?: string;
   /** `YOUTUBE_CLIENT_SECRET` — OAuth client (rotation of user tokens). */
   readonly clientSecret?: string;
+  /**
+   * R03: `YOUTUBE_REDIRECT_URI` — the operator-registered OAuth redirect
+   * (absolute http(s) URL; the Google Cloud console's authorized redirect
+   * URI, e.g. `https://<api-host>/sources/callback/{state}` routed by the
+   * deployment's gateway). OPTIONAL: the connector's token ROTATION needs
+   * only the client pair; the R03 connect FLOW needs the full triple —
+   * with the pair but no redirect URI the source is honestly listed as
+   * not connectable (typed `flow-missing`), never an invented URL.
+   */
+  readonly redirectUri?: string;
 }
 
 /** The resolved service configuration. */
@@ -166,6 +176,7 @@ export function resolveApiConfig(env: ApiEnv = process.env): ApiConfig {
   const apiKey = readVar(env, "YOUTUBE_API_KEY");
   const clientId = readVar(env, "YOUTUBE_CLIENT_ID");
   const clientSecret = readVar(env, "YOUTUBE_CLIENT_SECRET");
+  const redirectUri = readVar(env, "YOUTUBE_REDIRECT_URI");
   const hasClientHalf = clientId !== undefined || clientSecret !== undefined;
   if (hasClientHalf && (clientId === undefined || clientSecret === undefined)) {
     throw new ApiConfigError(
@@ -175,7 +186,18 @@ export function resolveApiConfig(env: ApiEnv = process.env): ApiConfig {
       clientId === undefined ? ["YOUTUBE_CLIENT_ID"] : ["YOUTUBE_CLIENT_SECRET"],
     );
   }
-  const hasAnyYoutube = apiKey !== undefined || hasClientHalf;
+  // R03: the redirect URI is optional (rotation works without it), but when
+  // present it must be an absolute http(s) URL — a malformed one is a typed
+  // config crime, never silently dropped (the connect flow would build
+  // broken authorization URLs).
+  if (redirectUri !== undefined && !/^https?:\/\//.test(redirectUri)) {
+    throw new ApiConfigError(
+      "YOUTUBE_REDIRECT_URI must be an absolute http(s) URL (the OAuth redirect the operator registered with the provider)",
+      [],
+      ["YOUTUBE_REDIRECT_URI"],
+    );
+  }
+  const hasAnyYoutube = apiKey !== undefined || hasClientHalf || redirectUri !== undefined;
   let youtube: YouTubeEnv | null = null;
   if (hasAnyYoutube) {
     youtube = {
@@ -183,6 +205,7 @@ export function resolveApiConfig(env: ApiEnv = process.env): ApiConfig {
       ...(clientId !== undefined && clientSecret !== undefined
         ? { clientId, clientSecret }
         : {}),
+      ...(redirectUri !== undefined ? { redirectUri } : {}),
     };
   }
 

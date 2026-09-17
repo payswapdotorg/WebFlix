@@ -1254,3 +1254,105 @@ describe("ConnectorAuthService — session TTL and re-auth", () => {
     expect(expectOk(service.authState("auth-oauth-source")).usable).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// R03 — pending-authorization support (caller-minted state + inspection)
+// ---------------------------------------------------------------------------
+
+describe("ConnectorAuthService — R03 pending-authorization support", () => {
+  it("beginAuth accepts a caller-minted state token as the pendingAuthId", () => {
+    const service = makeAuthService({});
+    const begun = expectOk(
+      service.beginAuth(makeCtx(), "auth-oauth-source", { state: "host-csrf-state-1" }),
+    );
+    expect(begun.pendingAuthId).toBe("host-csrf-state-1");
+    expect(begun.flow.kind).toBe("oauth");
+
+    // The state-keyed pending completes exactly like a service-minted one.
+    const completed = expectOk(service.completeAuth("host-csrf-state-1", SECRET));
+    expect(completed.connectorId).toBe("auth-oauth-source");
+    expect(completed.session).toBe<AuthSessionState>("signedIn");
+  });
+
+  it("inspectPendingAuth returns the live pending (same shape as beginAuth)", () => {
+    const service = makeAuthService({});
+    expectOk(service.beginAuth(makeCtx(), "auth-device-source", { state: "device-state-9" }));
+    const inspected = expectOk(service.inspectPendingAuth("device-state-9"));
+    expect(inspected.pendingAuthId).toBe("device-state-9");
+    expect(inspected.connectorId).toBe("auth-device-source");
+    expect(inspected.userId).toBe("user-42");
+    expect(inspected.flow.kind).toBe("device");
+    // Read-only: the pending is still completable afterwards.
+    const completed = expectOk(service.completeAuth("device-state-9", SECRET));
+    expect(completed.flowKind).toBe("device");
+  });
+
+  it("inspectPendingAuth answers unknown-pending for never-issued/completed/superseded ids", () => {
+    const service = makeAuthService({});
+    expect(expectErr(service.inspectPendingAuth("never-issued"))).toEqual({
+      kind: "unknown-pending",
+      pendingAuthId: "never-issued",
+    });
+
+    expectOk(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "s-1" }));
+    expectOk(service.completeAuth("s-1", SECRET));
+    expect(expectErr(service.inspectPendingAuth("s-1")).kind).toBe("unknown-pending");
+
+    expectOk(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "s-2" }));
+    expectOk(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "s-3" })); // supersedes s-2
+    expect(expectErr(service.inspectPendingAuth("s-2")).kind).toBe("unknown-pending");
+    expect(expectOk(service.inspectPendingAuth("s-3")).pendingAuthId).toBe("s-3");
+  });
+
+  it("inspectPendingAuth answers expired-pending once the TTL elapses and deletes the row", () => {
+    const clock = makeClock();
+    const service = makeAuthService({ clock: clock.now, pendingTtlMs: 60_000 });
+    expectOk(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "ttl-state" }));
+
+    clock.advance(59_999);
+    expect(expectOk(service.inspectPendingAuth("ttl-state")).pendingAuthId).toBe("ttl-state");
+
+    clock.advance(2);
+    const error = expectErr(service.inspectPendingAuth("ttl-state"));
+    expect(error.kind).toBe("expired-pending");
+    if (error.kind === "expired-pending") {
+      expect(error.expiredAt).toBe(1_700_000_000_000 + 60_000);
+    }
+    // dead is dead — inspecting again answers unknown-pending
+    expect(expectErr(service.inspectPendingAuth("ttl-state")).kind).toBe("unknown-pending");
+  });
+
+  it("a caller state that collides with a LIVE pending is rejected typed, never taken over", () => {
+    const service = makeAuthService({});
+    expectOk(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "live-token" }));
+    const error = expectErr(
+      service.beginAuth(makeCtx(), "auth-oauth-source", { state: "live-token" }),
+    );
+    expect(error.kind).toBe("invalid-input");
+
+    // the original handshake is untouched
+    const inspected = expectOk(service.inspectPendingAuth("live-token"));
+    expect(inspected.connectorId).toBe("auth-oauth-source");
+  });
+
+  it("malformed state tokens and non-object options are rejected typed", () => {
+    const service = makeAuthService({});
+    expect(
+      expectErr(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "" })).kind,
+    ).toBe("invalid-input");
+    expect(
+      expectErr(
+        service.beginAuth(makeCtx(), "auth-oauth-source", { state: "x".repeat(129) }),
+      ).kind,
+    ).toBe("invalid-input");
+    expect(
+      expectErr(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "bad\u0007" })).kind,
+    ).toBe("invalid-input");
+    expect(
+      expectErr(service.beginAuth(makeCtx(), "auth-oauth-source", "nope" as unknown as never))
+        .kind,
+    ).toBe("invalid-input");
+    // a sane state still works after the rejections
+    expectOk(service.beginAuth(makeCtx(), "auth-oauth-source", { state: "fine" }));
+  });
+});

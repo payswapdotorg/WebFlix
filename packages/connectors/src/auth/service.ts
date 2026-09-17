@@ -34,6 +34,16 @@
  * tracks auth state PER CONNECTOR (single-user assumption per service
  * instance, per the WFX-012 packet); multi-user auth scoping is a future
  * contract change, not something to fake here.
+ *
+ * R03 — PENDING-AUTHORIZATION SUPPORT (additive): `beginAuth` accepts an
+ * optional `{ state }` option — a CALLER-MINTED pending token (hosts that
+ * key their pendings durably by the OAuth CSRF state, like the R03 account
+ * store, bind the service's pending to that token instead of a
+ * service-minted random id) — and `inspectPendingAuth(state)` returns a
+ * live pending's info with the same typed `unknown-pending` /
+ * `expired-pending` failures `completeAuth` answers. The service stays
+ * honest about expiry: an inspected pending past its TTL is deleted, never
+ * resurrectable.
  */
 
 import type { ConnectorContext } from "@wfx/domain";
@@ -331,6 +341,12 @@ export class ConnectorAuthService {
    * pendingAuthId becomes unknown). For non-`none` flows the session moves
    * to `authorizing` (legal from signedOut/signedIn/expired/failed).
    *
+   * R03: `options.state` — a caller-minted pending token (e.g. the OAuth
+   * CSRF state a host keys its DURABLE pendings by). When supplied, it
+   * BECOMES the `pendingAuthId` (validated: non-empty, bounded, no control
+   * characters, and not already a live pending id — a live token is never
+   * silently taken over).
+   *
    * Typed errors: `unknown-connector`, `flow-missing` (oauth/device
    * without registered details), `invalid-input`.
    *
@@ -338,9 +354,25 @@ export class ConnectorAuthService {
    *         match the descriptor's auth mode (wiring error — loud, not a
    *         faked result).
    */
-  beginAuth(ctx: ConnectorContext, connectorId: string): AuthResult<PendingAuthInfo> {
+  beginAuth(
+    ctx: ConnectorContext,
+    connectorId: string,
+    options?: { readonly state?: string },
+  ): AuthResult<PendingAuthInfo> {
     const inputError = validateContext(ctx) ?? validateNonEmpty("connectorId", connectorId);
     if (inputError !== null) return err(inputError);
+
+    if (options !== undefined && !isPlainObject(options)) {
+      return err(invalidAuthInput("'options' must be an object when present"));
+    }
+    const callerState = options?.state;
+    if (callerState !== undefined && !isUsablePendingToken(callerState)) {
+      return err(
+        invalidAuthInput(
+          "'options.state': expected a non-empty token of at most 128 characters without control characters",
+        ),
+      );
+    }
 
     const row = this.rowFor(connectorId);
     if (row === null) {
@@ -354,7 +386,14 @@ export class ConnectorAuthService {
     const flow = flowFor(row, details);
 
     const now = this.now();
-    const pendingAuthId = this.newPendingId();
+    if (callerState !== undefined && this.pendings.has(callerState)) {
+      return err(
+        invalidAuthInput(
+          "'options.state': the token is already a live pending auth id — mint a fresh one (a live handshake is never silently taken over)",
+        ),
+      );
+    }
+    const pendingAuthId = callerState ?? this.newPendingId();
     const expiresAt = now + this.pendingTtlMs;
 
     this.evictPendings(connectorId);
@@ -375,6 +414,38 @@ export class ConnectorAuthService {
     this.pendings.set(pendingAuthId, pending);
 
     return ok({ pendingAuthId, connectorId, userId: ctx.userId, flow, expiresAt });
+  }
+
+  /**
+   * R03: inspect a live pending auth by its id (service-minted OR the
+   * caller-supplied `state`). Answers the same typed failures
+   * `completeAuth` answers — `unknown-pending` (never issued / completed /
+   * superseded / signed out) and `expired-pending` (the TTL elapsed — the
+   * pending is deleted, dead is dead). Read-only: it does NOT complete or
+   * consume the pending.
+   */
+  inspectPendingAuth(pendingAuthId: string): AuthResult<PendingAuthInfo> {
+    const idError = validateNonEmpty("pendingAuthId", pendingAuthId);
+    if (idError !== null) return err(idError);
+
+    const pending = this.pendings.get(pendingAuthId);
+    if (pending === undefined) {
+      return err({ kind: "unknown-pending", pendingAuthId });
+    }
+
+    const now = this.now();
+    if (now >= pending.expiresAt) {
+      this.pendings.delete(pendingAuthId);
+      return err({ kind: "expired-pending", pendingAuthId, expiredAt: pending.expiresAt });
+    }
+
+    return ok({
+      pendingAuthId: pending.pendingAuthId,
+      connectorId: pending.connectorId,
+      userId: pending.userId,
+      flow: pending.flow,
+      expiresAt: pending.expiresAt,
+    });
   }
 
   /**
@@ -624,4 +695,13 @@ function validateNonEmpty(field: string, value: unknown): AuthError | null {
     return invalidAuthInput(`'${field}' must be a non-empty string`);
   }
   return null;
+}
+
+/** R03: is this a usable caller-minted pending token (the state option)? */
+function isUsablePendingToken(value: string): boolean {
+  return (
+    value.length > 0 &&
+    value.length <= 128 &&
+    !/[\u0000-\u001F\u007F]/.test(value)
+  );
 }

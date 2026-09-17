@@ -28,6 +28,8 @@ export type PersistenceFailureKind =
   | "migration-error"
   | "config-error"
   | "credential-decrypt-failed"
+  /** R03: a value headed for a model lane carries credential material (loud, never silent). */
+  | "credential-leak"
   | "unknown";
 
 /** Options accepted by every `PersistenceError` constructor. */

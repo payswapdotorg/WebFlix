@@ -65,6 +65,7 @@ import type {
   ServerFailure,
   ServerPort,
   ServerResult,
+  SourceInfo,
 } from "./server-port";
 import type { RecommendationPolicyCommand, UserIntentCommand } from "./intent";
 
@@ -138,6 +139,7 @@ export class InMemoryServerPort implements ServerPort {
   private readonly intentWriteAnswers: ScriptedServerAnswer<void>[] = [];
   private readonly policyReadAnswers: ScriptedServerAnswer<RecommendationPolicy | null>[] = [];
   private readonly policyWriteAnswers: ScriptedServerAnswer<void>[] = [];
+  private readonly sourcesReadAnswers: ScriptedServerAnswer<readonly SourceInfo[]>[] = [];
   private emitFailures: ServerFailure[] = [];
 
   /** Every event the port accepted, in delivery order (duplicates visible). */
@@ -205,6 +207,11 @@ export class InMemoryServerPort implements ServerPort {
   /** R02: script the next policy write answer(s). */
   scriptPolicyWrite(answer: ScriptedServerAnswer<void>): void {
     this.policyWriteAnswers.push(answer);
+  }
+
+  /** R03: script the next source-management read(s) (`readSources`). */
+  scriptSourcesRead(answer: ScriptedServerAnswer<readonly SourceInfo[]>): void {
+    this.sourcesReadAnswers.push(answer);
   }
 
   /** Queue the NEXT emitEvent failure(s); an empty queue accepts. */
@@ -303,6 +310,15 @@ export class InMemoryServerPort implements ServerPort {
     const scripted = this.policyWriteAnswers.shift();
     if (scripted !== undefined) return toResult(scripted);
     return { ok: true, value: undefined };
+  }
+
+  // — the R03 source extension (the honest empty list is the anonymous
+  // truth; tests script what they assert) —
+
+  async readSources(): Promise<ServerResult<readonly SourceInfo[]>> {
+    const scripted = this.sourcesReadAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: [] };
   }
 }
 

@@ -81,6 +81,37 @@ cross-device server saves; a failing server read is an ERROR section —
 never a fake empty one. `getHome`'s Continue Watching stays session-local
 (R04/R05 extend it — documented, not silently changed).
 
+### The R03 source extension (ADD-ONLY — source management)
+
+R03 (source management) extends the port with `readSources()` — the user's
+source-management truth as `SourceInfo[]` (descriptor + capability truth +
+CURRENT authorization state + account linkage + availability notes +
+last-checked), the read behind the settings/sources surface (R01's
+`SettingsSection` vocabulary: `sources | model | general`). The shape also
+lives in `server-port.ts` (`SourceInfo`, `SourceAuthState`,
+`SourceAuthMode` — exported).
+
+The runtime models the RESULTING state, never the OAuth dance itself:
+`runtime.sources` (`sources.ts`) is the source-state store —
+
+- `refresh()` — read `readSources()` through the port; a failure is an
+  ERROR model that KEEPS the last observed sources (never a fake empty
+  list); the anonymous session's honest empty list flows through as-is;
+- `observe(source)` — the ADAPTER reports a post-flow state after its
+  connect/disconnect UX completes (validated structurally; garbage throws
+  the typed `RuntimeError`); the next `refresh()` reconciles with the
+  server;
+- `list()` / `subscribe()` — the observed view (sorted by connectorId,
+  stable for diffing adapters).
+
+> **Ratification item for the lead:** unlike the R02 profile members —
+> which could be REQUIRED because no adapter had shipped when R02 landed —
+> `readSources` is OPTIONAL on the port because the frozen R07/R08 adapters
+> implement `ServerPort` today and R03 may not edit them. Until the lead
+> wires the adapters' HTTP mapping onto `GET /sources` (delivered by R03 in
+> `apps/api`), `refresh()` answers the honest `unavailable` error model.
+> The `InMemoryServerPort` double implements it; the shape is final.
+
 ## The semantics (and where their laws are tested)
 
 | Area | Module | Key laws |
@@ -144,9 +175,11 @@ same discipline as the fixtures modules elsewhere; frozen invariant 10).
   readProfileLibrary / readIntents / writeIntent / readPolicy /
   writePolicy — see above) is the profile-scoped read/write surface. R07's
   adapter maps them onto the apps/api auth/profile/session endpoints.
-- **R03 (Source management):** settings navigation already carries the
-  `sources` section; source capability truth flows through `ActionState`
-  and the descriptor's limitation notes.
+- **R03 (Source management): DELIVERED.** `runtime.sources` is the
+  source-state store (refresh + observe + subscribe — see the R03 section
+  above); `ServerPort.readSources()` is the read the adapters map onto the
+  API's `GET /sources`; the settings navigation's `sources` section is the
+  surface that renders it.
 - **R04 (Library/history):** the canonical registry is the join point;
   server-side history hydration extends the R02 `readHistory` operation
   into the remaining read models (getHome's Continue Watching is the

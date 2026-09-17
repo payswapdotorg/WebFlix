@@ -156,6 +156,58 @@ detection) — plaintext never lands in the table. AAD binds the envelope to
 fail typed (`CredentialDecryptError` / `{ reason: "key-mismatch" }`) — never
 garbage plaintext, never fake success.
 
+## Source management (R03 — the account lifecycle)
+
+Migration `0008_source_management.sql` extends the account store into the
+source-management lifecycle (the consumer surface lives in `apps/api`'s
+`/sources` routes):
+
+- **Lifecycle stamps** — `authorized_at` (every save/transition INTO
+  `signedIn`; a re-authorization upsert refreshes it while the account id +
+  `created_at` stay stable — the "reauthorize preserves the account row"
+  law) and `last_state_change` (every save + `setAuthState`).
+- **Per-account availability notes** — `availability_notes` (jsonb array of
+  strings): the quota/health truth a connected source carries (e.g. the
+  YouTube connector's quota costs). Written via `saveAccount` or
+  `setAvailabilityNotes`; NEVER credential material.
+- **Pending authorizations** — `connector_pending_authorizations`: the
+  in-flight oauth/device handshakes, stored SERVER-SIDE keyed by the
+  host-minted CSRF `state` token (the state token appears in the OAuth
+  redirect URL by the provider's own contract; the pending RECORD never
+  appears in any URL). `savePendingAuthorization` (plain insert — a reused
+  live state is a loud constraint violation, never a silent takeover),
+  `loadPendingAuthorization` (typed `not-found` / `expired`, clock-checked;
+  an expired pending is deleted — dead is dead), `completePendingAuthorization`
+  (consume-once), `evictPendingAuthorizations` (supersession before a fresh
+  connect), `listPendingAuthorizationsForUser`. `deleteAccount` evicts the
+  account's pendings with it — a disconnect cancels the in-flight handshake.
+
+### The model-input privacy law (ENFORCED here)
+
+> "Provider credentials never enter model prompts. Model privacy policy is
+> enforced at the runtime boundary." — the frozen architecture.
+
+`src/model-input.ts` is the enforcement point for every lane that feeds
+model providers (model-fabric / recommendation):
+
+1. **Structural** — `ModelSafeSourceSummary` is the ONLY account projection
+   those lanes may consume, and its field set is closed and secret-free by
+   construction (`toModelSafeSourceSummaries` builds it from
+   `ConnectorAccountRecord`, which never contains the secret).
+2. **Type-level** — `AssertNoCredentialMaterial<T>` fails to compile against
+   any type whose keys include a credential field (`secret`, `ciphertext`,
+   `iv`, `authTag`, `accessToken`, `refreshToken`, `password`,
+   `clientSecret`, `apiKey`, …).
+3. **Runtime** — `assertNoCredentialMaterial(value)` deep-scans values at
+   the boundary (nested objects, arrays, Maps, Sets — cycles safe) and
+   throws the LOUD `CredentialMaterialLeakError` (`credential-leak` kind —
+   never in the degradation family, always a 500-class programmer error)
+   the moment a banned field name appears. The API's `/sources` payloads
+   pass through this guard before leaving the service.
+
+The ONLY method that can produce a secret is `loadAccount` — it exists for
+the CONNECTOR runtime lane (token refresh, provider calls) exclusively.
+
 ## Degradation contract (docs/infrastructure/degradation-behavior.md §1)
 
 Every driver failure is classified (src/classify.ts) into the typed taxonomy

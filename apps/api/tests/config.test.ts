@@ -219,3 +219,49 @@ describe("resolveApiConfig — CRON_SECRET passthrough", () => {
     expect(resolveApiConfig({ ...VALID_ENV, CRON_SECRET: "   " }).cronSecret).toBeNull();
   });
 });
+
+describe("resolveApiConfig — R03 YOUTUBE_REDIRECT_URI law", () => {
+  it("the full OAuth triple carries the redirect URI through (the connect-flow wiring)", () => {
+    const config = resolveApiConfig({
+      ...VALID_ENV,
+      YOUTUBE_CLIENT_ID: "cid",
+      YOUTUBE_CLIENT_SECRET: "csecret",
+      YOUTUBE_REDIRECT_URI: "https://api.webflix.example/sources/callback",
+    });
+    expect(config.youtube).toEqual({
+      clientId: "cid",
+      clientSecret: "csecret",
+      redirectUri: "https://api.webflix.example/sources/callback",
+    });
+  });
+
+  it("a pair WITHOUT the redirect URI still boots (rotation works; the connect flow is honestly unwired)", () => {
+    const config = resolveApiConfig({
+      ...VALID_ENV,
+      YOUTUBE_CLIENT_ID: "cid",
+      YOUTUBE_CLIENT_SECRET: "csecret",
+    });
+    expect(config.youtube).toEqual({ clientId: "cid", clientSecret: "csecret" });
+  });
+
+  it("a non-http(s) redirect URI is a typed config crime naming the variable", () => {
+    let caught: unknown;
+    try {
+      resolveApiConfig({ ...VALID_ENV, YOUTUBE_REDIRECT_URI: "not-a-url" });
+    } catch (thrown) {
+      caught = thrown;
+    }
+    expect(caught).toBeInstanceOf(ApiConfigError);
+    expect((caught as ApiConfigError).invalid).toEqual(["YOUTUBE_REDIRECT_URI"]);
+  });
+
+  it("a redirect URI alone (no OAuth pair) still wires the youtube env honestly", () => {
+    const config = resolveApiConfig({
+      ...VALID_ENV,
+      YOUTUBE_REDIRECT_URI: "https://api.webflix.example/sources/callback",
+    });
+    expect(config.youtube).toEqual({
+      redirectUri: "https://api.webflix.example/sources/callback",
+    });
+  });
+});

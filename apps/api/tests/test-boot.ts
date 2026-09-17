@@ -24,16 +24,22 @@ import { FixedClock, SequentialIdGen } from "@wfx/experience";
 import type { Ports } from "@wfx/experience";
 import {
   bootPersistence,
+  PostgresConnectorAccountStore,
   PostgresEventSink,
   PostgresIdentityService,
   PostgresProfileService,
   PostgresSessionService,
+  decodeEncryptionKey,
   type PersistenceBoot,
 } from "@wfx/persistence";
 
 import type { ApiBoot } from "../src/host/boot";
 import { resolveApiConfig } from "../src/host/config";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
+import {
+  createSourceManagementService,
+  type SourceAuthWiring,
+} from "../src/host/source-management";
 import { API_SERVICE_VERSION } from "../src/host/version";
 import { createTestDb, TEST_DATABASE_URL, TEST_ENCRYPTION_KEY_BASE64, type TestDb } from "./test-db";
 
@@ -59,8 +65,17 @@ export interface ApiTestBoot {
 /**
  * Boot the complete service composition over a FRESH PGlite database (real
  * migrations incl. the 0007 seed, real adapters, deterministic seams).
+ *
+ * R03: `sourceOverrides` injects EXTRA wired sources (e.g. a stub oauth
+ * connector — the SDK's testing.ts pattern) and per-connector auth-flow
+ * wirings (a stubbed token exchange), so the /sources routes' round-trips
+ * are exercised deterministically with NO network.
  */
-export async function createApiTestBoot(): Promise<ApiTestBoot> {
+export async function createApiTestBoot(sourceOverrides?: {
+  readonly extraSources?: readonly import("@wfx/experience").ConnectorPort[];
+  readonly wirings?: ReadonlyMap<string, SourceAuthWiring>;
+  readonly authGate?: import("../src/host/fan-out").FanOutAuthGate;
+}): Promise<ApiTestBoot> {
   const testDb = await createTestDb();
   const clock = new FixedClock(HANDLER_TEST_CLOCK_MS);
   const ids = new SequentialIdGen();
@@ -77,12 +92,31 @@ export async function createApiTestBoot(): Promise<ApiTestBoot> {
     ids,
   });
 
-  // The exact fan-out wiring bootApi performs (primary source only — the
-  // PGlite composition stands in for the Neon-backed webflix-catalog).
+  // R03 — the durable connector-account store over the same seams (the
+  // exact wiring bootApi performs).
+  const connectorAccounts = new PostgresConnectorAccountStore({
+    db: testDb.db,
+    clock,
+    key: decodeEncryptionKey(TEST_ENCRYPTION_KEY_BASE64),
+    ids,
+  });
+
+  // The exact fan-out wiring bootApi performs (primary source only by
+  // default; tests may add stub sources — the SDK's testing.ts pattern).
   const connector: FanOutConnector = createFanOutConnector({
-    sources: [persistence.ports.connector],
+    sources: [persistence.ports.connector, ...(sourceOverrides?.extraSources ?? [])],
     clock,
     version: API_SERVICE_VERSION,
+    ...(sourceOverrides?.authGate !== undefined ? { authGate: sourceOverrides.authGate } : {}),
+  });
+
+  // R03 — the source-management service over the fan-out's source rows +
+  // the injected (or empty) flow wirings.
+  const sourceManagement = createSourceManagementService({
+    sourceRows: connector.sourceRows(),
+    wirings: sourceOverrides?.wirings ?? new Map(),
+    accounts: connectorAccounts,
+    clock,
   });
 
   // The R02 identity services — the SAME wiring bootApi performs (the
@@ -118,6 +152,8 @@ export async function createApiTestBoot(): Promise<ApiTestBoot> {
     sessions,
     profiles,
     profileEvents,
+    sourceManagement,
+    connectorAccounts,
   };
   return { boot, testDb, clock, ids };
 }
