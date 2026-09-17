@@ -371,13 +371,32 @@ export class LibraryEngine {
     if (includeWatchlist) {
       for (const entry of serverLibrary) {
         if (typeof entry?.externalRef !== "string" || entry.externalRef.length === 0) continue;
-        const item = this.registry.register({
-          connectorId: entry.connectorId,
-          externalRef: entry.externalRef,
-          title: entry.title ?? entry.externalRef,
-        });
-        if (this.watchlist.has(item.id)) continue; // local-first: local truth wins
+        // R04: when the server row carries the canonical item id in
+        // metadata.canonicalItemId, the registry ADOPTS it (durable,
+        // cross-session) — the locally-minted id (if any) reconciles to
+        // the server id. When absent, the runtime mints as before.
         const metadata = entry.metadata as Record<string, unknown> | undefined;
+        const canonicalItemId = metadata?.canonicalItemId;
+        let item: { id: string };
+        if (
+          typeof canonicalItemId === "string" &&
+          canonicalItemId.length > 0
+        ) {
+          this.registry.reconcileBySourceKey(
+            entry.connectorId,
+            entry.externalRef,
+            canonicalItemId,
+            entry.title ?? entry.externalRef,
+          );
+          item = { id: canonicalItemId };
+        } else {
+          item = this.registry.register({
+            connectorId: entry.connectorId,
+            externalRef: entry.externalRef,
+            title: entry.title ?? entry.externalRef,
+          });
+        }
+        if (this.watchlist.has(item.id)) continue; // local-first: local truth wins
         const list = metadata?.list;
         mergedWatchlist.push({
           itemId: item.id,
@@ -410,6 +429,10 @@ export class LibraryEngine {
     // fabricated name), MERGED with the server's profile-scoped history —
     // the session fold is the freshest local evidence and wins per item;
     // server-only entries fill the cross-device view.
+    //
+    // R04: server-sourced canonical ids are ADOPTED (registerCanonical) —
+    // the runtime's registry reconciles to durable cross-session ids; the
+    // local-first fold stays intact (session evidence wins per item).
     const watchStates = this.watch.operations().all();
     const sessionItemIds = new Set(watchStates.map((state) => state.itemId));
     const historyEntries: HistoryEntry[] = watchStates.map((state) => ({
@@ -419,6 +442,11 @@ export class LibraryEngine {
     }));
     for (const entry of serverHistory) {
       if (typeof entry?.itemId !== "string" || entry.itemId.length === 0) continue;
+      // R04: adopt the server-sourced canonical id (durable, cross-session).
+      // The title is honestly the itemId when no source has registered it
+      // (the registry's TITLE LAW — never overwrite a real title with the
+      // placeholder).
+      this.registry.registerCanonical(entry.itemId, entry.itemId);
       if (sessionItemIds.has(entry.itemId)) continue; // session evidence wins
       historyEntries.push({
         itemId: entry.itemId,

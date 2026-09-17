@@ -112,6 +112,39 @@ The runtime models the RESULTING state, never the OAuth dance itself:
 > `apps/api`), `refresh()` answers the honest `unavailable` error model.
 > The `InMemoryServerPort` double implements it; the shape is final.
 
+### The R04 server-id adoption law (durable canonical identity)
+
+R04 (library and history) extends the canonical item registry with TWO new
+methods that ADOPT server-sourced canonical ids — the spec's §4 law:
+
+> Server-provided canonical ids WIN: when the server's library/history
+> answers carry canonical item ids, the runtime's canonical registry
+> ADOPTS them (durable, cross-session); session-local ULID minting retires
+> to the fallback for genuinely-unseen items.
+
+- `reconcileBySourceKey(connectorId, externalRef, itemId, title)` — when
+  the server's library rows carry `metadata.canonicalItemId`, the registry
+  RE-POINTS the source-keyed view to the server id (the locally-minted id
+  was a placeholder; the registry reconciles to the durable id). When the
+  server id matches an existing entry, the source key is added if missing.
+- `registerCanonical(itemId, title)` — used for history rows whose
+  realization the runtime hasn't seen yet (the server's `ProfileHistoryEntry.itemId`
+  is the durable identity). The TITLE LAW: when the id is ALREADY
+  registered (e.g. from a search hit that has a real title), the EXISTING
+  title is KEPT — the history fold's placeholder (the itemId itself) is
+  never a better title than what the registry already has.
+
+The `library.read()` model calls these methods:
+
+- For history entries: `registerCanonical(entry.itemId, entry.itemId)` —
+  adopts the server-sourced canonical id directly.
+- For watchlist entries: when `entry.metadata.canonicalItemId` is present,
+  `reconcileBySourceKey` reconciles; otherwise `register` mints locally
+  as before.
+
+The local-first fold STAYS INTACT (R07's surface story): local saves
+render immediately; the server merge reconciles ids on the next read.
+
 ## The semantics (and where their laws are tested)
 
 | Area | Module | Key laws |

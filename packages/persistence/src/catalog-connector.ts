@@ -349,9 +349,17 @@ export class PostgresCatalogConnector implements ConnectorPort {
     return [...entries];
   }
 
-  /** R02: the PROFILE-scoped library read (the explicit form). */
+  /**
+   * R02/R04: the PROFILE-scoped library read (the explicit form). Returns
+   * ALL rows in the profile — the canonical-keyed library (R04 migration
+   * 0009) stores ONE row per (profile, item); the primary realization
+   * reference (connector_id + external_ref) updates to the LATEST save
+   * (the cross-source replacement law), but the WebFlix-owned service
+   * library owns ALL rows saved via the service, regardless of which
+   * realization source the user saved from.
+   */
   async readLibraryForProfile(profileId: string): Promise<LibraryEntry[]> {
-    const entries = await this.library.listForProfile(profileId, WEBFLIX_CATALOG_CONNECTOR_ID);
+    const entries = await this.library.listAllForProfile(profileId);
     return [...entries];
   }
 

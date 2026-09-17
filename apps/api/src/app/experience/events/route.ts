@@ -107,7 +107,12 @@ export async function POST(request: Request): Promise<Response> {
       }
       // PROFILE-ATTRIBUTED durability: the row records the active profile.
       await boot.profileEvents.emitForProfile(event, resolved.identity.profileId);
-      scheduleOpportunisticDrain(boot.persistence.db, boot.ports.clock, boot.profiles);
+      scheduleOpportunisticDrain(
+        boot.persistence.db,
+        boot.ports.clock,
+        boot.profiles,
+        boot.history.removalStore(),
+      );
       return Response.json({ ok: true });
     }
 
@@ -121,7 +126,12 @@ export async function POST(request: Request): Promise<Response> {
     // One atomic outbox insert — durable the moment this answers 2xx.
     await boot.ports.events.emit(event);
     // The bounded best-effort delivery lane (the cron is the floor).
-    scheduleOpportunisticDrain(boot.persistence.db, boot.ports.clock, boot.profiles);
+    scheduleOpportunisticDrain(
+      boot.persistence.db,
+      boot.ports.clock,
+      boot.profiles,
+      boot.history.removalStore(),
+    );
     return Response.json({ ok: true });
   } catch (thrown) {
     logDegradation("events", thrown);

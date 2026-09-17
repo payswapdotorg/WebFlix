@@ -56,6 +56,7 @@ import {
   classifyDriverError,
   drainEventOutbox,
   requeueStaleInFlight,
+  PostgresHistoryRemovalStore,
   PostgresProfileService,
   type DbClient,
   type DrainEventOutboxResult,
@@ -137,15 +138,28 @@ function readPositionMs(payload: Record<string, unknown> | undefined): number {
  * doc); no-op (mark delivered) for the event types that have no projection
  * consumer yet.
  *
+ * R04 — THE EVENT-SINK LAW RE-MATERIALIZATION HOOK: when a NEW watch-state
+ * event arrives for an item the user previously REMOVED from history
+ * (`DELETE /experience/history/:itemId`), the fold FIRST clears the removal
+ * row — the item re-materializes in history (a re-watch). The frozen event
+ * itself is NEVER touched (the event_outbox is the immutable truth; the
+ * removal is a projection-side filter only). The removal store is OPTIONAL —
+ * when omitted, the fold skips the clear step (the pre-R04 behavior; tests
+ * that exercise the fold in isolation without removals).
+ *
  * @param profiles the profile service used to resolve the EFFECTIVE
  * profile for legacy/anonymous (NULL-attributed) rows at delivery time —
  * pass the boot's service; a seam-less fallback is built when omitted for
  * direct test callers whose users never materialize profiles.
+ * @param removals the R04 history-removal store; when provided, the fold
+ * clears any removal row before upserting the projection (re-materialize on
+ * re-watch). Optional to keep pre-R04 test callers unchanged.
  */
 export function makeWatchHistoryDeliverer(
   db: DbClient,
   clock: Clock,
   profiles?: PostgresProfileService,
+  removals?: PostgresHistoryRemovalStore,
 ): OutboxDeliverer {
   // Fallback service without id seam: legacy NULL rows for UNREGISTERED
   // users resolve the pseudo bucket (no minting); a registered user's
@@ -167,6 +181,24 @@ export function makeWatchHistoryDeliverer(
       context.profileId !== null
         ? context.profileId
         : await resolver.resolveEffectiveProfileKey(event.userId);
+    // R04: clear any removal row first (re-materialize on re-watch). The
+    // clear step is best-effort alongside the upsert — a failure here
+    // surfaces as the same degradation family (the upsert below is the
+    // source of truth for the projection row; the removal-clear is a
+    // convenience so the user sees the re-watched item in history again
+    // without an extra DELETE).
+    if (removals !== undefined) {
+      try {
+        await removals.clearRemoval(profileId, event.itemId);
+      } catch (thrown) {
+        // The clear failure is logged but never blocks the fold — the
+        // projection row is still upserted; the removal row may briefly
+        // mask it. The next fold (at-least-once) re-tries.
+        console.error(
+          `[webflix-api] history removal clear failed for profile=${profileId} item=${event.itemId}: ${String(thrown)}`,
+        );
+      }
+    }
     try {
       await db.query(
         `INSERT INTO watch_history (user_id, profile_id, item_id, position_ms, completed, last_event_type,
@@ -202,13 +234,14 @@ export async function runRelayDrain(
   clock: Clock,
   limit = 50,
   profiles?: PostgresProfileService,
+  removals?: PostgresHistoryRemovalStore,
 ): Promise<RelayRunResult> {
   const requeued = await requeueStaleInFlight(db, {
     now: clock.now(),
     olderThanMs: STALE_IN_FLIGHT_MS,
   });
   const drain = await drainEventOutbox(db, {
-    deliver: makeWatchHistoryDeliverer(db, clock, profiles),
+    deliver: makeWatchHistoryDeliverer(db, clock, profiles, removals),
     now: clock.now(),
     limit,
   });
@@ -242,6 +275,7 @@ export function scheduleOpportunisticDrain(
   db: DbClient,
   clock: Clock,
   profiles?: PostgresProfileService,
+  removals?: PostgresHistoryRemovalStore,
 ): void {
   eventsSinceDrain += 1;
   const now = clock.now();
@@ -254,7 +288,7 @@ export function scheduleOpportunisticDrain(
   lastOpportunisticDrainMs = now;
   opportunisticInFlight = true;
 
-  void runRelayDrain(db, clock, OPPORTUNISTIC_LIMIT, profiles)
+  void runRelayDrain(db, clock, OPPORTUNISTIC_LIMIT, profiles, removals)
     .then((result) => {
       const { claimed, delivered, rescheduled, failed } = result.drain;
       console.error(
