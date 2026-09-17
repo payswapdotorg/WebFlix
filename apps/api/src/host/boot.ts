@@ -78,6 +78,7 @@ import {
 import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
 import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
 import { HistoryHost } from "./history";
+import { RecommendationControlsHost } from "./recommendation-controls";
 import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
 import {
   createSourceManagementService,
@@ -148,6 +149,15 @@ export interface ApiBoot {
    * uses the removal store for re-materialization on re-watch.
    */
   readonly history: HistoryHost;
+  /**
+   * R05 — the recommendation-controls host: policy + intents + feedback
+   * over the persistence stores (the scope-truth, validation, and
+   * reversibility laws the `/experience/{policy,intents,feedback}` routes
+   * share). The runtime's R02 ServerPort members (`readPolicy`/
+   * `writePolicy`/`readIntents`/`writeIntent`) target these endpoints over
+   * the lead-ratified HTTP mapping.
+   */
+  readonly recommendation: RecommendationControlsHost;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -320,6 +330,15 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
   // event clears the removal row).
   const history = new HistoryHost({ db: persistence.db, clock, ids });
 
+  // R05 — the recommendation-controls host: policy + intents + feedback
+  // over the persistence stores (recommendation_state + user_intents +
+  // recommendation_feedback, migration 0010).
+  const recommendation = new RecommendationControlsHost({
+    db: persistence.db,
+    clock,
+    ids,
+  });
+
   // 6. The service Ports bundle: the fan-out + the 052 transactional
   //    outbox event sink (PostgresEventSink from the persistence boot)
   //    + the shared seams.
@@ -343,6 +362,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     sourceManagement,
     connectorAccounts,
     history,
+    recommendation,
   };
 }
 

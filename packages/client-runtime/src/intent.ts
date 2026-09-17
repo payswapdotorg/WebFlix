@@ -1,5 +1,5 @@
 /**
- * @wfx/client-runtime — intent submission (R01).
+ * @wfx/client-runtime — intent submission (R01; R05 server wiring).
  *
  * Session/temporary vs persistent intent + attention-mode submission, on
  * the frozen Intent Graph vocabulary (`IntentScope` = persistent |
@@ -21,14 +21,30 @@
  *
  * Attention-mode submission rides the same store (the recommendation
  * policy view): validated against the frozen `ATTENTION_MODES` vocabulary.
+ *
+ * R05 — THE SERVER-BACKED DURABLE WIRING (the seam the R02 ServerPort
+ * members fill): a store constructed with a `server` gains
+ * - DURABLE WRITE-THROUGH (runtime-level, see runtime.ts): `persistent`,
+ *   `social`, and `temporary` submissions are also written through the
+ *   port; `session`/`momentary` NEVER leave the runtime (they die at
+ *   `endSession` — leaking them into the next session's server read would
+ *   break scope truth);
+ * - `refresh()`: the cross-device hydration — the server's durable
+ *   records REPLACE their local twins (the server is the convergence
+ *   point) and the server's policy (when set) becomes the policy view; a
+ *   failing read answers the ERROR model (the last synced views stay
+ *   visible — never a fake empty set); an unset server policy (null) keeps
+ *   the current view (the honest empty).
  */
 
 import { ATTENTION_MODES, INTENT_ID_PREFIX, INTENT_PROVENANCES, INTENT_SCOPES } from "@wfx/domain";
 import type { IntentScope, RecommendationPolicy } from "@wfx/domain";
 import { previewValue } from "@wfx/domain";
 
-import { RuntimeError } from "./errors";
+import { RuntimeError, serverFailureKind } from "./errors";
+import { errorSection, readySection, type ModelSectionStatus } from "./models";
 import type { RuntimeClock, RuntimeIdGen } from "./runtime-seams";
+import type { ServerPort } from "./server-port";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -87,6 +103,39 @@ export interface RecommendationPolicyView {
 
 /** The default policy view (balanced — the frozen default mode). */
 export const DEFAULT_ATTENTION_MODE: AttentionMode = "balanced";
+
+// ---------------------------------------------------------------------------
+// R05 — the durable/server-backed intent + policy wiring
+// ---------------------------------------------------------------------------
+
+/**
+ * The DURABLE scopes: intents that outlive the runtime session and are
+ * therefore written through to the server (persistent survives sessions;
+ * social is a standing social-scope ask; temporary expires at `expiresAt`).
+ *
+ * `session` and `momentary` are SESSION-LOCAL BY LAW: they die at
+ * `endSession` and are NEVER sent to the server — a session intent that
+ * leaked into the next session's server-backed read would break the R01
+ * scope truth. (The server may still hold rows in those scopes written by
+ * other API clients; `refresh` ignores them defensively for the same
+ * law.)
+ */
+export const DURABLE_INTENT_SCOPES: readonly IntentScope[] = ["persistent", "social", "temporary"];
+
+/** Structural membership check against {@link DURABLE_INTENT_SCOPES}. */
+export function isDurableIntentScope(scope: IntentScope): boolean {
+  return (DURABLE_INTENT_SCOPES as readonly string[]).includes(scope);
+}
+
+/**
+ * The model {@link IntentOperations.refresh} answers: a typed section
+ * status (the R03 sources pattern — in-model degradation, never a fake
+ * success and never a silent wipe). On `error` the last synced views stay
+ * visible through the sync operations.
+ */
+export interface IntentRefreshModel {
+  readonly status: ModelSectionStatus;
+}
 
 // ---------------------------------------------------------------------------
 // Validation (law 4 — honest, typed)
@@ -198,19 +247,43 @@ export interface IntentOperations {
   policy(): RecommendationPolicyView;
   /** End the session: clear session/momentary intents (law 1). */
   endSession(): void;
+  /**
+   * R05: hydrate the DURABLE intents + the policy view from the server
+   * (cross-device continuity — another device's writes surface here).
+   * Durable scopes are SERVER-OWNED after refresh (the server is the
+   * convergence point); session/momentary intents are never touched. A
+   * failing read answers the ERROR model — the last synced views stay
+   * visible (never a fake empty set). An unset server policy (null) keeps
+   * the current view (the honest empty — the runtime default stands).
+   */
+  refresh(): Promise<IntentRefreshModel>;
+}
+
+/** Options for {@link IntentStore}'s server-backed (R05) wiring. */
+export interface IntentStoreServerOptions {
+  /**
+   * The server port whose R02 members (`readIntents`/`writeIntent`/
+   * `readPolicy`/`writePolicy`) back the durable intents + policy view.
+   * Optional: a store without a server keeps the pre-R05 session-only
+   * semantics (usable standalone in tests).
+   */
+  readonly server?: ServerPort;
 }
 
 /**
- * The session intent store + attention-mode policy view. Created by
+ * The session intent store + attention-mode policy view, optionally
+ * backed by the server's durable policy/intent stores (R05). Created by
  * `createRuntime`; usable standalone in tests.
  */
 export class IntentStore {
   private readonly byKey = new Map<string, RecordedIntent>();
   private policyView: RecommendationPolicyView;
+  private readonly server: ServerPort | undefined;
 
   constructor(
     private readonly clock: RuntimeClock,
     private readonly ids: RuntimeIdGen,
+    options?: IntentStoreServerOptions,
   ) {
     this.policyView = {
       attentionMode: DEFAULT_ATTENTION_MODE,
@@ -219,6 +292,7 @@ export class IntentStore {
       socialInfluence: 0.5,
       updatedAt: new Date(clock.now()).toISOString(),
     };
+    this.server = options?.server;
   }
 
   /** Record/update one intent (law 2 — one objective per scope). */
@@ -272,12 +346,84 @@ export class IntentStore {
     }
   }
 
+  /**
+   * R05: hydrate the durable intents + the policy view from the server.
+   * See {@link IntentOperations.refresh}. Durable-scope server records
+   * REPLACE their local twins (the server is the convergence point —
+   * cross-device); session/momentary rows are skipped (the scope-truth
+   * law — they never cross sessions) and malformed rows are skipped
+   * (a broken row is never an intent).
+   */
+  async refresh(): Promise<IntentRefreshModel> {
+    if (this.server === undefined) {
+      return {
+        status: errorSection(
+          "unavailable",
+          "no server port is bound to this intent store — the durable intent/policy hydration needs the R02 ServerPort members",
+        ),
+      };
+    }
+
+    const [intentsResult, policyResult] = await Promise.all([
+      this.server.readIntents(),
+      this.server.readPolicy(),
+    ]);
+
+    if (!intentsResult.ok) {
+      return {
+        status: errorSection(
+          serverFailureKind(intentsResult.failure),
+          intentsResult.failure.detail,
+        ),
+      };
+    }
+    if (!policyResult.ok) {
+      return {
+        status: errorSection(
+          serverFailureKind(policyResult.failure),
+          policyResult.failure.detail,
+        ),
+      };
+    }
+
+    // Merge the durable server records (the convergence point).
+    for (const record of intentsResult.value) {
+      if (!isDurableIntentScope(record.scope)) continue; // the scope-truth law
+      if (typeof record.objective !== "string" || record.objective.trim().length === 0) continue;
+      this.byKey.set(`${record.scope}:${record.objective}`, {
+        id: record.id,
+        scope: record.scope,
+        objective: record.objective,
+        weight: Number.isFinite(record.weight) ? record.weight : 1,
+        confidence: Number.isFinite(record.confidence) ? record.confidence : 1,
+        ...(record.expiresAt !== undefined ? { expiresAt: record.expiresAt } : {}),
+        provenance: record.provenance,
+        submittedAt: record.updatedAt,
+      });
+    }
+
+    // Adopt the server policy when one is set (null keeps the current view —
+    // the honest empty; the runtime's default view is the client's).
+    if (policyResult.value !== null) {
+      this.policyView = {
+        attentionMode: policyResult.value.attentionMode,
+        exploration: policyResult.value.exploration,
+        novelty: policyResult.value.novelty,
+        socialInfluence: policyResult.value.socialInfluence,
+        updatedAt: new Date(this.clock.now()).toISOString(),
+      };
+    }
+
+    return { status: readySection() };
+  }
+
   /** The operations surface. */
   operations(): IntentOperations {
     return {
       intents: () => this.active(),
       policy: () => ({ ...this.policyView }),
       endSession: () => this.endSession(),
+      refresh: () => this.refresh(),
     };
   }
 }

@@ -49,12 +49,45 @@ There is **no fixture fallback**: `WFX_DEV_FIXTURES` is a web-host concern
 | `0007_profiles` (R02) | `profiles`; `sessions.active_profile_id`; `profile_id` scoping on `watch_history` / `library_entries` / `user_intents` / `recommendation_state` / `event_outbox` |
 | `0008_source_management` (R03) | `connector_accounts` lifecycle columns (`authorized_at`, `last_state_change`, `availability_notes`); `connector_pending_authorizations` |
 | `0009_canonical_library_history_exclusions` (R04) | `library_entries.item_id` (canonical-key discipline); `history_removals`; `history_exclusions` |
+| `0010_recommendation_feedback` (R05) | `recommendation_feedback` (the J15 control set — reversible, per-profile) |
 
 Runner laws (src/migrations.ts): files are applied in lexicographic order,
 each inside ONE transaction together with its `persistence_migrations`
 bookkeeping insert; re-runs verify checksums and apply nothing; an applied
 file whose content changed is a `MigrationError` (forward-only contract —
 fix drift with a NEW migration). No down path, by design.
+
+## R05 — the recommendation-controls stores
+
+Three stores back the `/experience/{policy,intents,feedback}` endpoints
+(the `RecommendationControlsHost` in apps/api composes them):
+
+- **Policy** — `recommendation_state` (migration 0004/0007): ONE row per
+  effective profile holding the frozen `RecommendationPolicy` (jsonb,
+  `validatePolicy`-checked on write AND read — a drifted row is a typed
+  failure, never a silently accepted fake policy) plus the opaque
+  engine-state blob. `PostgresRecommendationStateStore.saveForProfile` /
+  `loadForProfile`.
+- **Intents** — `user_intents` (migration 0004/0007): the frozen
+  `IntentRecord` wire shape per (effective profile, scope, objective) —
+  the one-objective-per-scope discipline is the table's UNIQUE key; the
+  canonical `wfxint_` id stays stable across merges. R05 adds
+  `listActiveForProfile(profileId, nowIso)` — the R01 LIVE-EXPIRY law,
+  server side: expired temporary intents are filtered at READ (stored as
+  audit truth, never surfaced) — and the profile-scoped
+  `getIntentForProfile` / `deleteIntentForProfile` (the undo law's
+  isolation half: one profile may never read or remove another's).
+- **Feedback** — `recommendation_feedback` (migration 0010): the J15
+  control set as typed rows — kind (`more-like-this` | `not-interested` |
+  `dont-recommend-source` | `dont-recommend-creator` | `already-watched`),
+  target type (derived from the kind — the table CHECK enforces the
+  pairing), target id, optional note (<= 500 chars), `created_at`.
+  ONE row per (effective profile, kind, target): re-submission
+  update-in-place (stable `wfxfeed_` id, refreshed timestamp). DELETE IS
+  GONE — `deleteForProfile` removes the row outright; no soft-delete
+  theater. THE EVENT-SINK LAW: nothing here touches `event_outbox` or
+  `watch_history` (R04's law — `already-watched` is a recommendation
+  control, not a history edit).
 
 ## R04 — canonical-keyed library + history removals/exclusions
 

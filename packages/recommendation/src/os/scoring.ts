@@ -43,6 +43,7 @@ import type {
 import { isRecord, previewValue } from "@wfx/domain";
 
 import { assembleFeatures } from "./features";
+import { attentionAdjustedDials } from "./attention";
 import type { CandidateFeatures, ScoredCandidate, TraceDecision } from "./types";
 import { RecommendationOSError } from "./types";
 import { assertValidContext, assertValidModel } from "./validate";
@@ -156,6 +157,8 @@ export async function score(
       confidence: itemScore === null ? null : itemScore.confidence,
       explanations: itemScore === null ? [] : Object.freeze([...itemScore.explanations]),
       availabilityDemoted: false,
+      feedbackAdjustment: 0,
+      feedbackDemoted: null,
     }) as ScoredCandidate;
   });
 
@@ -252,6 +255,11 @@ export function createHeuristicModel(): RecommendationModel {
 
       const surface = ctx.surface;
       const policy = ctx.policy;
+      // R05 (J18): the attention-adjusted dials — the mode's floors applied
+      // to the user's dials. Mindful measurably raises exploration/novelty
+      // weighting; the other modes pass the dials through EXACTLY (custom's
+      // contract). The socialInfluence dial is mode-independent.
+      const dials = attentionAdjustedDials(policy);
       const scores: RecommendationScore[] = [];
       for (const features of representative.values()) {
         const explanations: string[] = [];
@@ -285,21 +293,21 @@ export function createHeuristicModel(): RecommendationModel {
           );
         }
 
-        // Novelty term — policy novelty dial as multiplier on freshness.
-        if (features.freshness > 0 && policy.novelty > 0) {
-          const contribution = HEURISTIC_NOVELTY_BASE * policy.novelty * features.freshness;
+        // Novelty term — the attention-adjusted novelty dial as multiplier on freshness.
+        if (features.freshness > 0 && dials.novelty > 0) {
+          const contribution = HEURISTIC_NOVELTY_BASE * dials.novelty * features.freshness;
           total += contribution;
           explanations.push(
-            `freshness ${features.freshness.toFixed(3)} (novelty ${policy.novelty}) ${term(contribution)}`,
+            `freshness ${features.freshness.toFixed(3)} (novelty ${dials.novelty}${dials.novelty !== policy.novelty ? `, attention-adjusted from ${policy.novelty} for mode "${policy.attentionMode}"` : ""}) ${term(contribution)}`,
           );
         }
 
-        // Exploration term — policy exploration dial as multiplier on unseen.
+        // Exploration term — the attention-adjusted exploration dial as multiplier on unseen.
         if (features.unseen) {
-          const contribution = HEURISTIC_EXPLORATION_BASE * policy.exploration;
+          const contribution = HEURISTIC_EXPLORATION_BASE * dials.exploration;
           total += contribution;
           explanations.push(
-            `unseen item — exploration appetite (exploration ${policy.exploration}) ${term(contribution)}`,
+            `unseen item — exploration appetite (exploration ${dials.exploration}${dials.exploration !== policy.exploration ? `, attention-adjusted from ${policy.exploration} for mode "${policy.attentionMode}"` : ""}) ${term(contribution)}`,
           );
         }
 

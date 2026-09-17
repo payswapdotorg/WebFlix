@@ -33,7 +33,12 @@ import {
   type ActionState,
 } from "./actions";
 import { RuntimeError } from "./errors";
-import { IntentStore, type IntentOperations } from "./intent";
+import {
+  IntentStore,
+  assertValidPolicyCommand,
+  isDurableIntentScope,
+  type IntentOperations,
+} from "./intent";
 import {
   LibraryEngine,
   type LibraryModel,
@@ -229,7 +234,9 @@ export function createRuntime(
   const playbackControllers = new Map<string, PlaybackSessionController>();
   const actions = new ActionEngine(server, platform, session.clock, session.ids);
   const libraryEngine = new LibraryEngine(server, registry, watch, session.clock);
-  const intents = new IntentStore(session.clock, session.ids);
+  // R05: the intent store binds the SERVER port — the durable write-through
+  // + refresh() hydration run over the frozen R02 members.
+  const intents = new IntentStore(session.clock, session.ids, { server });
   const sources = createSourceStateStore(server);
 
   // — the at-least-once flush hook (adapters await async shutdown hooks) —
@@ -345,13 +352,42 @@ export function createRuntime(
     library: (input?: LibraryQuery) => libraryEngine.read(input),
 
     setIntent: async (input: Parameters<IntentStore["set"]>[0]): Promise<void> => {
-      intents.set(input); // validated; invalid input throws the typed error
+      // Local-first: the session view is immediately truthful (validated;
+      // invalid input throws the typed error before anything else happens).
+      intents.set(input);
+      // R05 DURABLE WRITE-THROUGH: persistent/social/temporary submissions
+      // are ALSO recorded server-side (cross-device continuity). A failed
+      // durable write is NEVER a silent success — the typed error names
+      // what survived (the session view) and what did not (the durable
+      // record). `session`/`momentary` NEVER leave the runtime (scope truth:
+      // they die at endSession and must not leak into the next session's
+      // server-backed read).
+      if (isDurableIntentScope(input.scope)) {
+        const result = await server.writeIntent(input);
+        if (!result.ok) {
+          throw new RuntimeError(
+            serverFailureKind(result.failure),
+            `the intent is active for this session but was NOT durably recorded (${result.failure.detail})`,
+          );
+        }
+      }
     },
 
     setRecommendationPolicy: async (
       input: Parameters<IntentStore["setPolicy"]>[0],
     ): Promise<void> => {
-      intents.setPolicy(input); // validated; invalid input throws the typed error
+      // DURABLE-FIRST: the policy view MIRRORS the durable policy, so the
+      // server write happens first and a failure keeps the view at its
+      // current (truthful) value — never a fabricated "saved" state.
+      assertValidPolicyCommand(input); // typed invalid-input on garbage
+      const result = await server.writePolicy(input);
+      if (!result.ok) {
+        throw new RuntimeError(
+          serverFailureKind(result.failure),
+          `the recommendation policy was NOT saved (${result.failure.detail})`,
+        );
+      }
+      intents.setPolicy(input); // revalidates (idempotent) + applies
     },
 
     playback: playbackOperations,

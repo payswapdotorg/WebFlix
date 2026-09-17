@@ -38,13 +38,15 @@ export type ItemOrientation = NonNullable<EntertainmentItem["orientation"]>;
 
 /**
  * Pipeline stage names, in the frozen-architecture order:
- * candidate generation -> feature assembly -> model scoring -> policy
- * constraints -> intent-aware diversity -> feed composition.
+ * candidate generation -> feature assembly -> model scoring -> feedback
+ * (R05) -> policy constraints -> intent-aware diversity -> feed
+ * composition.
  */
 export type PipelineStageName =
   | "retrieval"
   | "features"
   | "scoring"
+  | "feedback"
   | "policy"
   | "diversity"
   | "composition";
@@ -84,7 +86,20 @@ export type TraceDecisionKind =
   /** A constraint could not be fully repaired within the sweep budget. */
   | "constraint-residual"
   /** Per-card placement record (position reasons, end-to-end explainability). */
-  | "position";
+  | "position"
+  // — R05 (recommendation controls) —
+  /** Source/creator suppression: candidates skipped WITH the honest note naming the control. */
+  | "feedback-suppression"
+  /** `Not interested`: the item is demoted to the feed tail (never removed). */
+  | "feedback-not-interested"
+  /** `Already watched`: repeats are deprioritized (history itself is never touched). */
+  | "feedback-already-watched"
+  /** `More like this`: the anchor's similarity neighborhood got a rank boost. */
+  | "feedback-boost"
+  /** Anti-tunnel floor: a different-objective candidate was swapped into the top block. */
+  | "diversity-floor"
+  /** Anti-tunnel floor: the pool cannot satisfy the floor — the residual is named. */
+  | "diversity-floor-unsatisfiable";
 
 /** One auditable decision made by a pipeline stage. */
 export interface TraceDecision {
@@ -194,6 +209,9 @@ export interface FeatureSet {
 // Working record (scoring -> policy -> diversity -> composition)
 // ---------------------------------------------------------------------------
 
+/** One feedback demotion kind (the R05 control vocabulary's item-level effects). */
+export type FeedbackDemotionKind = "not-interested" | "already-watched";
+
 /**
  * The record that flows through the OS stages after model scoring.
  *
@@ -214,6 +232,19 @@ export interface ScoredCandidate {
   explanations: readonly string[];
   /** True once the policy availability floor demoted this item to the tail. */
   availabilityDemoted: boolean;
+  /**
+   * R05: the signed `more-like-this` rank boost (0 when no control
+   * applies). Like every OS ordering decision it is carried SEPARATELY
+   * from `modelScore` — the model's verbatim output is never edited.
+   */
+  feedbackAdjustment: number;
+  /**
+   * R05: the item-level feedback demotion (`not-interested` tails below
+   * `already-watched`; both tail below the availability floor). Null when
+   * no control demotes this item. Demotion is REORDERING — the item is
+   * never removed (the pool-stays-wide law).
+   */
+  feedbackDemoted: FeedbackDemotionKind | null;
 }
 
 /** Attention constraints derived from the policy (attention.ts owns the law). */
@@ -233,6 +264,18 @@ export interface AttentionConstraints {
   maxSessionExtendingChain: number | null;
   /** `policy.maxSessionExtensionMinutes` when provided (all modes). */
   maxSessionExtensionMinutes: number | null;
+  /**
+   * R05: the attention-adjusted EXPLORATION dial in [0,1] (the mode's
+   * floor applied to the user's dial — mindful raises it, the other modes
+   * pass it through). The diversity stage's K/X formulas read THIS value.
+   */
+  exploration: number;
+  /**
+   * R05: the attention-adjusted NOVELTY dial in [0,1] (same law as
+   * `exploration`; consumed by the shipped heuristic model's novelty
+   * term so the mode measurably changes novelty weighting).
+   */
+  novelty: number;
 }
 
 // ---------------------------------------------------------------------------

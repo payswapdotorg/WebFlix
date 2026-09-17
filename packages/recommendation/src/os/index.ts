@@ -11,12 +11,15 @@
  * - features.ts:     assembleFeatures — the deterministic feature stage.
  * - scoring.ts:      score(ctx, features, model) — injected-model contract —
  *                    and createHeuristicModel, the explainable default.
+ * - feedback.ts:     R05 — the J15 control set (suppressions with honest
+ *                    notes, item demotions, more-like-this boosts).
  * - attention.ts:    the attention-policy law + ordering-repair algorithms.
  * - policy.ts:       applyPolicy — dedupe, custom objectives, availability
  *                    floor, attention modes.
- * - diversity.ts:    diversify — intent-aware anti-tunnel-vision re-ranking.
+ * - diversity.ts:    diversify — intent-aware anti-tunnel-vision re-ranking
+ *                    (run caps, exploration injection, the diversity floor).
  * - composition.ts:  composeFeed — watch/short surface composition.
- * - pipeline.ts:     runRecommendation — the six-stage pipeline + trace.
+ * - pipeline.ts:     runRecommendation — the seven-stage pipeline + trace.
  */
 export * from "./types";
 export * from "./validate";
@@ -24,6 +27,7 @@ export * from "./events";
 export * from "./fatigue";
 export * from "./features";
 export * from "./scoring";
+export * from "./feedback";
 export * from "./attention";
 export * from "./policy";
 export * from "./diversity";

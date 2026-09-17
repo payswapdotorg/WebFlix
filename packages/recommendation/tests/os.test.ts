@@ -489,13 +489,15 @@ describe("WFX-021 — custom policy objectives (directions honored, model scores
 // ===========================================================================
 
 describe("WFX-021 — pipeline trace completeness (every stage recorded, every demotion explained)", () => {
-  it("records all six stages in frozen-architecture order with counts and decisions", async () => {
+  it("records all seven stages in frozen-architecture order with counts and decisions", async () => {
     const page = await runRecommendation(goldenCtx("watch"));
     const stages = page.trace.stages;
+    // R05 inserted the feedback stage between scoring and policy.
     expect(stages.map((stage) => stage.stage)).toEqual([
       "retrieval",
       "features",
       "scoring",
+      "feedback",
       "policy",
       "diversity",
       "composition",
@@ -507,11 +509,13 @@ describe("WFX-021 — pipeline trace completeness (every stage recorded, every d
     expect(stages[2]!.inputCount).toBe(19);
     expect(stages[2]!.outputCount).toBe(19);
     expect(stages[3]!.inputCount).toBe(19);
-    expect(stages[3]!.outputCount).toBe(12); // canonical dedupe: 19 -> 12 items
-    expect(stages[4]!.inputCount).toBe(12);
-    expect(stages[4]!.outputCount).toBe(12); // permutation
+    expect(stages[3]!.outputCount).toBe(19); // empty feedback set: a no-op row
+    expect(stages[4]!.inputCount).toBe(19);
+    expect(stages[4]!.outputCount).toBe(12); // canonical dedupe: 19 -> 12 items
     expect(stages[5]!.inputCount).toBe(12);
-    expect(stages[5]!.outputCount).toBe(12);
+    expect(stages[5]!.outputCount).toBe(12); // permutation
+    expect(stages[6]!.inputCount).toBe(12);
+    expect(stages[6]!.outputCount).toBe(12);
   });
 
   it("records the injected model identity in the trace", async () => {

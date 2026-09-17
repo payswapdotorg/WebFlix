@@ -171,15 +171,17 @@ export function applyPolicy(
         itemIds: [item.candidate.itemId],
       });
     }
-    // Stable re-order: modelScore + adjustment desc (unscored items last),
-    // ties keeping the incoming (dedupe) order.
+    // Stable re-order: modelScore + custom adjustment + feedback boost desc
+    // (unscored items last), ties keeping the incoming (dedupe) order. The
+    // R05 feedback boost rides the same key so custom objectives and
+    // more-like-this COMPOSE instead of overriding each other.
     const keyed = current.map((item, index) => ({
       item,
       index,
       key:
         item.modelScore === null
           ? Number.NEGATIVE_INFINITY
-          : item.modelScore + (adjustments.get(item) ?? 0),
+          : item.modelScore + (adjustments.get(item) ?? 0) + item.feedbackAdjustment,
     }));
     keyed.sort((a, b) => {
       if (a.key !== b.key) return b.key - a.key;
@@ -211,7 +213,7 @@ export function applyPolicy(
   const constraints = attentionConstraints(policy);
   decisions.push({
     kind: "attention-policy",
-    detail: `mode "${constraints.attentionMode}": maxConsecutiveSameObjective=${constraints.maxConsecutiveSameObjective ?? "diversity-K (no mandated gaps)"}, maxSessionExtendingChain=${constraints.maxSessionExtendingChain ?? "unbounded"}, maxSessionExtensionMinutes=${constraints.maxSessionExtensionMinutes ?? "none"}`,
+    detail: `mode "${constraints.attentionMode}": maxConsecutiveSameObjective=${constraints.maxConsecutiveSameObjective ?? "diversity-K (no mandated gaps)"}, maxSessionExtendingChain=${constraints.maxSessionExtendingChain ?? "unbounded"}, maxSessionExtensionMinutes=${constraints.maxSessionExtensionMinutes ?? "none"}, effective dials (exploration ${constraints.exploration}, novelty ${constraints.novelty})${constraints.exploration !== policy.exploration || constraints.novelty !== policy.novelty ? ` — attention-adjusted from (exploration ${policy.exploration}, novelty ${policy.novelty}) for the mode's floors` : ""}`,
     itemIds: [],
   });
 

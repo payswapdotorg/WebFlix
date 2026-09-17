@@ -78,6 +78,9 @@ export * from "./history-exclusions";
 export * from "./intents";
 export * from "./recommendation-state";
 
+// R05 — the recommendation-feedback store (the J15 control set).
+export * from "./recommendation-feedback";
+
 // Connector accounts + credential envelope encryption + the R03
 // model-input privacy law (the structurally secret-free summary + guard).
 export * from "./envelope-crypto";

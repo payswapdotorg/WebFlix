@@ -1,21 +1,28 @@
 /**
- * Recommendation OS — the pipeline (WFX-021, Lane A).
+ * Recommendation OS — the pipeline (WFX-021, Lane A; R05 feedback stage).
  *
  * `runRecommendation(ctx, options?)` — the full ranking pipeline as PURE
  * TypeScript, orchestrating the frozen-architecture stages in order, each a
  * pure function consuming the previous output:
  *
  *   retrieval (pool intake) -> features -> scoring (injected model) ->
- *   policy constraints -> intent-aware diversity -> feed composition
+ *   feedback controls (R05) -> policy constraints -> intent-aware
+ *   diversity -> feed composition
  *
  * Every stage's decision lands in the auditable `PipelineTrace` (stage
  * name, input count, output count, decisions) — recommendations are
  * explainable end-to-end. No I/O, no network, no persistence, no hidden
- * clocks, no randomness: the output is a pure function of (ctx, model).
+ * clocks, no randomness: the output is a pure function of (ctx, model,
+ * options.feedback).
  *
  * Model injection: `options.model` injects any frozen `RecommendationModel`;
  * the default is the shipped deterministic heuristic
  * (`createHeuristicModel()`). The OS never hardcodes a provider.
+ *
+ * R05 feedback injection: `options.feedback` is the active profile's
+ * reversible control set (see feedback.ts); the OS never fetches it — the
+ * caller reads the per-profile records and passes them in. Structural
+ * garbage in the set throws the typed error before any stage runs.
  *
  * The retrieval stage is pool INTAKE: candidate generation itself is the
  * merged WFX-020 retrieval index feeding `ctx.candidatePool`; the OS stage
@@ -31,6 +38,7 @@ import type {
 
 import { composeFeed } from "./composition";
 import { diversify } from "./diversity";
+import { applyFeedback, type RecommendationFeedback } from "./feedback";
 import { assembleFeatures } from "./features";
 import { applyPolicy } from "./policy";
 import { createHeuristicModel, score } from "./scoring";
@@ -53,6 +61,14 @@ export interface RunRecommendationOptions {
    * hardcode a provider — injection is the only model channel.
    */
   model?: RecommendationModel;
+  /**
+   * R05: the ACTIVE PROFILE's feedback set (the J15 controls — reversible,
+   * per-profile records the caller reads from the server and passes in;
+   * the OS never fetches). Defaults to the empty set: a run without
+   * feedback is byte-identical to the pre-R05 pipeline (minus the trace's
+   * empty feedback stage row, which is always present).
+   */
+  feedback?: readonly RecommendationFeedback[];
 }
 
 // ---------------------------------------------------------------------------
@@ -149,8 +165,13 @@ export async function runRecommendation(
   const pooledCtx: RecommendationContext = { ...ctx, candidatePool: [...intake.pool] };
   const scoring = await score(pooledCtx, features, model);
 
+  // --- stage 3.5 (R05): the feedback controls -------------------------------
+  // Suppressions exclude their targets WITH honest notes; item controls
+  // demote/boost; every decision is traced. An empty set is a no-op row.
+  const feedbackStage = applyFeedback(scoring.scored, options?.feedback ?? []);
+
   // --- stage 4: policy constraints ------------------------------------------
-  const policy = applyPolicy(ctx, scoring.scored);
+  const policy = applyPolicy(ctx, feedbackStage.ranked);
 
   // --- stage 5: intent-aware diversity --------------------------------------
   const diversity = diversify(policy.ranked, ctx.intents, ctx.policy);
@@ -179,8 +200,14 @@ export async function runRecommendation(
       decisions: scoring.decisions,
     },
     {
-      stage: "policy",
+      stage: "feedback",
       inputCount: scoring.scored.length,
+      outputCount: feedbackStage.ranked.length,
+      decisions: feedbackStage.decisions,
+    },
+    {
+      stage: "policy",
+      inputCount: feedbackStage.ranked.length,
       outputCount: policy.ranked.length,
       decisions: policy.decisions,
     },

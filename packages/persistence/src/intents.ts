@@ -253,6 +253,37 @@ export class PostgresIntentStore {
     }
   }
 
+  /**
+   * R05: one PROFILE's ACTIVE intents — the R01 live-expiry law, server
+   * side. Expired temporary intents (and any other scope carrying a past
+   * `expires_at`) are FILTERED AT READ TIME; they stay stored (audit truth)
+   * but never surface in the active set. `nowIso` is the caller's clock —
+   * deterministic, no hidden wall clock. Heaviest first (id ascending as
+   * the tiebreak), same order law as {@link listForProfile}.
+   */
+  async listActiveForProfile(
+    profileId: string,
+    nowIso: string,
+  ): Promise<readonly PersistedIntent[]> {
+    if (typeof nowIso !== "string" || Number.isNaN(Date.parse(nowIso))) {
+      throw new PersistenceError("invalid-input", "nowIso: expected an ISO 8601 datetime", {
+        operation: "listActiveForProfile",
+      });
+    }
+    try {
+      const rows = await this.db.query<IntentSqlRow>(
+        `SELECT * FROM user_intents
+          WHERE ${EFFECTIVE_PROFILE} = $1
+            AND (expires_at IS NULL OR expires_at > $2::timestamptz)
+          ORDER BY weight DESC, id ASC`,
+        [profileId, nowIso],
+      );
+      return rows.map(mapIntent);
+    } catch (thrown) {
+      throw classifyDriverError(thrown, "listActiveForProfile");
+    }
+  }
+
   /** One intent by canonical id (null when unknown). */
   async getIntent(intentId: string): Promise<PersistedIntent | null> {
     try {
@@ -267,6 +298,25 @@ export class PostgresIntentStore {
     }
   }
 
+  /**
+   * R05: one intent by canonical id, PROFILE-SCOPED — null when unknown OR
+   * another profile's (the J15/J17 isolation law: a delete by id may never
+   * reach across profiles, and a miss may not leak whether the id exists
+   * elsewhere).
+   */
+  async getIntentForProfile(profileId: string, intentId: string): Promise<PersistedIntent | null> {
+    try {
+      const rows = await this.db.query<IntentSqlRow>(
+        `SELECT * FROM user_intents WHERE id = $1 AND ${EFFECTIVE_PROFILE} = $2`,
+        [intentId, profileId],
+      );
+      const row = rows[0];
+      return row === undefined ? null : mapIntent(row);
+    } catch (thrown) {
+      throw classifyDriverError(thrown, "getIntentForProfile");
+    }
+  }
+
   /** Delete one intent by id. True when a row was removed. */
   async deleteIntent(intentId: string): Promise<boolean> {
     try {
@@ -277,6 +327,23 @@ export class PostgresIntentStore {
       return rows.length > 0;
     } catch (thrown) {
       throw classifyDriverError(thrown, "deleteIntent");
+    }
+  }
+
+  /**
+   * R05: delete one intent by canonical id, PROFILE-SCOPED (the undo law —
+   * removing an explicit intent is as real as recording it, and one profile
+   * may never remove another's). True when this profile's row was removed.
+   */
+  async deleteIntentForProfile(profileId: string, intentId: string): Promise<boolean> {
+    try {
+      const rows = await this.db.query<{ id: string }>(
+        `DELETE FROM user_intents WHERE id = $1 AND ${EFFECTIVE_PROFILE} = $2 RETURNING id`,
+        [intentId, profileId],
+      );
+      return rows.length > 0;
+    } catch (thrown) {
+      throw classifyDriverError(thrown, "deleteIntentForProfile");
     }
   }
 }

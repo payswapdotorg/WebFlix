@@ -59,7 +59,7 @@ import {
   nextEpisodeOf,
 } from "./attention";
 import { consumedItemIds, inProgressItemIds } from "./events";
-import { effectiveRunCap } from "./diversity";
+import { effectiveRunCap, explicitNarrowedObjective } from "./diversity";
 import type { FeedCard, FeedSurface, ScoredCandidate, TraceDecision } from "./types";
 import { assertValidContext } from "./validate";
 
@@ -238,6 +238,7 @@ function composeWatchFeed(
         const successor = remaining.find(
           (item) =>
             !blockedFromChaining.has(item.candidate.itemId) &&
+            item.feedbackDemoted === null && // R05: feedback marks outrank chaining
             nextEpisodeOf(item) === current.candidate.itemId,
         );
         if (successor === undefined) break;
@@ -254,8 +255,12 @@ function composeWatchFeed(
   };
 
   // Phase 1 — resume block (user-driven continuation; never capped, never counted).
+  // An item the user marked not-interested/already-watched never leads the
+  // feed — the R05 feedback marks outrank resume placement (the tail phases
+  // place them honestly instead).
   for (const item of ranked) {
     if (!resumeIds.has(item.candidate.itemId)) continue;
+    if (item.feedbackDemoted !== null) continue;
     if (!remaining.includes(item)) continue;
     place(item, false);
     addReason(
@@ -268,6 +273,7 @@ function composeWatchFeed(
   // Phase 2 — continuation chains anchored on consumed (watched) items.
   for (const item of ranked) {
     if (!remaining.includes(item) || blockedFromChaining.has(item.candidate.itemId)) continue;
+    if (item.feedbackDemoted !== null) continue; // R05: feedback marks outrank chaining
     const next = nextEpisodeOf(item);
     if (next === null || !consumed.has(next)) continue;
     const placedOk = place(item, true);
@@ -280,7 +286,9 @@ function composeWatchFeed(
   }
 
   // Phase 3 — remainder: long-form preference partition, incoming order within.
-  const rest = remaining.filter((item) => !item.availabilityDemoted);
+  const rest = remaining.filter(
+    (item) => !item.availabilityDemoted && item.feedbackDemoted === null,
+  );
   const longForm = rest.filter((item) => watchDurationTier(item) === 0);
   const shorter = rest.filter((item) => watchDurationTier(item) !== 0);
   for (const item of longForm) {
@@ -308,14 +316,39 @@ function composeWatchFeed(
     place(item, false);
   }
 
+  // Phase 4.5 — R05 feedback tails: `already-watched` deprioritized below
+  // the availability floor, `not-interested` at the very tail. DEMOTION IS
+  // REORDERING — the items stay in the feed (the pool-stays-wide law) and
+  // deleting the control restores the composition.
+  for (const item of remaining) {
+    if (item.feedbackDemoted !== "already-watched") continue;
+    addReason(
+      item,
+      "feedback-tail-placement: the user already watched this item — repeat deprioritized below the availability floor (recorded history never touched; delete the control to restore)",
+    );
+    place(item, false);
+  }
+  for (const item of remaining) {
+    if (item.feedbackDemoted !== "not-interested") continue;
+    addReason(
+      item,
+      "feedback-tail-placement: the user is not interested in this item — demoted to the very tail (never removed; delete the control to restore)",
+    );
+    place(item, false);
+  }
+
   // Phase 5 — final invariant sweeps (runs + chains), bounded alternation.
+  // R05 (J16): the sweeps yield to the explicitly narrowed objective (the
+  // user's standing ask — the diversity stage already yielded; re-breaking
+  // here would undo it at the output).
   const runCap = effectiveRunCap(ctx.policy);
+  const narrowedObjective = explicitNarrowedObjective(ctx.intents, ranked, ctx.policy);
   let order: ScoredCandidate[] = [...placed];
   let lastSwept = false;
   for (let pass = 0; pass < MAX_SWEEP_PASSES; pass += 1) {
     let changed = false;
 
-    const runSweep = breakDominantObjectiveRuns(order, runCap);
+    const runSweep = breakDominantObjectiveRuns(order, runCap, narrowedObjective);
     if (!sameOrder(runSweep.ranked, order)) {
       order = [...runSweep.ranked];
       changed = true;
@@ -443,13 +476,31 @@ function composeShortFeed(
     ];
   }
 
+  // R05 — feedback tails: `already-watched` below the availability floor,
+  // `not-interested` at the very tail. Reordering only — never removal.
+  const feedbackTail = order.filter((item) => item.feedbackDemoted !== null);
+  if (feedbackTail.length > 0) {
+    order = [...order.filter((item) => item.feedbackDemoted === null), ...feedbackTail];
+    for (const item of feedbackTail) {
+      addReason(
+        item,
+        item.feedbackDemoted === "not-interested"
+          ? "feedback-tail-placement: the user is not interested in this item — demoted to the very tail (never removed; delete the control to restore)"
+          : "feedback-tail-placement: the user already watched this item — repeat deprioritized (recorded history never touched; delete the control to restore)",
+      );
+    }
+  }
+
   // Final invariant sweep: the run cap holds at the output (no episodic
-  // chaining in the short feed — rapid replacement, not continuity).
+  // chaining in the short feed — rapid replacement, not continuity). The
+  // sweep yields to the explicitly narrowed objective (J16 — see the watch
+  // feed's Phase 5 note).
   const runCap = effectiveRunCap(ctx.policy);
+  const narrowedObjective = explicitNarrowedObjective(ctx.intents, ranked, ctx.policy);
   let sweptOrder = order;
   let lastSwept = false;
   for (let pass = 0; pass < MAX_SWEEP_PASSES; pass += 1) {
-    const runSweep = breakDominantObjectiveRuns(sweptOrder, runCap);
+    const runSweep = breakDominantObjectiveRuns(sweptOrder, runCap, narrowedObjective);
     decisions.push(...runSweep.decisions);
     if (sameOrder(runSweep.ranked, sweptOrder)) {
       lastSwept = false;

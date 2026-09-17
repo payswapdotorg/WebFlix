@@ -12,7 +12,10 @@
  * - `mindful`   — mandatory diversity gap every N items
  *   (N = MINDFUL_MAX_CONSECUTIVE_SAME_OBJECTIVE = 2: no more than 2
  *   consecutive cards sharing a dominant matched objective) AND capped
- *   session-extending chains (max 2 consecutive chained placements).
+ *   session-extending chains (max 2 consecutive chained placements) AND
+ *   (R05) exploration/novelty dials floored at the mode's guarantees
+ *   (0.6) AND (R05) a default session-extension time budget when the user
+ *   set none.
  * - `balanced`  — the default: no mandated gaps (the exploration-derived
  *   diversity K applies), moderate chain tolerance (max 4).
  * - `immersive` — chains allowed with NO count cap; alternatives are never
@@ -59,11 +62,69 @@ export const MINDFUL_MAX_SESSION_EXTENDING_CHAIN = 2;
 export const BALANCED_MAX_SESSION_EXTENDING_CHAIN = 4;
 
 /**
+ * R05 — Mindful's EXPLORATION floor: the effective dial never drops below
+ * this in mindful mode (the mode's exploration guarantee — attention modes
+ * change measurable policy behavior; the user's higher dial always wins).
+ */
+export const MINDFUL_EXPLORATION_FLOOR = 0.6;
+
+/**
+ * R05 — Mindful's NOVELTY floor: same law as the exploration floor (the
+ * heuristic model's novelty term reads the effective dial, so a mindful
+ * policy measurably prefers fresher items even when the raw dial is low).
+ */
+export const MINDFUL_NOVELTY_FLOOR = 0.6;
+
+/**
+ * R05 — Mindful's DEFAULT session-extension time budget (minutes). Mindful
+ * is intentional consumption: when the user set no explicit
+ * `maxSessionExtensionMinutes`, the OS caps OS-PLANNED session extension
+ * (next-episode chaining) at this budget — a time-budget signal the mode
+ * carries and the trace's "attention-policy" decision declares. An explicit
+ * user value (any mode) always wins. Immersive/balanced/custom set no
+ * default: immersive is the user's explicit choice of unbounded continuity.
+ */
+export const MINDFUL_DEFAULT_MAX_SESSION_EXTENSION_MINUTES = 90;
+
+/**
  * Maximum (breakRuns, breakChains) repair sweeps composition alternates
  * before recording a residual constraint decision (bounded termination —
  * repairs move items strictly later, so conflicts converge in practice).
  */
 export const MAX_SWEEP_PASSES = 4;
+
+/** Clamp one dial to the [0, 1] interval (garbage-proof, documented). */
+function clampDial(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.min(1, Math.max(0, value));
+}
+
+/**
+ * R05 — the attention-adjusted dials of one policy: the mode's floors
+ * applied to the user's exploration/novelty dials. Mindful RAISES a low
+ * dial to the mode's floor (the exploration/novelty guarantee); balanced,
+ * immersive, and custom pass the user's dials through EXACTLY (custom's
+ * whole contract is that the dials are the user's direct controls). The
+ * socialInfluence dial is mode-INDEPENDENT (documented — the mode governs
+ * attention, not social trust) and is therefore not adjusted here.
+ *
+ * Deterministic and pure; the shipped heuristic model and the diversity
+ * stage both read THIS value, so the mode measurably changes behavior
+ * (J18) without ever silently optimizing for maximum time spent.
+ */
+export function attentionAdjustedDials(
+  policy: Pick<RecommendationPolicy, "attentionMode" | "exploration" | "novelty">,
+): { exploration: number; novelty: number } {
+  const exploration = clampDial(policy.exploration);
+  const novelty = clampDial(policy.novelty);
+  if (policy.attentionMode === "mindful") {
+    return {
+      exploration: Math.max(exploration, MINDFUL_EXPLORATION_FLOOR),
+      novelty: Math.max(novelty, MINDFUL_NOVELTY_FLOOR),
+    };
+  }
+  return { exploration, novelty };
+}
 
 /**
  * Derive the attention constraints from the policy. Deterministic and pure;
@@ -71,11 +132,20 @@ export const MAX_SWEEP_PASSES = 4;
  * trace decision and enforced downstream.
  */
 export function attentionConstraints(policy: RecommendationPolicy): AttentionConstraints {
-  const minutes =
+  const explicitMinutes =
     typeof policy.maxSessionExtensionMinutes === "number" &&
     Number.isFinite(policy.maxSessionExtensionMinutes)
       ? Math.max(0, policy.maxSessionExtensionMinutes)
       : null;
+  // R05: mindful carries the default time budget when the user set none —
+  // an explicit value (any mode) always wins.
+  const minutes =
+    explicitMinutes !== null
+      ? explicitMinutes
+      : policy.attentionMode === "mindful"
+        ? MINDFUL_DEFAULT_MAX_SESSION_EXTENSION_MINUTES
+        : null;
+  const dials = attentionAdjustedDials(policy);
 
   switch (policy.attentionMode) {
     case "mindful":
@@ -84,6 +154,8 @@ export function attentionConstraints(policy: RecommendationPolicy): AttentionCon
         maxConsecutiveSameObjective: MINDFUL_MAX_CONSECUTIVE_SAME_OBJECTIVE,
         maxSessionExtendingChain: MINDFUL_MAX_SESSION_EXTENDING_CHAIN,
         maxSessionExtensionMinutes: minutes,
+        exploration: dials.exploration,
+        novelty: dials.novelty,
       };
     case "balanced":
       return {
@@ -91,6 +163,8 @@ export function attentionConstraints(policy: RecommendationPolicy): AttentionCon
         maxConsecutiveSameObjective: null,
         maxSessionExtendingChain: BALANCED_MAX_SESSION_EXTENDING_CHAIN,
         maxSessionExtensionMinutes: minutes,
+        exploration: dials.exploration,
+        novelty: dials.novelty,
       };
     case "immersive":
       return {
@@ -98,6 +172,8 @@ export function attentionConstraints(policy: RecommendationPolicy): AttentionCon
         maxConsecutiveSameObjective: null,
         maxSessionExtendingChain: null,
         maxSessionExtensionMinutes: minutes,
+        exploration: dials.exploration,
+        novelty: dials.novelty,
       };
     case "custom":
       return {
@@ -105,6 +181,8 @@ export function attentionConstraints(policy: RecommendationPolicy): AttentionCon
         maxConsecutiveSameObjective: null,
         maxSessionExtendingChain: null,
         maxSessionExtensionMinutes: minutes,
+        exploration: dials.exploration,
+        novelty: dials.novelty,
       };
   }
 }
@@ -127,10 +205,20 @@ export interface SweepResult {
  * deleted). When every remaining card shares one objective (no alternative
  * exists to interleave), the remainder is placed in incoming order with an
  * explicit "objective-run-unsatisfiable" decision — the pool stays wide.
+ *
+ * R05 (J16) — THE EXPLICIT-NARROWING YIELD: when `narrowedObjective` is
+ * provided (the objective of an explicitly submitted persistent intent),
+ * cards carrying THAT objective are always placeable — their runs are
+ * unbounded. The user's standing ask wins over the exploration-derived cap;
+ * the diversity stage records the yield honestly (see diversity.ts). The
+ * attention-mode gaps (mindful) are NOT narrowed-objective-aware in the
+ * policy stage — the user's explicit ATTENTION choice outranks their topic
+ * narrowing (mindful means intentional variety, documented).
  */
 export function breakDominantObjectiveRuns(
   ranked: readonly ScoredCandidate[],
   maxConsecutive: number,
+  narrowedObjective: string | null = null,
 ): SweepResult {
   const decisions: TraceDecision[] = [];
   const remaining = [...ranked];
@@ -141,6 +229,7 @@ export function breakDominantObjectiveRuns(
   while (remaining.length > 0) {
     const placeableIndex = remaining.findIndex((item) => {
       const objective = item.features.dominantObjective;
+      if (objective !== null && objective === narrowedObjective) return true; // the explicit narrowing yields
       return objective === null || objective !== lastObjective || runLength < maxConsecutive;
     });
 
