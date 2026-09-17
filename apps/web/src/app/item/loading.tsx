@@ -1,20 +1,20 @@
 /**
- * @wfx/app-web — the item route loading surface (WFX-051).
+ * @wfx/app-web — a route loading surface (R07).
  *
- * The skeleton the detail route streams while the connector metadata loads.
- * The boot is the SAME environment law every surface funnels through; the
- * segment is force-dynamic (its page boots per request), so this skeleton
- * renders per request too — never prerendered into a build artifact.
+ * The skeleton the route streams while its data loads: the persistent
+ * shell (the shared boot — the same cached host promise the page awaits)
+ * plus the page skeleton. Same shape as the loaded page, so the chrome
+ * never jumps. Async server component: it awaits the ONE runtime boot.
  */
 
 import { AppShell } from "@/components/shell/AppShell";
 import { PageSkeleton } from "@/components/ui/StateViews";
-import { bootExperienceHost } from "@/host/experience";
+import { getWebRuntimeHost } from "@/host/web-host";
 
-export default function Loading() {
-  const host = bootExperienceHost();
+export default async function Loading() {
+  const host = await getWebRuntimeHost();
   return (
-    <AppShell mode={host.mode}>
+    <AppShell mode={host.mode} session={host.session.state} >
       <PageSkeleton />
     </AppShell>
   );

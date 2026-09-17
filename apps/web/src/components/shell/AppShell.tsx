@@ -1,46 +1,48 @@
 /**
- * @wfx/app-web — the persistent app shell (WFX-051).
+ * @wfx/app-web — the persistent app shell (R07).
  *
- * The YouTube-like chrome every surface renders inside: a sticky top bar
- * (logo, search, avatar menu), a left navigation rail on desktop, a bottom
- * navigation bar on mobile, a skip-to-content link, and the footer with
- * the honest mode badge (fixtures/service — capability truth at the app
- * level). Server component: no client JS, no hooks — the avatar menu is a
+ * The chrome every surface renders inside: a sticky top bar (logo, search,
+ * the honest SESSION menu), the left navigation rail on desktop, the bottom
+ * navigation bar on mobile, a skip-to-content link, and the footer. The
+ * navigation mirrors the RUNTIME's surface vocabulary (home / watch /
+ * shorts / search / library / settings — every `SurfaceId` has a route;
+ * the mapping lives in `app/routing.ts`).
+ *
+ * SESSION HONESTY (the R07 product-framing law): the app is the WEB
+ * ADAPTER of the Universal Entertainment OS — there is no Guest-only
+ * framing. The session menu renders the honest signed-out/anonymous state
+ * from `host/session.ts` (the R02 seam): "Signed out — anonymous session",
+ * with the truth about the session id's durability. Nothing pretends to be
+ * a profile.
+ *
+ * Server component: no client JS, no hooks — the session menu is a
  * `details`/`summary` disclosure and the search box is a plain `form`
  * (progressive enhancement; both are keyboard-operable for free).
  *
- * Accessibility laws (the packet's quality bar): semantic landmarks
- * (header/nav/main/footer), a skip link, `aria-current="page"` on the
- * active nav entry, 44px minimum targets, visible focus rings
- * (globals.css), and labeled controls.
- *
- * WFX-057: the PWA client islands mount here — the smallest surface
- * change that gives every booted page the install affordance + the
- * visible service-worker update flow (the same server-renders-client-
- * island pattern the shorts/actions surfaces use). Service mode only:
- * fixtures mode is dev-only content and never a PWA surface.
+ * Accessibility laws: semantic landmarks (header/nav/main/footer), a skip
+ * link, `aria-current="page"` on the active nav entry, 44px minimum
+ * targets, visible focus rings (globals.css), and labeled controls.
  */
 
 import type { JSX, ReactNode } from "react";
 
-import { Icon } from "./Icon";
+import type { WebSessionState } from "@/host/session";
+import { surfaceHref, SHELL_SURFACE_NAV } from "@/app/routing";
+import type { SurfaceId } from "@wfx/client-runtime";
+import { Icon, type IconName } from "./Icon";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdatePrompt } from "./UpdatePrompt";
 
-/** One shell navigation entry. */
-export interface NavEntry {
-  readonly href: string;
-  readonly label: string;
-  readonly icon: "home" | "search" | "shorts" | "film";
-}
-
-/** The shell navigation (stable order; `active` marks `aria-current`). */
-export const SHELL_NAV: readonly NavEntry[] = [
-  { href: "/", label: "Home", icon: "home" },
-  { href: "/watch", label: "Watch", icon: "film" },
-  { href: "/shorts", label: "Shorts", icon: "shorts" },
-  { href: "/search", label: "Search", icon: "search" },
-];
+/** One shell navigation icon per surface (item surfaces are not in the shell nav). */
+const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
+  home: "home",
+  watch: "film",
+  shorts: "shorts",
+  search: "search",
+  item: "film",
+  library: "library",
+  settings: "settings",
+};
 
 /** The boot mode badge text (capability honesty, visible chrome). */
 function modeBadge(mode: "fixtures" | "service"): { text: string; className: string } {
@@ -53,18 +55,22 @@ function modeBadge(mode: "fixtures" | "service"): { text: string; className: str
 export function AppShell({
   mode,
   active,
+  session,
   mainClass,
   children,
 }: {
   /** The boot mode (badge honesty). */
   readonly mode: "fixtures" | "service";
-  /** The nav href that is current (aria-current), if any. */
-  readonly active?: string;
-  /** Extra classes for the main region (e.g. `"wfx-main--flush"` for the full-screen short feed). */
+  /** The ACTIVE surface id (aria-current), when the route is a surface route. */
+  readonly active?: SurfaceId;
+  /** The honest session state (the R02 seam's view). */
+  readonly session: WebSessionState;
+  /** Extra classes for the main region (e.g. the full-screen short feed). */
   readonly mainClass?: string;
   readonly children: ReactNode;
 }): JSX.Element {
   const badge = modeBadge(mode);
+  const activeHref = active !== undefined ? surfaceHref(active) : undefined;
   return (
     <div className="wfx-shell" data-wfx-mode={mode}>
       <a className="wfx-skip-link" href="#wfx-main">
@@ -99,16 +105,19 @@ export function AppShell({
         </div>
         <div className="wfx-topbar__side">
           <details className="wfx-avatar-menu">
-            <summary className="wfx-avatar-menu__summary" aria-label="Account menu">
+            <summary className="wfx-avatar-menu__summary" aria-label="Session menu">
               <span className="wfx-avatar-menu__chip" aria-hidden="true">
                 W
               </span>
-              <span>Guest</span>
+              <span data-wfx-session-label>{session.label}</span>
             </summary>
             <div className="wfx-avatar-menu__panel">
-              <p>
-                Anonymous session — the fixed 050 identity stopgap. Sign-in arrives with the auth
-                lane (WFX-052 service).
+              <p data-wfx-session-state>{session.description}</p>
+              <p data-wfx-session-durability>
+                Session stability:{" "}
+                {session.sessionDurability === "browser-sessions"
+                  ? "kept across browser sessions on this device"
+                  : "kept for this server process (browser storage is not available)"}
               </p>
               <span className={badge.className}>{badge.text}</span>
             </div>
@@ -117,42 +126,48 @@ export function AppShell({
       </header>
       <div className="wfx-body">
         <nav className="wfx-rail" aria-label="Primary">
-          {SHELL_NAV.map((entry) => (
-            <a
-              key={entry.href}
-              className="wfx-navlink"
-              href={entry.href}
-              {...(active === entry.href ? { "aria-current": "page" as const } : {})}
-            >
-              <span className="wfx-navlink__icon">
-                <Icon name={entry.icon} />
-              </span>
-              <span>{entry.label}</span>
-            </a>
-          ))}
+          {SHELL_SURFACE_NAV.map((entry) => {
+            const href = surfaceHref(entry.surface);
+            return (
+              <a
+                key={entry.surface}
+                className="wfx-navlink"
+                href={href}
+                {...(activeHref === href ? { "aria-current": "page" as const } : {})}
+              >
+                <span className="wfx-navlink__icon">
+                  <Icon name={SURFACE_ICONS[entry.surface]} />
+                </span>
+                <span>{entry.label}</span>
+              </a>
+            );
+          })}
         </nav>
         <main className={`wfx-main${mainClass !== undefined ? ` ${mainClass}` : ""}`} id="wfx-main">
           {children}
         </main>
       </div>
       <nav className="wfx-bottomnav" aria-label="Primary mobile">
-        {SHELL_NAV.map((entry) => (
-          <a
-            key={entry.href}
-            className="wfx-navlink"
-            href={entry.href}
-            {...(active === entry.href ? { "aria-current": "page" as const } : {})}
-          >
-            <span className="wfx-navlink__icon">
-              <Icon name={entry.icon} size={22} />
-            </span>
-            <span>{entry.label}</span>
-          </a>
-        ))}
+        {SHELL_SURFACE_NAV.map((entry) => {
+          const href = surfaceHref(entry.surface);
+          return (
+            <a
+              key={entry.surface}
+              className="wfx-navlink"
+              href={href}
+              {...(activeHref === href ? { "aria-current": "page" as const } : {})}
+            >
+              <span className="wfx-navlink__icon">
+                <Icon name={SURFACE_ICONS[entry.surface]} size={22} />
+              </span>
+              <span>{entry.label}</span>
+            </a>
+          );
+        })}
       </nav>
       <footer className="wfx-footer">
         <p style={{ margin: 0 }}>
-          WebFlix — Universal Entertainment OS, web host. Content arrives through connected
+          WebFlix — the Universal Entertainment OS, web adapter. Content arrives through connected
           sources; capability truth is always shown, never guessed.
         </p>
       </footer>

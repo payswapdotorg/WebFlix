@@ -1,32 +1,28 @@
 /**
- * @wfx/app-web — the home route (WFX-050; the WFX-051 experience shell).
+ * @wfx/app-web — the home route (R07).
  *
- * A SERVER component: the experience host boot (the 050 environment law,
- * unchanged — `WFX_DEV_FIXTURES=1` dev-only fixtures, otherwise the
- * `WFX_API_BASE` remote ports, otherwise the typed `HostConfigError`), the
- * view pipelines (feeds, recorded watch state, identity join), and the React
- * tree all run on the server — environment variables never reach the client
- * bundle. Interactivity lives in the small client islands the surfaces mount
- * (like/save controls, watch-state reports, the short-feed stack).
- *
- * `force-dynamic`: content depends on the environment and the configured
- * service's answer at request time — a static prerender would either bake
- * dev fixtures into a build artifact or fail the build in environments
- * without `WFX_API_BASE` (same law as WFX-050).
+ * A SERVER component over the ONE runtime: the host boot (the 050
+ * environment law — fixtures/service/misconfigured-loud), the runtime's
+ * navigation synced to this route (the deep-link law), the home view
+ * (Continue Watching + seeded rows), and the React tree. Environment
+ * variables never reach the client bundle; interactivity lives in the
+ * small client islands the surfaces mount.
  */
 
 import { AppShell } from "@/components/shell/AppShell";
 import { HomeSurface } from "@/components/home/HomeSurface";
-import { bootExperienceHost } from "@/host/experience";
-import { loadHomeView } from "@/host/views";
+import { getWebRuntimeHost } from "@/host/web-host";
+import { loadHomeView } from "@/host/view-models";
+import { syncNavigationToRoute } from "@/app/routing";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const host = bootExperienceHost();
+  const host = await getWebRuntimeHost();
+  syncNavigationToRoute(host.runtime, "/", {});
   const view = await loadHomeView(host);
   return (
-    <AppShell mode={host.mode} active="/">
+    <AppShell mode={host.mode} active="home" session={host.session.state}>
       <HomeSurface view={view} />
     </AppShell>
   );

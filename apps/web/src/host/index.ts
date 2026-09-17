@@ -1,24 +1,16 @@
 /**
- * @wfx/app-web — the host boot surface (WFX-050; WFX-051 experience shell).
+ * @wfx/app-web — the host surface (R07).
  *
- * Public entry for the Next.js App Router (and any future host): the config
- * law, the port selection, the remote service ports, and the experience
- * surface pipelines (views, shorts projection, identity join, watch-state
- * recording). Everything a request path needs to boot honestly.
- *
- * WFX-051 note: the 050 minimal home pipeline (`host/home.ts`) was
- * superseded by the experience view pipelines (`host/views.ts` +
- * `host/experience.ts` — the same 050 boot law, richer projections). The
- * fixed anonymous context lives on as `EXPERIENCE_CONTEXT`.
+ * Public entry for the Next.js App Router (and any future host): the boot
+ * law (config), the ONE runtime composition root (`web-host.ts`), the
+ * session seam, the view pipelines, the shorts projection, and the
+ * platform bundle. Everything a request path needs to boot the adapter
+ * honestly.
  */
 
 export * from "./config";
-export * from "./default-ports";
-export * from "./remote-ports";
-export * from "./boot";
-export * from "./experience";
-export * from "./canon";
-export * from "./watch-state";
+export * from "./session";
+export * from "./web-host";
+export * from "./view-models";
 export * from "./shorts";
-export * from "./views";
 export * from "./version";

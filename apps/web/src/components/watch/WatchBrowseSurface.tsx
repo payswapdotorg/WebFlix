@@ -1,59 +1,42 @@
 /**
- * @wfx/app-web — the long-form Watch Feed browse surface (WFX-051).
+ * @wfx/app-web — the long-form Watch browse surface (R07).
  *
- * The WFX-027 experience mode as a browse page: the continue-watching row
- * first (resume beats everything — the watch-feed row law), then the
- * browse rows. Rows state their honest reasons; cards link to the detail
- * page. Episodic and topic rows appear when the sources carry the data
- * for them (honest absence otherwise — the fixture catalog has no series
- * relations or topic features, so none are fabricated).
+ * The watch browsing page over the RUNTIME's search models: every row
+ * carries its typed section status (an error row renders as the error
+ * state — never a fake empty row), and the cards are the runtime's
+ * canonical-joined hits. Server component.
  */
 
 import type { JSX } from "react";
 
-import type { WatchBrowseView } from "@/host/views";
+import type { WatchBrowseView } from "@/host/view-models";
 import { Row } from "@/components/home/HomeSurface";
-import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState } from "@/components/ui/StateViews";
 
 /** The watch browse surface. */
 export function WatchBrowseSurface({ view }: { readonly view: WatchBrowseView }): JSX.Element {
-  const hasContent = view.continueEntries.length > 0 || view.rows.some((row) => row.cards.length > 0);
+  const hasContent = view.rows.some((row) => row.cards.length > 0);
+  const allFailed = view.rows.length > 0 && view.rows.every((row) => row.status.state === "error");
   return (
     <div data-wfx-surface="watch" data-wfx-watch>
-      <h1 className="wfx-page-title">Watch</h1>
-      <p className="wfx-page-subtitle">
-        The long-form feed: episodic continuity, resume, and browse — composed for this session.
-      </p>
-      {view.continueEntries.length > 0 ? (
-        <section className="wfx-row" data-wfx-row="continue">
-          <div className="wfx-row__header">
-            <h2 className="wfx-row__title">Continue watching</h2>
-            <p className="wfx-row__reason">Pick up where you left off — from your watch state.</p>
-          </div>
-          <div className="wfx-row__scroller">
-            {view.continueEntries.map((entry) => (
-              <ItemCard
-                key={entry.card.itemId}
-                card={entry.card}
-                resume={{
-                  resumePositionMs: entry.resumePositionMs,
-                  completionRatio: entry.completionRatio,
-                }}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <h1 className="wfx-page-title" data-wfx-watch-title>
+        Watch
+      </h1>
+      <p className="wfx-page-subtitle">Long-form browsing — your sources&apos; movies, series, and episodes.</p>
       {view.rows.map((row) => (
-        <Row key={row.id} title={row.title} reason={row.reason} cards={row.cards} />
+        <Row key={row.id} row={row} />
       ))}
-      {hasContent ? null : (
+      {!hasContent && !allFailed ? (
         <EmptyState
-          title="Nothing to browse"
-          detail="The configured source answered with no watch-form cards. WebFlix never fabricates content."
+          title="Nothing to browse yet"
+          detail="The configured source answered with no long-form cards. WebFlix never fabricates content."
+          action={
+            <a className="wfx-btn" href="/search">
+              Try search
+            </a>
+          }
         />
-      )}
+      ) : null}
     </div>
   );
 }

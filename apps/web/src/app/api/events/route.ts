@@ -1,43 +1,37 @@
 /**
- * @wfx/app-web — the event route (WFX-051): POST /api/events.
+ * @wfx/app-web — the event route (R07): POST /api/events.
  *
  * The bridge the client engagement controls call (watch-state reports,
- * short-feed skip/share): the typed body is composed into a frozen
- * `EntertainmentEvent` through the ports (identity from the fixed
- * experience context, `occurredAt` from the injected Clock — the same seam
- * law as every use-case) and emitted through the WRAPPED EventSink
- * (`host/watch-state.ts`: recorded for continue-watching AND forwarded to
- * the real sink — nothing is swallowed).
+ * short-feed skips): the typed body is composed into a RUNTIME watch-state
+ * command (`runtime.updateWatchState`) — the runtime folds the session
+ * state AND emits the at-least-once event through its ServerPort (a
+ * delivery failure keeps the event pending and THROWS the typed error —
+ * the EventSink law: a lost watch-state event is never a silent success).
  *
  * Honesty laws:
- * - The user-reportable vocabulary is CLOSED: progress / complete / skip /
- *   share. `"start"` is emitted by the playback use-case when a session
- *   begins (a client re-sending it would duplicate watch evidence), and
- *   `"like"` / `"save"` are MIRRORED by the action use-case when the source
- *   confirms them (a client cannot fabricate engagement the source never
- *   confirmed). Both are rejected here with the reason.
- * - A sink failure (service mode: the remote sink throws the typed
- *   `HostTransportError`) answers 502 with the typed detail — a lost
- *   watch-state event is never a silent success.
+ * - The user-reportable vocabulary is CLOSED: progress / complete / skip.
+ *   `"start"` is emitted by the runtime's playback controller when a
+ *   session first plays (a client re-sending it would duplicate watch
+ *   evidence); `"like"` / `"save"` are settled by the runtime's action
+ *   engine when the source answers; `"share"` is the external/social
+ *   actions lane (R15) — the R01 runtime carries watch-state events only.
+ *   All are rejected here with the reason, never silently accepted.
+ * - A delivery failure (the runtime throws the typed RuntimeError) answers
+ *   502 with the typed detail — never a silent success.
  */
 
 import { NextResponse } from "next/server";
 
 import { isEntertainmentItemId, isRecord } from "@wfx/domain";
-import type { EntertainmentEvent } from "@wfx/domain";
-import { composeExperienceEvent } from "@wfx/experience";
+import type { WatchStateCommand } from "@wfx/client-runtime";
+import { isRuntimeError } from "@wfx/client-runtime";
 
-import { bootExperienceHost, EXPERIENCE_CONTEXT } from "@/host/experience";
+import { getWebRuntimeHost } from "@/host/web-host";
 
 export const dynamic = "force-dynamic";
 
-/** The closed user-reportable vocabulary (see the module doc). */
-const REPORTABLE_EVENT_TYPES: readonly EntertainmentEvent["type"][] = [
-  "progress",
-  "complete",
-  "skip",
-  "share",
-];
+/** The closed user-reportable watch vocabulary (see the module doc). */
+const REPORTABLE_EVENT_TYPES: readonly WatchStateCommand["kind"][] = ["progress", "complete", "skip"];
 
 const REPORTABLE_SET: ReadonlySet<string> = new Set(REPORTABLE_EVENT_TYPES as readonly string[]);
 
@@ -48,9 +42,7 @@ function payloadProblems(payload: unknown): string[] {
   const problems: string[] = [];
   if (
     payload.positionMs !== undefined &&
-    (typeof payload.positionMs !== "number" ||
-      !Number.isFinite(payload.positionMs) ||
-      payload.positionMs < 0)
+    (typeof payload.positionMs !== "number" || !Number.isFinite(payload.positionMs) || payload.positionMs < 0)
   ) {
     problems.push("payload.positionMs: expected a finite non-negative number when present");
   }
@@ -91,7 +83,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
   if (typeof body.type !== "string" || !REPORTABLE_SET.has(body.type)) {
     problems.push(
-      `type: expected one of ${REPORTABLE_EVENT_TYPES.join(" | ")} — 'start' is emitted by the playback use-case, 'like'/'save' are mirrored by the action use-case when the source confirms them`,
+      `type: expected one of ${REPORTABLE_EVENT_TYPES.join(" | ")} — 'start' is emitted by the runtime's playback controller on first play, 'like'/'save' settle through the action route, and 'share' is the external/social actions lane (R15)`,
     );
   }
   problems.push(...payloadProblems(body.payload));
@@ -100,30 +92,48 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const itemId = body.itemId as string;
-  const type = body.type as (typeof REPORTABLE_EVENT_TYPES)[number];
-  const payload =
-    isRecord(body.payload) && Object.keys(body.payload).length > 0
-      ? (body.payload as Record<string, unknown>)
-      : undefined;
+  const kind = body.type as WatchStateCommand["kind"];
+  const payload = isRecord(body.payload) ? body.payload : undefined;
+  const command: WatchStateCommand =
+    kind === "progress"
+      ? {
+          kind,
+          itemId,
+          positionMs:
+            typeof payload?.positionMs === "number" && Number.isFinite(payload.positionMs) && payload.positionMs >= 0
+              ? payload.positionMs
+              : 0,
+          ...(typeof payload?.playbackSessionId === "string" && payload.playbackSessionId.length > 0
+            ? { playbackSessionId: payload.playbackSessionId }
+            : {}),
+        }
+      : {
+          kind,
+          itemId,
+          ...(typeof payload?.positionMs === "number" &&
+          Number.isFinite(payload.positionMs) &&
+          payload.positionMs >= 0
+            ? { positionMs: payload.positionMs }
+            : {}),
+          ...(typeof payload?.playbackSessionId === "string" && payload.playbackSessionId.length > 0
+            ? { playbackSessionId: payload.playbackSessionId }
+            : {}),
+        };
 
-  const host = bootExperienceHost();
+  const host = await getWebRuntimeHost();
   try {
-    const event = composeExperienceEvent(host.client.runtime.ports.clock, EXPERIENCE_CONTEXT, {
-      itemId,
-      type,
-      ...(payload !== undefined ? { payload } : {}),
-    });
-    // The WRAPPED sink: recorded for continue-watching AND forwarded.
-    await host.client.runtime.ports.events.emit(event);
-    return NextResponse.json({ ok: true, occurredAt: event.occurredAt }, { status: 200 });
+    // The runtime folds the session state and emits the at-least-once
+    // event; a delivery failure THROWS (the EventSink law) → typed 502.
+    await host.runtime.updateWatchState(command);
+    return NextResponse.json({ ok: true }, { status: 200 });
   } catch (thrown) {
-    // A lost watch-state event is never a silent success — typed 502.
     return NextResponse.json(
       {
-        error:
-          thrown instanceof Error
-            ? `the event sink rejected the report: ${thrown.message}`
-            : "the event sink rejected the report",
+        error: isRuntimeError(thrown)
+          ? `the watch-state report was not delivered (${thrown.kind}): ${thrown.message}`
+          : thrown instanceof Error
+            ? `the watch-state report was not delivered: ${thrown.message}`
+            : "the watch-state report was not delivered",
       },
       { status: 502 },
     );
