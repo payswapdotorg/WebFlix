@@ -45,6 +45,7 @@
 
 import { torrentError, type TorrentResult } from "../errors";
 import type {
+  LibraryPiecePriority,
   LibrarySession,
   LibrarySessionEvent,
   LibrarySessionSnapshot,
@@ -168,6 +169,16 @@ export function createWebTorrentLibrary(
       deselect(): void;
     }[];
     bitfield: { get(index: number): boolean | number };
+    /**
+     * Select a piece range with a priority (webtorrent's own scheduling
+     * mechanism — R12's seam maps urgency onto it). Higher priority
+     * selections are requested first.
+     */
+    select(start: number, end: number, priority?: number): void;
+    /** Deselect a piece range (removes/splits intersecting selections). */
+    deselect(start: number, end: number): void;
+    /** Mark a piece range critical (fetch ASAP; enables hotswap). */
+    critical(start: number, end: number): void;
     pause(): void;
     resume(): void;
     on(event: string, handler: (...args: unknown[]) => void): void;
@@ -226,20 +237,66 @@ export function createWebTorrentLibrary(
     let selectedIndexes = new Set<number>(spec.selectedFileIndexes);
     let lastPeerActivityAt: number | undefined;
     let metadataEmitted = false;
+    // R12: the scheduler's piece-priority hints, plus everything this
+    // binding currently holds applied on the torrent (base file ranges +
+    // hint ranges). The full re-apply keeps the torrent's selection list
+    // EXACTLY (selected files at priority 0 — the completion fallback —
+    // plus the hint ranges at their urgencies): deterministic, no
+    // accumulation across replans.
+    let schedulerHints: readonly LibraryPiecePriority[] = [];
+    let appliedSelections: { from: number; to: number }[] = [];
+    // webtorrent inserts a DEFAULT whole-torrent selection while parsing
+    // metadata (its own "start off selecting the entire torrent" law).
+    // The first applySelection clears it once and takes ownership of the
+    // selection state; from then on the bookkeeping above is exact.
+    let selectionOwned = false;
 
     const emit = (event: LibrarySessionEvent): void => {
       for (const handler of handlers) handler(event);
     };
 
+    /** The piece range covering one file (webtorrent's own geometry). */
+    const filePieceRange = (index: number): { from: number; to: number } | null => {
+      const file = torrent.files[index];
+      if (file === undefined || file.length === 0) return null;
+      const from = Math.floor(file.offset / torrent.pieceLength);
+      const to = Math.floor((file.offset + file.length - 1) / torrent.pieceLength);
+      return { from, to };
+    };
+
     const applySelection = (): void => {
-      // The mature library's own file selection: deselect everything,
-      // then select the chosen files (the library pre-selects all on
-      // 'ready' — this is webtorrent's documented selection mechanism).
-      for (const file of torrent.files) file.deselect();
-      let index = 0;
-      for (const file of torrent.files) {
-        if (selectedIndexes.has(index)) file.select();
-        index += 1;
+      if (torrent.files.length === 0) return; // nothing to select yet
+      if (!selectionOwned) {
+        const pieceCount = Math.max(1, Math.ceil(torrent.length / torrent.pieceLength));
+        torrent.deselect(0, pieceCount - 1);
+        selectionOwned = true;
+        appliedSelections = [];
+      }
+      // The full re-apply. Deselecting a superset range also removes
+      // contained selections (webtorrent's own remove semantics), so
+      // deselecting everything previously applied converges to a clean
+      // slate — no residue, no duplication.
+      for (const range of appliedSelections) {
+        torrent.deselect(range.from, range.to);
+      }
+      appliedSelections = [];
+      // Base: the selected files at priority 0 — the library's own
+      // completion order (R11's selection law, unchanged).
+      for (let index = 0; index < torrent.files.length; index += 1) {
+        if (!selectedIndexes.has(index)) continue;
+        const range = filePieceRange(index);
+        if (range === null) continue;
+        torrent.select(range.from, range.to, 0);
+        appliedSelections.push(range);
+      }
+      // Hints: the scheduler's windows at their urgencies. The top
+      // urgency additionally rides webtorrent's own `critical` flag
+      // (jump-the-queue + hotswap — the library's real mechanism for
+      // "the player is waiting on these bytes").
+      for (const hint of schedulerHints) {
+        torrent.select(hint.fromPiece, hint.toPiece, hint.urgency);
+        if (hint.urgency >= 5) torrent.critical(hint.fromPiece, hint.toPiece);
+        appliedSelections.push({ from: hint.fromPiece, to: hint.toPiece });
       }
     };
 
@@ -332,6 +389,14 @@ export function createWebTorrentLibrary(
       },
       selectFiles(fileIndexes): void {
         selectedIndexes = new Set(fileIndexes);
+        if (torrent.files.length > 0) applySelection();
+      },
+      prioritizePieces(priorities): void {
+        // Store the hints; the full re-apply (below) keeps the torrent's
+        // selection list exactly (file selection + hints). Malformed hints
+        // are the ENGINE's validation business (session.applyPiecePriorities);
+        // the binding trusts its caller and stays total.
+        schedulerHints = priorities.slice();
         if (torrent.files.length > 0) applySelection();
       },
       pause(): void {

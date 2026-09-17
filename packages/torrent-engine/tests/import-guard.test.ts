@@ -1,6 +1,6 @@
 /**
- * R11 — the boundary import guard (the R10 production-import-guard
- * pattern, extended to the torrent-engine lanes).
+ * R11/R12 — the boundary import guard (the R10 production-import-guard
+ * pattern, extended to the torrent-engine lanes and R12's scheduler).
  *
  * The laws enforced LINT-VISIBLY (a violation fails the suite):
  *
@@ -14,6 +14,12 @@
  * 4. THE LAYERING LAW (the freeze): `@wfx/native-media` never imports
  *    `@wfx/torrent-engine` (torrent internals stay behind the boundary).
  * 5. The package entry never re-exports test support.
+ * 6. R12 — THE SCHEDULER LANE LAW: `src/scheduler/**` is engine-internal
+ *    scheduling vocabulary: it imports NOTHING from `@wfx/*` (the
+ *    scheduler feeds sessions and the range-gateway seam through the
+ *    engine facade; it never reaches sideways into another package), and
+ *    the public entry re-exports its vocabulary (the seam consumers
+ *    import from "@wfx/torrent-engine" only).
  */
 
 import { describe, expect, it } from "bun:test";
@@ -42,11 +48,76 @@ function tsFilesUnder(dir: string): string[] {
 
 const allSrc = tsFilesUnder(SRC);
 
-describe("R11 — the boundary import guard", () => {
+describe("R11/R12 — the boundary import guard", () => {
   it("the production surfaces exist and are non-empty", () => {
     expect(allSrc.length).toBeGreaterThan(0);
     expect(tsFilesUnder(join(SRC, "adapter")).length).toBeGreaterThan(0);
     expect(tsFilesUnder(join(SRC, "library")).length).toBeGreaterThan(0);
+  });
+
+  it("R12: the scheduler module exists with its production surface", () => {
+    const schedulerFiles = tsFilesUnder(join(SRC, "scheduler"));
+    expect(schedulerFiles.length).toBeGreaterThanOrEqual(7);
+    for (const expected of [
+      "config.ts",
+      "geometry.ts",
+      "windows.ts",
+      "state-machine.ts",
+      "truth.ts",
+      "reads.ts",
+      "session-scheduler.ts",
+      "index.ts",
+    ]) {
+      expect(schedulerFiles.map((f) => f.slice(f.lastIndexOf("/") + 1))).toContain(expected);
+    }
+  });
+
+  it("R12: src/scheduler/** imports NOTHING from @wfx/* (the scheduler lane law)", () => {
+    const violations: string[] = [];
+    for (const file of tsFilesUnder(join(SRC, "scheduler"))) {
+      const source = readFileSync(file, "utf8");
+      // IMPORT STATEMENTS only — module doc comments may name the package.
+      const importStatements = source
+        .split("\n")
+        .filter((line) => line.trim().startsWith("import") || line.trim().startsWith("export"))
+        .join("\n");
+      if (/@wfx\//.test(importStatements)) {
+        violations.push(`${file.slice(SRC.length + 1)}: the scheduler is engine-internal and never imports across lanes`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it("R12: the public entry re-exports the scheduler vocabulary (the seam consumers' import path)", () => {
+    const index = readFileSync(join(SRC, "index.ts"), "utf8");
+    for (const name of [
+      "validatePlaybackSchedulerConfig",
+      "DEFAULT_PLAYBACK_SCHEDULER_CONFIG",
+      "computePlaybackWindows",
+      "computePlaybackTruth",
+      "readVerifiedFileRange",
+      "PlaybackSchedulerFsm",
+      "PIECE_URGENCY",
+    ]) {
+      expect(index).toContain(name);
+    }
+    // And the engine facade owns the playback surface + the type vocabulary.
+    const engine = readFileSync(join(SRC, "engine.ts"), "utf8");
+    expect(engine).toContain("TorrentPlaybackSurface");
+    expect(engine).toContain("readVerifiedRange");
+    expect(engine).toContain("noteRangeRequests");
+  });
+
+  it("R12: the library seam carries the piece-priority surface (both bindings implement it)", () => {
+    const contract = readFileSync(join(SRC, "library", "contract.ts"), "utf8");
+    expect(contract).toContain("prioritizePieces");
+    expect(contract).toContain("LibraryPiecePriority");
+    const webtorrent = readFileSync(join(SRC, "library", "webtorrent.ts"), "utf8");
+    expect(webtorrent).toContain("prioritizePieces(priorities)");
+    // The production binding maps onto webtorrent's OWN mechanisms — no
+    // piece-picking re-implementation (invariant 6).
+    expect(webtorrent).toContain(".select(range.from, range.to, 0)");
+    expect(webtorrent).toContain("torrent.critical(hint.fromPiece, hint.toPiece)");
   });
 
   it("ONLY src/adapter/** imports @wfx/native-media (the narrow seam)", () => {

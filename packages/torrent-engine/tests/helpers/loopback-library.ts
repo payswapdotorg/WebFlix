@@ -25,6 +25,7 @@ import { join } from "node:path";
 
 import {
   torrentError,
+  type LibraryPiecePriority,
   type LibrarySession,
   type LibrarySessionEvent,
   type LibrarySessionSnapshot,
@@ -67,7 +68,7 @@ export class LoopbackTorrentLibrary implements TorrentLibrary {
   readonly implementation = "loopback-double";
 
   private readonly fixturesByInfoHash = new Map<string, FixtureSpec>();
-  private readonly liveSessions: LoopbackSession[] = [];
+  private readonly live: LoopbackSession[] = [];
 
   /** Register a fixture so magnet/metainfo sessions can resolve it. */
   registerFixture(spec: FixtureSpec): void {
@@ -79,12 +80,17 @@ export class LoopbackTorrentLibrary implements TorrentLibrary {
    * Tests call this (no timers, no network — the suite stays deterministic).
    */
   advanceAll(): void {
-    for (const session of this.liveSessions) session.advance();
+    for (const session of this.live) session.advance();
   }
 
   /** The live sessions (for targeted advances + assertions). */
   liveSessionCount(): number {
-    return this.liveSessions.length;
+    return this.live.length;
+  }
+
+  /** The live loopback sessions (test assertions: priorities, snapshots). */
+  liveSessions(): readonly LoopbackSession[] {
+    return this.live.slice();
   }
 
   async parseMagnet(uri: string): Promise<TorrentResult<{ infoHash: string; displayName?: string; trackers: readonly string[] }>> {
@@ -112,7 +118,7 @@ export class LoopbackTorrentLibrary implements TorrentLibrary {
         });
       }
       const session = new LoopbackSession(fixture, spec, { magnetKind: true });
-      this.liveSessions.push(session);
+      this.live.push(session);
       return { ok: true, value: session };
     }
     if (spec.metainfo !== undefined) {
@@ -125,7 +131,7 @@ export class LoopbackTorrentLibrary implements TorrentLibrary {
         });
       }
       const session = new LoopbackSession(fixture, spec, { magnetKind: false });
-      this.liveSessions.push(session);
+      this.live.push(session);
       return { ok: true, value: session };
     }
     return torrentError("INVALID_INPUT", {
@@ -134,7 +140,7 @@ export class LoopbackTorrentLibrary implements TorrentLibrary {
   }
 
   async destroy(): Promise<void> {
-    this.liveSessions.length = 0;
+    this.live.length = 0;
   }
 }
 
@@ -142,7 +148,8 @@ export class LoopbackTorrentLibrary implements TorrentLibrary {
 // The session double
 // ---------------------------------------------------------------------------
 
-class LoopbackSession implements LibrarySession {
+/** The deterministic session double (exported for direct test assertions). */
+export class LoopbackSession implements LibrarySession {
   readonly infoHash: string;
 
   private readonly spec: FixtureSpec;
@@ -160,6 +167,8 @@ class LoopbackSession implements LibrarySession {
   private pendingEvents: LibrarySessionEvent[] = [];
   private bitfield: Uint8Array;
   private selectedIndexes = new Set<number>([]);
+  /** R12: the engine's piece-priority hints (inspectable via appliedPriorities). */
+  private priorityHints: readonly LibraryPiecePriority[] = [];
   private paused = false;
   private destroyed = false;
   private metadataEmitted = false;
@@ -168,7 +177,14 @@ class LoopbackSession implements LibrarySession {
   private lastPeerActivityAt: number | undefined;
   private verifiedBytes = 0;
   private lastAdvanceAt: number | undefined;
-  private lastAdvanceVerifiedBytes = 0;
+  /**
+   * Bytes verified during the MOST RECENT advance (the honest
+   * instantaneous rate of a scripted double: the last tick's throughput
+   * over the scripted interval). Bookkept BEFORE the landing loop so a
+   * snapshot right after an advance reports the advance's own throughput,
+   * not an always-zero delta.
+   */
+  private lastAdvanceDeltaBytes = 0;
 
   constructor(spec: FixtureSpec, sessionSpec: LibrarySessionSpec, flags: { magnetKind: boolean }) {
     this.spec = spec;
@@ -221,7 +237,7 @@ class LoopbackSession implements LibrarySession {
     const advanceIntervalMs = sessionScript(this.sessionSpec).advanceIntervalMs ?? 1000;
     const rate =
       this.lastAdvanceAt !== undefined && !this.paused && !this.destroyed
-        ? ((this.verifiedBytes - this.lastAdvanceVerifiedBytes) * 1000) / advanceIntervalMs
+        ? (this.lastAdvanceDeltaBytes * 1000) / advanceIntervalMs
         : 0;
     return {
       connectedPeers: peers,
@@ -236,6 +252,17 @@ class LoopbackSession implements LibrarySession {
   selectFiles(fileIndexes: readonly number[]): void {
     this.selectedIndexes = new Set(fileIndexes);
     this.checkDone();
+  }
+
+  prioritizePieces(priorities: readonly LibraryPiecePriority[]): void {
+    // Mirrors the production binding's semantics: the hints layer ON TOP
+    // of the file selection (the selection stays the completion fallback).
+    this.priorityHints = priorities.slice();
+  }
+
+  /** The currently applied piece-priority hints (TEST ASSERTIONS). */
+  appliedPriorities(): readonly LibraryPiecePriority[] {
+    return this.priorityHints.slice();
   }
 
   pause(): void {
@@ -261,8 +288,11 @@ class LoopbackSession implements LibrarySession {
 
   /**
    * Advance the simulated transfer by one tick: maybe resolve metadata,
-   * then verify up to `piecesPerAdvance` of the NEXT SELECTED pieces
-   * (writing their REAL bytes to disk and SHA-1-verifying them). Emits
+   * then verify up to `piecesPerAdvance` pieces in PRIORITY ORDER — hint
+   * windows first (urgency descending, ascending pieces within a window,
+   * mirroring webtorrent's priority-sorted selection list), then the
+   * remaining selection in ascending order (the completion fallback).
+   * Writes REAL bytes to disk and SHA-1-verifies each piece. Emits
    * `piece-verified` per piece, `done` when the selection is complete,
    * and a FATAL error on a scripted corruption.
    */
@@ -281,16 +311,45 @@ class LoopbackSession implements LibrarySession {
     if (!this.metadataEmitted || this.paused) return;
     const script = sessionScript(this.sessionSpec);
     const perAdvance = script.piecesPerAdvance ?? 2;
+    const startVerifiedBytes = this.verifiedBytes;
     let verified = 0;
-    for (let piece = 0; piece < this.pieceCount && verified < perAdvance; piece += 1) {
+    for (const piece of this.candidatePieceOrder()) {
+      if (verified >= perAdvance) break;
       if (this.bitHas(piece)) continue;
-      if (!this.pieceIsSelected(piece)) continue;
       this.landPiece(piece, script);
       verified += 1;
     }
     this.lastAdvanceAt = Date.now();
-    this.lastAdvanceVerifiedBytes = this.verifiedBytes;
+    this.lastAdvanceDeltaBytes = this.verifiedBytes - startVerifiedBytes;
     this.checkDone();
+  }
+
+  /**
+   * The deterministic piece-fetch order: hint windows (urgency DESC, then
+   * fromPiece ASC — the stable webtorrent-mirroring order), then the whole
+   * selection ascending. Deduplicated. With no hints this is EXACTLY the
+   * pre-R12 ascending order (every existing test's behavior unchanged).
+   */
+  private candidatePieceOrder(): number[] {
+    const seen = new Set<number>();
+    const out: number[] = [];
+    const push = (piece: number): void => {
+      if (piece < 0 || piece >= this.pieceCount) return;
+      if (seen.has(piece)) return;
+      if (!this.pieceIsSelected(piece)) return; // the selection is the law
+      seen.add(piece);
+      out.push(piece);
+    };
+    const sortedHints = [...this.priorityHints].sort((a, b) => {
+      if (b.urgency !== a.urgency) return b.urgency - a.urgency;
+      if (a.fromPiece !== b.fromPiece) return a.fromPiece - b.fromPiece;
+      return a.toPiece - b.toPiece;
+    });
+    for (const hint of sortedHints) {
+      for (let piece = hint.fromPiece; piece <= hint.toPiece; piece += 1) push(piece);
+    }
+    for (let piece = 0; piece < this.pieceCount; piece += 1) push(piece);
+    return out;
   }
 
   // --- internals -----------------------------------------------------------------

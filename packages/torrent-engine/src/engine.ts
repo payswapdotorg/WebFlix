@@ -46,10 +46,45 @@ import {
   type TorrentSessionStatus,
 } from "./session";
 import type { ParsedMetainfo, TorrentLibrary } from "./library/contract";
+import { PlaybackSessionScheduler } from "./scheduler/session-scheduler";
+import type { SchedulerSessionView } from "./scheduler/session-scheduler";
+import { validatePlaybackSchedulerConfig } from "./scheduler/config";
+import type {
+  PlaybackBufferingTruth,
+  PlaybackCommand,
+  PlaybackRangeRequest,
+  PlaybackSchedulerConfig,
+  PlaybackSchedulerConfigInput,
+  PlaybackSchedulerState,
+  PlaybackSchedulerStatus,
+  PlaybackWindow,
+} from "./scheduler";
 
 // The session status type travels WITH the engine surface (consumers read
 // statuses through the engine; the type is defined in session.ts).
 export type { TorrentSessionStatus, TorrentSelectionRequest } from "./session";
+// The R12 playback-scheduler vocabulary travels WITH the engine surface
+// too (the barrel owns the definitions; consumers import from
+// "@wfx/torrent-engine" — the lane law).
+export type {
+  PlaybackCommand,
+  PlaybackRangeRequest,
+  PlaybackSchedulerStatus,
+  PlaybackSchedulerState,
+  PlaybackBufferingTruth,
+  PlaybackWindow,
+  PlaybackSchedulerConfig,
+  PlaybackSchedulerConfigInput,
+  PlayableFileGeometry,
+  PieceSpan,
+  PlaybackDeadlineRisk,
+  PlaybackStallKind,
+  PlaybackAvailability,
+  TrackedRangeRequest,
+  PlaybackWindowKind,
+  PlaybackPlanInput,
+  PlaybackWindowMode,
+} from "./scheduler";
 
 // ---------------------------------------------------------------------------
 // Ingestion (the public handle)
@@ -158,6 +193,92 @@ export interface TorrentEngineOptions {
   readonly stallThresholdMs?: number;
   /** Journal a progress checkpoint every N verified pieces. Default 16. */
   readonly checkpointEveryPieces?: number;
+  /**
+   * R12: the playback scheduler's configuration (partial — validated,
+   * omitted fields fall back to the exported defaults). Malformed values
+   * fail engine construction honestly.
+   */
+  readonly schedulerConfig?: PlaybackSchedulerConfigInput;
+}
+
+// ---------------------------------------------------------------------------
+// The playback surface (R12)
+// ---------------------------------------------------------------------------
+
+/** Which file a playback operation schedules/reads (default: the first SELECTED file). */
+export interface PlaybackFileOptions {
+  /** Index into the torrent's file list; must be part of the session's selection. */
+  readonly fileIndex?: number;
+}
+
+/**
+ * R12 — the playback-aware scheduler surface: the player's byte-range
+ * deadlines mapped onto torrent piece priorities, with truthful buffering
+ * and ordered integrity-gated reads. THE integration point the R10
+ * native-media range gateway consumes: player -> range gateway ->
+ * `playback.command`/`playback.noteRangeRequests` (deadline mapping) ->
+ * piece priorities -> swarm; gateway reads flow through
+ * `readVerifiedRange` (integrity-gated, watch-order-capable).
+ */
+export interface TorrentPlaybackSurface {
+  /** The validated scheduler configuration (inspectable — no hidden magic). */
+  readonly config: PlaybackSchedulerConfig;
+
+  /**
+   * Submit a playback command (`start`/`progress`/`seek`/`stop`) for a
+   * session's playable file. The command drives the scheduler state
+   * machine and re-applies piece priorities to the live library session.
+   */
+  command(
+    sessionId: string,
+    command: PlaybackCommand,
+    options?: PlaybackFileOptions,
+  ): TorrentResult<PlaybackSchedulerStatus>;
+
+  /**
+   * Note the player's explicit byte-range requests (the range gateway's
+   * observed demand): each becomes a CRITICAL piece window carrying its
+   * deadline. The latest batch replaces the previous one. Requests are
+   * FILE-RELATIVE to the session's scheduled playable file (the file the
+   * playback commands bound).
+   */
+  noteRangeRequests(
+    sessionId: string,
+    requests: readonly PlaybackRangeRequest[],
+  ): TorrentResult<PlaybackSchedulerStatus>;
+
+  /**
+   * THE TRUTHFUL BUFFERING ANSWER: verified runway seconds, deadlines at
+   * risk (with the honest arithmetic), the stall kind (slow swarm vs no
+   * completion path), and the piece-availability horizon. Nothing
+   * unverified is ever reported playable.
+   */
+  truth(sessionId: string): TorrentResult<PlaybackBufferingTruth>;
+
+  /**
+   * THE ORDERED INTEGRITY-GATED READ: real bytes of the playable file,
+   * served only when every covering piece is verified (R11's verdict
+   * discipline gates what the player consumes). `UNVERIFIED_RANGE` names
+   * the missing pieces; the same read succeeds once they verify.
+   */
+  readVerifiedRange(
+    sessionId: string,
+    request: { readonly offsetBytes: number; readonly lengthBytes: number },
+    options?: PlaybackFileOptions,
+  ): Promise<TorrentResult<Uint8Array>>;
+
+  /**
+   * Refresh every scheduled session's plan against the live piece state
+   * (no hidden timers — the host owns cadence). Fact-driven transitions
+   * (startup window satisfied, seek burst satisfied) are evaluated here.
+   */
+  tick(): TorrentResult<{ readonly replanned: number }>;
+
+  /** The scheduler state of one session (diagnostics). */
+  state(sessionId: string): TorrentResult<PlaybackSchedulerState>;
+
+  /** The current window plan of one session (diagnostics). */
+  windows(sessionId: string): TorrentResult<readonly PlaybackWindow[]>;
 }
 
 /** The torrent engine's public surface (WebFlix types only). */
@@ -200,6 +321,13 @@ export interface TorrentEngine {
   stop(sessionId: string): Promise<TorrentResult<void>>;
 
   /**
+   * R12 — the playback-aware scheduler surface: deadline mapping onto
+   * piece priorities, truthful buffering, and ordered integrity-gated
+   * reads. See {@link TorrentPlaybackSurface}.
+   */
+  readonly playback: TorrentPlaybackSurface;
+
+  /**
    * Replay the journal after a restart/crash: live sessions return PAUSED
    * with their journaled control points, terminal sessions stay terminal,
    * and VANISHED DATA (progress proved but bytes gone) is an honest
@@ -222,6 +350,7 @@ const DEFAULT_CHECKPOINT_EVERY_PIECES = 16;
 class TorrentEngineImpl implements TorrentEngine {
   readonly libraryImplementation: string;
   readonly dataRoot: string;
+  readonly playback: TorrentPlaybackSurface;
 
   private readonly library: TorrentLibrary;
   private readonly sources: AuthorizedSourceRegistry;
@@ -229,7 +358,9 @@ class TorrentEngineImpl implements TorrentEngine {
   private readonly clock: () => number;
   private readonly stallThresholdMs: number;
   private readonly checkpointEveryPieces: number;
+  private readonly schedulerConfig: PlaybackSchedulerConfig;
   private readonly sessionsById = new Map<string, TorrentEngineSession>();
+  private readonly schedulersBySession = new Map<string, PlaybackSessionScheduler>();
   private readonly ingestionsById = new Map<string, InternalIngestion>();
   private nextIngestionNumber: number;
 
@@ -254,6 +385,12 @@ class TorrentEngineImpl implements TorrentEngine {
         detail: "createTorrentEngine: an AuthorizedSourceRegistry must be injected (invariant 5 — the engine never invents authorization)",
       });
     }
+    const schedulerValidated = validatePlaybackSchedulerConfig(options.schedulerConfig);
+    if (!schedulerValidated.ok) {
+      throw new TorrentEngineError("INVALID_INPUT", {
+        detail: `createTorrentEngine: the playback scheduler config is malformed: ${schedulerValidated.error.detail}`,
+      });
+    }
     this.library = options.library;
     this.libraryImplementation = options.library.implementation;
     this.dataRoot = options.dataRoot;
@@ -267,8 +404,10 @@ class TorrentEngineImpl implements TorrentEngine {
       options.checkpointEveryPieces === undefined
         ? DEFAULT_CHECKPOINT_EVERY_PIECES
         : options.checkpointEveryPieces;
+    this.schedulerConfig = schedulerValidated.value;
     this.journal = createTorrentSessionJournal(options.dataRoot, { clock: this.clock });
     this.nextIngestionNumber = 1;
+    this.playback = this.buildPlaybackSurface();
   }
 
   get journalPath(): string {
@@ -497,8 +636,136 @@ class TorrentEngineImpl implements TorrentEngine {
     const stopped = await session.value.stop();
     if (stopped.ok) {
       this.sessionsById.delete(sessionId);
+      // The scheduler slot detaches with the session (its playback intent
+      // does not survive a stop; a fresh command on a future recovered
+      // session starts a fresh scheduler — R13 owns cross-restart
+      // continuity).
+      this.schedulersBySession.get(sessionId)?.detach();
+      this.schedulersBySession.delete(sessionId);
     }
     return stopped;
+  }
+
+  // --- R12: the playback scheduler surface -------------------------------------
+
+  /** The engine-internal live view of one session (fresh accessors only). */
+  private schedulerViewFor(session: TorrentEngineSession): SchedulerSessionView {
+    return {
+      sessionId: session.sessionId,
+      state: () => session.currentState(),
+      metainfo: () => session.resolvedMetainfo(),
+      plan: () => session.selectionPlan(),
+      dataDir: session.dataDir,
+      snapshot: () => session.librarySnapshot(),
+      stallFacts: () => session.stallFacts(),
+      applyPiecePriorities: (hints) => session.applyPiecePriorities(hints),
+    };
+  }
+
+  /** The per-session scheduler (created on first playback contact). */
+  private schedulerFor(sessionId: string): TorrentResult<{
+    session: TorrentEngineSession;
+    scheduler: PlaybackSessionScheduler;
+  }> {
+    const session = this.sessionsById.get(sessionId);
+    if (session === undefined) {
+      return torrentError("NOT_FOUND", {
+        sessionId,
+        detail:
+          "playback: no such session is live (it may have been stopped — its persisted state is recoverable on engine restart via recover())",
+      });
+    }
+    let scheduler = this.schedulersBySession.get(sessionId);
+    if (scheduler === undefined) {
+      scheduler = new PlaybackSessionScheduler(this.schedulerConfig, this.clock);
+      this.schedulersBySession.set(sessionId, scheduler);
+    }
+    return { ok: true, value: { session, scheduler } };
+  }
+
+  private buildPlaybackSurface(): TorrentPlaybackSurface {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias -- the surface's closures must outlive method scope; a WeakMap-free, allocation-free alias is the honest tool (the R10 binding's precedent)
+    const engine = this;
+    return {
+      get config(): PlaybackSchedulerConfig {
+        return engine.schedulerConfig;
+      },
+
+      command(
+        sessionId: string,
+        command: PlaybackCommand,
+        options?: PlaybackFileOptions,
+      ): TorrentResult<PlaybackSchedulerStatus> {
+        const resolved = engine.schedulerFor(sessionId);
+        if (!resolved.ok) return resolved;
+        return resolved.value.scheduler.command(
+          engine.schedulerViewFor(resolved.value.session),
+          command,
+          options?.fileIndex,
+        );
+      },
+
+      noteRangeRequests(
+        sessionId: string,
+        requests: readonly PlaybackRangeRequest[],
+      ): TorrentResult<PlaybackSchedulerStatus> {
+        const resolved = engine.schedulerFor(sessionId);
+        if (!resolved.ok) return resolved;
+        return resolved.value.scheduler.noteRangeRequests(
+          engine.schedulerViewFor(resolved.value.session),
+          requests,
+        );
+      },
+
+      truth(sessionId: string): TorrentResult<PlaybackBufferingTruth> {
+        const resolved = engine.schedulerFor(sessionId);
+        if (!resolved.ok) return resolved;
+        return {
+          ok: true,
+          value: resolved.value.scheduler.truth(
+            engine.schedulerViewFor(resolved.value.session),
+          ),
+        };
+      },
+
+      async readVerifiedRange(
+        sessionId: string,
+        request: { readonly offsetBytes: number; readonly lengthBytes: number },
+        options?: PlaybackFileOptions,
+      ): Promise<TorrentResult<Uint8Array>> {
+        const resolved = engine.schedulerFor(sessionId);
+        if (!resolved.ok) return resolved;
+        return resolved.value.scheduler.readVerifiedRange(
+          engine.schedulerViewFor(resolved.value.session),
+          request,
+          options?.fileIndex,
+        );
+      },
+
+      tick(): TorrentResult<{ readonly replanned: number }> {
+        let replanned = 0;
+        for (const [sessionId, scheduler] of engine.schedulersBySession) {
+          const session = engine.sessionsById.get(sessionId);
+          if (session === undefined) continue; // detached racing a stop
+          const outcome = scheduler.replan(engine.schedulerViewFor(session));
+          if (!outcome.ok) return outcome;
+          if (outcome.value) replanned += 1;
+        }
+        return { ok: true, value: { replanned } };
+      },
+
+      state(sessionId: string): TorrentResult<PlaybackSchedulerState> {
+        const resolved = engine.schedulerFor(sessionId);
+        if (!resolved.ok) return resolved;
+        return { ok: true, value: resolved.value.scheduler.schedulerState() };
+      },
+
+      windows(sessionId: string): TorrentResult<readonly PlaybackWindow[]> {
+        const resolved = engine.schedulerFor(sessionId);
+        if (!resolved.ok) return resolved;
+        return { ok: true, value: resolved.value.scheduler.windows() };
+      },
+    };
   }
 
   // --- recovery ----------------------------------------------------------------
@@ -667,7 +934,11 @@ class TorrentEngineImpl implements TorrentEngine {
     for (const session of this.sessionsById.values()) {
       await session.destroy();
     }
+    for (const scheduler of this.schedulersBySession.values()) {
+      scheduler.detach();
+    }
     this.sessionsById.clear();
+    this.schedulersBySession.clear();
     await this.library.destroy();
   }
 

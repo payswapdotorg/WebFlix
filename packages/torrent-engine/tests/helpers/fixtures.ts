@@ -94,10 +94,31 @@ export const PRIVATE_ARCHIVE: FixtureSpec = {
   isPrivate: true,
 };
 
+/**
+ * The R12 playback fixture: a two-file torrent whose PLAYABLE file spans
+ * ~15 pieces — long enough that a late seek target inverts the natural
+ * fetch order decisively (piece 12+ before piece 0), and that startup /
+ * steady / seek windows land on distinct, assertable piece ranges. The
+ * sidecar file shares the boundary piece (the piece-geometry truth).
+ */
+export const PLAYBACK_FEATURE: FixtureSpec = {
+  key: "playback-feature-v1",
+  name: "playback-feature-v1",
+  layout: "multi-file",
+  pieceLengthBytes: 16384,
+  files: [
+    { path: "feature.mkv", sizeBytes: 16384 * 14 + 9000 },
+    { path: "trailer.mp4", sizeBytes: 16384 * 2 + 3000 },
+  ],
+  trackers: ["udp://tracker.example.org:1337/announce"],
+  isPrivate: false,
+};
+
 export const ALL_FIXTURES: readonly FixtureSpec[] = [
   AUTHORIZED_ARCHIVE_V1,
   SINGLE_FILE_DOCUMENT,
   PRIVATE_ARCHIVE,
+  PLAYBACK_FEATURE,
 ];
 
 // ---------------------------------------------------------------------------

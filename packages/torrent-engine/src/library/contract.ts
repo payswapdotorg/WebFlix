@@ -130,12 +130,39 @@ export interface LibrarySession {
    * empty selection transfers nothing.
    */
   selectFiles(fileIndexes: readonly number[]): void;
+  /**
+   * Apply piece priorities ON TOP of the file selection (R12's
+   * playback-aware scheduling): ranges with higher urgency are fetched
+   * first while the selection stays the completion fallback. An empty
+   * list clears every engine hint (back to pure selection order).
+   *
+   * The mapping onto the mature library's own mechanisms is the binding's
+   * business (webtorrent: `select(range, urgency)` + `critical` for the
+   * top urgency) — the engine never re-implements piece picking
+   * (invariant 6).
+   */
+  prioritizePieces(priorities: readonly LibraryPiecePriority[]): void;
   /** Pause the session (no transfer; state preserved). */
   pause(): void;
   /** Resume a paused session. */
   resume(): void;
   /** Destroy the library session (leaves any on-disk bytes in place). */
   destroy(): Promise<void>;
+}
+
+/**
+ * A piece-priority hint the engine gives the library (R12). A range of
+ * pieces plus an urgency on the closed 0-5 ladder (see
+ * `scheduler/windows.ts` — the WebFlix vocabulary; the binding owns the
+ * translation to the library's own priority domain).
+ */
+export interface LibraryPiecePriority {
+  /** First piece of the inclusive range (absolute index). */
+  readonly fromPiece: number;
+  /** Last piece of the inclusive range (absolute index). */
+  readonly toPiece: number;
+  /** 0 (completion/selection order) .. 5 (critical — fetch first). */
+  readonly urgency: number;
 }
 
 /** How the engine asks the library for a session. */
