@@ -1,71 +1,76 @@
 /**
- * @wfx/torrent-engine — error taxonomy (R11).
+ * @wfx/torrent-engine — the typed error/rejection taxonomy (R11).
  *
- * The closed error vocabulary of the torrent engine boundary. Every failure
- * that crosses the public API is a `TorrentEngineError` carrying a
- * `TorrentEngineErrorCode`, an optional `detail`, the `sessionId` when
- * known, and a table-derived `retryable` flag. Operational failures are
- * typed VALUES surfaced through the API (and through the recovery
- * journal's `evidence` channel); they are never swallowed and never
- * converted into fake success.
+ * The closed error vocabulary of the torrent engine. Every failure that
+ * crosses the engine's public boundary is a `TorrentEngineError` carrying a
+ * `TorrentErrorCode`, an optional `detail`, the `sessionId` when known, and a
+ * table-derived `retryable` flag — the same discipline as the R10
+ * native-media taxonomy (`NativeMediaError`), deliberately mirrored so the
+ * two native-media-lane packages read as one family.
  *
- * COVERAGE (one code per honest failure mode):
- * - `UNAUTHORIZED_SOURCE`     — invariant 5: the ingestion carried no
- *   provenance, or the provenance did not name a known authorized source/vault.
- *   STRUCTURAL — the public `ingestMagnet`/`ingestTorrentFile` API requires
- *   a `provenance` argument so the call site cannot even TYPE-CHECK without
- *   one. This code is the runtime mirror for provenances that resolve to
- *   `unknown` (a typed rejection, never a warning).
- * - `INVALID_INPUT`           — the caller's arguments are malformed (bad
- *   magnet URI, malformed .torrent bytes, bad session id, …).
- * - `UNSUPPORTED_SOURCE`      — the engine cannot handle this source shape
- *   (e.g. a v1 .torrent with no `info` dictionary).
- * - `NOT_FOUND`               — the referenced session/metadata/file does
- *   not exist.
- * - `METADATA_FAILED`         — the mature library could not parse the
- *   magnet/.torrent metadata (the J21–J25 "metadata" step's honest failure).
- * - `INTEGRITY_FAILED`        — piece hash verification or the final
- *   whole-asset digest mismatched (the J24 "integrity verification" failure).
- * - `DATA_VANISHED`           — the persisted data directory for a session
- *   disappeared (the honest failure of a vanished state, never a silent
- *   restart from zero — the R10 recovery law, mirrored here).
- * - `IO_ERROR`                — a read/write against local storage failed
- *   (transient — disk full, EACCES, ENOSPC, …).
- * - `SESSION_CLOSED`          — the session is closed/terminal; no further
- *   operations.
- * - `INTERNAL`                — an unexpected internal fault (engine bug,
- *   malformed internal state).
- *
- * The taxonomy is the torrent-engine-LOCAL mirror of the R10 native-media
- * `NativeMediaError` codes: the adapter (adapter.ts) maps these onto the
- * native-media vocabulary before landing assets in the store, so the
- * native-media-facing surface stays coherent.
+ * OPERATIONAL LAW (the remediation freeze):
+ * - Failures are typed VALUES inside `TorrentResult` envelopes — never
+ *   swallowed, never converted into fake success, never a bare warning.
+ * - `PROVENANCE_REJECTED` is the invariant-5 code: an ingestion without
+ *   authorization provenance is a TYPED REJECTION, structurally enforced
+ *   (see provenance.ts) and re-validated at runtime on every ingest.
+ * - `InvalidTorrentTransitionError` is deliberately NOT a
+ *   `TorrentEngineError`: an illegal session-state hop is a programmer error
+ *   in pure lifecycle logic (the R10 `InvalidTransitionError` precedent) and
+ *   is thrown, not enveloped.
  */
 
 // ---------------------------------------------------------------------------
 // Error codes
 // ---------------------------------------------------------------------------
 
-export const TORRENT_ENGINE_ERROR_CODES = [
-  "UNAUTHORIZED_SOURCE",
+/**
+ * The closed set of torrent engine error codes.
+ *
+ * - `PROVENANCE_REJECTED` — invariant 5: the ingestion's provenance is
+ *   missing, forged, or names a source that is not in the authorized-source
+ *   registry. Authorized media only — never a warning.
+ * - `INVALID_INPUT`        — the caller's arguments are malformed (registry
+ *   construction, selection shape, ...).
+ * - `INVALID_MAGNET`       — the magnet URI is malformed/unparseable.
+ * - `INVALID_TORRENT_FILE` — the .torrent bytes are not valid bencoded
+ *   metainfo (the mature library refused to decode them).
+ * - `INVALID_SELECTION`    — the file selection is empty/out-of-range/
+ *   duplicated, or unresolvable against the torrent's file list.
+ * - `NOT_FOUND`            — the referenced session/ingestion does not exist
+ *   (a stopped session answers this with the honest recovery hint).
+ * - `SESSION_CLOSED`       — the session is terminal (`completed`/`failed`);
+ *   no further lifecycle operations apply.
+ * - `INVALID_STATE`        — the lifecycle command is illegal in the current
+ *   state (e.g. pausing a completed session, a duplicate live session for
+ *   the same infohash).
+ * - `IO_ERROR`             — a local read/write failed (transient).
+ * - `LIBRARY_ERROR`        — the mature protocol library reported a failure
+ *   (peer loss, metadata failure, protocol error). Transient by default —
+ *   the caller decides whether to stop or keep the session.
+ * - `INTERNAL`             — an unexpected internal fault (engine bug).
+ */
+export const TORRENT_ERROR_CODES = [
+  "PROVENANCE_REJECTED",
   "INVALID_INPUT",
-  "UNSUPPORTED_SOURCE",
+  "INVALID_MAGNET",
+  "INVALID_TORRENT_FILE",
+  "INVALID_SELECTION",
   "NOT_FOUND",
-  "METADATA_FAILED",
-  "INTEGRITY_FAILED",
-  "DATA_VANISHED",
-  "IO_ERROR",
   "SESSION_CLOSED",
+  "INVALID_STATE",
+  "IO_ERROR",
+  "LIBRARY_ERROR",
   "INTERNAL",
 ] as const;
 
-export type TorrentEngineErrorCode = (typeof TORRENT_ENGINE_ERROR_CODES)[number];
+export type TorrentErrorCode = (typeof TORRENT_ERROR_CODES)[number];
 
 /** Runtime guard for the closed code union. */
-export function isTorrentEngineErrorCode(x: unknown): x is TorrentEngineErrorCode {
+export function isTorrentErrorCode(x: unknown): x is TorrentErrorCode {
   return (
     typeof x === "string" &&
-    (TORRENT_ENGINE_ERROR_CODES as readonly string[]).includes(x)
+    (TORRENT_ERROR_CODES as readonly string[]).includes(x)
   );
 }
 
@@ -75,23 +80,19 @@ export function isTorrentEngineErrorCode(x: unknown): x is TorrentEngineErrorCod
 
 /**
  * Codes for which retrying the same operation may plausibly succeed:
- * transient transport failures (`IO_ERROR`). Every other code describes a
- * condition that will not change on retry (unauthorized source, bad input,
- * missing metadata, integrity failure, vanished data, closed session,
- * unsupported source, or an internal bug).
- *
- * `METADATA_FAILED` is NOT retryable: the mature library's parse verdict
- * is deterministic for the same input — a re-parse will return the same
- * failure (the operation is a pure function of the bytes). A network-based
- * metadata fetch (magnet → metadata via DHT/trackers) would be retryable,
- * but the loopback production path does not exercise that path; the
- * production deployment may revise the verdict at R12.
+ * transient local I/O (`IO_ERROR`) and library-side failures
+ * (`LIBRARY_ERROR` — peer/metadata/network conditions change). Every other
+ * code describes a condition that will not change on retry (bad input,
+ * unknown session, terminal session, provenance law, internal bug).
  */
-export const RETRYABLE_ERROR_CODES: readonly TorrentEngineErrorCode[] = ["IO_ERROR"];
+export const RETRYABLE_TORRENT_ERROR_CODES: readonly TorrentErrorCode[] = [
+  "IO_ERROR",
+  "LIBRARY_ERROR",
+];
 
-/** Is an error with this code retryable? The single source of truth. */
-export function isRetryable(code: TorrentEngineErrorCode): boolean {
-  return RETRYABLE_ERROR_CODES.includes(code);
+/** Is an error with this code retryable? (single source of truth) */
+export function isRetryableTorrentError(code: TorrentErrorCode): boolean {
+  return RETRYABLE_TORRENT_ERROR_CODES.includes(code);
 }
 
 // ---------------------------------------------------------------------------
@@ -104,7 +105,7 @@ export interface TorrentEngineErrorOptions {
   detail?: string;
   /** The torrent session the error concerns, when known. */
   sessionId?: string;
-  /** Underlying cause (e.g. the raw library error), preserved for logs. */
+  /** Underlying cause (e.g. the library's raw error), preserved for logs. */
   cause?: unknown;
 }
 
@@ -114,14 +115,14 @@ export interface TorrentEngineErrorOptions {
  * from the code table so the flag can never drift from the taxonomy.
  */
 export class TorrentEngineError extends Error {
-  readonly code: TorrentEngineErrorCode;
+  readonly code: TorrentErrorCode;
   // `declare` keeps the optional fields truly ABSENT (not undefined slots)
-  // until they are actually provided.
+  // until they are actually provided (exactOptionalPropertyTypes).
   declare readonly detail?: string;
   declare readonly sessionId?: string;
   readonly retryable: boolean;
 
-  constructor(code: TorrentEngineErrorCode, options: TorrentEngineErrorOptions = {}) {
+  constructor(code: TorrentErrorCode, options: TorrentEngineErrorOptions = {}) {
     const { detail, sessionId, cause } = options;
     super(
       detail === undefined
@@ -131,25 +132,23 @@ export class TorrentEngineError extends Error {
     );
     this.name = "TorrentEngineError";
     this.code = code;
-    this.retryable = isRetryable(code);
-    // exactOptionalPropertyTypes: never materialize `detail: undefined`.
+    this.retryable = isRetryableTorrentError(code);
     if (detail !== undefined) this.detail = detail;
     if (sessionId !== undefined) this.sessionId = sessionId;
   }
 }
 
 /**
- * Narrow an unknown value to a {@link TorrentEngineError}. Accepts real
- * instances and structurally valid lookalikes (errors that crossed a
- * serialization/worker boundary). Rejects plain `Error`s, impostor
- * objects, and non-objects.
+ * Narrow an unknown value to a {@link TorrentEngineError} (real instances
+ * plus structurally valid lookalikes that crossed a boundary — the R10
+ * `isNativeMediaError` precedent).
  */
 export function isTorrentEngineError(x: unknown): x is TorrentEngineError {
   if (x instanceof TorrentEngineError) return true;
   if (typeof x !== "object" || x === null) return false;
   const candidate = x as Record<string, unknown>;
   if (candidate.name !== "TorrentEngineError") return false;
-  if (!isTorrentEngineErrorCode(candidate.code)) return false;
+  if (!isTorrentErrorCode(candidate.code)) return false;
   if (typeof candidate.retryable !== "boolean") return false;
   if (candidate.detail !== undefined && typeof candidate.detail !== "string") {
     return false;
@@ -164,38 +163,45 @@ export function isTorrentEngineError(x: unknown): x is TorrentEngineError {
 }
 
 // ---------------------------------------------------------------------------
-// Convenience constructors
-// ---------------------------------------------------------------------------
-
-/** A typed `INVALID_INPUT` error (the most common programmer error). */
-export function invalidInput(detail: string): TorrentEngineError {
-  return new TorrentEngineError("INVALID_INPUT", { detail });
-}
-
-/** A typed `UNAUTHORIZED_SOURCE` error (invariant 5's runtime mirror). */
-export function unauthorizedSource(detail: string): TorrentEngineError {
-  return new TorrentEngineError("UNAUTHORIZED_SOURCE", { detail });
-}
-
-// ---------------------------------------------------------------------------
-// InvalidTransitionError (session FSM programmer error)
+// The result envelope
 // ---------------------------------------------------------------------------
 
 /**
- * Thrown by the torrent session state machine when a transition is not
- * allowed (unknown state or illegal hop). A programmer error in pure
- * logic — never an engine-envelope error. Mirrors the R10 native-media
- * `InvalidTransitionError` precedent.
+ * The result envelope for every torrent engine operation: success carries
+ * `value`, failure carries a typed `TorrentEngineError` — the R10
+ * `ServiceResponse` discipline (never a fake success, never a bare warning).
  */
-export class InvalidTransitionError extends Error {
+export type TorrentResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: TorrentEngineError };
+
+/** Internal helper: build a typed failure envelope. */
+export function torrentError(
+  code: TorrentErrorCode,
+  options: TorrentEngineErrorOptions = {},
+): TorrentResult<never> {
+  return { ok: false, error: new TorrentEngineError(code, options) };
+}
+
+// ---------------------------------------------------------------------------
+// InvalidTorrentTransitionError (lifecycle FSM programmer error)
+// ---------------------------------------------------------------------------
+
+/**
+ * Thrown by the session state machine when a transition is not allowed
+ * (unknown state or illegal hop). A programmer error in pure logic — never
+ * an enveloped rejection (the R10 `InvalidTransitionError` precedent).
+ * `from`/`to` are plain strings because runtime callers may pass garbage.
+ */
+export class InvalidTorrentTransitionError extends Error {
   readonly from: string;
   readonly to: string;
 
   constructor(from: string, to: string) {
     super(
-      `InvalidTransitionError: torrent session state '${from}' cannot transition to '${to}'`,
+      `InvalidTorrentTransitionError: torrent session state '${from}' cannot transition to '${to}'`,
     );
-    this.name = "InvalidTransitionError";
+    this.name = "InvalidTorrentTransitionError";
     this.from = from;
     this.to = to;
   }

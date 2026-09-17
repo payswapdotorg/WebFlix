@@ -1,109 +1,120 @@
 /**
- * R11 — the import guard (the boundary law).
+ * R11 — the boundary import guard (the R10 production-import-guard
+ * pattern, extended to the torrent-engine lanes).
  *
- * The adapter (src/adapter.ts) is the ONLY module in
- * `packages/torrent-engine/src/` that imports from `@wfx/native-media`.
- * Every OTHER module must NOT import from `@wfx/native-media` — the
- * native-media surface is unreachable from torrent-engine outside the
- * adapter. This test enforces the boundary LINT-VISIBLY, mirroring the
- * R10 production-import-guard pattern.
+ * The laws enforced LINT-VISIBLY (a violation fails the suite):
  *
- * The lane checker (scripts/check-lanes.mjs) enforces the cross-package
- * import law (no deep paths, only public entries); this test enforces
- * the torrent-engine-LOCAL boundary law.
+ * 1. THE NARROW SEAM: `src/adapter/**` is the ONLY place in
+ *    @wfx/torrent-engine that may import `@wfx/native-media`.
+ * 2. NO TEST SUPPORT IN PRODUCTION: nothing under `src/` imports the
+ *    loopback double, the fixtures, or the bencode encoder.
+ * 3. THE LAZY-IMPORT LAW: `webtorrent` is imported ONLY dynamically
+ *    (`await import("webtorrent")`) inside the production binding — so
+ *    importing @wfx/torrent-engine never loads the native module.
+ * 4. THE LAYERING LAW (the freeze): `@wfx/native-media` never imports
+ *    `@wfx/torrent-engine` (torrent internals stay behind the boundary).
+ * 5. The package entry never re-exports test support.
  */
 
 import { describe, expect, it } from "bun:test";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const SRC = join(import.meta.dir, "..", "src");
+const PKG_ROOT = join(import.meta.dir, "..");
+const REPO_ROOT = join(PKG_ROOT, "..", "..");
+const SRC = join(PKG_ROOT, "src");
 
-/** Every .ts file under src/ (recursive). */
+/** Every .ts file under a directory (recursive). */
 function tsFilesUnder(dir: string): string[] {
   const out: string[] = [];
+  if (!existsSync(dir)) return out;
   for (const entry of readdirSync(dir)) {
     const path = join(dir, entry);
     const st = statSync(path);
     if (st.isDirectory()) {
       out.push(...tsFilesUnder(path));
-    } else if (entry.endsWith(".ts") && !entry.endsWith(".d.ts")) {
+    } else if (entry.endsWith(".ts")) {
       out.push(path);
     }
   }
   return out;
 }
 
-/** The forbidden native-media import specifiers (the boundary law). */
-const FORBIDDEN_NATIVE_MEDIA = [
-  "@wfx/native-media",
-];
+const allSrc = tsFilesUnder(SRC);
 
-/** The adapter (the ONLY module permitted to import from native-media). */
-const ADAPTER_PATH = join(SRC, "adapter.ts");
-
-describe("R11 — the import guard (the native-media boundary law)", () => {
-  it("src/ exists and contains .ts files", () => {
-    const files = tsFilesUnder(SRC);
-    expect(files.length).toBeGreaterThan(0);
-    expect(files).toContain(ADAPTER_PATH);
+describe("R11 — the boundary import guard", () => {
+  it("the production surfaces exist and are non-empty", () => {
+    expect(allSrc.length).toBeGreaterThan(0);
+    expect(tsFilesUnder(join(SRC, "adapter")).length).toBeGreaterThan(0);
+    expect(tsFilesUnder(join(SRC, "library")).length).toBeGreaterThan(0);
   });
 
-  it("the adapter imports from @wfx/native-media (the seam is real)", () => {
-    const source = readFileSync(ADAPTER_PATH, "utf8");
-    expect(source).toContain('from "@wfx/native-media"');
-  });
-
-  it("NO non-adapter module imports from @wfx/native-media (the boundary)", () => {
-    const files = tsFilesUnder(SRC);
+  it("ONLY src/adapter/** imports @wfx/native-media (the narrow seam)", () => {
     const violations: string[] = [];
-    for (const file of files) {
-      if (file === ADAPTER_PATH) continue;
+    for (const file of allSrc) {
+      const relative = file.slice(SRC.length + 1);
+      if (relative.startsWith("adapter" + "/")) continue; // the seam itself
       const source = readFileSync(file, "utf8");
-      for (const forbidden of FORBIDDEN_NATIVE_MEDIA) {
-        if (source.includes(`from "${forbidden}"`) || source.includes(`from '${forbidden}'`)) {
-          violations.push(`${file}: imports "${forbidden}"`);
-        }
-        // Deep-path escapes to native-media (the lane checker also enforces
-        // this; this test is the torrent-engine-LOCAL mirror).
-        if (/from\s+["']@wfx\/native-media\/[^"']+["']/.test(source)) {
-          violations.push(`${file}: imports a native-media deep path`);
-        }
+      if (source.includes('from "@wfx/native-media"') || source.includes("from '@wfx/native-media'")) {
+        violations.push(`${relative}: imports @wfx/native-media outside the adapter`);
       }
     }
     expect(violations).toEqual([]);
   });
 
-  it("the package entry exports the adapter (the seam is reachable)", () => {
+  it("no production module imports TEST support (loopback / fixtures / bencode)", () => {
+    const violations: string[] = [];
+    for (const file of allSrc) {
+      const source = readFileSync(file, "utf8");
+      if (/from\s+["'][^"']*(loopback-library|helpers\/fixtures|\/bencode)["']/.test(source)) {
+        violations.push(`${file.slice(SRC.length + 1)}: imports test support`);
+      }
+      if (source.includes("../tests") || source.includes("../../tests")) {
+        violations.push(`${file.slice(SRC.length + 1)}: imports from tests/`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it("webtorrent is imported ONLY LAZILY (dynamic import — the native module never loads on package import)", () => {
+    const violations: string[] = [];
+    for (const file of allSrc) {
+      const source = readFileSync(file, "utf8");
+      // A STATIC import of webtorrent anywhere in src (import/export from).
+      if (/import\s[^;]*?from\s+["']webtorrent["']/.test(source)) {
+        violations.push(`${file.slice(SRC.length + 1)}: statically imports webtorrent`);
+      }
+      if (/export\s[^;]*?from\s+["']webtorrent["']/.test(source)) {
+        violations.push(`${file.slice(SRC.length + 1)}: statically re-exports webtorrent`);
+      }
+    }
+    expect(violations).toEqual([]);
+    // And the production binding's dynamic import exists (the lazy law).
+    const binding = readFileSync(join(SRC, "library", "webtorrent.ts"), "utf8");
+    expect(binding.includes('await import("webtorrent")')).toBe(true);
+  });
+
+  it("@wfx/native-media NEVER imports @wfx/torrent-engine (the layering law)", () => {
+    const nativeMediaSrc = join(REPO_ROOT, "packages", "native-media", "src");
+    const violations: string[] = [];
+    for (const file of tsFilesUnder(nativeMediaSrc)) {
+      const source = readFileSync(file, "utf8");
+      if (source.includes("@wfx/torrent-engine")) {
+        violations.push(`${file}: torrent-engine must stay OUTSIDE native-media (the freeze's layering law)`);
+      }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it("the package entry exports no test support and never deep-imports the library", () => {
     const index = readFileSync(join(SRC, "index.ts"), "utf8");
-    expect(index).toContain("./adapter");
-  });
-
-  it("NO module imports the loopback backend from outside the engine/tests", () => {
-    // The loopback backend is the TEST/DEV default; production code paths
-    // must not import it directly (the production backend is injected
-    // through createTorrentEngine's options.backend). This test enforces
-    // that the loopback is only imported by the engine + tests.
-    const files = tsFilesUnder(SRC);
-    const violations: string[] = [];
-    for (const file of files) {
-      // The backend.ts file DEFINES the loopback — it is the only place
-      // that mentions it (other than engine.ts which uses the backend
-      // interface, not the loopback class directly).
-      const basename = file.split("/").pop();
-      // backend.ts: defines the loopback (allowed).
-      // index.ts: re-exports the backend module (the public surface; allowed).
-      // engine.ts: consumes the BitTorrentBackend interface (allowed —
-      //   the loopback class is not imported, only the interface is used).
-      if (basename === "backend.ts" || basename === "index.ts" || basename === "engine.ts") {
-        continue;
-      }
-      const source = readFileSync(file, "utf8");
-      // Look for explicit loopback imports outside the permitted modules.
-      if (/from\s+["']\.\/backend["']/.test(source) && /LoopbackBitTorrentBackend/.test(source)) {
-        violations.push(`${file}: imports LoopbackBitTorrentBackend directly`);
-      }
-    }
-    expect(violations).toEqual([]);
+    // Import statements only — doc comments may name the test double.
+    const importStatements = index
+      .split("\n")
+      .filter((line) => line.trim().startsWith("import") || line.trim().startsWith("export"))
+      .join("\n");
+    expect(importStatements).not.toContain("loopback");
+    expect(importStatements).not.toContain("helpers/");
+    expect(importStatements).not.toContain('from "webtorrent"');
   });
 });

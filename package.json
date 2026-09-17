@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "workspaces": ["packages/*", "apps/*"],
   "engines": { "bun": ">=1.1" },
+  "trustedDependencies": [
+    "node-datachannel"
+  ],
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json",

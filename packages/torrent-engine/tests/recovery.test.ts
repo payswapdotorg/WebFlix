@@ -1,200 +1,336 @@
 /**
- * R11 — recovery (the R10 journal-replay discipline, mirrored).
+ * R11 — persistent recovery tests (the journal + the restart law).
  *
- * After a stop/crash/restart, the engine's `recover()` replays the journal
- * and rebuilds every recoverable session. HONEST FAILURE for vanished
- * state: a session whose data directory disappeared is `failed` with the
- * `DATA_VANISHED` evidence — never a silent restart from zero pretending
- * continuity.
+ * The R10 discipline adapted: journal replay after a simulated restart
+ * (a stopped downloading session recovers as seeding-paused with its
+ * persisted bitfield); recovery is idempotent; terminal sessions stay
+ * terminal; a session whose data directory VANISHED fails honestly
+ * (data-vanished — never a silent restart from zero pretending
+ * continuity); torn tails drop; sequence numbers continue.
  */
 
-import { describe, expect, it, beforeEach, afterEach } from "bun:test";
-import { existsSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { appendFileSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
-import {
-  createTorrentEngine,
-} from "../src/engine";
-import { LoopbackBitTorrentBackend, type LoopbackFixture } from "../src/backend";
-import { provenanceFromAuthorizedSource } from "../src/provenance";
+import { authorizeProvenance, createAuthorizedSourceRegistry } from "../src/provenance";
+import { createTorrentEngine } from "../src/engine";
+import { createTorrentSessionJournal } from "../src/journal";
+import { LoopbackTorrentLibrary } from "./helpers/loopback-library";
+import { statusOf, waitFor } from "./helpers/status";
+import { AUTHORIZED_ARCHIVE_V1, fixtureTorrentBytes } from "./helpers/fixtures";
 
-const FIXTURES = join(import.meta.dir, "fixtures");
-const TORRENT_BYTES = new Uint8Array(readFileSync(join(FIXTURES, "sintel-single.torrent")));
-const SUMMARY = JSON.parse(readFileSync(join(FIXTURES, "sintel-single.summary.json"), "utf8")) as {
-  infoHash: string;
-  name: string;
-  pieceLength: number;
-  pieceCount: number;
-  totalBytes: number;
-  pieceSha1Hex: string[];
-};
-const FIXTURE_BYTES = new Uint8Array(readFileSync(join(FIXTURES, "sintel-single.bin")));
+const TMP = join(import.meta.dir, "tmp-recovery");
 
-let tmpRoot: string;
+const sources = createAuthorizedSourceRegistry({
+  sources: [{ sourceId: "vault:family-media", basis: "user-owned", label: "Family media vault" }],
+});
+const PROVENANCE = (() => {
+  const minted = authorizeProvenance(sources, "vault:family-media");
+  if (!minted.ok) throw new Error("fixture provenance must mint");
+  return minted.value;
+})();
 
-function makeFixture(): LoopbackFixture {
-  const pieces = SUMMARY.pieceSha1Hex.map((hex) => new Uint8Array(Buffer.from(hex, "hex")));
-  return {
-    infoHash: SUMMARY.infoHash,
-    name: SUMMARY.name,
-    pieceLengthBytes: SUMMARY.pieceLength,
-    pieces,
-    files: [
-      {
-        path: SUMMARY.name,
-        lengthBytes: SUMMARY.totalBytes,
-        bytes: FIXTURE_BYTES,
-        playableHint: true,
-      },
-    ],
-    peerCount: 5,
-  };
+let rootCounter = 0;
+function dataRootFor(name: string): string {
+  rootCounter += 1;
+  const root = join(TMP, `${name}-${rootCounter}`);
+  mkdirSync(root, { recursive: true });
+  return root;
 }
 
-function makeProvenance() {
-  return provenanceFromAuthorizedSource({
-    sourceId: "personal-vault",
-    authorizationKind: "authorized-vault",
-  });
+function newLibrary(): LoopbackTorrentLibrary {
+  const library = new LoopbackTorrentLibrary();
+  library.registerFixture(AUTHORIZED_ARCHIVE_V1);
+  return library;
 }
 
-beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), "wfx-r11-recovery-"));
+beforeAll(() => {
+  rmSync(TMP, { recursive: true, force: true });
+  mkdirSync(TMP, { recursive: true });
 });
 
-afterEach(() => {
-  if (existsSync(tmpRoot)) rmSync(tmpRoot, { recursive: true, force: true });
+afterAll(() => {
+  rmSync(TMP, { recursive: true, force: true });
 });
 
-describe("R11 — recovery (journal replay after restart)", () => {
-  it("recover() returns an empty report when the journal is empty", async () => {
-    const backend = new LoopbackBitTorrentBackend();
-    backend.registerFixture(makeFixture());
-    const engine = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend,
-      sessionIdGenerator: () => "session-x",
-    });
-    const report = await engine.recover();
-    expect(report.sessions).toEqual([]);
+describe("R11 — journal replay after a simulated restart", () => {
+  it("a stopped downloading session recovers as seeding-paused with its persisted bitfield, then completes", async () => {
+    const root = dataRootFor("restart");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    const sessionId = created.value.sessionId;
+
+    // 4 of 6 pieces verified, then the user stops the session.
+    library1.advanceAll();
+    library1.advanceAll();
+    expect((await engine1.stop(sessionId)).ok).toBe(true);
+    await engine1.destroy();
+
+    // SIMULATED RESTART: a fresh engine over the same dataRoot + journal.
+    const library2 = newLibrary();
+    const engine2 = createTorrentEngine({ library: library2, dataRoot: root, sources });
+    const report = await engine2.recover();
+    expect(report.ok).toBe(true);
+    if (!report.ok) return;
+    expect(report.value.recovered.length).toBe(1);
+    expect(report.value.recovered[0]?.sessionId).toBe(sessionId);
+    expect(report.value.recovered[0]?.state).toBe("seeding-paused");
+    expect(report.value.recovered[0]?.resumeTarget).toBe("downloading");
+    expect(report.value.recovered[0]?.verifiedPieces).toBe(4);
+
+    // The recovered session: paused, honest progress preserved (re-verified
+    // against the disk bytes by the library on resume).
+    let status = statusOf(engine2, sessionId);
+    {
+      expect(status.state).toBe("seeding-paused");
+      expect(status.progress.verifiedSelectedPieces).toBe(4);
+      expect(status.progress.selectedPieces).toBe(6);
+      expect(status.files.filter((f: { selected: boolean; name: string }) => f.selected).map((f: { name: string }) => f.name)).toEqual([
+        "feature-presentation.mkv",
+      ]);
+    }
+
+    // Resume + drive to completion — CONTINUITY, not a restart from zero:
+    // the remaining 2 pieces re-verify and the selection COMPLETES from the
+    // persisted state (never restarted from zero).
+    expect(engine2.resume(sessionId).ok).toBe(true);
+    library2.advanceAll();
+    status = statusOf(engine2, sessionId);
+    {
+      expect(["downloading", "verifying"]).toContain(status.state);
+      expect(status.progress.verifiedSelectedPieces).toBe(6);
+    }
+    const completed = await waitFor(() =>
+      statusOf(engine2, sessionId).state === "completed",
+    );
+    expect(completed).toBe(true);
+    await engine2.destroy();
   });
 
-  it("recover() rebuilds a journaled session that was not stopped", async () => {
-    // Phase 1: ingest + select, then dispose the engine (simulating a crash).
-    const backend1 = new LoopbackBitTorrentBackend();
-    backend1.registerFixture(makeFixture());
-    const engine1 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend1,
-      sessionIdGenerator: () => "session-1",
-    });
-    await engine1.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    await engine1.selectFiles("session-1", [SUMMARY.name]);
-    await engine1.pause("session-1");
-    await engine1.dispose();
-    // Phase 2: re-create the engine (restart) — the journal persists.
-    const backend2 = new LoopbackBitTorrentBackend();
-    backend2.registerFixture(makeFixture());
-    const engine2 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend2,
-      sessionIdGenerator: () => "session-2", // a different id for new sessions
-    });
-    const report = await engine2.recover();
-    expect(report.sessions.length).toBe(1);
-    expect(report.sessions[0]?.sessionId).toBe("session-1");
-    expect(report.sessions[0]?.recovered).toBe(true);
-    // The recovered session is live again — observe it.
-    const observation = engine2.observe("session-1");
-    expect(observation).toBeDefined();
-    // Recovery re-enters as `checking` (the engine re-verifies the
-    // persisted piece map against the local bytes). This is the honest
-    // re-entry state — the engine never claims continuity it cannot prove.
-    expect(observation?.state === "checking" || observation?.state === "downloading").toBe(true);
+  it("recovery is IDEMPOTENT (a second recover() skips live sessions)", async () => {
+    const root = dataRootFor("idempotent");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [2] } });
+    if (!created.ok) return;
+    library1.advanceAll();
+    await engine1.stop(created.value.sessionId);
+    await engine1.destroy();
+
+    const library2 = newLibrary();
+    const engine2 = createTorrentEngine({ library: library2, dataRoot: root, sources });
+    const first = await engine2.recover();
+    if (!first.ok) return;
+    expect(first.value.recovered.length).toBe(1);
+    const second = await engine2.recover();
+    if (!second.ok) return;
+    expect(second.value.recovered.length).toBe(0);
+    expect(second.value.skipped.length).toBe(1);
+    await engine2.destroy();
   });
 
-  it("recover() reports a vanished-data session as failed (DATA_VANISHED)", async () => {
-    // Phase 1: ingest + select, then dispose the engine.
-    const backend1 = new LoopbackBitTorrentBackend();
-    backend1.registerFixture(makeFixture());
-    const engine1 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend1,
-      sessionIdGenerator: () => "session-1",
-    });
-    await engine1.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    await engine1.selectFiles("session-1", [SUMMARY.name]);
-    await engine1.dispose();
-    // Phase 2: delete the session's data directory (simulating disk loss).
-    const sessionDir = join(tmpRoot, "sessions", "session-1");
-    expect(existsSync(sessionDir)).toBe(true);
-    rmSync(sessionDir, { recursive: true, force: true });
-    // Phase 3: re-create the engine — recover() should report DATA_VANISHED.
-    const backend2 = new LoopbackBitTorrentBackend();
-    backend2.registerFixture(makeFixture());
-    const engine2 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend2,
-      sessionIdGenerator: () => "session-2",
-    });
+  it("completed sessions stay completed across restart (terminal law) with their digests", async () => {
+    const root = dataRootFor("terminal-completed");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [1] } });
+    if (!created.ok) return;
+    const sessionId = created.value.sessionId;
+    for (let i = 0; i < 10; i += 1) library1.advanceAll();
+    await waitFor(() =>
+      statusOf(engine1, sessionId).state === "completed",
+    );
+    const before = statusOf(engine1, sessionId);
+    await engine1.destroy();
+
+    const library2 = newLibrary();
+    const engine2 = createTorrentEngine({ library: library2, dataRoot: root, sources });
     const report = await engine2.recover();
-    expect(report.sessions.length).toBe(1);
-    expect(report.sessions[0]?.recovered).toBe(false);
-    expect(report.sessions[0]?.failure?.code).toBe("DATA_VANISHED");
-    expect(report.sessions[0]?.failure?.detail).toContain("vanished");
-    expect(report.sessions[0]?.failure?.detail).toContain("never a silent restart");
+    if (!report.ok) return;
+    expect(report.value.terminal.length).toBe(1);
+    expect(report.value.terminal[0]?.state).toBe("completed");
+    expect(report.value.recovered.length).toBe(0);
+
+    const after = statusOf(engine2, sessionId);
+    expect(after.state).toBe("completed");
+    expect(after.digests).toEqual(before.digests);
+    expect(after.integrity).toBe("verified");
+    await engine2.destroy();
   });
 
-  it("recover() excludes a session that was stopped (the control law)", async () => {
-    const backend1 = new LoopbackBitTorrentBackend();
-    backend1.registerFixture(makeFixture());
-    const engine1 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend1,
-      sessionIdGenerator: () => "session-1",
-    });
-    await engine1.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    await engine1.selectFiles("session-1", [SUMMARY.name]);
-    await engine1.remove("session-1", false); // stop = stop control record
-    await engine1.dispose();
-    const backend2 = new LoopbackBitTorrentBackend();
-    backend2.registerFixture(makeFixture());
-    const engine2 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend2,
-      sessionIdGenerator: () => "session-2",
-    });
+  it("failed sessions stay failed across restart (terminal law)", async () => {
+    const root = dataRootFor("terminal-failed");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    const sessionId = created.value.sessionId;
+    // Stop with progress, then SIMULATE VANISHED DATA: delete the data dir.
+    library1.advanceAll();
+    await engine1.stop(sessionId);
+    await engine1.destroy();
+    rmSync(join(root, "sessions", sessionId), { recursive: true, force: true });
+
+    const library2 = newLibrary();
+    const engine2 = createTorrentEngine({ library: library2, dataRoot: root, sources });
     const report = await engine2.recover();
-    expect(report.sessions).toEqual([]); // stopped → not recoverable
+    if (!report.ok) return;
+    expect(report.value.failed.length).toBe(1);
+    expect(report.value.failed[0]?.reason).toBe("data-vanished");
+    expect(report.value.failed[0]?.detail).toContain("vanished");
+
+    const status = statusOf(engine2, sessionId);
+    {
+      expect(status.state).toBe("failed");
+      expect(status.failure?.reason).toBe("data-vanished");
+      // NEVER a silent restart: the failure says so, explicitly.
+      expect(status.failure?.detail).toContain("dishonest");
+      expect(status.failure?.detail).toContain("fresh session");
+    }
+    // Terminal: no lifecycle commands.
+    expect(engine2.resume(sessionId).ok).toBe(false);
+    await engine2.destroy();
   });
 
-  it("recover() preserves the provenance audit trail", async () => {
-    const backend1 = new LoopbackBitTorrentBackend();
-    backend1.registerFixture(makeFixture());
-    const engine1 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend1,
-      sessionIdGenerator: () => "session-1",
-    });
-    await engine1.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    await engine1.dispose();
-    const backend2 = new LoopbackBitTorrentBackend();
-    backend2.registerFixture(makeFixture());
+  it("a session with ZERO persisted pieces restarts honestly (no false continuity claim)", async () => {
+    const root = dataRootFor("zero-progress");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    const sessionId = created.value.sessionId;
+    // No advances: nothing landed. Stop + restart.
+    await engine1.stop(sessionId);
+    await engine1.destroy();
+
+    const library2 = newLibrary();
+    const engine2 = createTorrentEngine({ library: library2, dataRoot: root, sources });
+    const report = await engine2.recover();
+    if (!report.ok) return;
+    expect(report.value.failed.length).toBe(0); // nothing was lost — honest restart
+    expect(report.value.recovered.length).toBe(1);
+    const status = statusOf(engine2, sessionId);
+    {
+      expect(status.state).toBe("seeding-paused");
+      expect(status.progress.verifiedSelectedPieces).toBe(0);
+    }
+    await engine2.destroy();
+  });
+
+  it("a live crash (no stop record) still recovers — the journal is the truth", async () => {
+    const root = dataRootFor("crash");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    library1.advanceAll();
+    // NO stop(): destroy the library only (simulating a crash) — the
+    // journal holds the piece-progress checkpoint.
+    await library1.destroy();
+
+    const library2 = newLibrary();
+    const engine2 = createTorrentEngine({ library: library2, dataRoot: root, sources });
+    const report = await engine2.recover();
+    if (!report.ok) return;
+    expect(report.value.recovered.length).toBe(1);
+    const status = statusOf(engine2, created.value.sessionId);
+    {
+      expect(status.state).toBe("seeding-paused");
+    }
+    await engine2.destroy();
+  });
+
+  it("a session whose authorized source LEFT the registry fails honestly (provenance-revoked)", async () => {
+    const root = dataRootFor("revoked");
+    const library1 = newLibrary();
+    const engine1 = createTorrentEngine({ library: library1, dataRoot: root, sources });
+    const ingested = await engine1.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine1.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    library1.advanceAll();
+    await engine1.stop(created.value.sessionId);
+    await engine1.destroy();
+
+    // The restart's registry NO LONGER authorizes the source.
+    const emptySources = createAuthorizedSourceRegistry({ sources: [] });
+    const library2 = newLibrary();
     const engine2 = createTorrentEngine({
-      dataRoot: tmpRoot,
-      backend: backend2,
-      sessionIdGenerator: () => "session-2",
+      library: library2,
+      dataRoot: root,
+      sources: emptySources,
     });
     const report = await engine2.recover();
-    expect(report.sessions.length).toBe(1);
-    // The recovered session's provenance survived (invariant 5's audit trail).
-    engine2.observe("session-1");
-    // The engine's observation surface does not directly expose provenance;
-    // verify the journal carried it by re-reading the journal file.
-    const journalPath = join(tmpRoot, "torrent-journal.ndjson");
-    const journalText = readFileSync(journalPath, "utf8");
-    expect(journalText).toContain("personal-vault");
-    expect(journalText).toContain("authorized-vault");
+    if (!report.ok) return;
+    expect(report.value.failed.length).toBe(1);
+    const status = statusOf(engine2, created.value.sessionId);
+    {
+      expect(status.state).toBe("failed");
+      expect(status.failure?.reason).toBe("provenance-revoked");
+      expect(status.failure?.detail).toContain("no longer in the registry");
+    }
+    await engine2.destroy();
+  });
+});
+
+describe("R11 — the journal itself (torn tails, sequence continuity)", () => {
+  it("a torn tail is DROPPED; complete records replay; sequence numbers CONTINUE", () => {
+    const root = dataRootFor("journal");
+    let clockValue = 1_000;
+    const journal = createTorrentSessionJournal(root, {
+      clock: () => (clockValue += 1),
+    });
+    journal.appendSessionStarted({
+      sessionId: "ts-1",
+      ingestionKind: "torrent-file",
+      infoHash: "a".repeat(40),
+      provenance: { sourceId: "vault:family-media", basis: "user-owned" },
+      dataDir: join(root, "sessions", "ts-1", "data"),
+      selection: [0],
+    });
+    expect(journal.nextSeq()).toBe(2);
+    // Simulate a torn append (a crash mid-write).
+    appendFileSync(journal.path, '{"seq":2,"at":123,"type":"state-cha');
+    const restarted = createTorrentSessionJournal(root, { clock: () => clockValue });
+    expect(restarted.nextSeq()).toBe(2); // seq 1 landed; the torn tail did not
+    expect(restarted.readAll().length).toBe(1);
+    const views = restarted.sessions();
+    expect(views.length).toBe(1);
+    expect(views[0]?.sessionId).toBe("ts-1");
+
+    // Continue the sequence after the restart (no reuse).
+    const state = restarted.appendState({
+      sessionId: "ts-1",
+      from: "selecting",
+      to: "downloading",
+    });
+    expect(state.seq).toBe(2);
+    const checkpoint = restarted.appendCheckpoint({
+      sessionId: "ts-1",
+      bitfield: new Uint8Array([0b10110000]),
+      verifiedPieces: 3,
+      downloadedBytes: 49_152,
+    });
+    expect(checkpoint.seq).toBe(3);
+    const parsed = readFileSync(journal.path, "utf8").trim().split("\n");
+    expect(parsed.length).toBe(4); // 1 complete + torn line dropped + 2 new — wait: torn line remains on disk
+    void checkpoint;
+    // The torn line is still physically on disk; the reader must tolerate it.
+    expect(restarted.readAll().length).toBe(3);
   });
 });

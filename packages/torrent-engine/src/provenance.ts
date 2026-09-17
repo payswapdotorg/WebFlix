@@ -1,215 +1,301 @@
 /**
- * @wfx/torrent-engine — provenance (R11, invariant 5 enforcement).
+ * @wfx/torrent-engine — authorization provenance (invariant 5, THE LAW).
  *
- * INVARIANT 5 (the absolute law):
+ * THE FREEZE (docs/architecture/webflix-remediation-architecture.md,
+ * invariant 5): "Native acquisition is limited to user-owned, licensed,
+ * public-domain, Creative Commons, or otherwise authorized media."
  *
- *   Native acquisition is limited to user-owned, licensed, public-domain,
- *   Creative Commons, or otherwise authorized media. The engine is
- *   AUTHORIZED-SOURCE-ONLY: an ingestion carries its authorization
- *   provenance (which authorized source/vault it came from); unprovenanced
- *   ingestion is a TYPED REJECTION, not a warning.
+ * STRUCTURAL ENFORCEMENT — the public ingestion API cannot even be CALLED
+ * without an `AuthorizedProvenance`:
  *
- * STRUCTURAL ENFORCEMENT (the public API cannot construct an ingestion
- * without a provenance):
+ * 1. TYPE-LEVEL: `AuthorizedProvenance` is a branded nominal type. Its
+ *    brand (`AUTHORIZED_PROVENANCE`) is a `unique symbol` declared in this
+ *    module — the ONLY way to produce a value of this type in the entire
+ *    package is {@link authorizeProvenance}, which consults the
+ *    authorized-source registry. A caller cannot assemble one from a plain
+ *    object literal; TypeScript rejects it structurally.
+ * 2. RUNTIME MINT GATE: `authorizeProvenance(registry, sourceId)` mints the
+ *    brand ONLY for sources present in the registry. A missing/unknown
+ *    source is a TYPED `PROVENANCE_REJECTED` rejection — never a warning,
+ *    never a fallback.
+ * 3. INGEST RE-VALIDATION: `ingestMagnet`/`ingestTorrentFile` re-validate
+ *    the provenance against the registry at ingest time
+ *    ({@link revalidateProvenance}) so a forged brand smuggled through
+ *    `as any` from untyped code is still rejected. Defense in depth.
  *
- * - {@link Provenance} is a branded nominal type. The only constructor is
- *   {@link provenanceFromAuthorizedSource}, which REQUIRES a non-empty
- *   `sourceId` and a non-empty `authorizationKind`. Callers cannot pass a
- *   bare string or `undefined` where `Provenance` is expected — the
- *   TypeScript compiler rejects it. The frozen `TorrentSource.authorized:
- *   boolean` field is derived (set to `true` at the seam) because
- *   provenance was structurally proven.
- * - The runtime guard {@link isProvenance} rejects everything that is not
- *   a branded instance (defensive against untyped code at the boundary).
- * - {@link UNKNOWN_PROVENANCE} is the runtime marker for the typed
- *   rejection path: a value the engine never produces, only ever CONSUMES
- *   as the `UNAUTHORIZED_SOURCE` rejection's payload. It is the runtime
- *   mirror of the structural absence — never silently accepted.
- *
- * The PROVENANCE vocabulary is closed-additive: a new authorization kind
- * (a new vault, a new license type) is added by extending
- * {@link AuthorizationKind} here; the guard accepts the new value the same
- * way it accepts existing ones (no schema change). Ratification of new
- * kinds is the lead's at review (R11's drift rule: platform-contracts
- * only when a NEW capability vocabulary member is needed; the provenance
- * vocabulary stays in-package and is reviewed through the normal R11
- * review channel).
+ * The registry is INJECTED: the desktop composition root registers the
+ * authorized sources/vaults (derived from the product's source-management
+ * state — R03); tests register fixture sources. The engine never invents
+ * authorization.
  */
 
-import { unauthorizedSource } from "./errors";
+import { TorrentEngineError, torrentError, type TorrentResult } from "./errors";
 
 // ---------------------------------------------------------------------------
-// The closed authorization vocabulary
+// The authorized bases (invariant 5's closed vocabulary)
 // ---------------------------------------------------------------------------
 
 /**
- * The closed set of authorization kinds an ingestion may carry. Each kind
- * names a category under which WebFlix's user acquired the right to native
- * media (invariant 5):
- *
- * - `user-owned`        — the user owns the media (a personal rip of a
- *   DVD/BD they own; home video they created).
- * - `licensed`          — the user holds a license that permits native
- *   acquisition (DRM-free purchases, downloads from a licensed storefront
- *   that permits offline copies).
- * - `public-domain`     — the media is in the public domain.
- * - `creative-commons` — the media is released under a Creative Commons
- *   or comparable permissive license that permits native acquisition.
- * - `authorized-vault`  — the media comes from an authorized vault the
- *   user has wired into WebFlix (a personal NAS, a media library they
- *   have declared authorized, a connector-supplied authorized catalog).
- *
- * This list is intentionally CLOSED at the type level so callers cannot
- * smuggle in `"unknown"` or `"other"` — the structural enforcement of
- * invariant 5. New kinds are added by lead-ratified extension (the
- * provenance vocabulary is in-package, not in `platform-contracts`).
+ * The closed set of authorization bases named by invariant 5. "Other
+ * authorized" covers contracts the freeze's enumeration did not name, but
+ * the BURDEN stays on the registering source: the label must say why it is
+ * authorized.
  */
-export type AuthorizationKind =
-  | "user-owned"
-  | "licensed"
-  | "public-domain"
-  | "creative-commons"
-  | "authorized-vault";
-
-/** Every value of {@link AuthorizationKind}, in declaration order. */
-export const AUTHORIZATION_KINDS: readonly AuthorizationKind[] = [
+export const AUTHORIZED_PROVENANCE_BASES = [
   "user-owned",
   "licensed",
   "public-domain",
   "creative-commons",
-  "authorized-vault",
-];
+  "other-authorized",
+] as const;
 
-/** Runtime guard for {@link AuthorizationKind}. */
-export function isAuthorizationKind(x: unknown): x is AuthorizationKind {
+export type AuthorizedProvenanceBasis =
+  (typeof AUTHORIZED_PROVENANCE_BASES)[number];
+
+/** Runtime guard for the closed basis union. */
+export function isAuthorizedProvenanceBasis(
+  x: unknown,
+): x is AuthorizedProvenanceBasis {
   return (
     typeof x === "string" &&
-    (AUTHORIZATION_KINDS as readonly string[]).includes(x)
+    (AUTHORIZED_PROVENANCE_BASES as readonly string[]).includes(x)
   );
 }
 
 // ---------------------------------------------------------------------------
-// Provenance — branded nominal type (the brand is a real runtime symbol)
+// The authorized-source registry
+// ---------------------------------------------------------------------------
+
+/** One authorized source/vault an ingestion may carry provenance from. */
+export interface AuthorizedSource {
+  /** Stable identifier (e.g. "vault:family-media", "source:connector-42"). */
+  readonly sourceId: string;
+  /** Why media from this source is authorized (invariant 5 basis). */
+  readonly basis: AuthorizedProvenanceBasis;
+  /** Human-readable label naming the source (required for "other-authorized"). */
+  readonly label?: string;
+  /** Wall-clock epoch ms when the authorization was recorded, when known. */
+  readonly authorizedAt?: number;
+}
+
+/** The registry of authorized sources (injected; the engine never invents). */
+export interface AuthorizedSourceRegistry {
+  /** Whether `sourceId` names a registered authorized source. */
+  has(sourceId: string): boolean;
+  /** The registered source, or `undefined` when unknown. */
+  get(sourceId: string): AuthorizedSource | undefined;
+  /** Every registered source (inspection; ordered by registration). */
+  list(): readonly AuthorizedSource[];
+}
+
+/** Options for {@link createAuthorizedSourceRegistry}. */
+export interface CreateAuthorizedSourceRegistryOptions {
+  /** Sources to register eagerly, when any. */
+  readonly sources?: readonly AuthorizedSource[];
+}
+
+/**
+ * Create an in-memory authorized-source registry. Registers the (validated)
+ * `options.sources` eagerly; returns a registry with a `register` method so
+ * the composition root can add sources over time (registration is
+ * append-only — a source can be re-registered idempotently but never
+ * silently RE-BASISed).
+ */
+export function createAuthorizedSourceRegistry(
+  options: CreateAuthorizedSourceRegistryOptions = {},
+): AuthorizedSourceRegistry & {
+  register(source: AuthorizedSource): TorrentResult<AuthorizedSource>;
+} {
+  if (typeof options !== "object" || options === null) {
+    throw new TorrentEngineError("INVALID_INPUT", {
+      detail: "createAuthorizedSourceRegistry: options must be an object",
+    });
+  }
+  const byId = new Map<string, AuthorizedSource>();
+  const order: string[] = [];
+
+  const validate = (source: AuthorizedSource): TorrentResult<AuthorizedSource> => {
+    if (typeof source !== "object" || source === null) {
+      return torrentError("INVALID_INPUT", {
+        detail: "register: source must be an AuthorizedSource object",
+      });
+    }
+    const { sourceId, basis, label, authorizedAt } = source;
+    if (
+      typeof sourceId !== "string" ||
+      sourceId.trim().length === 0 ||
+      sourceId.length > 256
+    ) {
+      return torrentError("INVALID_INPUT", {
+        detail:
+          "register: sourceId must be a non-empty string of at most 256 characters",
+      });
+    }
+    if (!isAuthorizedProvenanceBasis(basis)) {
+      return torrentError("INVALID_INPUT", {
+        detail: `register: basis must be one of ${AUTHORIZED_PROVENANCE_BASES.join(" | ")} (got ${String(basis)})`,
+      });
+    }
+    if (label !== undefined && typeof label !== "string") {
+      return torrentError("INVALID_INPUT", {
+        detail: "register: label must be a string when present",
+      });
+    }
+    if (authorizedAt !== undefined && typeof authorizedAt !== "number") {
+      return torrentError("INVALID_INPUT", {
+        detail: "register: authorizedAt must be a number when present",
+      });
+    }
+    if (basis === "other-authorized" && (label === undefined || label.trim().length === 0)) {
+      return torrentError("INVALID_INPUT", {
+        detail:
+          "register: basis 'other-authorized' REQUIRES a label naming why the source is authorized (invariant 5 burden)",
+      });
+    }
+    return { ok: true, value: source };
+  };
+
+  for (const source of options.sources ?? []) {
+    const checked = validate(source);
+    if (!checked.ok) throw checked.error;
+    registerUnchecked(checked.value);
+  }
+
+  function registerUnchecked(source: AuthorizedSource): void {
+    const existing = byId.get(source.sourceId);
+    if (existing === undefined) {
+      order.push(source.sourceId);
+      byId.set(source.sourceId, source);
+      return;
+    }
+    if (existing.basis !== source.basis) {
+      throw new TorrentEngineError("INVALID_INPUT", {
+        detail:
+          `register: source '${source.sourceId}' is already registered with basis '${existing.basis}'; re-basing an authorized source is not a silent operation (remove and re-register explicitly)`,
+      });
+    }
+  }
+
+  return {
+    has: (sourceId) => byId.has(sourceId),
+    get: (sourceId) => byId.get(sourceId),
+    list: () => order.map((id) => byId.get(id)!).slice(),
+    register(source: AuthorizedSource): TorrentResult<AuthorizedSource> {
+      const checked = validate(source);
+      if (!checked.ok) return checked;
+      registerUnchecked(checked.value);
+      return { ok: true, value: checked.value };
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// AuthorizedProvenance — the branded nominal type
 // ---------------------------------------------------------------------------
 
 /**
- * The unique symbol that brands {@link Provenance} as a nominal type.
- * The symbol is REAL at runtime (a `Symbol.for` keyed by the package's
- * provenance namespace) so the {@link isProvenance} guard can check it
- * without needing a type-level `declare const` (which has no runtime
- * presence). The TypeScript-level nominal guarantee comes from the
- * `declare` on the {@link Provenance} interface below — the runtime
- * guard checks the symbol itself.
+ * The brand symbol: a module-private runtime token. `const ... = Symbol()`
+ * gives it the `unique symbol` TYPE, so the computed key below is a
+ * compile-time nominal brand; because the VALUE never leaves this module,
+ * no code outside can construct the brand at runtime — the one public mint
+ * is {@link authorizeProvenance} (which consults the registry).
  */
-export const PROVENANCE_BRAND: unique symbol = Symbol.for("@wfx/torrent-engine/Provenance");
+const AUTHORIZED_PROVENANCE = Symbol("wfx-authorized-provenance");
 
 /**
- * The provenance of one ingestion — the structural proof of authorization.
+ * The authorization provenance an ingestion MUST carry (invariant 5).
  *
- * The `__brand` field (keyed by {@link PROVENANCE_BRAND}) is the
- * TypeScript-level guard: only {@link provenanceFromAuthorizedSource}
- * produces a value of this shape, so every call site that accepts a
- * `Provenance` has structurally proven the ingestion's authorization
- * BEFORE the engine ever sees a magnet or a `.torrent` file.
+ * Nominal via the `AUTHORIZED_PROVENANCE` brand: a plain object with the
+ * same fields is NOT assignable to this type — the ingestion API
+ * (`ingestMagnet(uri, provenance)`, `ingestTorrentFile(bytes, provenance)`)
+ * therefore cannot be called with unprovenanced data, by construction.
  */
-export interface Provenance {
-  /** The authorized source/vault this ingestion came from. */
+export interface AuthorizedProvenance {
+  /** Which authorized source/vault the ingestion comes from. */
   readonly sourceId: string;
-  /** The category of authorization (invariant 5). */
-  readonly authorizationKind: AuthorizationKind;
-  /** Free-form context the source declares (a license id, a vault path, …). */
-  readonly context?: Readonly<Record<string, string>>;
-  /** The nominal brand — never set by callers; only by the constructor. */
-  readonly [PROVENANCE_BRAND]: true;
+  /** Why media from that source is authorized (invariant 5 basis). */
+  readonly basis: AuthorizedProvenanceBasis;
+  /** The source's human label, when it registered one. */
+  readonly label?: string;
+  readonly [AUTHORIZED_PROVENANCE]: "authorized";
 }
 
-/** Runtime guard for {@link Provenance}. */
-export function isProvenance(x: unknown): x is Provenance {
-  if (typeof x !== "object" || x === null) return false;
-  const p = x as Record<string, unknown>;
-  if (typeof p.sourceId !== "string" || p.sourceId.trim().length === 0) return false;
-  if (!isAuthorizationKind(p.authorizationKind)) return false;
-  if (p.context !== undefined) {
-    if (typeof p.context !== "object" || p.context === null || Array.isArray(p.context)) {
-      return false;
-    }
-  }
-  // The brand check: the runtime symbol must be present and `true`.
-  return (p as Record<symbol, unknown>)[PROVENANCE_BRAND] === true;
-}
+// ---------------------------------------------------------------------------
+// The mint (the ONLY way to construct an AuthorizedProvenance)
+// ---------------------------------------------------------------------------
 
 /**
- * Construct a {@link Provenance} for an authorized source. The ONLY public
- * constructor — every ingestion call site MUST pass a value built by this
- * function (the structural enforcement of invariant 5).
+ * Mint an {@link AuthorizedProvenance} for a REGISTERED authorized source.
  *
- * Throws a typed `INVALID_INPUT` error on malformed input — never a
- * default-filled provenance.
+ * This is the single construction path. An unknown/missing sourceId is a
+ * typed `PROVENANCE_REJECTED` rejection carrying the honest detail — the
+ * invariant-5 law: unprovenanced ingestion is a rejection, never a warning.
  */
-export function provenanceFromAuthorizedSource(input: {
-  sourceId: string;
-  authorizationKind: AuthorizationKind;
-  context?: Readonly<Record<string, string>>;
-}): Provenance {
-  if (typeof input !== "object" || input === null) {
-    throw unauthorizedSource(
-      "provenanceFromAuthorizedSource: input must be an object",
-    );
-  }
-  const { sourceId, authorizationKind, context } = input;
+export function authorizeProvenance(
+  registry: AuthorizedSourceRegistry,
+  sourceId: string,
+): TorrentResult<AuthorizedProvenance> {
   if (typeof sourceId !== "string" || sourceId.trim().length === 0) {
-    throw unauthorizedSource(
-      "provenanceFromAuthorizedSource: sourceId must be a non-empty string",
-    );
+    return torrentError("PROVENANCE_REJECTED", {
+      detail:
+        "authorizeProvenance: a sourceId must name the authorized source/vault (invariant 5: authorized media only — an empty provenance is not a provenance)",
+    });
   }
-  if (!isAuthorizationKind(authorizationKind)) {
-    throw unauthorizedSource(
-      `provenanceFromAuthorizedSource: authorizationKind must be one of ${AUTHORIZATION_KINDS.join(" | ")} (got ${String(authorizationKind)})`,
-    );
+  const source = registry.get(sourceId);
+  if (source === undefined) {
+    return torrentError("PROVENANCE_REJECTED", {
+      detail:
+        `authorizeProvenance: source '${sourceId}' is not in the authorized-source registry — ingestion is refused (invariant 5: authorized media only; register the source first)`,
+    });
   }
-  if (context !== undefined) {
-    if (typeof context !== "object" || context === null || Array.isArray(context)) {
-      throw unauthorizedSource(
-        "provenanceFromAuthorizedSource: context must be a string-keyed record when present",
-      );
-    }
-    for (const [k, v] of Object.entries(context)) {
-      if (typeof v !== "string") {
-        throw unauthorizedSource(
-          `provenanceFromAuthorizedSource: context['${k}'] must be a string (got ${typeof v})`,
-        );
-      }
-    }
-  }
-  return {
-    sourceId,
-    authorizationKind,
-    ...(context !== undefined ? { context } : {}),
-    [PROVENANCE_BRAND]: true,
-  } as Provenance;
+  const provenance: AuthorizedProvenance = {
+    sourceId: source.sourceId,
+    basis: source.basis,
+    ...(source.label !== undefined ? { label: source.label } : {}),
+    [AUTHORIZED_PROVENANCE]: "authorized",
+  };
+  return { ok: true, value: provenance };
 }
 
-/**
- * A structural marker for the ABSENCE of provenance — the runtime mirror
- * of the typed rejection path. The engine never produces this; it only
- * ever CONSUMES it as the `UNAUTHORIZED_SOURCE` rejection's payload when
- * untyped code reaches the boundary despite the structural guard. It is
- * the defensive answer to "what if a caller bypasses the type system?" —
- * the runtime still refuses honestly.
- */
-export const UNKNOWN_PROVENANCE: unique symbol = Symbol("UNKNOWN_PROVENANCE");
+// ---------------------------------------------------------------------------
+// Ingest-time re-validation (defense in depth against forged brands)
+// ---------------------------------------------------------------------------
 
 /**
- * Test-only helper: a `Provenance` is never `null`/`undefined`. The
- * structural enforcement means callers cannot construct an ingestion
- * without one; the runtime guard {@link isProvenance} rejects every
- * non-branded object. This helper exists for tests that need to assert
- * the typed rejection path explicitly.
+ * Re-validate an `AuthorizedProvenance` against the registry at ingest
+ * time. A value smuggled past the type system (e.g. `as any` from untyped
+ * code) with an unknown source is still a typed rejection — the law holds
+ * at runtime, not just at compile time.
  */
-export function assertAuthorized(provenance: unknown): asserts provenance is Provenance {
-  if (!isProvenance(provenance)) {
-    throw unauthorizedSource(
-      "the ingestion carried no provenance — invariant 5's structural enforcement refuses unprovenanced ingestion (use provenanceFromAuthorizedSource to construct one)",
-    );
+export function revalidateProvenance(
+  registry: AuthorizedSourceRegistry,
+  provenance: AuthorizedProvenance,
+): TorrentResult<AuthorizedProvenance> {
+  if (typeof provenance !== "object" || provenance === null) {
+    return torrentError("PROVENANCE_REJECTED", {
+      detail:
+        "revalidateProvenance: the provenance value is absent or malformed (invariant 5: authorized media only)",
+    });
   }
+  const branded = provenance as Partial<AuthorizedProvenance>;
+  if (branded[AUTHORIZED_PROVENANCE] !== "authorized") {
+    return torrentError("PROVENANCE_REJECTED", {
+      detail:
+        "revalidateProvenance: the provenance value does not carry the authorized brand (it was not minted by authorizeProvenance — invariant 5)",
+    });
+  }
+  const source = registry.get(provenance.sourceId);
+  if (source === undefined) {
+    return torrentError("PROVENANCE_REJECTED", {
+      detail:
+        `revalidateProvenance: provenance names source '${provenance.sourceId}' which is not in the authorized-source registry — ingestion is refused (invariant 5: authorized media only)`,
+    });
+  }
+  if (source.basis !== provenance.basis) {
+    return torrentError("PROVENANCE_REJECTED", {
+      detail:
+        `revalidateProvenance: provenance for '${provenance.sourceId}' carries basis '${provenance.basis}' but the registry says '${source.basis}' — the authorization drifted; ingestion is refused`,
+    });
+  }
+  return { ok: true, value: provenance };
 }

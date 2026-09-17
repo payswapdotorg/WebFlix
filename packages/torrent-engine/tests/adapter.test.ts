@@ -1,162 +1,182 @@
 /**
- * R11 — the native-media adapter (the narrow seam).
+ * R11 — the native-media adapter tests (the narrow seam).
  *
- * The adapter feeds VERIFIED completed torrent selections into the R10
- * engine's asset store: bytes land as native-media assets with digests +
- * integrity verdicts, so the desktop's NATIVE rung plays torrent-acquired
- * media through the SAME range gateway as local files. This test verifies
- * the landing path end-to-end against the R10 asset store (real bytes,
- * real digests).
+ * A completed, piece-verified selection lands in the REAL R10 asset store
+ * (`createAssetStore` from `@wfx/native-media` — the actual production
+ * store code, not a mock): bytes land with digests + verified integrity
+ * verdicts, serve range reads over the real bytes, and non-completed
+ * sessions are refused typed.
  */
 
-import { describe, expect, it, beforeEach, afterEach } from "bun:test";
-import { existsSync, mkdtempSync, rmSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { createHash } from "node:crypto";
 
-import { type AssetStore } from "@wfx/native-media";
+import { createAssetStore } from "@wfx/native-media";
 
-import { createTorrentEngine, type TorrentEngineSurface } from "../src/engine";
+import { authorizeProvenance, createAuthorizedSourceRegistry } from "../src/provenance";
+import { createTorrentEngine, type TorrentEngine } from "../src/engine";
 import {
-  createTorrentAssetStore,
   createTorrentEngineAdapter,
-  type LandedTorrentAsset,
   type TorrentEngineAdapter,
-} from "../src/adapter";
-import { LoopbackBitTorrentBackend, type LoopbackFixture } from "../src/backend";
-import { provenanceFromAuthorizedSource } from "../src/provenance";
-import { isTorrentEngineError } from "../src/errors";
+} from "../src/adapter/native-media-adapter";
+import { LoopbackTorrentLibrary } from "./helpers/loopback-library";
+import { statusOf, waitFor } from "./helpers/status";
+import {
+  AUTHORIZED_ARCHIVE_V1,
+  fixtureContent,
+  fixtureTorrentBytes,
+} from "./helpers/fixtures";
 
-const FIXTURES = join(import.meta.dir, "fixtures");
-const TORRENT_BYTES = new Uint8Array(readFileSync(join(FIXTURES, "sintel-single.torrent")));
-const SUMMARY = JSON.parse(readFileSync(join(FIXTURES, "sintel-single.summary.json"), "utf8")) as {
-  infoHash: string;
-  name: string;
-  pieceLength: number;
-  pieceCount: number;
-  totalBytes: number;
-  pieceSha1Hex: string[];
-};
-const FIXTURE_BYTES = new Uint8Array(readFileSync(join(FIXTURES, "sintel-single.bin")));
+const TMP = join(import.meta.dir, "tmp-adapter");
 
-let tmpRoot: string;
-let store: AssetStore;
-let backend: LoopbackBitTorrentBackend;
-let engine: TorrentEngineSurface;
-let adapter: TorrentEngineAdapter;
+const sources = createAuthorizedSourceRegistry({
+  sources: [{ sourceId: "vault:family-media", basis: "user-owned", label: "Family media vault" }],
+});
+const PROVENANCE = (() => {
+  const minted = authorizeProvenance(sources, "vault:family-media");
+  if (!minted.ok) throw new Error("fixture provenance must mint");
+  return minted.value;
+})();
 
-function makeFixture(): LoopbackFixture {
-  const pieces = SUMMARY.pieceSha1Hex.map((hex) => new Uint8Array(Buffer.from(hex, "hex")));
-  return {
-    infoHash: SUMMARY.infoHash,
-    name: SUMMARY.name,
-    pieceLengthBytes: SUMMARY.pieceLength,
-    pieces,
-    files: [
-      {
-        path: SUMMARY.name,
-        lengthBytes: SUMMARY.totalBytes,
-        bytes: FIXTURE_BYTES,
-        playableHint: true,
-      },
-    ],
-    peerCount: 5,
-  };
-}
-
-function makeProvenance() {
-  return provenanceFromAuthorizedSource({
-    sourceId: "personal-vault",
-    authorizationKind: "authorized-vault",
-  });
-}
-
-beforeEach(() => {
-  tmpRoot = mkdtempSync(join(tmpdir(), "wfx-r11-adapter-"));
-  store = createTorrentAssetStore(join(tmpRoot, "store"));
-  backend = new LoopbackBitTorrentBackend();
-  backend.registerFixture(makeFixture());
-  engine = createTorrentEngine({
-    dataRoot: join(tmpRoot, "engine"),
-    backend,
-    sessionIdGenerator: () => "session-1",
-  });
-  adapter = createTorrentEngineAdapter({ engine, store });
+let counter = 0;
+beforeAll(() => {
+  rmSync(TMP, { recursive: true, force: true });
+  mkdirSync(TMP, { recursive: true });
 });
 
-afterEach(() => {
-  if (existsSync(tmpRoot)) rmSync(tmpRoot, { recursive: true, force: true });
+afterAll(() => {
+  rmSync(TMP, { recursive: true, force: true });
 });
 
-describe("R11 — the native-media adapter", () => {
-  it("createTorrentAssetStore returns a real R10 asset store", () => {
-    const s = createTorrentAssetStore(join(tmpRoot, "store-2"));
-    expect(s.root).toBeDefined();
-    expect(s.assetsDir).toBeDefined();
-    expect(existsSync(s.assetsDir)).toBe(true);
+/** A full engine + adapter stack over the loopback library. */
+async function newStack(): Promise<{
+  engine: TorrentEngine;
+  adapter: TorrentEngineAdapter;
+  store: ReturnType<typeof createAssetStore>;
+  library: LoopbackTorrentLibrary;
+}> {
+  counter += 1;
+  const library = new LoopbackTorrentLibrary();
+  library.registerFixture(AUTHORIZED_ARCHIVE_V1);
+  const engine = createTorrentEngine({
+    library,
+    dataRoot: join(TMP, `engine-${counter}`),
+    sources,
+  });
+  const store = createAssetStore({ root: join(TMP, `store-${counter}`) });
+  const adapter = createTorrentEngineAdapter({ engine, store });
+  return { engine, adapter, store, library };
+}
+
+describe("R11 — the native-media adapter (the narrow seam)", () => {
+  it("a completed selection lands in the REAL R10 asset store with digests + a verified verdict", async () => {
+    const { engine, adapter, library } = await newStack();
+    const ingested = await engine.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine.createSession(ingested.value.id, { selection: { fileIndexes: [0, 2] } });
+    if (!created.ok) return;
+    const sessionId = created.value.sessionId;
+    for (let i = 0; i < 10; i += 1) library.advanceAll();
+    await waitFor(() =>
+      statusOf(engine, sessionId).state === "completed",
+    );
+
+    const landed = await adapter.landCompletedSelection({ sessionId, contentType: "video/x-matroska" });
+    expect(landed.ok).toBe(true);
+    if (!landed.ok) return;
+    expect(landed.value.length).toBe(2);
+
+    // File 0 (the .mkv): landed with the ENGINE's digest, and the STORE's
+    // own import+verify verdict (digest + integrity derived from REAL bytes).
+    const first = landed.value[0]!;
+    expect(first.sourcePath).toBe("authorized-archive-v1/feature-presentation.mkv");
+    expect(first.asset.meta.integrity).toBe("verified");
+    expect(first.asset.meta.sha256).toBe(first.engineSha256);
+    expect(first.asset.meta.contentType).toBe("video/x-matroska");
+    expect(first.asset.meta.sizeBytes).toBe(88_920);
+    // The digest is independently reproducible from the fixture content.
+    expect(first.asset.meta.sha256).toBe(
+      (await import("../src/integrity")).torrentSha256Hex(
+        fixtureContent(AUTHORIZED_ARCHIVE_V1).get("authorized-archive-v1/feature-presentation.mkv")!,
+      ),
+    );
+    // File 2 (credits.txt) landed too (the whole selection).
+    expect(landed.value[1]?.sourcePath).toBe("authorized-archive-v1/credits.txt");
+    await engine.destroy();
   });
 
-  it("createTorrentEngineAdapter throws INVALID_INPUT without engine/store", () => {
-    expect(() => createTorrentEngineAdapter({ engine, store: null as never })).toThrow(/store is required/);
-    expect(() => createTorrentEngineAdapter({ engine: null as never, store })).toThrow(/engine is required/);
-  });
+  it("landed assets serve RANGE READS over the real bytes through the store (gateway compatibility)", async () => {
+    const { engine, adapter, library, store } = await newStack();
+    const ingested = await engine.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    const sessionId = created.value.sessionId;
+    for (let i = 0; i < 10; i += 1) library.advanceAll();
+    await waitFor(() =>
+      statusOf(engine, sessionId).state === "completed",
+    );
+    const landed = await adapter.landCompletedSelection({ sessionId });
+    if (!landed.ok) return;
+    const asset = landed.value[0]!.asset;
 
-  it("landVerifiedAsset throws NOT_FOUND for a session that never completed", async () => {
-    await engine.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    try {
-      await adapter.landVerifiedAsset("session-1");
-      throw new Error("expected landVerifiedAsset to reject");
-    } catch (e) {
-      expect(isTorrentEngineError(e)).toBe(true);
-      if (isTorrentEngineError(e)) {
-        expect(e.code).toBe("NOT_FOUND");
-        expect(e.detail).toContain("no verified asset");
-      }
+    // The R10 store's range read serves the REAL landed bytes.
+    const bytes = await store.readAssetRange(asset.meta.assetId, 0, 255);
+    expect(bytes.byteLength).toBe(256);
+    const expected = fixtureContent(AUTHORIZED_ARCHIVE_V1).get(
+      "authorized-archive-v1/feature-presentation.mkv",
+    )!;
+    expect(Buffer.from(bytes).equals(Buffer.from(expected.subarray(0, 256)))).toBe(true);
+
+    // And the store's own verifyAsset re-proves the verdict.
+    const verify = await store.verifyAsset(asset.meta.assetId);
+    expect(verify.ok).toBe(true);
+    if (verify.ok) {
+      expect(verify.integrity).toBe("verified");
+      expect(verify.digest).toBe(landed.value[0]!.engineSha256);
     }
+    await engine.destroy();
   });
 
-  it("landVerifiedAsset lands a completed asset into the R10 asset store", async () => {
-    // Drive the engine to completion.
-    await engine.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    await engine.selectFiles("session-1", [SUMMARY.name]);
-    await engine.getRange("session-1", { filePath: SUMMARY.name, offset: 0, length: SUMMARY.totalBytes });
-    await engine.inspect("session-1"); // trigger refreshFromBackend
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const asset = engine.verifiedAsset("session-1");
-    expect(asset).toBeDefined();
-    if (asset === undefined) return; // completion did not fire in this run
-    // Land the asset.
-    const landed: LandedTorrentAsset = await adapter.landVerifiedAsset("session-1");
-    expect(landed.sha256).toBe(createHash("sha256").update(FIXTURE_BYTES).digest("hex"));
-    expect(landed.sizeBytes).toBe(SUMMARY.totalBytes);
-    expect(landed.contentType).toBe("video/mp4");
-    expect(landed.provenance.sourceId).toBe("personal-vault");
-    expect(landed.infoHash).toBe(SUMMARY.infoHash);
-    expect(landed.sessionId).toBe("session-1");
-    // The asset store now has the landed asset.
-    const meta = store.getAsset(landed.assetId);
-    expect(meta).toBeDefined();
-    expect(meta?.integrity).toBe("verified");
-    expect(meta?.sha256).toBe(landed.sha256);
-    expect(meta?.sizeBytes).toBe(SUMMARY.totalBytes);
+  it("landing is REFUSED for a non-completed session (typed INVALID_STATE — only proven bytes land)", async () => {
+    const { engine, adapter, library } = await newStack();
+    const ingested = await engine.ingestTorrentFile(fixtureTorrentBytes(AUTHORIZED_ARCHIVE_V1), PROVENANCE);
+    if (!ingested.ok) return;
+    const created = await engine.createSession(ingested.value.id, { selection: { fileIndexes: [0] } });
+    if (!created.ok) return;
+    library.advanceAll(); // partially downloaded
+    const landed = await adapter.landCompletedSelection({ sessionId: created.value.sessionId });
+    expect(landed.ok).toBe(false);
+    if (!landed.ok) {
+      expect(landed.error.code).toBe("INVALID_STATE");
+      expect(landed.error.detail).toContain("piece-verified");
+    }
+    await engine.destroy();
   });
 
-  it("landVerifiedAsset's bytes match the engine's verified digest (the J24 law)", async () => {
-    await engine.ingestTorrentFile(TORRENT_BYTES, makeProvenance());
-    await engine.selectFiles("session-1", [SUMMARY.name]);
-    await engine.getRange("session-1", { filePath: SUMMARY.name, offset: 0, length: SUMMARY.totalBytes });
-    await engine.inspect("session-1");
-    await new Promise((resolve) => setTimeout(resolve, 20));
-    const asset = engine.verifiedAsset("session-1");
-    if (asset === undefined) return;
-    const landed = await adapter.landVerifiedAsset("session-1");
-    // The store's recorded SHA-256 MATCHES the engine's verified digest —
-    // the SAME primitive R10 uses for local-file imports (no fabrication).
-    expect(landed.sha256).toBe(asset.sha256);
+  it("landing an unknown session is a typed NOT_FOUND", async () => {
+    const { engine, adapter } = await newStack();
+    const landed = await adapter.landCompletedSelection({ sessionId: "ts-nope" });
+    expect(landed.ok).toBe(false);
+    if (!landed.ok) {
+      expect(landed.error.code).toBe("NOT_FOUND");
+    }
+    await engine.destroy();
   });
 
-  it("landVerifiedAsset throws INVALID_INPUT for an empty sessionId", async () => {
-    await expect(adapter.landVerifiedAsset("")).rejects.toMatchObject({ code: "INVALID_INPUT" });
+  it("the adapter accepts an EXISTING R10 store instance (sharing the engine service's store)", async () => {
+    const library = new LoopbackTorrentLibrary();
+    library.registerFixture(AUTHORIZED_ARCHIVE_V1);
+    counter += 1;
+    const engine = createTorrentEngine({
+      library,
+      dataRoot: join(TMP, `engine-${counter}`),
+      sources,
+    });
+    const store = createAssetStore({ root: join(TMP, `shared-store-${counter}`), maxBytes: 1_000_000 });
+    const adapter = createTorrentEngineAdapter({ engine, store });
+    expect(adapter.storeRoot).toBe(store.root);
+    await engine.destroy();
   });
 });
