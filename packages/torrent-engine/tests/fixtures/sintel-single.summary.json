@@ -1,0 +1,20 @@
+{
+  "infoHash": "0d027de7aa0e4acad3b984ac860c8a16caa734b9",
+  "name": "sintel-trailer.mp4",
+  "pieceLength": 16384,
+  "pieceCount": 4,
+  "totalBytes": 65536,
+  "files": [
+    {
+      "path": "sintel-trailer.mp4",
+      "lengthBytes": 65536,
+      "playableHint": true
+    }
+  ],
+  "pieceSha1Hex": [
+    "0f0532593e80693029bb7e099578530ad6fefa19",
+    "4b6d0313f98b8a0003b735231fd071f2cb146e10",
+    "0156db6110e94b4117cb39e598e5a62c41fcdb54",
+    "e941a570ecfcb494f18e241366f91be67dc452bc"
+  ]
+}
