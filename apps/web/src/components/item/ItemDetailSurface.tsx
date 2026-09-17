@@ -1,22 +1,24 @@
 /**
- * @wfx/app-web — the content detail surface (WFX-051).
+ * @wfx/app-web — the content detail surface (R07).
  *
- * Metadata (through the connector port — the single-item read of the
- * transport contract), the capability list (the source's declared truth),
- * the available actions (like/save with capability-honest presence), the
- * resume affordance (recorded watch state), and the related browse cards.
- * Server component; the actions are the client `ActionButtons`.
+ * Real source metadata (the adapter's transport read), the source's
+ * declared capability list (the truth, rendered verbatim), the actions
+ * (like/save through the RUNTIME's action states — receipts are the
+ * truth), the resume affordance (the runtime's folded watch state), and
+ * the related browse cards. Server component; the actions are the client
+ * `ActionButtons` island.
  */
 
 import type { JSX } from "react";
 
-import type { DetailView } from "@/host/views";
-import { ItemCard, playerHref } from "@/components/cards/ItemCard";
+import type { DetailView } from "@/host/view-models";
+import { ItemCard } from "@/components/cards/ItemCard";
+import { playerHref } from "@/app/routing";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, percentWatched, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 
-/** The playback capability labels (the same truth grammar as the cards). */
+/** The playback capability labels (the same truth grammar as before). */
 const CAPABILITY_LABELS: Readonly<Record<string, string>> = {
   catalogSearch: "Search",
   metadata: "Metadata",
@@ -36,14 +38,15 @@ const CAPABILITY_LABELS: Readonly<Record<string, string>> = {
 
 /** The detail surface. */
 export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.Element {
+  const playable = view.capabilities.some((capability) => capability.startsWith("play"));
   const resumeLabel =
-    view.resume === null
+    view.watch === null
       ? null
-      : view.resume.affordance === "resume"
-        ? `Resume from ${formatDuration(view.resume.resumePositionMs)}`
-        : view.resume.affordance === "restart"
-          ? "Start over"
-          : "Watch again";
+      : view.watch.status === "completed"
+        ? "Watch again"
+        : view.watch.positionMs > 0
+          ? `Resume from ${formatDuration(view.watch.positionMs)}`
+          : null;
   return (
     <div className="wfx-detail" data-wfx-surface="item" data-wfx-item={view.itemId}>
       <div className="wfx-detail__stage" style={{ background: placeholderArt(view.itemId) }}>
@@ -65,25 +68,26 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
                 ? "Currently unavailable"
                 : "Availability unknown"}
           </span>
-          {view.resume !== null && percentWatched(view.resume.completionRatio) !== null ? (
-            <span>{percentWatched(view.resume.completionRatio)}</span>
+          {view.watch !== null && percentWatched(view.watch.completionRatio) !== null ? (
+            <span>{percentWatched(view.watch.completionRatio)}</span>
           ) : null}
         </p>
       </div>
       <div className="wfx-actionbar">
-        {view.playable ? (
+        {playable ? (
           <a
             className="wfx-btn wfx-btn--primary"
             href={playerHref(
               {
+                itemId: view.itemId,
                 connectorId: view.connectorId,
                 externalRef: view.externalRef,
                 title: view.title,
                 canonicalType: view.canonicalType,
                 ...(view.durationMs !== undefined ? { durationMs: view.durationMs } : {}),
               },
-              view.resume !== null && view.resume.affordance === "resume"
-                ? view.resume.resumePositionMs
+              view.watch !== null && view.watch.status !== "completed" && view.watch.positionMs > 0
+                ? view.watch.positionMs
                 : undefined,
             )}
             data-wfx-item-play
@@ -98,7 +102,7 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
         )}
         <ActionButtons
           like={
-            view.canLike
+            view.capabilities.includes("like")
               ? {
                   type: "like",
                   connectorId: view.connectorId,
@@ -108,7 +112,7 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
               : null
           }
           save={
-            view.canSave
+            view.capabilities.includes("save")
               ? {
                   type: "save",
                   connectorId: view.connectorId,

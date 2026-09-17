@@ -1,53 +1,46 @@
 /**
- * @wfx/app-web — the player surface (WFX-051).
+ * @wfx/app-web — the player surface (R07).
  *
- * Renders the RESOLVED Media Surface mode of a started playback session —
- * the frozen precedence made visible:
+ * Renders the RUNTIME's resolved playback session — the frozen Media
+ * Surface precedence made visible:
  *
- * - `embed`   → the provider's player in an iframe (the fixture URLs are
- *               visible placeholders — no provider branding is faked);
- * - `browser` → the web-player panel with a visible open link (the web
- *               platform has NO contained in-app browser host — typed-absent
- *               in the 040 profile — so the honest surface is the visible
- *               handoff to the provider's web player, never a fake frame);
- * - `external`→ the external handoff: what leaves, where it goes, and a
- *               visible link — never fake playback, never a hidden handoff;
- * - `native`  → the typed honest note (unreachable on web by the device
- *               gate — the resolver rejects native; rendered defensively).
+ * - `embed`   → the provider's player in an iframe;
+ * - `browser` → the CONTAINED browser surface: the adapter's BrowserHostPort
+ *   session (cookie-isolated, provider-owned) rendered as a sandboxed
+ *   iframe — the R07 web realization of the contained rung (see
+ *   `platform/browser-host.ts` for the security boundary);
+ * - `external`→ the visible handoff (what leaves, where it goes);
+ * - `native`  → the honest unsupported note (the Web bundle truthfully
+ *   declares `nativeMedia: "none"` — the runtime's capability filter
+ *   names the limitation).
  *
- * The precedence trace (WHY this platform plays it this way) renders under
- * the stage — the audit is part of the product, not a debug log. Server
- * component; the interactive controls (watch-state reports, like/save) are
- * the client islands `WatchStateReporter` and `ActionButtons`.
+ * The runtime's playback phase renders truthfully (buffering until the
+ * surface reports evidence — no fake progress). The interactive controls
+ * (watch-state reports, like/save) are the client islands
+ * `WatchStateReporter` and `ActionButtons`. Server component.
  */
 
 import type { JSX } from "react";
 
-import type { PlayerView } from "@/host/views";
-import type { ExperienceFailure } from "@/shared/runtime";
-import { playerHref } from "@/components/cards/ItemCard";
+import type { PlayerView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { WatchStateReporter } from "@/components/player/WatchStateReporter";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
 import { formatPosition, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 
-/** The typed failure copy of the Experience failure taxonomy (verbatim reasons). */
-function failureDetail(failure: ExperienceFailure): string {
-  switch (failure.reason) {
-    case "unsupported":
-      return `The source declares none of the playback capabilities this platform can use (${failure.detail}).`;
-    case "unresolvable":
-      return `No realizable playback mode on this platform: ${failure.detail}`;
-    case "not-found":
-      return `The playback session is unknown to this host: ${failure.detail}`;
-    case "port-failed":
-      return `The source transport failed: ${failure.detail}`;
-  }
-}
-
 /** The resolved stage — one branch per Media Surface mode. */
-function Stage({ view }: { readonly view: Extract<PlayerView, { kind: "playing" }> }): JSX.Element {
+function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
+  if (view.failure !== null) {
+    return (
+      <div className="wfx-player__handoff" data-wfx-player-mode="failed">
+        <Icon name="skip" size={28} />
+        <p data-wfx-player-failure>
+          Playback could not start ({view.failure.kind}): {view.failure.detail}
+        </p>
+      </div>
+    );
+  }
   if (view.surfaceMode === "embed" && view.surfaceUrl !== null) {
     return (
       <div className="wfx-player__stage" data-wfx-player-mode="embed">
@@ -73,14 +66,34 @@ function Stage({ view }: { readonly view: Extract<PlayerView, { kind: "playing" 
     );
   }
   if (view.surfaceMode === "browser") {
-    return (
-      <div className="wfx-player__handoff" data-wfx-player-mode="browser">
-        <Icon name="browser" size={28} />
-        <p>
-          This content plays in the source&apos;s own web player. The web platform has no contained
-          in-app browser (an honest platform limitation), so the handoff is visible:
-        </p>
-        {view.surfaceUrl !== null ? (
+    if (view.browserSurface !== null) {
+      // The contained surface: the adapter's BrowserHostPort session,
+      // cookie-isolated (sandboxed opaque origin), provider-owned.
+      return (
+        <div className="wfx-player__stage" data-wfx-player-mode="browser" data-wfx-browser-surface={view.browserSurface.id}>
+          <iframe
+            src={view.browserSurface.url}
+            title={`Contained web playback: ${view.title}`}
+            sandbox="allow-scripts allow-forms allow-popups allow-presentation"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
+            data-wfx-player-frame
+          />
+          <p className="wfx-player__trace" data-wfx-browser-surface-note>
+            Contained, cookie-isolated surface — the provider keeps the playback path; WebFlix
+            never injects into or inspects the provider page.
+          </p>
+        </div>
+      );
+    }
+    if (view.surfaceUrl !== null) {
+      return (
+        <div className="wfx-player__handoff" data-wfx-player-mode="browser-fallback">
+          <Icon name="browser" size={28} />
+          <p>
+            This content plays in the source&apos;s own web player. The contained surface could not
+            open in this context, so the handoff is visible:
+          </p>
           <a
             className="wfx-btn wfx-btn--primary"
             href={view.surfaceUrl}
@@ -91,10 +104,14 @@ function Stage({ view }: { readonly view: Extract<PlayerView, { kind: "playing" 
             <Icon name="external" size={18} />
             Open web player
           </a>
-        ) : (
-          <p>The source provided no web-player URL for this content.</p>
-        )}
-        {view.surfaceUrl !== null ? <code>{view.surfaceUrl}</code> : null}
+          <code>{view.surfaceUrl}</code>
+        </div>
+      );
+    }
+    return (
+      <div className="wfx-player__handoff" data-wfx-player-mode="browser-no-url">
+        <Icon name="browser" size={28} />
+        <p>The source provided no web-player URL for this content.</p>
       </div>
     );
   }
@@ -107,72 +124,44 @@ function Stage({ view }: { readonly view: Extract<PlayerView, { kind: "playing" 
           fakes in-app playback for content it cannot legally or technically host.
         </p>
         {view.surfaceUrl !== null ? (
-          <a
-            className="wfx-btn wfx-btn--primary"
-            href={view.surfaceUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-wfx-player-open
-          >
-            <Icon name="external" size={18} />
-            Open on the source
-          </a>
+          <>
+            <a
+              className="wfx-btn wfx-btn--primary"
+              href={view.surfaceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-wfx-player-open
+            >
+              <Icon name="external" size={18} />
+              Open on the source
+            </a>
+            <code>{view.surfaceUrl}</code>
+          </>
         ) : (
           <p>
             The source named the handoff by reference only (<code>{view.externalRef}</code>) — no
             URL was provided.
           </p>
         )}
-        {view.surfaceUrl !== null ? <code>{view.surfaceUrl}</code> : null}
       </div>
     );
   }
-  // native — unreachable on the web platform (the device gate rejects it);
-  // rendered as the typed honest note, never a crash.
+  // native — unreachable on the web platform (the runtime's capability
+  // filter rejects it); rendered as the typed honest note, never a crash.
   return (
     <div className="wfx-player__handoff" data-wfx-player-mode="native">
       <Icon name="play" size={28} />
       <p>
-        Native playback is not available on the web platform — this device cannot realize the
-        native media path (the precedence trace below records the rejection).
+        Native playback is not available on the web platform — this adapter truthfully declares no
+        native media capability (authorized native acquisition is Desktop-only).
       </p>
     </div>
   );
 }
 
-/** One up-next queue list (shared by the playing and failed states). */
-function QueueList({ view }: { readonly view: PlayerView }): JSX.Element | null {
-  if (view.queue.length === 0) return null;
-  return (
-    <section className="wfx-queue" aria-label="Up next" data-wfx-queue>
-      <h2>Up next</h2>
-      <ul className="wfx-queue__list">
-        {view.queue.map(({ card }) => (
-          <li key={card.itemId}>
-            <a className="wfx-queue__item" href={playerHref(card)}>
-              <span className="wfx-queue__thumb" style={{ background: placeholderArt(card.itemId) }}>
-                <span className="wfx-card__art">
-                  <span>{placeholderMonogram(card.title)}</span>
-                </span>
-              </span>
-              <span className="wfx-queue__body">
-                <p className="wfx-queue__title">{card.title}</p>
-                <p className="wfx-queue__meta">
-                  {card.canonicalType}
-                  {card.durationMs !== undefined ? ` · ${formatPosition(card.durationMs)}` : ""}
-                </p>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 /** The player surface. */
 export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Element {
-  if (view.kind === "failed") {
+  if (view.failure !== null) {
     return (
       <div className="wfx-player" data-wfx-surface="player" data-wfx-player-state="failed">
         <h1 className="wfx-player__title" data-wfx-player-title>
@@ -180,22 +169,26 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         </h1>
         <ErrorState
           title="Playback could not start"
-          detail={failureDetail(view.failure)}
+          detail={`${view.failure.kind}: ${view.failure.detail}`}
           retry={
             <a
               className="wfx-btn"
-              href={`/item?connector=${encodeURIComponent(view.connectorId)}&ref=${encodeURIComponent(view.externalRef)}&title=${encodeURIComponent(view.title)}`}
+              href={`/item?id=${encodeURIComponent(view.itemId)}&connector=${encodeURIComponent(view.connectorId)}&ref=${encodeURIComponent(view.externalRef)}&title=${encodeURIComponent(view.title)}&type=${encodeURIComponent(view.canonicalType)}`}
             >
               View details
             </a>
           }
         />
-        <QueueList view={view} />
+        {view.skippedForCapability.map((skipped) => (
+          <p key={skipped.mode} className="wfx-player__trace" data-wfx-player-skipped={skipped.mode}>
+            Skipped {skipped.mode}: {skipped.reason}
+          </p>
+        ))}
       </div>
     );
   }
   return (
-    <div className="wfx-player" data-wfx-surface="player" data-wfx-player-state="playing">
+    <div className="wfx-player" data-wfx-surface="player" data-wfx-player-state={view.phase}>
       <Stage view={view} />
       <div className="wfx-player__meta">
         <h1 className="wfx-player__title" data-wfx-player-title>
@@ -203,7 +196,9 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         </h1>
         <p className="wfx-detail__meta">
           <span className="wfx-badge wfx-badge--type">{view.canonicalType}</span>
-          <span data-wfx-player-mode-label>Playing via {view.surfaceMode}</span>
+          <span data-wfx-player-mode-label>
+            Playing via {view.surfaceMode} — {view.phase}
+          </span>
           {view.resumePositionMs > 0 ? (
             <span data-wfx-player-resume>Resumed at {formatPosition(view.resumePositionMs)}</span>
           ) : null}
@@ -211,7 +206,7 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         <div className="wfx-actionbar">
           <ActionButtons
             like={
-              view.canLike
+              view.realizationCapabilities.includes("like")
                 ? {
                     type: "like",
                     connectorId: view.connectorId,
@@ -221,7 +216,7 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
                 : null
             }
             save={
-              view.canSave
+              view.realizationCapabilities.includes("save")
                 ? {
                     type: "save",
                     connectorId: view.connectorId,
@@ -236,11 +231,20 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
             resumePositionMs={view.resumePositionMs}
           />
         </div>
-        <p className="wfx-player__trace" data-wfx-player-trace>
-          Surface precedence: {view.precedenceTrace.join(" | ")}
+        <p className="wfx-player__trace" data-wfx-player-phase>
+          Playback phase: {view.phase} (the runtime reports evidence-backed phases only — no fake
+          progress).
         </p>
       </div>
-      <QueueList view={view} />
+      <div
+        className="wfx-queue__thumb"
+        style={{ background: placeholderArt(view.itemId), display: "none" }}
+        aria-hidden="true"
+      >
+        <span className="wfx-card__art">
+          <span>{placeholderMonogram(view.title)}</span>
+        </span>
+      </div>
     </div>
   );
 }

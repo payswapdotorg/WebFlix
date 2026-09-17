@@ -1,36 +1,35 @@
 /**
- * @wfx/app-web — the Short Feed page projection (WFX-051).
+ * @wfx/app-web — the shorts payload projection (R07).
  *
- * The frozen Short Feed model (WFX-028) consumes the ALREADY-COMPOSED OS
- * short page — the `ShortFeedPage` structural mirror of the WFX-021
- * `FeedPage` (candidate-based). The host owns this projection (the
- * documented wiring contract in packages/experience/src/short/react.ts):
- * the WFX-005 feed use-case's output (`FeedCard`s) is projected into the
- * OS page shape, with the HOST-SUPPLIED canonical items joined by id
- * (the identity join of `host/canon.ts`, authoritative over candidate
- * projections — the WFX-027 item-index law).
+ * Projects the RUNTIME's shorts model (`runtime.shorts()` — canonical-
+ * joined hits) into the frozen OS short-page shape the WFX-028 presenter
+ * (`components/shorts/ShortsFeed`) consumes, with the session identity and
+ * the RUNTIME's current attention-mode policy view (the runtime owns
+ * policy; this projection never invents a second one).
  *
- * No ranking, ordering, or eligibility logic lives here: the frozen
- * `buildShortCards` (vertical-first ordering, typed-tailed non-vertical
- * items) and the presenter (`createShortFeedPresenter`) do all of it.
+ * The frozen laws (unchanged): `buildShortCards`'s vertical-first
+ * ordering, the presenter's replacement semantics, and the honest absence
+ * of model scores (no model ran — the ranking OS is R05's lane; the
+ * explanations carry the feed position, never a fabricated score).
  *
- * The payload for the client is plain JSON (the page + the session's
- * fixed policy + identity), so the client component rebuilds the stack
- * through the SAME frozen presenter the server used — one law, two runtimes.
+ * An error/empty shorts model projects to an EMPTY page (the honest empty
+ * state downstream, never fabricated cards); the typed failure is carried
+ * so the surface can render the error state.
  */
 
-import { DEFAULT_PREFETCH_AHEAD, type FeedCard, type ShortFeedPage } from "@wfx/experience";
+import type { RecommendationPolicy } from "@wfx/domain";
+import { DEFAULT_PREFETCH_AHEAD, type ShortFeedCard, type ShortFeedPage } from "@wfx/experience";
+import type { SearchHit } from "@wfx/client-runtime";
 
-import type { ExperienceHost } from "./experience";
-import { EXPERIENCE_CONTEXT, SESSION_POLICY, SHORTS_QUERY } from "./experience";
-import { joinFeedCards } from "./canon";
+import type { WebRuntimeHost } from "./web-host";
+import { SHORTS_SEED_QUERY } from "./view-models";
 
 /** The serializable payload the shorts surface boots from. */
 export interface ShortsBootPayload {
-  /** The projected OS short page (joined identities, JSON-safe). */
+  /** The projected OS short page (canonical-joined, JSON-safe). */
   readonly page: ShortFeedPage;
-  /** The fixed session policy (typed stopgap — see host/experience.ts). */
-  readonly policy: typeof SESSION_POLICY;
+  /** The runtime's current policy view, projected to the frozen policy shape. */
+  readonly policy: RecommendationPolicy;
   /** The experience identity (events are stamped with it server-side). */
   readonly userId: string;
   readonly sessionId: string;
@@ -38,68 +37,83 @@ export interface ShortsBootPayload {
   readonly seedQuery: string;
   /** The default prefetch window (the presenter's documented default). */
   readonly prefetchAhead: number;
+  /** The typed failure when the shorts read failed (the honest error state). */
+  readonly loadError: { readonly kind: string; readonly detail: string } | null;
+}
+
+/** One hit projected into the frozen short-page card shape. */
+function shortFeedCardOf(hit: SearchHit, index: number): ShortFeedCard {
+  return {
+    position: index,
+    candidate: {
+      itemId: hit.canonicalItemId,
+      realization: {
+        connectorId: hit.result.connectorId,
+        externalRef: hit.result.externalRef,
+        capabilities: [], // the runtime's search hits carry no capability claim — honest
+        availability: "unknown",
+      },
+      features: {
+        canonicalType: hit.result.canonicalType ?? "video",
+        canonicalTitle: hit.result.title,
+        ...(hit.result.durationMs !== undefined ? { durationMs: hit.result.durationMs } : {}),
+        ...(hit.result.orientation !== undefined ? { orientation: hit.result.orientation } : {}),
+      },
+    },
+    modelScore: null, // no model ran — never a fabricated score
+    confidence: null,
+    explanations: [],
+    dominantObjective: null,
+    positionReasons: [`feed position ${index}`],
+  };
 }
 
 /**
- * Project joined feed cards into the OS short page shape. Features carry
- * the documented candidate feature keys (`canonicalType`, `canonicalTitle`,
- * `durationMs`, `orientation`) — never invented ones. Model scores are
- * absent (null) because no model ran: the shell composes from the feed
- * use-case, and the ranking OS (WFX-055) owns scoring. Honesty over
- * decoration.
+ * Project the runtime's shorts model into the OS page shape (the page the
+ * presenter consumes). The frozen `buildShortCards` ordering law (vertical-
+ * first, typed-tailed non-vertical items) applies inside the presenter,
+ * which reads THIS page.
  */
-export function projectShortsPage(cards: readonly FeedCard[]): ShortFeedPage {
+export function projectShortsPage(
+  userId: string,
+  sessionId: string,
+  hits: readonly SearchHit[],
+): ShortFeedPage {
   return {
     surface: "short",
-    userId: EXPERIENCE_CONTEXT.userId,
-    sessionId: EXPERIENCE_CONTEXT.sessionId,
-    cards: cards.map((card, index) => ({
-      position: index,
-      candidate: {
-        itemId: card.item.id,
-        realization: {
-          connectorId: card.realization.connectorId,
-          externalRef: card.realization.externalRef,
-          capabilities: [...card.realization.capabilities],
-          availability: card.realization.availability,
-        },
-        features: shortFeatures(card),
-      },
-      modelScore: null,
-      confidence: null,
-      explanations: [],
-      dominantObjective: null,
-      positionReasons: [`feed position ${index}`],
-    })),
+    userId,
+    sessionId,
+    cards: hits.map((hit, index) => shortFeedCardOf(hit, index)),
   };
-}
-
-/** The documented feature keys, verbatim from the item (never invented). */
-function shortFeatures(card: FeedCard): Record<string, number | string | boolean> {
-  const features: Record<string, number | string | boolean> = {
-    canonicalType: card.item.canonicalType,
-  };
-  if (card.item.canonicalTitle !== undefined) features.canonicalTitle = card.item.canonicalTitle;
-  if (card.item.durationMs !== undefined) features.durationMs = card.item.durationMs;
-  if (card.item.orientation !== undefined) features.orientation = card.item.orientation;
-  return features;
 }
 
 /**
- * Load the shorts boot payload: the short-surface feed (frozen short-form
- * eligibility decides what enters — this projection never re-filters) and
- * the session constants. An empty/failed feed is an EMPTY page — the
- * honest empty state downstream, never fabricated cards.
+ * Load the shorts boot payload from the RUNTIME: the shorts model, the
+ * session identity, and the runtime's policy view (balanced default until
+ * the user changes it — R05's controls land later).
  */
-export async function loadShortsPayload(host: ExperienceHost): Promise<ShortsBootPayload> {
-  const page = await host.client.runtime.getFeed(EXPERIENCE_CONTEXT, "short", SHORTS_QUERY);
-  const joined = joinFeedCards(page.cards);
+export async function loadShortsPayload(host: WebRuntimeHost): Promise<ShortsBootPayload> {
+  const model = await host.runtime.shorts({ query: SHORTS_SEED_QUERY });
+  const policyView = host.runtime.intents.policy();
+  const policy: RecommendationPolicy = {
+    id: "wfx-web-session-current",
+    userId: host.session.context.userId,
+    objectives: [],
+    exploration: policyView.exploration,
+    novelty: policyView.novelty,
+    socialInfluence: policyView.socialInfluence,
+    attentionMode: policyView.attentionMode,
+  };
   return {
-    page: projectShortsPage(joined),
-    policy: SESSION_POLICY,
-    userId: EXPERIENCE_CONTEXT.userId,
-    sessionId: EXPERIENCE_CONTEXT.sessionId,
-    seedQuery: SHORTS_QUERY,
+    page: projectShortsPage(host.session.context.userId, host.session.context.sessionId, model.hits),
+    policy,
+    userId: host.session.context.userId,
+    sessionId: host.session.context.sessionId,
+    seedQuery: SHORTS_SEED_QUERY,
     prefetchAhead: DEFAULT_PREFETCH_AHEAD,
+    loadError:
+      model.status.state === "error"
+        ? { kind: model.status.error?.kind ?? "unavailable", detail: model.status.error?.detail ?? "the shorts read failed" }
+        : null,
   };
 }

@@ -1,18 +1,20 @@
 /**
- * @wfx/app-web — the search surface (WFX-051).
+ * @wfx/app-web — the search surface (R07).
  *
- * The real search flow: query → Experience API search (both surfaces
- * browsed, watch first) → results grid. The typed states are honest by
- * construction: an EMPTY QUERY is the "type something" state, an EMPTY
- * RESULT set is the "no matches" state (never fabricated cards), and the
- * loading state is the route-level skeleton (`app/search/loading.tsx`).
- * Server component — the search BOX lives in the shell top bar as a plain
- * form, so the whole flow works without client JS.
+ * The unified search flow over the RUNTIME's search model: `?q=<query>` →
+ * canonical-joined results. The typed states are honest by construction:
+ * an EMPTY QUERY is the "type something" state (the route renders it
+ * without asking the runtime — the state machine's invalid-target law);
+ * an ERROR status renders as the error state with the typed failure
+ * detail (never a fake empty result — the R01 law); an EMPTY result set
+ * is the honest "no matches" state. Server component; the search BOX
+ * lives in the shell top bar as a plain form (no client JS needed).
  */
 
 import type { JSX } from "react";
 
-import type { SearchView } from "@/host/views";
+import type { SearchView } from "@/host/view-models";
+import { SectionStatus } from "@/components/home/HomeSurface";
 import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState } from "@/components/ui/StateViews";
 
@@ -25,12 +27,25 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
         <p className="wfx-page-subtitle">Search your entertainment across every connected source.</p>
         <EmptyState
           title="Type to search"
-          detail="Use the search box above — results come from the sources this host is connected to, through the same feed law every surface uses."
+          detail="Use the search box above — results come from the sources this host is connected to, through the same runtime search every surface uses."
         />
       </div>
     );
   }
-  if (view.results.length === 0) {
+  if (view.status.state === "error") {
+    return (
+      <div data-wfx-surface="search" data-wfx-search-state="error">
+        <h1 className="wfx-page-title">Search</h1>
+        <p className="wfx-page-subtitle" data-wfx-search-query>
+          Results for “{view.query}”
+        </p>
+        <div data-wfx-search-error>
+          <SectionStatus status={view.status} title="Search" />
+        </div>
+      </div>
+    );
+  }
+  if (view.cards.length === 0) {
     return (
       <div data-wfx-surface="search" data-wfx-search-state="no-results">
         <h1 className="wfx-page-title">Search</h1>
@@ -48,10 +63,10 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
     <div data-wfx-surface="search" data-wfx-search-state="results">
       <h1 className="wfx-page-title">Search</h1>
       <p className="wfx-page-subtitle" data-wfx-search-query>
-        {view.results.length} result{view.results.length === 1 ? "" : "s"} for “{view.query}”
+        {view.cards.length} result{view.cards.length === 1 ? "" : "s"} for “{view.query}”
       </p>
       <div className="wfx-grid" data-wfx-search-results>
-        {view.results.map((card) => (
+        {view.cards.map((card) => (
           <ItemCard key={card.itemId} card={card} />
         ))}
       </div>

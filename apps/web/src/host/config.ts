@@ -2,16 +2,17 @@
  * @wfx/app-web — host boot configuration (WFX-050, THE law).
  *
  * Port selection by environment — the single decision every boot path in
- * this app funnels through (`host/boot.ts`, `host/default-ports.ts`, and
- * the `main.ts` default when ports are omitted):
+ * this app funnels through (`host/web-host.ts`'s composition root and the
+ * `main.ts` adapter entry):
  *
  * - `WFX_DEV_FIXTURES` set to `1` (or `true`, per
  *   docs/infrastructure/environment-inventory.md) and `NODE_ENV` NOT
- *   `production` → **fixtures mode**: `makeFixturePorts()` from
- *   `@wfx/experience` (deterministic dev content for local UX work).
+ *   `production` → **fixtures mode**: the fixture-backed ServerPort
+ *   (`host/dev-fixture-server-port.ts` — deterministic dev content over
+ *   the frozen fixture ports from `@wfx/experience`).
  * - `WFX_DEV_FIXTURES` unset → **service mode**: the split-runtime service
  *   wiring via `WFX_API_BASE` (the Experience API base URL consumed by the
- *   remote ports in `host/remote-ports.ts`).
+ *   R07 ServerPort in `platform/server-port.ts`).
  * - Anything else → `HostConfigError`. NEVER a silent fallback to fixtures.
  *
  * Loudness law: a missing or malformed required variable is a TYPED error

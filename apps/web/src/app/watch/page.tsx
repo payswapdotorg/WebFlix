@@ -1,23 +1,26 @@
 /**
- * @wfx/app-web — the long-form Watch Feed browse route (WFX-051).
+ * @wfx/app-web — the long-form Watch browse route (R07).
  *
- * The WFX-027 experience mode as a browse page: the continue-watching row
- * first (resume beats everything), then the composed browse rows. Server
- * component; `force-dynamic` for the same environment-law reasons as home.
+ * The watch surface over the ONE runtime: the navigation state synced to
+ * `/watch`, the browse rows from the runtime's search models (typed
+ * statuses), rendered server-side. `force-dynamic` for the same
+ * environment-law reasons as home.
  */
 
 import { AppShell } from "@/components/shell/AppShell";
 import { WatchBrowseSurface } from "@/components/watch/WatchBrowseSurface";
-import { bootExperienceHost } from "@/host/experience";
-import { loadWatchBrowseView } from "@/host/views";
+import { getWebRuntimeHost } from "@/host/web-host";
+import { loadWatchBrowseView } from "@/host/view-models";
+import { syncNavigationToRoute } from "@/app/routing";
 
 export const dynamic = "force-dynamic";
 
 export default async function WatchPage() {
-  const host = bootExperienceHost();
+  const host = await getWebRuntimeHost();
+  syncNavigationToRoute(host.runtime, "/watch", {});
   const view = await loadWatchBrowseView(host);
   return (
-    <AppShell mode={host.mode} active="/watch">
+    <AppShell mode={host.mode} active="watch" session={host.session.state}>
       <WatchBrowseSurface view={view} />
     </AppShell>
   );

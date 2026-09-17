@@ -1,30 +1,36 @@
 /**
- * @wfx/app-web — the shorts page route (WFX-051): GET /api/shorts.
+ * @wfx/app-web — the shorts page route (R07): GET /api/shorts.
  *
- * Supplies the Short Feed's re-rank loop with a FRESH projected OS short
- * page: the short-surface feed through the 050 host boot law, joined
- * identities, projected into the OS page shape (`host/shorts.ts` — the same
- * projection the initial page used). The client presenter applies the
- * frozen replacement policy to it (`planReplacement` — beyond-cursor only,
- * prefetch window kept); this route carries no ranking logic of its own.
+ * Supplies the Short Feed's re-rank loop with a FRESH page from the ONE
+ * runtime: the shorts model (`runtime.shorts`) projected into the OS short
+ * page shape (`host/shorts.ts` — the same projection the initial page
+ * used). The client presenter applies the frozen replacement policy to it
+ * (`planReplacement` — beyond-cursor only, prefetch window kept); this
+ * route carries no ranking logic of its own.
  *
- * Deterministic per process in fixtures mode (the same seed answers the
- * same page — the re-rank then honestly replaces nothing, with typed
- * reasons carried to the UI).
+ * An erroring shorts read answers 502 with the typed failure detail — the
+ * client surfaces it honestly (never a fabricated empty page).
  */
 
 import { NextResponse } from "next/server";
 
-import { bootExperienceHost } from "@/host/experience";
+import { getWebRuntimeHost } from "@/host/web-host";
 import { loadShortsPayload } from "@/host/shorts";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(): Promise<NextResponse> {
-  const host = bootExperienceHost();
+  const host = await getWebRuntimeHost();
   try {
     const payload = await loadShortsPayload(host);
-    // The page only — identity/policy already live in the booted client.
+    if (payload.loadError !== null) {
+      // The typed failure — the client renders the honest error state.
+      return NextResponse.json(
+        { error: `the short feed failed to load (${payload.loadError.kind}): ${payload.loadError.detail}` },
+        { status: 502 },
+      );
+    }
+    // The page only — identity/policy already live in the boot payload.
     return NextResponse.json({ page: payload.page }, { status: 200 });
   } catch (thrown) {
     return NextResponse.json(

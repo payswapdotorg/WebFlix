@@ -1,27 +1,49 @@
 /**
- * @wfx/app-web — the action route (WFX-051): POST /api/actions.
+ * @wfx/app-web — the action route (R07): POST /api/actions.
  *
  * The bridge the client like/save controls call: the typed body → the
- * Experience API actions use-case through the 050 host boot law (fixtures
- * behind `WFX_DEV_FIXTURES=1` dev-only, the `WFX_API_BASE` remote ports in
- * service mode). The RECEIPT is the truth: the response body is the frozen
- * `ActionReceipt` verbatim (status confirmed / local-only / unsupported /
- * failed) — the client renders exactly what the source answered, never a
- * fabricated success.
+ * RUNTIME's action engine (`runtime.dispatchAction`) — platform capability
+ * gating BEFORE dispatch, the server receipt mapped 1:1, and the settled
+ * ACTION STATE as the truth. The response body carries the settled status
+ * in the receipt vocabulary the client renders (confirmed / local-only /
+ * unsupported / failed) — never a fabricated success: an `unsupported` or
+ * `failed` action renders exactly that.
  *
- * Caller-misuse (malformed body, foreign connector) answers 400 with the
- * problem text; a port that violates the plain surface answers 502 with the
- * typed detail. No secrets, no env in the response.
+ * Caller misuse (malformed body) answers 400 with the problem text; a
+ * transport failure settles the action `failed` and is answered 200 with
+ * the failed status (the action WAS dispatched and DID settle — the
+ * client renders the honest failure) — the runtime's law 3.
  */
 
 import { NextResponse } from "next/server";
 
-import { ExperienceError } from "@wfx/experience";
+import { isRuntimeError } from "@wfx/client-runtime";
 
-import { bootExperienceHost } from "@/host/experience";
-import { runAction, type ActionRequestBody } from "@/host/views";
+import { getWebRuntimeHost } from "@/host/web-host";
 
 export const dynamic = "force-dynamic";
+
+/** The action input the client controls send (mirrors ActionButtons). */
+interface ActionRequestBody {
+  readonly type: "like" | "save";
+  readonly connectorId: string;
+  readonly externalRef: string;
+  readonly itemId: string;
+}
+
+/** Map the runtime's settled action status to the receipt vocabulary. */
+function receiptStatusOf(status: string): "confirmed" | "local-only" | "unsupported" | "failed" {
+  switch (status) {
+    case "confirmed-by-provider":
+      return "confirmed";
+    case "confirmed-locally":
+      return "local-only";
+    case "unsupported":
+      return "unsupported";
+    default:
+      return "failed";
+  }
+}
 
 export async function POST(request: Request): Promise<NextResponse> {
   let body: unknown;
@@ -33,21 +55,47 @@ export async function POST(request: Request): Promise<NextResponse> {
   if (typeof body !== "object" || body === null) {
     return NextResponse.json({ error: "body: expected a JSON object" }, { status: 400 });
   }
+  const action = body as Partial<ActionRequestBody>;
+  if (action.type !== "like" && action.type !== "save") {
+    return NextResponse.json({ error: "type: expected 'like' or 'save'" }, { status: 400 });
+  }
+  if (typeof action.connectorId !== "string" || action.connectorId.length === 0) {
+    return NextResponse.json({ error: "connectorId: expected a non-empty string" }, { status: 400 });
+  }
+  if (typeof action.externalRef !== "string" || action.externalRef.length === 0) {
+    return NextResponse.json({ error: "externalRef: expected a non-empty string" }, { status: 400 });
+  }
 
-  const host = bootExperienceHost();
+  const host = await getWebRuntimeHost();
   try {
-    const result = await runAction(host, body as ActionRequestBody);
-    if (!result.ok) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
+    const state = await host.runtime.dispatchAction({
+      type: action.type,
+      connectorId: action.connectorId,
+      externalRef: action.externalRef,
+    });
+    if (action.type === "save" && typeof action.itemId === "string" && action.itemId.length > 0) {
+      // The save control is ALSO the watchlist write (the R01 library
+      // semantics: canonical-keyed, local-first, typed sync states) — the
+      // same composition the frozen use-case performed. The watchlist
+      // entry settles independently of the action receipt (both truths
+      // render: the button shows the receipt, the Library shows the sync).
+      await host.runtime.libraryOps.save({ itemId: action.itemId });
     }
-    // The frozen ActionReceipt, verbatim — the source's own answer.
-    return NextResponse.json(result.receipt, { status: 200 });
+    // The settled state, mapped to the receipt vocabulary — verbatim truth.
+    return NextResponse.json(
+      {
+        status: receiptStatusOf(state.status),
+        ...(state.detail !== undefined ? { detail: state.detail } : {}),
+        occurredAt: state.settledAt ?? state.requestedAt,
+      },
+      { status: 200 },
+    );
   } catch (thrown) {
-    if (thrown instanceof ExperienceError) {
+    if (isRuntimeError(thrown)) {
       return NextResponse.json({ error: thrown.message }, { status: 400 });
     }
     return NextResponse.json(
-      { error: `the action use-case failed unexpectedly: ${String(thrown)}` },
+      { error: `the action dispatch failed unexpectedly: ${String(thrown)}` },
       { status: 502 },
     );
   }

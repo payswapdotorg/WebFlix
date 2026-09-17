@@ -1,66 +1,67 @@
 /**
- * @wfx/app-web — the WEB client entry (WFX-040, Lane C; WFX-050 productionized).
+ * @wfx/app-web — the WEB ADAPTER entry (R07).
  *
- * The browser-constrained shell of the frozen cross-platform strategy
- * ("Web is broad but browser-constrained"): it boots the SAME shared client
- * runtime as desktop and mobile, bound to `WebCapabilities` — no native
- * media (honestly undeclared; the resolver rejects `native` with a recorded
- * reason), embed/browser/external modes, localStorage-backed storage, and a
- * background policy of "never" (browsers suspend background video).
+ * The Universal Entertainment OS's web adapter: `bootWebAdapter` composes
+ * the truthful platform bundle (`src/platform/`) with the anonymous-mode
+ * session (`host/session.ts` — the R02 seam) and constructs the ONE
+ * shared client runtime (`@wfx/client-runtime` `createRuntime`). The app
+ * RENDERS RUNTIME STATE; it owns no product business logic (the frozen
+ * layering law — this module is the adapter's composition surface, not a
+ * second runtime).
  *
- * WFX-050 — the production boot law. Ports are selected by ENVIRONMENT,
- * never by silent fallback:
- *
- * - Omitted `ports` resolve through the host config law
- *   (`host/default-ports.ts`): `WFX_DEV_FIXTURES=1` (dev only) yields the
- *   deterministic fixture ports; otherwise the real split-runtime service
- *   ports against `WFX_API_BASE`; neither set throws the typed
- *   `HostConfigError` naming the missing variables. There is NO code path
- *   in this package that reaches fixture ports without the explicit flag.
- * - Explicit `ports` are used verbatim (tests, alternative hosts).
- *
- * The Next.js App Router host composes through `src/host/boot.ts`, which
- * funnels into this same law.
+ * The Next.js App Router host consumes the SAME law through
+ * `host/web-host.ts` (`getWebRuntimeHost` — the per-process singleton);
+ * this entry is the package-level composition for hosts that boot the
+ * adapter directly (tests, alternative shells).
  */
 
-import type { Ports } from "@wfx/experience";
+import type { ClientRuntime } from "@wfx/client-runtime";
 
-import type { PlatformProfile } from "./shared/capabilities";
-import { createWebPlatform } from "./shared/capabilities";
-import type { ClientRuntime } from "./shared/runtime";
-import { createClientRuntime } from "./shared/runtime";
-import { resolveDefaultPorts } from "./host/default-ports";
+import type { WebPlatformBundle } from "./platform/capabilities";
+import { createWebPlatformCapabilities } from "./platform/capabilities";
+import type { WebBrowserHostPort } from "./platform/browser-host";
+import type { WebEnvironment } from "./platform/environment";
+import { WebClock } from "./platform/lifecycle";
+import { bootWebRuntimeHost, CryptoUlidGen } from "./host/web-host";
+import type { WebRuntimeHost } from "./host/web-host";
+import type { HostEnv } from "./host/config";
 
-/** Options for {@link bootWebClient}. */
-export interface WebClientBootOptions {
-  /**
-   * The ports bundle. When omitted, the ENVIRONMENT selects it through the
-   * host config law (`WFX_DEV_FIXTURES=1` ⇒ fixtures, dev only; otherwise
-   * the `WFX_API_BASE` service ports) — or throws the typed
-   * `HostConfigError` when neither is honestly configured.
-   */
-  readonly ports?: Ports;
+/** Options for {@link bootWebAdapter}. */
+export interface WebAdapterBootOptions {
+  /** The environment to read (default: `process.env` — the 050 boot law). */
+  readonly env?: HostEnv;
+  /** The browser environment override (default: the real detected one). */
+  readonly environment?: WebEnvironment;
 }
 
-/** A booted web client: the shared runtime on the web platform profile. */
-export interface WebClient {
+/** A booted web adapter: the platform bundle + the ONE runtime. */
+export interface WebAdapter {
   readonly platform: "web";
-  readonly profile: PlatformProfile<"web">;
+  readonly bundle: WebPlatformBundle;
   readonly runtime: ClientRuntime;
+  readonly browserHost: WebBrowserHostPort;
 }
 
 /**
- * Boot the web client: bind the Web capability profile (fresh adapters —
- * no shared mutable state) and the ports into the shared client runtime.
- * The SAME `createClientRuntime` call boots desktop and mobile.
+ * Boot the web adapter: the truthful bundle + the anonymous session + the
+ * runtime, through the SAME composition root the app host uses.
  *
- * @throws {@link import("./host/config").HostConfigError} when ports are
- * omitted and the environment cannot honestly select a mode (see the
- * module doc — never a silent fixture fallback).
+ * @throws {@link import("./host/config").HostConfigError} when the
+ * environment cannot honestly select a transport (the 050 law — never a
+ * silent fixture fallback).
  */
-export function bootWebClient(options: WebClientBootOptions = {}): WebClient {
-  const profile = createWebPlatform();
-  const ports = options.ports ?? resolveDefaultPorts().ports;
-  const runtime = createClientRuntime(profile, ports);
-  return { platform: "web", profile, runtime };
+export async function bootWebAdapter(options: WebAdapterBootOptions = {}): Promise<WebAdapter> {
+  const host: WebRuntimeHost = await bootWebRuntimeHost(
+    options.env ?? process.env,
+    options.environment !== undefined ? { environment: options.environment } : {},
+  );
+  return {
+    platform: "web",
+    bundle: host.capabilities,
+    runtime: host.runtime,
+    browserHost: host.browserHost,
+  };
 }
+
+// Re-exported for host composition convenience (the seams the adapter owns).
+export { createWebPlatformCapabilities, WebClock, CryptoUlidGen };

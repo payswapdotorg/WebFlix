@@ -1,64 +1,24 @@
 /**
- * @wfx/app-web — the universal content card (WFX-051).
+ * @wfx/app-web — the universal content card (R07).
  *
- * The YouTube-like card grammar: deterministic placeholder art (fixture
- * placeholders in dev — NO provider branding), the title, the canonical
- * type badge, the duration, and the source-CAPABILITY indicator. The
- * indicator is capability-aware by law: it states WHAT THE SOURCE CAN DO
- * for this content (embeddable / web player / external handoff / native),
- * never the source's identity as the dominant signal.
+ * The card grammar over the RUNTIME's canonical-joined search hits: the
+ * title, the canonical type badge, the duration, and the placeholder art.
+ * The card deliberately carries NO capability or availability claim — the
+ * search hit truthfully does not know either; capability truth renders on
+ * the DETAIL surface, where the source's real metadata answers (the UI
+ * honesty law: never a claim the source did not make).
  *
  * Server component: pure presentational projection of a `CardView`.
  */
 
 import type { JSX } from "react";
 
-import type { CardView } from "@/host/views";
+import type { CardView } from "@/host/view-models";
+import { itemDetailHref, playerHref } from "@/app/routing";
 import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 
-/** The playback capability labels (presence = the source's declared truth). */
-function playCapabilityLabel(capabilities: readonly string[]): string | null {
-  if (capabilities.includes("playEmbed")) return "Embeddable";
-  if (capabilities.includes("playBrowser")) return "Web player";
-  if (capabilities.includes("playExternal")) return "Opens externally";
-  if (capabilities.includes("playNative")) return "Native";
-  return null;
-}
-
-/** Build the detail-page href for one card (stable source identity). */
-export function detailHref(card: CardView): string {
-  const params = new URLSearchParams({
-    connector: card.connectorId,
-    ref: card.externalRef,
-    title: card.title,
-  });
-  return `/item?${params.toString()}`;
-}
-
-/** The fields a player href needs (a `CardView` satisfies this structurally). */
-export interface PlayerTarget {
-  readonly connectorId: string;
-  readonly externalRef: string;
-  readonly title: string;
-  readonly canonicalType: string;
-  readonly durationMs?: number;
-}
-
-/** Build the player-page href for one target (optionally with resume). */
-export function playerHref(target: PlayerTarget, resumePositionMs?: number, fromQuery?: string): string {
-  const params = new URLSearchParams({
-    connector: target.connectorId,
-    ref: target.externalRef,
-    title: target.title,
-    type: target.canonicalType,
-  });
-  if (target.durationMs !== undefined) params.set("duration", String(target.durationMs));
-  if (resumePositionMs !== undefined && resumePositionMs > 0) {
-    params.set("resume", String(resumePositionMs));
-  }
-  if (fromQuery !== undefined) params.set("from", fromQuery);
-  return `/player?${params.toString()}`;
-}
+/** The target shape a card link needs (a `CardView` satisfies this). */
+export type CardTarget = CardView;
 
 /** The continue-watching progress bar (ratio null ⇒ not rendered). */
 function Progress({ ratio }: { readonly ratio: number | null }): JSX.Element | null {
@@ -74,27 +34,34 @@ function Progress({ ratio }: { readonly ratio: number | null }): JSX.Element | n
 /**
  * One content card. `variant="short"` renders the 9:16 vertical thumb of
  * the shorts rail. `resume` (optional) renders the continue-watching
- * affordances (progress bar + resume position).
+ * affordances (progress bar + resume position). An item WITHOUT a joined
+ * source identity (the per-process join missed it) renders UNLINKED —
+ * the honest state, never a fabricated link.
  */
 export function ItemCard({
   card,
   variant = "wide",
   resume,
+  linked = true,
 }: {
   readonly card: CardView;
   readonly variant?: "wide" | "short";
   readonly resume?: { readonly resumePositionMs: number; readonly completionRatio: number | null };
+  readonly linked?: boolean;
 }): JSX.Element {
-  const capLabel = playCapabilityLabel(card.capabilities);
-  return (
-    <a
-      className="wfx-card"
-      href={detailHref(card)}
-      data-wfx-card={card.itemId}
-      aria-label={`${card.title} (${card.canonicalType}${
-        card.durationMs !== undefined ? `, ${formatDuration(card.durationMs)}` : ""
-      }${capLabel !== null ? `, ${capLabel}` : ""})`}
-    >
+  const href = itemDetailHref({
+    itemId: card.itemId,
+    connectorId: card.connectorId,
+    externalRef: card.externalRef,
+    title: card.title,
+    canonicalType: card.canonicalType,
+    ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+  });
+  const label = `${card.title} (${card.canonicalType}${
+    card.durationMs !== undefined ? `, ${formatDuration(card.durationMs)}` : ""
+  })`;
+  const body = (
+    <>
       <span
         className={`wfx-card__thumb${variant === "short" ? " wfx-card__thumb--vertical" : ""}`}
         style={{ background: placeholderArt(card.itemId) }}
@@ -115,19 +82,45 @@ export function ItemCard({
           {card.title}
         </p>
         <p className="wfx-card__meta">
-          {capLabel !== null ? (
+          {linked ? (
             <span className="wfx-capchip" data-wfx-card-capability>
-              {capLabel}
+              Playback options on details
             </span>
           ) : (
-            <span className="wfx-capchip">No playback declared</span>
+            <span className="wfx-capchip">Source unknown in this session</span>
           )}
           {resume !== undefined && resume.resumePositionMs > 0 ? (
             <span data-wfx-resume-position>Resume at {formatDuration(resume.resumePositionMs)}</span>
           ) : null}
-          {card.availability === "unavailable" ? <span>Currently unavailable</span> : null}
         </p>
       </span>
+    </>
+  );
+  if (!linked) {
+    return (
+      <span className="wfx-card" data-wfx-card={card.itemId} aria-label={`${label} (unlinked)`}>
+        {body}
+      </span>
+    );
+  }
+  return (
+    <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label}>
+      {body}
     </a>
+  );
+}
+
+/** The play href for one card target (optionally with a resume position). */
+export function cardPlayerHref(target: CardTarget, resumePositionMs?: number): string {
+  return playerHref(
+    {
+      itemId: target.itemId,
+      connectorId: target.connectorId,
+      externalRef: target.externalRef,
+      title: target.title,
+      canonicalType: target.canonicalType,
+      ...(target.durationMs !== undefined ? { durationMs: target.durationMs } : {}),
+    },
+    resumePositionMs,
   );
 }

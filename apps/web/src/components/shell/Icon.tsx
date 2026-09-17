@@ -13,6 +13,8 @@ export type IconName =
   | "search"
   | "shorts"
   | "film"
+  | "library"
+  | "settings"
   | "like"
   | "save"
   | "share"
@@ -45,6 +47,18 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
     <>
       <rect x="3" y="4" width="18" height="16" rx="2" />
       <path d="M8 4v16M16 4v16M3 12h18M3 8h5M16 8h5M3 16h5M16 16h5" />
+    </>
+  ),
+  library: (
+    <>
+      <path d="M4 5h4v14H4zM10 5h4v14h-4z" />
+      <path d="m16.6 5.6 3.7 13.1" />
+    </>
+  ),
+  settings: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M12 2.5v3M12 18.5v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2.5 12h3M18.5 12h3M4.9 19.1 7 17M17 7l2.1-2.1" />
     </>
   ),
   like: (

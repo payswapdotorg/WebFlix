@@ -10,8 +10,10 @@
     "start": "next start"
   },
   "dependencies": {
+    "@wfx/client-runtime": "workspace:*",
     "@wfx/domain": "workspace:*",
     "@wfx/experience": "workspace:*",
+    "@wfx/platform-contracts": "workspace:*",
     "next": "^16.3.5",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
