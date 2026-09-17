@@ -38,7 +38,8 @@
 
 import type { RecommendationPolicy, UserIntent } from "@wfx/domain";
 
-import { attentionConstraints, breakDominantObjectiveRuns } from "./attention";
+import { attentionConstraints, attentionEffectiveExploration, breakDominantObjectiveRuns } from "./attention";
+import { diversityKeyOf } from "./features";
 import type { ScoredCandidate, TraceDecision } from "./types";
 import { assertValidIntents } from "./validate";
 
@@ -61,10 +62,13 @@ export const DIVERSITY_TOP_BLOCK_SIZE = 8;
 
 /**
  * The run cap K derived from the policy exploration dial:
- * `1 + floor((1 - exploration) * 4)`, clamped to [1, 5].
+ * `1 + floor((1 - exploration) * 4)`, clamped to [1, 5]. R05: the dial the
+ * formula consumes is the mode-derived EFFECTIVE exploration
+ * (`attentionEffectiveExploration`) — mindful floors it at 0.5, so mindful
+ * retains a stricter cap even with a low raw dial.
  */
 export function diversityRunCap(policy: RecommendationPolicy): number {
-  const exploration = Math.min(1, Math.max(0, policy.exploration));
+  const exploration = attentionEffectiveExploration(policy);
   const raw =
     DIVERSITY_K_MIN +
     Math.floor((1 - exploration) * (DIVERSITY_K_MAX - DIVERSITY_K_MIN));
@@ -72,11 +76,13 @@ export function diversityRunCap(policy: RecommendationPolicy): number {
 }
 
 /**
- * The top-block concentration threshold X (percent) derived from the policy
- * exploration dial: `80 - exploration * 40`, clamped to [40, 80].
+ * The top-block concentration threshold X (percent) derived from the
+ * policy exploration dial: `80 - exploration * 40`, clamped to [40, 80].
+ * R05: like the run cap, the formula consumes the mode-derived EFFECTIVE
+ * exploration — mindful's floor lowers the concentration threshold.
  */
 export function diversityConcentrationThresholdPercent(policy: RecommendationPolicy): number {
-  const exploration = Math.min(1, Math.max(0, policy.exploration));
+  const exploration = attentionEffectiveExploration(policy);
   const raw =
     DIVERSITY_CONCENTRATION_MAX_PERCENT -
     exploration *
@@ -142,7 +148,7 @@ export function diversify(
       const block = current.slice(0, blockSize);
       const counts = new Map<string, number>();
       for (const item of block) {
-        const objective = item.features.dominantObjective;
+        const objective = diversityKeyOf(item);
         if (objective === null) continue; // no monoculture signal
         counts.set(objective, (counts.get(objective) ?? 0) + 1);
       }
@@ -161,7 +167,7 @@ export function diversify(
       // Find the last block card carrying the dominant objective.
       let targetIndex = -1;
       for (let index = blockSize - 1; index >= 0; index -= 1) {
-        if (block[index]!.features.dominantObjective === dominantObjective) {
+        if (diversityKeyOf(block[index]!) === dominantObjective) {
           targetIndex = index;
           break;
         }
@@ -174,7 +180,7 @@ export function diversify(
       for (let index = blockSize; index < current.length; index += 1) {
         const item = current[index]!;
         if (!item.features.unseen) continue;
-        if (item.features.dominantObjective !== dominantObjective) {
+        if (diversityKeyOf(item) !== dominantObjective) {
           injectIndex = index;
           break;
         }

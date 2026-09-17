@@ -43,6 +43,7 @@
 
 import type { RecommendationPolicy } from "@wfx/domain";
 
+import { diversityKeyOf } from "./features";
 import type { AttentionConstraints, ScoredCandidate, TraceDecision } from "./types";
 
 // ---------------------------------------------------------------------------
@@ -59,6 +60,35 @@ export const MINDFUL_MAX_SESSION_EXTENDING_CHAIN = 2;
 export const BALANCED_MAX_SESSION_EXTENDING_CHAIN = 4;
 
 /**
+ * R05 — Mindful: the mode's own EXPLORATION FLOOR. Mindful guards the
+ * user's exploration capability even when the raw dial was left low: the
+ * effective exploration the diversity machinery consumes is never below
+ * this value in mindful mode (the time-budget/novelty signals of the J18
+ * law — a mode, not a cosmetic setting).
+ */
+export const MINDFUL_MIN_EFFECTIVE_EXPLORATION = 0.5;
+
+/**
+ * R05 — Mindful: the mode's own TIME BUDGET. When the policy sets no
+ * explicit `maxSessionExtensionMinutes`, mindful imposes this default cap
+ * on OS-PLANNED session extension (minutes) — the system does not silently
+ * optimize for maximum time spent when another mode is selected (the
+ * user's own playback is never interrupted; the budget bounds what the OS
+ * chains on its own). Explicit caps (any mode) always win when smaller;
+ * larger explicit caps are narrowed to this mode ceiling (mindful never
+ * extends beyond its budget).
+ */
+export const MINDFUL_DEFAULT_SESSION_EXTENSION_MINUTES = 60;
+
+/**
+ * R05 — Mindful: the NOVELTY WEIGHTING — fresh content (known `publishedAt`)
+ * receives this rank weight per unit of freshness, applied by the policy
+ * stage as a traced adjustment (model scores untouched). Measurable mode
+ * behavior: mindful reorders fresh-above-stale; immersive does not.
+ */
+export const MINDFUL_NOVELTY_RANK_WEIGHT = 0.05;
+
+/**
  * Maximum (breakRuns, breakChains) repair sweeps composition alternates
  * before recording a residual constraint decision (bounded termination —
  * repairs move items strictly later, so conflicts converge in practice).
@@ -66,16 +96,52 @@ export const BALANCED_MAX_SESSION_EXTENDING_CHAIN = 4;
 export const MAX_SWEEP_PASSES = 4;
 
 /**
- * Derive the attention constraints from the policy. Deterministic and pure;
- * the derived values are recorded by the policy stage as an "attention-policy"
- * trace decision and enforced downstream.
+ * R05 — the mode-derived effective exploration dial (the J18 "exploration
+ * weight" signal): mindful floors the dial at
+ * `MINDFUL_MIN_EFFECTIVE_EXPLORATION` (never below 0.5); every other mode
+ * passes the user's dial through unchanged (clamped to [0,1]). The
+ * diversity stage's run cap K and concentration threshold X derive from
+ * THIS value, so mindful measurably retains exploration capability even
+ * with a low raw dial.
  */
-export function attentionConstraints(policy: RecommendationPolicy): AttentionConstraints {
-  const minutes =
+export function attentionEffectiveExploration(
+  policy: RecommendationPolicy,
+): number {
+  const raw = Math.min(1, Math.max(0, policy.exploration));
+  if (policy.attentionMode !== "mindful") return raw;
+  return Math.max(raw, MINDFUL_MIN_EFFECTIVE_EXPLORATION);
+}
+
+/**
+ * R05 — the mode-derived session-extension budget (the J18 "time-budget
+ * signal"): the policy's explicit cap when present, else the mindful
+ * default when the mode is mindful, else null (no cap). In mindful mode an
+ * explicit cap LARGER than the mode ceiling is narrowed to the ceiling
+ * (the mode is policy, not a suggestion).
+ */
+export function attentionSessionExtensionBudget(
+  policy: RecommendationPolicy,
+): number | null {
+  const explicit =
     typeof policy.maxSessionExtensionMinutes === "number" &&
     Number.isFinite(policy.maxSessionExtensionMinutes)
       ? Math.max(0, policy.maxSessionExtensionMinutes)
       : null;
+  if (policy.attentionMode === "mindful") {
+    if (explicit === null) return MINDFUL_DEFAULT_SESSION_EXTENSION_MINUTES;
+    return Math.min(explicit, MINDFUL_DEFAULT_SESSION_EXTENSION_MINUTES);
+  }
+  return explicit;
+}
+
+/**
+ * Derive the attention constraints from the policy. Deterministic and pure;
+ * the derived values are recorded by the policy stage as an "attention-policy"
+ * trace decision and enforced downstream. R05: mindful derives its OWN time
+ * budget when none was set (`attentionSessionExtensionBudget`).
+ */
+export function attentionConstraints(policy: RecommendationPolicy): AttentionConstraints {
+  const minutes = attentionSessionExtensionBudget(policy);
 
   switch (policy.attentionMode) {
     case "mindful":
@@ -121,10 +187,12 @@ export interface SweepResult {
 
 /**
  * Greedy run-breaking: reorder so no more than `maxConsecutive` CONSECUTIVE
- * cards share the same dominant matched objective. Cards with a null
- * dominant objective are run-neutral (they carry no monoculture signal and
- * break runs). Extenders are demoted BELOW the next placeable card (never
- * deleted). When every remaining card shares one objective (no alternative
+ * cards share the same diversity key (the dominant matched objective, or —
+ * R05 — the documented `topic` feature when no intent matched: watch-driven
+ * topic runs are subject to the same anti-tunnel law). Cards with a null
+ * diversity key are run-neutral (they carry no monoculture signal and break
+ * runs). Extenders are demoted BELOW the next placeable card (never
+ * deleted). When every remaining card shares one key (no alternative
  * exists to interleave), the remainder is placed in incoming order with an
  * explicit "objective-run-unsatisfiable" decision — the pool stays wide.
  */
@@ -140,7 +208,7 @@ export function breakDominantObjectiveRuns(
 
   while (remaining.length > 0) {
     const placeableIndex = remaining.findIndex((item) => {
-      const objective = item.features.dominantObjective;
+      const objective = diversityKeyOf(item);
       return objective === null || objective !== lastObjective || runLength < maxConsecutive;
     });
 
@@ -170,7 +238,7 @@ export function breakDominantObjectiveRuns(
     out.push(placed);
     remaining.splice(placeableIndex, 1);
 
-    const objective = placed.features.dominantObjective;
+    const objective = diversityKeyOf(placed);
     if (objective === null) {
       lastObjective = null;
       runLength = 0;

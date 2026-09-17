@@ -229,7 +229,10 @@ export function createRuntime(
   const playbackControllers = new Map<string, PlaybackSessionController>();
   const actions = new ActionEngine(server, platform, session.clock, session.ids);
   const libraryEngine = new LibraryEngine(server, registry, watch, session.clock);
-  const intents = new IntentStore(session.clock, session.ids);
+  // R05: the intent store carries the injected ServerPort for the durable
+  // write-through + boot hydration (the frozen seam's NEW backing — the
+  // local R01 laws are unchanged; see intent.ts).
+  const intents = new IntentStore(session.clock, session.ids, server);
   const sources = createSourceStateStore(server);
 
   // — the at-least-once flush hook (adapters await async shutdown hooks) —
@@ -345,13 +348,18 @@ export function createRuntime(
     library: (input?: LibraryQuery) => libraryEngine.read(input),
 
     setIntent: async (input: Parameters<IntentStore["set"]>[0]): Promise<void> => {
-      intents.set(input); // validated; invalid input throws the typed error
+      // R05: the local session set (the R01 law) + the durable write-through
+      // for persistent/temporary/social scopes; a typed server failure
+      // throws (never a silent success).
+      await intents.syncIntent(input);
     },
 
     setRecommendationPolicy: async (
       input: Parameters<IntentStore["setPolicy"]>[0],
     ): Promise<void> => {
-      intents.setPolicy(input); // validated; invalid input throws the typed error
+      // R05: the local policy view + the durable write-through; a typed
+      // server failure throws (never a silent success).
+      await intents.syncPolicy(input);
     },
 
     playback: playbackOperations,

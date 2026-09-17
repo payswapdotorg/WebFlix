@@ -110,6 +110,42 @@ export const CANDIDATE_FEATURE_PUBLISHED_AT = "publishedAt";
 /** Documented candidate feature key carrying the preceding episode's item id. */
 export const CANDIDATE_FEATURE_NEXT_EPISODE_OF = "nextEpisodeOf";
 
+/**
+ * R05 — documented candidate feature key carrying the item's topic tag
+ * (the anti-tunnel diversity key when no intent matches). Graph-aware
+ * callers populate it from the Entertainment Graph's topic clusters; the
+ * OS never guesses a topic from titles.
+ */
+export const CANDIDATE_FEATURE_TOPIC = "topic";
+
+/**
+ * R05 — documented candidate feature key carrying the item's creator id
+ * (the `dont-recommend-creator` feedback target). Graph-aware callers
+ * populate it from the item's creator relations; candidates without it are
+ * never creator-suppressed (the OS never guesses a creator).
+ */
+export const CANDIDATE_FEATURE_CREATOR_ID = "creatorId";
+
+/**
+ * R05 — the anti-tunnel diversity key of one scored candidate: the dominant
+ * matched objective when an intent matched, else the documented `topic`
+ * feature (read from the candidate's raw feature record), else null (no
+ * monoculture signal — run-neutral). Concentration and run-cap machinery
+ * key on THIS so that WATCH-DRIVEN concentration (no intents, pure topic
+ * watching — the J16 scenario) is still subject to the exploration dial's
+ * diversity floor, not just intent-driven runs.
+ */
+export function diversityKeyOf(item: {
+  /** The typed feature record (carries the dominant matched objective). */
+  readonly features: { readonly dominantObjective: string | null };
+  /** The pool candidate (its raw feature record carries the topic tag). */
+  readonly candidate: { readonly features: Record<string, number | string | boolean> };
+}): string | null {
+  if (item.features.dominantObjective !== null) return item.features.dominantObjective;
+  const value = item.candidate.features[CANDIDATE_FEATURE_TOPIC];
+  return typeof value === "string" && value.trim().length > 0 ? value : null;
+}
+
 // ---------------------------------------------------------------------------
 // Candidate surface helpers
 // ---------------------------------------------------------------------------

@@ -26,7 +26,11 @@
  *    The derived constraints are declared in the trace ("attention-policy")
  *    and enforced here AND re-enforced after the later stages reorder (the
  *    composition stage owns the final sweep — the output invariant is what
- *    the law protects).
+ *    the law protects). R05: mindful ALSO applies the mode's NOVELTY
+ *    WEIGHTING — fresh content is rank-boosted by
+ *    `MINDFUL_NOVELTY_RANK_WEIGHT * freshness` (a traced adjustment; model
+ *    scores untouched) — and derives its own exploration floor + time
+ *    budget (see attention.ts).
  * 5. `maxSessionExtensionMinutes` — respected in every mode when provided;
  *    the minutes accounting happens at composition time (where OS-planned
  *    chaining actually accumulates minutes) and every stop is traced.
@@ -39,6 +43,7 @@
 import type { RecommendationContext, RecommendationPolicy } from "@wfx/domain";
 
 import {
+  MINDFUL_NOVELTY_RANK_WEIGHT,
   attentionConstraints,
   breakDominantObjectiveRuns,
   breakSessionChains,
@@ -173,6 +178,37 @@ export function applyPolicy(
     }
     // Stable re-order: modelScore + adjustment desc (unscored items last),
     // ties keeping the incoming (dedupe) order.
+    const keyed = current.map((item, index) => ({
+      item,
+      index,
+      key:
+        item.modelScore === null
+          ? Number.NEGATIVE_INFINITY
+          : item.modelScore + (adjustments.get(item) ?? 0),
+    }));
+    keyed.sort((a, b) => {
+      if (a.key !== b.key) return b.key - a.key;
+      return a.index - b.index;
+    });
+    current = keyed.map((entry) => entry.item);
+  }
+
+  // --- R05 3a. Mindful novelty weighting (the J18 law: a mode is measurable
+  // behavior). Fresh content receives a rank adjustment proportional to its
+  // freshness; unknown-freshness items receive the neutral-midpoint weight
+  // uniformly (no reorder among them). Model scores are NEVER touched —
+  // the adjustment is recorded and applied to ordering only, exactly like
+  // custom-mode objectives. ---
+  if (policy.attentionMode === "mindful") {
+    const adjustments = new Map<ScoredCandidate, number>();
+    for (const item of current) {
+      adjustments.set(item, MINDFUL_NOVELTY_RANK_WEIGHT * item.features.freshness);
+    }
+    decisions.push({
+      kind: "attention-novelty-weighting",
+      detail: `mindful novelty weighting: every candidate rank-adjusted by ${MINDFUL_NOVELTY_RANK_WEIGHT} * freshness (fresh-above-stale reordering; model scores untouched; unknown-freshness items carry the neutral ${0.5} midpoint uniformly)`,
+      itemIds: [],
+    });
     const keyed = current.map((item, index) => ({
       item,
       index,

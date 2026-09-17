@@ -69,6 +69,18 @@ export type TraceDecisionKind =
   | "custom-objective"
   /** Attention-mode parameters declared for downstream enforcement. */
   | "attention-policy"
+  /** Mindful mode's novelty weighting — fresh content rank-boosted (traced). */
+  | "attention-novelty-weighting"
+  /** R05: `not-interested` feedback — the target excluded (reversible). */
+  | "feedback-not-interested"
+  /** R05: a suppressed source's realizations skipped with an honest note. */
+  | "feedback-suppressed-source"
+  /** R05: a suppressed creator's candidates skipped with an honest note. */
+  | "feedback-suppressed-creator"
+  /** R05: `already-watched` feedback — the target demoted (history untouched). */
+  | "feedback-already-watched"
+  /** R05: `more-like-this` feedback — the similarity neighborhood boosted. */
+  | "feedback-more-like-this"
   /** Diversity: a same-dominant-objective run hit the cap — extenders demoted. */
   | "objective-run-break"
   /** Diversity: the remaining items share one objective — no alternative exists. */

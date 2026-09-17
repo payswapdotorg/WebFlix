@@ -49,12 +49,48 @@ There is **no fixture fallback**: `WFX_DEV_FIXTURES` is a web-host concern
 | `0007_profiles` (R02) | `profiles`; `sessions.active_profile_id`; `profile_id` scoping on `watch_history` / `library_entries` / `user_intents` / `recommendation_state` / `event_outbox` |
 | `0008_source_management` (R03) | `connector_accounts` lifecycle columns (`authorized_at`, `last_state_change`, `availability_notes`); `connector_pending_authorizations` |
 | `0009_canonical_library_history_exclusions` (R04) | `library_entries.item_id` (canonical-key discipline); `history_removals`; `history_exclusions` |
+| `0010_recommendation_feedback` (R05) | `recommendation_feedback` (the J15 control set — per-profile, timestamped, reversible) |
 
 Runner laws (src/migrations.ts): files are applied in lexicographic order,
 each inside ONE transaction together with its `persistence_migrations`
 bookkeeping insert; re-runs verify checksums and apply nothing; an applied
 file whose content changed is a `MigrationError` (forward-only contract —
 fix drift with a NEW migration). No down path, by design.
+
+## R05 — the recommendation feedback controls store
+
+**Migration 0010 — `recommendation_feedback`.** The durable side of the J15
+control vocabulary (`more-like-this` | `not-interested` |
+`dont-recommend-source` | `dont-recommend-creator` | `already-watched`).
+Every control is PER-PROFILE (the migration-0007 effective-profile key:
+`COALESCE(profile_id, 'user:' || user_id)`), TIMESTAMPED, and REVERSIBLE:
+
+- **Identity is the triple** `(effective profile, kind, target)` — UNIQUE —
+  so a control is ONE ROW, not a log: re-submitting "not interested" on
+  the same item is IDEMPOTENT (the earliest `created_at` wins; the upsert
+  only refreshes the bucket columns). The kind CHECK constraint enforces
+  the closed five-member vocabulary at the database boundary too (the API
+  is the first line, the DB is the last).
+- **`target` is polymorphic by kind**: a canonical `wfxitm_…` item id for
+  the item-targeted kinds (`more-like-this`, `not-interested`,
+  `already-watched`), a connector id for `dont-recommend-source`, a
+  creator id for `dont-recommend-creator`. The store never interprets it;
+  the Recommendation OS (`@wfx/recommendation`, os/feedback.ts) owns the
+  composition semantics.
+- **DELETE is a REAL delete** (`PostgresRecommendationFeedbackStore
+  .deleteForProfile`) — the row and its composition effect vanish together
+  (no soft-delete theater; the R05 reversibility law: every control that
+  shapes recommendations can be undone).
+- **THE EVENT-SINK LAW (R04, preserved):** nothing here touches
+  `event_outbox` or `watch_history` — feedback shapes future candidate
+  composition only; recorded viewing events stay immutable audit truth.
+
+The store ships alongside the R02-era `user_intents` +
+`recommendation_state` stores, which R05 now serves through
+`apps/api/src/host/controls.ts` (the `/experience/{policy,intents}`
+endpoints: the frozen `IntentRecord`/`RecommendationPolicy` wire shapes,
+scope-truth validation, one-objective-per-scope update-in-place, and
+read-time expiry filtering — see that module's docs).
 
 ## R04 — canonical-keyed library + history removals/exclusions
 

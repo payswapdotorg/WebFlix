@@ -35,6 +35,7 @@ import {
 
 import type { ApiBoot } from "../src/host/boot";
 import { resolveApiConfig } from "../src/host/config";
+import { RecommendationControlsHost } from "../src/host/controls";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
 import { HistoryHost } from "../src/host/history";
 import {
@@ -124,6 +125,9 @@ export async function createApiTestBoot(sourceOverrides?: {
   // watch-history projection + the removal/exclusion filters.
   const history = new HistoryHost({ db: testDb.db, clock, ids });
 
+  // R05 — the recommendation-controls host (the exact wiring bootApi performs).
+  const controls = new RecommendationControlsHost({ db: testDb.db, clock, ids });
+
   // The R02 identity services — the SAME wiring bootApi performs (the
   // boot's 2.6 step): register/authenticate, session tokens, profiles,
   // and the profile-aware event sink, all over the shared seams.
@@ -160,6 +164,7 @@ export async function createApiTestBoot(sourceOverrides?: {
     sourceManagement,
     connectorAccounts,
     history,
+    controls,
   };
   return { boot, testDb, clock, ids };
 }
@@ -183,6 +188,19 @@ export function postRequest(
 ): Request {
   return new Request(`${API_ORIGIN}${path}`, {
     method: "POST",
+    headers: { "content-type": "application/json", ...headers },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+}
+
+/** Build a PUT request with a JSON body (string bodies pass through raw). */
+export function putRequest(
+  path: string,
+  body: unknown,
+  headers: Record<string, string> = {},
+): Request {
+  return new Request(`${API_ORIGIN}${path}`, {
+    method: "PUT",
     headers: { "content-type": "application/json", ...headers },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });

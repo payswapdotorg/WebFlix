@@ -110,17 +110,18 @@ afterAll(async () => {
 });
 
 describe("catalog seed — convergence + idempotency (boot-if-empty, never overwrite)", () => {
-  it("the schema baseline is untouched: the migration set re-verifies clean (nine)", async () => {
+  it("the schema baseline is untouched: the migration set re-verifies clean (ten)", async () => {
     // R02 added migration 0007 (profiles + profile scoping — SCHEMA, not
     // app-owned data; the seed's never-into-the-migration-dir decision
     // record is about DATA). R03 added migration 0008 (the source-management
     // lifecycle columns + pending authorizations — SCHEMA again). R04 added
     // migration 0009 (the canonical-keyed library + history removals/
-    // exclusions tables — SCHEMA again). The re-verify law is unchanged:
-    // nothing new applies, no drift.
+    // exclusions tables — SCHEMA again). R05 added migration 0010 (the
+    // recommendation feedback controls table — SCHEMA again). The
+    // re-verify law is unchanged: nothing new applies, no drift.
     const again = await runMigrations(first.db);
     expect(again.applied).toEqual([]);
-    expect(again.total).toBe(9);
+    expect(again.total).toBe(10);
   });
 
   it("a second seedCatalogIfEmpty pass seeds NOTHING (the never-overwrite law)", async () => {
