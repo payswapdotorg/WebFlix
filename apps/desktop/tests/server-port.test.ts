@@ -256,4 +256,129 @@ describe("R08 — the desktop server port (the frozen WFX_API_BASE mapping)", ()
     expect(stub.last().body).toContain("progress");
     expect(stub.last().headers["x-wfx-user-id"]).toBe(CONTEXT.userId);
   });
+
+  // — the R02 profile extension (lead integration completion) —
+
+  it("readProfileLibrary maps the SAME library endpoint (session profile scoping is server-side)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/library"), () =>
+      jsonResponse([{ connectorId: "test-connector", externalRef: "ref-1", title: "A saved thing" }]),
+    );
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readProfileLibrary();
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toHaveLength(1);
+    expect(stub.last().url).toBe("https://experience.webflix.invalid/api/experience/library");
+  });
+
+  it("readHistory on a 404 answers typed unavailable — never a fake empty history", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/history"), () => new Response("Not Found", { status: 404 }));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readHistory();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.failure.kind).toBe("unavailable");
+      expect(result.failure.detail).toContain("HTTP 404");
+    }
+  });
+
+  it("readHistory filters malformed entries and keeps the honest ones (garbage never becomes history)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/history"), () =>
+      jsonResponse([
+        {
+          itemId: "wfxitm_0000000000000000000000ABCD",
+          positionMs: 61_000,
+          completed: false,
+          lastEventType: "progress",
+          updatedAt: "2026-09-16T00:00:00.000Z",
+        },
+        { itemId: 42, positionMs: -1, completed: "yes" }, // garbage — filtered
+      ]),
+    );
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readHistory();
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toHaveLength(1);
+  });
+
+  it("readIntents guards the frozen intent shape (wfxint_ ids, finite dials)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/intents"), () =>
+      jsonResponse([
+        {
+          id: "wfxint_01ARZ3NDEKF1XTVRE000000001",
+          userId: CONTEXT.userId,
+          scope: "persistent",
+          objective: "cozy-comedy-tonight",
+          weight: 1,
+          confidence: 0.9,
+          provenance: "explicit",
+          createdAt: "2026-09-16T00:00:00.000Z",
+          updatedAt: "2026-09-16T00:00:00.000Z",
+          evidenceCount: 1,
+        },
+        { id: "not-an-intent", objective: "" }, // garbage — filtered
+      ]),
+    );
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readIntents();
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value).toHaveLength(1);
+  });
+
+  it("writeIntent posts the command JSON to the intents endpoint", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/intents"), () => jsonResponse({ accepted: true }));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.writeIntent({
+      objective: "cozy-comedy-tonight",
+      scope: "persistent",
+    });
+    expect(result.ok).toBe(true);
+    expect(stub.last().method).toBe("POST");
+    expect(stub.last().body).toContain("cozy-comedy-tonight");
+  });
+
+  it("readPolicy answers null when unset; validates the frozen shape when present; 404 is typed unavailable", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/policy"), () => jsonResponse(null));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const unset = await port.readPolicy();
+    expect(unset.ok).toBe(true);
+    if (unset.ok) expect(unset.value).toBeNull();
+
+    stub.script(
+      (url) => url.includes("/experience/policy"),
+      () =>
+        jsonResponse({
+          id: "wfxpol_01ARZ3NDEKF1XTVRE000000001",
+          userId: CONTEXT.userId,
+          objectives: [],
+          exploration: 0.2,
+          novelty: 0.3,
+          socialInfluence: 0.1,
+          attentionMode: "balanced",
+        }),
+    );
+    const set = await port.readPolicy();
+    expect(set.ok).toBe(true);
+    if (set.ok) expect(set.value?.attentionMode).toBe("balanced");
+
+    stub.script((url) => url.includes("/experience/policy"), () => new Response("Not Found", { status: 404 }));
+    const missing = await port.readPolicy();
+    expect(missing.ok).toBe(false);
+    if (!missing.ok) expect(missing.failure.kind).toBe("unavailable");
+  });
+
+  it("writePolicy PUTs the command JSON to the policy endpoint", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/policy"), () => jsonResponse({ accepted: true }));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.writePolicy({ attentionMode: "mindful" });
+    expect(result.ok).toBe(true);
+    expect(stub.last().method).toBe("PUT");
+    expect(stub.last().body).toContain("mindful");
+  });
 });

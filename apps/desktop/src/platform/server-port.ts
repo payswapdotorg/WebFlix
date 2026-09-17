@@ -55,15 +55,19 @@
 import type {
   ActionReceipt,
   EntertainmentEvent,
+  IntentRecord,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
+  RecommendationPolicy,
   SearchResult,
   SourceItem,
   UserAction,
 } from "@wfx/domain";
 import { isIso8601, isRecord, validatePlaybackRealization } from "@wfx/domain";
 import type {
+  ProfileHistoryEntry,
+  RecommendationPolicyCommand,
   RuntimeContext,
   RuntimeClock,
   RuntimeIdGen,
@@ -71,6 +75,7 @@ import type {
   ServerFailureKind,
   ServerPort,
   ServerResult,
+  UserIntentCommand,
 } from "@wfx/client-runtime";
 
 // ---------------------------------------------------------------------------
@@ -207,6 +212,58 @@ function isUsableLibraryEntry(value: unknown): value is LibraryEntry {
   return true;
 }
 
+/** Transport guard for one usable `ProfileHistoryEntry` (the R02 read). */
+function isUsableProfileHistoryEntry(value: unknown): value is ProfileHistoryEntry {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.itemId)) return false;
+  if (typeof value.positionMs !== "number" || !Number.isFinite(value.positionMs) || value.positionMs < 0) {
+    return false;
+  }
+  if (typeof value.completed !== "boolean") return false;
+  if (value.lastEventType !== null && typeof value.lastEventType !== "string") return false;
+  if (typeof value.updatedAt !== "string" || !isIso8601(value.updatedAt)) return false;
+  return true;
+}
+
+/** Transport guard for one usable `IntentRecord` (the frozen intent shape). */
+function isUsableIntentRecord(value: unknown): value is IntentRecord {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.id) || !value.id.startsWith("wfxint_")) return false;
+  if (!isNonEmptyString(value.userId)) return false;
+  if (!isNonEmptyString(value.objective)) return false;
+  if (typeof value.weight !== "number" || !Number.isFinite(value.weight)) return false;
+  if (typeof value.confidence !== "number" || !Number.isFinite(value.confidence)) return false;
+  if (typeof value.createdAt !== "string" || !isIso8601(value.createdAt)) return false;
+  if (typeof value.updatedAt !== "string" || !isIso8601(value.updatedAt)) return false;
+  if (typeof value.evidenceCount !== "number" || !Number.isInteger(value.evidenceCount)) return false;
+  return true;
+}
+
+/** Transport guard for one usable `RecommendationPolicy` (the frozen shape). */
+function isUsableRecommendationPolicy(value: unknown): value is RecommendationPolicy {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.id) || !isNonEmptyString(value.userId)) return false;
+  if (!Array.isArray(value.objectives)) return false;
+  for (const objective of value.objectives) {
+    if (!isRecord(objective)) return false;
+    if (!isNonEmptyString(objective.id)) return false;
+    if (typeof objective.weight !== "number" || !Number.isFinite(objective.weight)) return false;
+    if (objective.direction !== "maximize" && objective.direction !== "minimize") return false;
+  }
+  for (const dial of [value.exploration, value.novelty, value.socialInfluence]) {
+    if (typeof dial !== "number" || !Number.isFinite(dial)) return false;
+  }
+  if (
+    value.attentionMode !== "mindful" &&
+    value.attentionMode !== "balanced" &&
+    value.attentionMode !== "immersive" &&
+    value.attentionMode !== "custom"
+  ) {
+    return false;
+  }
+  return true;
+}
+
 /** Transport guard for one usable `ActionReceipt` (the frozen statuses). */
 function isUsableReceipt(value: unknown): value is ActionReceipt {
   if (!isRecord(value)) return false;
@@ -264,7 +321,7 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
   }
 
   async function request(
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PUT",
     url: string,
     body?: string,
   ): Promise<RequestOutcome> {
@@ -293,9 +350,13 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
       const kind: ServerFailureKind =
         response.status === 401 || response.status === 403
           ? "unauthorized"
-          : response.status >= 500
+          : response.status === 404 || response.status >= 500
             ? "unavailable"
             : "malformed";
+      // 404 -> "unavailable" (lead ratification, R02 integration): the
+      // profile-aware reads map onto /experience/{history,intents,policy},
+      // which land in R04/R05 — until then the honest answer is "the
+      // service cannot serve this right now", not "garbage payload".
       return {
         ok: false,
         failure: {
@@ -441,6 +502,80 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
       // failure answers ok:false so the runtime keeps it pending — a lost
       // watch-state event is never a silent success.
       const result = await request("POST", endpoint("/experience/events"), JSON.stringify(event));
+      if (!result.ok) return { ok: false, failure: result.failure };
+      return { ok: true, value: undefined };
+    },
+
+    // — the R02 profile extension (ADD-ONLY; lead-ratified HTTP mapping) —
+    // These endpoints land with R04 (history) and R05 (intents/policy);
+    // until then the typed `unavailable` failure answers honestly (never
+    // a fake empty read), and the mapping needs ZERO changes when they do.
+
+    async readHistory(): Promise<ServerResult<readonly ProfileHistoryEntry[]>> {
+      const result = await readArray(
+        endpoint("/experience/history"),
+        isUsableProfileHistoryEntry,
+        "GET /experience/history",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly ProfileHistoryEntry[] };
+    },
+
+    async readProfileLibrary(): Promise<ServerResult<readonly LibraryEntry[]>> {
+      // The profile-scoped twin of readLibrary: the SAME endpoint — with an
+      // authenticated session the server scopes to the active profile;
+      // anonymous sessions get the default-profile fallback (the R02 law).
+      const result = await readArray(
+        endpoint("/experience/library"),
+        isUsableLibraryEntry,
+        "GET /experience/library (profile-scoped)",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly LibraryEntry[] };
+    },
+
+    async readIntents(): Promise<ServerResult<readonly IntentRecord[]>> {
+      const result = await readArray(
+        endpoint("/experience/intents"),
+        isUsableIntentRecord,
+        "GET /experience/intents",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly IntentRecord[] };
+    },
+
+    async writeIntent(intent: UserIntentCommand): Promise<ServerResult<void>> {
+      const result = await request(
+        "POST",
+        endpoint("/experience/intents"),
+        JSON.stringify(intent),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      return { ok: true, value: undefined };
+    },
+
+    async readPolicy(): Promise<ServerResult<RecommendationPolicy | null>> {
+      const result = await request("GET", endpoint("/experience/policy"));
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (result.value === null) return { ok: true, value: null };
+      if (!isUsableRecommendationPolicy(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "GET /experience/policy answered a malformed RecommendationPolicy",
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async writePolicy(policy: RecommendationPolicyCommand): Promise<ServerResult<void>> {
+      const result = await request(
+        "PUT",
+        endpoint("/experience/policy"),
+        JSON.stringify(policy),
+      );
       if (!result.ok) return { ok: false, failure: result.failure };
       return { ok: true, value: undefined };
     },
