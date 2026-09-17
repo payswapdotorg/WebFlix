@@ -7,7 +7,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "description": "R11 — the authorized torrent engine: magnet/.torrent ingestion with authorization provenance, metadata, file selection, sessions, integrity verification, persistent recovery, and the narrow native-media adapter seam.",
+  "description": "R11+R12 — the authorized torrent engine: magnet/.torrent ingestion with authorization provenance, metadata, file selection, sessions, integrity verification, persistent recovery, the playback-aware piece scheduler (deadline mapping, truthful buffering, ordered integrity-gated reads), and the narrow native-media adapter seam.",
   "dependencies": {
     "parse-torrent": "11.0.24",
     "webtorrent": "3.0.21"

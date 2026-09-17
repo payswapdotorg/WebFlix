@@ -59,7 +59,12 @@ import {
   validateSelection,
   type SelectionPlan,
 } from "./selection";
-import type { LibrarySession, TorrentLibrary } from "./library/contract";
+import type {
+  LibraryPiecePriority,
+  LibrarySession,
+  LibrarySessionSnapshot,
+  TorrentLibrary,
+} from "./library/contract";
 
 // ---------------------------------------------------------------------------
 // States
@@ -844,6 +849,93 @@ export class TorrentEngineSession {
   /** The resolved metainfo, when known (engine-internal). */
   resolvedMetainfo(): TorrentMetainfo | undefined {
     return this.metainfo;
+  }
+
+  // --- R12: the playback-scheduler accessors (engine-internal) -----------------
+
+  /**
+   * The live library snapshot (engine-internal: the scheduler's piece
+   * truth). Undefined when no library session exists (restored terminal
+   * records answer from their journaled state instead).
+   */
+  librarySnapshot(): LibrarySessionSnapshot | undefined {
+    return this.librarySession?.snapshot();
+  }
+
+  /**
+   * R11's stall law, live (engine-internal: the scheduler's truth surface
+   * carries it verbatim — downloading + zero peers past the threshold).
+   */
+  stallFacts(): { stalled: boolean; stallDurationMs?: number } {
+    const status = this.status();
+    return {
+      stalled: status.stalled,
+      ...(status.stallDurationMs !== undefined ? { stallDurationMs: status.stallDurationMs } : {}),
+    };
+  }
+
+  /**
+   * Push piece priorities into the library session (engine-internal: the
+   * R12 scheduler seam). Legal in `downloading` (active scheduling) and
+   * `seeding-paused` (the scheduler CLEARS hints on pause — the dispatch's
+   * law: paused sessions keep completion priority — and restores the
+   * playback plan on the next tick after resume). Typed refusals:
+   * `INVALID_STATE` in any other state (or without a live library
+   * session / resolved metainfo), `INVALID_INPUT` for malformed hints.
+   * An empty list clears every hint (pure selection order).
+   */
+  applyPiecePriorities(hints: readonly LibraryPiecePriority[]): TorrentResult<void> {
+    if (this.state !== "downloading" && this.state !== "seeding-paused") {
+      return torrentError("INVALID_STATE", {
+        sessionId: this.sessionId,
+        detail: `applyPiecePriorities: the session is ${this.state} — piece priorities apply while transferring (downloading) or while paused for resume (seeding-paused)`,
+      });
+    }
+    if (this.librarySession === undefined) {
+      return torrentError("INVALID_STATE", {
+        sessionId: this.sessionId,
+        detail: "applyPiecePriorities: no live library session exists to prioritize",
+      });
+    }
+    if (this.metainfo === undefined) {
+      return torrentError("INVALID_STATE", {
+        sessionId: this.sessionId,
+        detail: "applyPiecePriorities: the metainfo has not resolved — there is no piece map to prioritize against",
+      });
+    }
+    if (!Array.isArray(hints)) {
+      return torrentError("INVALID_INPUT", {
+        sessionId: this.sessionId,
+        detail: "applyPiecePriorities: hints must be an array",
+      });
+    }
+    for (const hint of hints) {
+      if (typeof hint !== "object" || hint === null) {
+        return torrentError("INVALID_INPUT", {
+          sessionId: this.sessionId,
+          detail: "applyPiecePriorities: each hint must be an object",
+        });
+      }
+      const { fromPiece, toPiece, urgency } = hint;
+      if (
+        typeof fromPiece !== "number" || !Number.isSafeInteger(fromPiece) || fromPiece < 0 ||
+        typeof toPiece !== "number" || !Number.isSafeInteger(toPiece) || toPiece < fromPiece ||
+        fromPiece >= this.metainfo.pieceCount || toPiece >= this.metainfo.pieceCount
+      ) {
+        return torrentError("INVALID_INPUT", {
+          sessionId: this.sessionId,
+          detail: `applyPiecePriorities: hint [${String(fromPiece)}, ${String(toPiece)}] is not a piece range within [0, ${String(this.metainfo.pieceCount - 1)}]`,
+        });
+      }
+      if (typeof urgency !== "number" || !Number.isSafeInteger(urgency) || urgency < 0 || urgency > 5) {
+        return torrentError("INVALID_INPUT", {
+          sessionId: this.sessionId,
+          detail: `applyPiecePriorities: urgency must be a safe integer in [0, 5] (got ${String(urgency)})`,
+        });
+      }
+    }
+    this.librarySession.prioritizePieces(hints);
+    return { ok: true, value: undefined };
   }
 }
 

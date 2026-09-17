@@ -48,6 +48,11 @@
  * - `LIBRARY_ERROR`        — the mature protocol library reported a failure
  *   (peer loss, metadata failure, protocol error). Transient by default —
  *   the caller decides whether to stop or keep the session.
+ * - `UNVERIFIED_RANGE`     — R12's ordered-read law: a byte-range read
+ *   covers pieces that are not verified against the metainfo hashes yet;
+ *   playback cannot consume unverified bytes, so the read is refused with
+ *   the honest missing-piece list. Retryable: the same read may succeed
+ *   once the swarm delivers and verifies the covering pieces.
  * - `INTERNAL`             — an unexpected internal fault (engine bug).
  */
 export const TORRENT_ERROR_CODES = [
@@ -61,6 +66,7 @@ export const TORRENT_ERROR_CODES = [
   "INVALID_STATE",
   "IO_ERROR",
   "LIBRARY_ERROR",
+  "UNVERIFIED_RANGE",
   "INTERNAL",
 ] as const;
 
@@ -88,6 +94,7 @@ export function isTorrentErrorCode(x: unknown): x is TorrentErrorCode {
 export const RETRYABLE_TORRENT_ERROR_CODES: readonly TorrentErrorCode[] = [
   "IO_ERROR",
   "LIBRARY_ERROR",
+  "UNVERIFIED_RANGE",
 ];
 
 /** Is an error with this code retryable? (single source of truth) */

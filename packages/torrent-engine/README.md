@@ -1,12 +1,12 @@
 # @wfx/torrent-engine
 
-The authorized torrent engine (R11) behind the native-media boundary:
+The authorized torrent engine (R11 + R12) behind the native-media boundary:
 authorized magnet and `.torrent` ingestion, metadata and file selection,
 sessions with honest peer/piece observability, integrity verification,
-persistent recovery, and the narrow native-media adapter that lands
-verified assets in the R10 store. **No UI, no adapter imports, no
-reimplementation of BitTorrent** — the protocol lives behind the
-mature-library seam (invariant 6).
+persistent recovery, the playback-aware piece scheduler (R12), and the
+narrow native-media adapter that lands verified assets in the R10 store.
+**No UI, no adapter imports, no reimplementation of BitTorrent** — the
+protocol lives behind the mature-library seam (invariant 6).
 
 ```
 Experience Core -> Shared Client Runtime -> Platform Adapter -> Desktop
@@ -205,7 +205,12 @@ typed — only proven bytes land.
 - webtorrent is imported ONLY dynamically (the lazy-import law);
 - `@wfx/native-media` never imports `@wfx/torrent-engine` (the freeze's
   layering law);
-- the package entry never re-exports test support.
+- the package entry never re-exports test support;
+- R12: `src/scheduler/**` imports nothing from `@wfx/*` (the scheduler
+  is engine-internal — it feeds sessions and the range-gateway seam
+  through the engine facade, never sideways into another package), the
+  public entry re-exports the scheduler vocabulary, and the library seam
+  carries the piece-priority surface both bindings implement.
 
 ## Testing (deterministic, no live swarm)
 
@@ -218,21 +223,96 @@ deterministically (`bun tests/fixtures/generate.ts`) — the drift test
 asserts byte-stable regeneration, and the suite parses every committed
 file through the real mature library.
 
-## What R12/R13/R14 consume
+## The playback-aware scheduler (R12 — delivered)
 
-- **R12** (playback-aware scheduler): `planSelection`'s piece geometry
-  (`selectionPieceRanges`, `pieceForByte`, `pieceRangeForSpan`) is the
-  byte-range -> piece mapping basis; the session's honest snapshot
-  (bitfield, rates) is the truth it schedules against.
+`engine.playback` is the surface the R10 native-media range gateway
+consumes. The player's byte-range requests flow
+`player -> R10 range gateway -> engine.playback (deadline mapping) ->
+piece priorities -> swarm`, and gateway reads flow back through
+integrity-gated ordered reads:
+
+```ts
+// The host declares playback (never inferred from reads):
+engine.playback.command(sessionId, {
+  kind: "start",              // | "progress" | "seek" | "stop"
+  positionBytes: 0,           // playhead within the playable file
+  bytesPerSecond: 250_000,    // real consumption velocity
+}, { fileIndex: 0 });         // default: the first SELECTED file
+
+// The gateway's observed demand (byte ranges + deadlines):
+engine.playback.noteRangeRequests(sessionId, [
+  { offsetBytes: 1_048_576, lengthBytes: 65536, deadlineMs: Date.now() + 5_000 },
+]);
+
+// The truthful buffering answer (what it refuses to fabricate):
+const truth = engine.playback.truth(sessionId);
+// truth.runway.seconds        — VERIFIED CONTIGUOUS seconds ahead (a
+//                               single unverified piece stops it dead)
+// truth.deadlinesAtRisk       — windows the current rate cannot meet,
+//                               with the honest arithmetic (ETA absent
+//                               when the rate is 0 — never invented)
+// truth.stall.kind            — "slow-swarm" | "no-completion-path" | "none"
+// truth.playableNow           — the bytes at the playhead are verified
+
+// The ordered integrity-gated read (R11's verdict discipline gates what
+// the player consumes; watch-order arrival is readable mid-download):
+const bytes = await engine.playback.readVerifiedRange(
+  sessionId,
+  { offsetBytes: 0, lengthBytes: 16384 },
+); // UNVERIFIED_RANGE (retryable) names the missing pieces otherwise
+
+// The host-owned cadence (no hidden timers):
+engine.playback.tick();
+```
+
+The window model (pure, in `src/scheduler/windows.ts`): the **startup
+window** (`[P, P + V*startupTargetSeconds)` at urgency 4), the
+**steady-state runway** (`[P, P + V*steadyRunwaySeconds)` at urgency 3),
+the **seek burst** (`seekBurstPieces` pieces from the target at
+critical urgency 5, clamped to the playable file's last piece), and the
+**player's explicit range requests** (critical urgency 5, carrying their
+own deadlines). Outside active playback (idle / background-completion /
+a paused torrent session) the priorities are cleared — the mature
+library's own selection order IS the completion fallback (invariant 6:
+no re-implementation of piece picking; the webtorrent binding maps
+urgency onto its own `select(range, priority)` + `critical`).
+
+The scheduler state machine (pure, in `src/scheduler/state-machine.ts`):
+`idle -> startup -> steady <-> seeking -> background-completion`, with
+fact-driven transitions (startup→steady only when the startup window's
+pieces are all VERIFIED; seeking→steady only when the burst is) and
+typed refusals for illegal host commands.
+
+The config surface (validated, no hidden magic):
+`{ startupTargetSeconds: 8, steadyRunwaySeconds: 30, seekBurstPieces: 8 }`
+— overridable via `createTorrentEngine({ schedulerConfig })`.
+
+**The desktop seam (R13/R14 wiring point)**: the desktop binding's
+documented R12 seams — `rangeAccess: EngineRangeChannel` and
+`deadlineMapper` — bind to `engine.playback.readVerifiedRange` and the
+byte-range demand surface above (see
+`apps/desktop/src/platform/native-media-binding.ts`'s "SEAMS R10/R12
+PLUG INTO"). The adapter's completed-session landing is deliberately
+UNCHANGED: only proven bytes land in the store; live playback reads
+flow through `engine.playback`, integrity-gated.
+
+## What R13/R14 consume
+
 - **R13** (persistence/recovery deepening): the journal + `recover()` are
   the control-point contract; `engine.status()` and the terminal digests
-  are the "Ready offline" evidence.
-- **R14** (acquisition UX): the seven-state machine + stall law +
-  `TorrentSessionStatus` are the product states; torrent jargon stays
-  here (the advanced diagnostic surface).
+  are the "Ready offline" evidence. Scheduler state is deliberately NOT
+  journaled — playback intent does not survive restarts; a fresh command
+  on a recovered session starts a fresh scheduler (R13 may revisit).
+- **R14** (acquisition UX): the seven-state session machine + stall law +
+  `TorrentSessionStatus` are the product states; the R12 truth surface
+  (`engine.playback.truth()`) is the honest Buffering/Playing evidence,
+  and the scheduler states map onto Preparing/Buffering/Playing/
+  Completing. Torrent jargon stays here (the advanced diagnostic
+  surface).
 - The DESKTOP composition root wires:
   `createTorrentEngine({ library: createWebTorrentLibrary(), sources, dataRoot })`
-  and hands the adapter the engine service's own store.
+  and hands the adapter the engine service's own store; the range
+  gateway binds `engine.playback` per the seam above.
 
 ## Notes for the lead (ratification items)
 
