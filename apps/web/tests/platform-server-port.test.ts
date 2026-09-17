@@ -325,3 +325,140 @@ describe("R07 ServerPort — the action/event honesty laws", () => {
     expect(WEB_SERVER_SERVICE_ID).toBe("wfx-experience-service");
   });
 });
+
+// ---------------------------------------------------------------------------
+// The R02 profile extension (lead integration — the same laws the desktop
+// adapter's R02 integration ratified): 404→unavailable honesty while the
+// /experience/{history,intents,policy} endpoints land with R04/R05; payload
+// guards; PUT/POST bodies; the profile-scoped library read.
+// ---------------------------------------------------------------------------
+
+const PROFILE_HISTORY = [
+  { itemId: "wfxitm_a", positionMs: 1200, completed: false, lastEventType: "play", updatedAt: "2026-09-17T00:00:00.000Z" },
+  { itemId: "wfxitm_b", positionMs: 0, completed: true, lastEventType: null, updatedAt: "2026-09-16T00:00:00.000Z" },
+  { itemId: "", positionMs: 5, completed: false, lastEventType: null, updatedAt: "2026-09-16T00:00:00.000Z" },
+];
+
+const INTENTS = [
+  { id: "wfxint_1", userId: "wfx-u1", objective: "cozy-comedy-tonight", weight: 1, confidence: 0.8, createdAt: "2026-09-16T00:00:00.000Z", updatedAt: "2026-09-17T00:00:00.000Z", evidenceCount: 2 },
+  { id: "bad-id", userId: "wfx-u1", objective: "broken", weight: 1, confidence: 0.5, createdAt: "2026-09-16T00:00:00.000Z", updatedAt: "2026-09-17T00:00:00.000Z", evidenceCount: 1 },
+];
+
+const POLICY = {
+  id: "wfxpol_1",
+  userId: "wfx-u1",
+  objectives: [{ id: "wfxobj_1", weight: 1, direction: "maximize" }],
+  exploration: 0.4,
+  novelty: 0.6,
+  socialInfluence: 0.2,
+  attentionMode: "balanced",
+};
+
+describe("R07 ServerPort — the R02 profile extension (lead integration)", () => {
+  it("history 404 answers unavailable — never a fake empty history (the honesty law)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json({}, 404)),
+      async () => port.readHistory(),
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      failure: { kind: "unavailable", detail: expect.stringContaining("HTTP 404") },
+    });
+  });
+
+  it("readHistory filters malformed entries — the usable ones survive", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json(PROFILE_HISTORY)),
+      async () => port.readHistory(),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.length).toBe(2);
+  });
+
+  it("readProfileLibrary reads the SAME /experience/library endpoint (the profile-scoped twin)", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => Promise.resolve(json([{ connectorId: "c", externalRef: "r", title: "T" }])),
+      async () => port.readProfileLibrary(),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.length).toBe(1);
+    expect(calls[0]?.url).toContain("/experience/library");
+  });
+
+  it("readIntents filters malformed records (the wfxint_ prefix law)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json(INTENTS)),
+      async () => port.readIntents(),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.length).toBe(1);
+  });
+
+  it("writeIntent POSTs the command as JSON to /experience/intents", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => Promise.resolve(json({}, 204)),
+      async () => port.writeIntent({ objective: "learn-rust", scope: "session" }),
+    );
+    expect(result.ok).toBe(true);
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toContain("/experience/intents");
+    expect(calls[0]?.body ?? "").toContain("learn-rust");
+  });
+
+  it("readPolicy: null answers ok-null (no policy configured — not a failure)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json(null)),
+      async () => port.readPolicy(),
+    );
+    expect(result).toEqual({ ok: true, value: null });
+  });
+
+  it("readPolicy guards the shape — a garbage policy answers malformed", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json({ exploration: "high" })),
+      async () => port.readPolicy(),
+    );
+    expect(result).toMatchObject({ ok: false, failure: { kind: "malformed" } });
+  });
+
+  it("readPolicy accepts the usable shape verbatim", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json(POLICY)),
+      async () => port.readPolicy(),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok && result.value !== null) expect(result.value.attentionMode).toBe("balanced");
+  });
+
+  it("writePolicy PUTs the command as JSON to /experience/policy", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => Promise.resolve(json({}, 204)),
+      async () => port.writePolicy({ attentionMode: "mindful" }),
+    );
+    expect(result.ok).toBe(true);
+    expect(calls[0]?.method).toBe("PUT");
+    expect(calls[0]?.url).toContain("/experience/policy");
+    expect(calls[0]?.body ?? "").toContain("mindful");
+  });
+
+  it("policy 404 answers unavailable — the surfaces land with R05, never faked", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => Promise.resolve(json({}, 404)),
+      async () => port.readPolicy(),
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      failure: { kind: "unavailable", detail: expect.stringContaining("HTTP 404") },
+    });
+  });
+});

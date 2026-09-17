@@ -25,9 +25,11 @@
 import type {
   ActionReceipt,
   EntertainmentEvent,
+  IntentRecord,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
+  RecommendationPolicy,
   SearchResult,
   SourceItem,
   UserAction,
@@ -35,7 +37,14 @@ import type {
 import type { ConnectorContext } from "@wfx/domain";
 import { makeFixturePorts, type Ports } from "@wfx/experience";
 import { isShortFormCandidate } from "@wfx/experience";
-import type { RuntimeContext, ServerPort, ServerResult } from "@wfx/client-runtime";
+import type {
+  ProfileHistoryEntry,
+  RecommendationPolicyCommand,
+  RuntimeContext,
+  ServerPort,
+  ServerResult,
+  UserIntentCommand,
+} from "@wfx/client-runtime";
 
 /** Options for {@link createFixtureBackedServerPort}. */
 export interface FixtureServerPortOptions {
@@ -158,6 +167,39 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
         // success — the failure answers and the runtime keeps it pending.
         return { ok: false, failure: networkFailure("emitEvent", thrown) };
       }
+    },
+
+    // — the R02 profile extension (ADD-ONLY): the fixture is a DOUBLE with
+    // its OWN persona state (exactly like its fixture search/library data),
+    // not a transport to a real service — so the honest fixture answer for
+    // the profile reads is the fixture persona's own EMPTY state, and the
+    // intent/policy writes are accepted into the void the fixture owns.
+    // The local-first fold (the R07 surface story: saves land, watch events
+    // fold into history) renders unchanged; the production port keeps the
+    // 404→unavailable honesty law for the real endpoints (R04/R05 landing).
+
+    async readHistory(): Promise<ServerResult<readonly ProfileHistoryEntry[]>> {
+      return { ok: true, value: [] };
+    },
+
+    async readProfileLibrary(): Promise<ServerResult<readonly LibraryEntry[]>> {
+      return { ok: true, value: [] };
+    },
+
+    async readIntents(): Promise<ServerResult<readonly IntentRecord[]>> {
+      return { ok: true, value: [] };
+    },
+
+    async writeIntent(_intent: UserIntentCommand): Promise<ServerResult<void>> {
+      return { ok: true, value: undefined };
+    },
+
+    async readPolicy(): Promise<ServerResult<RecommendationPolicy | null>> {
+      return { ok: true, value: null };
+    },
+
+    async writePolicy(_policy: RecommendationPolicyCommand): Promise<ServerResult<void>> {
+      return { ok: true, value: undefined };
     },
   };
 }

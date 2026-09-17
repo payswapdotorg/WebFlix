@@ -70,16 +70,25 @@
 import type {
   ActionReceipt,
   EntertainmentEvent,
+  IntentRecord,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
+  RecommendationPolicy,
   SearchResult,
   SourceItem,
   UserAction,
 } from "@wfx/domain";
 import { isIso8601, isRecord, validatePlaybackRealization } from "@wfx/domain";
 import { isShortFormCandidate } from "@wfx/experience";
-import type { RuntimeContext, ServerPort, ServerResult } from "@wfx/client-runtime";
+import type {
+  ProfileHistoryEntry,
+  RecommendationPolicyCommand,
+  RuntimeContext,
+  ServerPort,
+  ServerResult,
+  UserIntentCommand,
+} from "@wfx/client-runtime";
 import type { ServerFailure, ServerFailureKind } from "@wfx/client-runtime";
 
 /** Options for {@link createWebServerPort}. */
@@ -101,7 +110,11 @@ export interface WebServerPortOptions {
 export const WEB_SERVER_SERVICE_ID = "wfx-experience-service";
 
 /** The HTTP status classes the failure mapping consumes (documented law). */
-function failureForStatus(method: "GET" | "POST", status: number, url: string): ServerFailure {
+function failureForStatus(
+  method: "GET" | "POST" | "PUT",
+  status: number,
+  url: string,
+): ServerFailure {
   const detail = `${method} ${url} answered HTTP ${status}`;
   let kind: ServerFailureKind;
   if (status === 401 || status === 403) {
@@ -156,7 +169,7 @@ export function createWebServerPort(options: WebServerPortOptions): ServerPort {
 
   async function request(
     operation: string,
-    method: "GET" | "POST",
+    method: "GET" | "POST" | "PUT",
     url: string,
     body?: string,
   ): Promise<RawOutcome> {
@@ -265,6 +278,62 @@ export function createWebServerPort(options: WebServerPortOptions): ServerPort {
     if (typeof value.occurredAt !== "string" || !isIso8601(value.occurredAt)) return false;
     if (value.externalId !== undefined && typeof value.externalId !== "string") return false;
     if (value.detail !== undefined && typeof value.detail !== "string") return false;
+    return true;
+  }
+
+  // — the R02 profile-extension guards (mirroring the desktop adapter's
+  // lead-ratified shapes verbatim: a malformed service answer never
+  // becomes domain data) —
+
+  /** Transport guard for one usable `ProfileHistoryEntry` (the R02 shape). */
+  function isUsableProfileHistoryEntry(value: unknown): value is ProfileHistoryEntry {
+    if (!isRecord(value)) return false;
+    if (!isNonEmptyString(value.itemId)) return false;
+    if (typeof value.positionMs !== "number" || !Number.isFinite(value.positionMs) || value.positionMs < 0) {
+      return false;
+    }
+    if (typeof value.completed !== "boolean") return false;
+    if (value.lastEventType !== null && typeof value.lastEventType !== "string") return false;
+    if (typeof value.updatedAt !== "string" || !isIso8601(value.updatedAt)) return false;
+    return true;
+  }
+
+  /** Transport guard for one usable `IntentRecord` (the frozen intent shape). */
+  function isUsableIntentRecord(value: unknown): value is IntentRecord {
+    if (!isRecord(value)) return false;
+    if (!isNonEmptyString(value.id) || !value.id.startsWith("wfxint_")) return false;
+    if (!isNonEmptyString(value.userId)) return false;
+    if (!isNonEmptyString(value.objective)) return false;
+    if (typeof value.weight !== "number" || !Number.isFinite(value.weight)) return false;
+    if (typeof value.confidence !== "number" || !Number.isFinite(value.confidence)) return false;
+    if (typeof value.createdAt !== "string" || !isIso8601(value.createdAt)) return false;
+    if (typeof value.updatedAt !== "string" || !isIso8601(value.updatedAt)) return false;
+    if (typeof value.evidenceCount !== "number" || !Number.isInteger(value.evidenceCount)) return false;
+    return true;
+  }
+
+  /** Transport guard for one usable `RecommendationPolicy` (the frozen shape). */
+  function isUsableRecommendationPolicy(value: unknown): value is RecommendationPolicy {
+    if (!isRecord(value)) return false;
+    if (!isNonEmptyString(value.id) || !isNonEmptyString(value.userId)) return false;
+    if (!Array.isArray(value.objectives)) return false;
+    for (const objective of value.objectives) {
+      if (!isRecord(objective)) return false;
+      if (!isNonEmptyString(objective.id)) return false;
+      if (typeof objective.weight !== "number" || !Number.isFinite(objective.weight)) return false;
+      if (objective.direction !== "maximize" && objective.direction !== "minimize") return false;
+    }
+    for (const dial of [value.exploration, value.novelty, value.socialInfluence]) {
+      if (typeof dial !== "number" || !Number.isFinite(dial)) return false;
+    }
+    if (
+      value.attentionMode !== "mindful" &&
+      value.attentionMode !== "balanced" &&
+      value.attentionMode !== "immersive" &&
+      value.attentionMode !== "custom"
+    ) {
+      return false;
+    }
     return true;
   }
 
@@ -433,6 +502,94 @@ export function createWebServerPort(options: WebServerPortOptions): ServerPort {
 
     async emitEvent(event: EntertainmentEvent): Promise<ServerResult<void>> {
       const outcome = await request("events", "POST", endpoint("/experience/events"), JSON.stringify(event));
+      if (!outcome.ok) return { ok: false, failure: outcome.failure };
+      return { ok: true, value: undefined };
+    },
+
+    // — the R02 profile extension (ADD-ONLY; lead-ratified HTTP mapping) —
+    // These endpoints land with R04 (history) and R05 (intents/policy);
+    // until then the typed `unavailable` failure answers honestly (never
+    // a fake empty read), and the mapping needs ZERO changes when they do
+    // (the same law the desktop adapter's R02 integration ratified).
+
+    async readHistory(): Promise<ServerResult<readonly ProfileHistoryEntry[]>> {
+      const outcome = await request("history", "GET", endpoint("/experience/history"));
+      if (!outcome.ok) return { ok: false, failure: outcome.failure };
+      const array = arrayOf(outcome.body, "history");
+      if (!array.ok) return { ok: false, failure: array.failure };
+      return {
+        ok: true,
+        value: array.entries.filter(
+          (entry): entry is ProfileHistoryEntry => isUsableProfileHistoryEntry(entry),
+        ),
+      };
+    },
+
+    async readProfileLibrary(): Promise<ServerResult<readonly LibraryEntry[]>> {
+      // The profile-scoped twin of readLibrary: the SAME endpoint — with an
+      // authenticated session the server scopes to the active profile;
+      // anonymous sessions get the default-profile fallback (the R02 law).
+      const outcome = await request(
+        "profile-library",
+        "GET",
+        endpoint("/experience/library"),
+      );
+      if (!outcome.ok) return { ok: false, failure: outcome.failure };
+      const array = arrayOf(outcome.body, "profile-library");
+      if (!array.ok) return { ok: false, failure: array.failure };
+      return {
+        ok: true,
+        value: array.entries.filter((entry): entry is LibraryEntry => isUsableLibraryEntry(entry)),
+      };
+    },
+
+    async readIntents(): Promise<ServerResult<readonly IntentRecord[]>> {
+      const outcome = await request("intents", "GET", endpoint("/experience/intents"));
+      if (!outcome.ok) return { ok: false, failure: outcome.failure };
+      const array = arrayOf(outcome.body, "intents");
+      if (!array.ok) return { ok: false, failure: array.failure };
+      return {
+        ok: true,
+        value: array.entries.filter(
+          (entry): entry is IntentRecord => isUsableIntentRecord(entry),
+        ),
+      };
+    },
+
+    async writeIntent(intent: UserIntentCommand): Promise<ServerResult<void>> {
+      const outcome = await request(
+        "intents",
+        "POST",
+        endpoint("/experience/intents"),
+        JSON.stringify(intent),
+      );
+      if (!outcome.ok) return { ok: false, failure: outcome.failure };
+      return { ok: true, value: undefined };
+    },
+
+    async readPolicy(): Promise<ServerResult<RecommendationPolicy | null>> {
+      const outcome = await request("policy", "GET", endpoint("/experience/policy"));
+      if (!outcome.ok) return { ok: false, failure: outcome.failure };
+      if (outcome.body === null) return { ok: true, value: null };
+      if (!isUsableRecommendationPolicy(outcome.body)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: `GET /experience/policy answered a payload that is not a usable RecommendationPolicy (${preview(outcome.body)})`,
+          },
+        };
+      }
+      return { ok: true, value: outcome.body };
+    },
+
+    async writePolicy(policy: RecommendationPolicyCommand): Promise<ServerResult<void>> {
+      const outcome = await request(
+        "policy",
+        "PUT",
+        endpoint("/experience/policy"),
+        JSON.stringify(policy),
+      );
       if (!outcome.ok) return { ok: false, failure: outcome.failure };
       return { ok: true, value: undefined };
     },
