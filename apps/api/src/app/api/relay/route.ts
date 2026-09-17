@@ -93,11 +93,14 @@ async function handleRelay(request: Request): Promise<Response> {
   try {
     // R02: the profile service rides the drain — the fold attributes
     // legacy/anonymous (NULL-profile) rows to the user's effective profile.
+    // R04: the removal store rides the drain — the fold clears a removal
+    // row when a new watch event arrives (re-materialize on re-watch).
     const result = await runRelayDrain(
       boot.persistence.db,
       boot.ports.clock,
       50,
       boot.profiles,
+      boot.history.removalStore(),
     );
     return Response.json({
       ok: true,

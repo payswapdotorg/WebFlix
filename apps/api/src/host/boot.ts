@@ -77,6 +77,7 @@ import {
 
 import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
 import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
+import { HistoryHost } from "./history";
 import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
 import {
   createSourceManagementService,
@@ -140,6 +141,13 @@ export interface ApiBoot {
    * reads through `loadAccount` exclusively.
    */
   readonly connectorAccounts: PostgresConnectorAccountStore;
+  /**
+   * R04 — the history host: the read-model composition over the
+   * watch-history projection + the removal/exclusion filters. The
+   * `/experience/history/**` routes answer against it; the relay's fold
+   * uses the removal store for re-materialization on re-watch.
+   */
+  readonly history: HistoryHost;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -305,6 +313,13 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     clock,
   });
 
+  // R04 — the history host: the read-model composition over the
+  // watch-history projection + the removal/exclusion filters. The
+  // `/experience/history/**` routes answer against it; the relay's fold
+  // uses the removal store for the re-materialization hook (a new watch
+  // event clears the removal row).
+  const history = new HistoryHost({ db: persistence.db, clock, ids });
+
   // 6. The service Ports bundle: the fan-out + the 052 transactional
   //    outbox event sink (PostgresEventSink from the persistence boot)
   //    + the shared seams.
@@ -327,6 +342,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     profileEvents,
     sourceManagement,
     connectorAccounts,
+    history,
   };
 }
 

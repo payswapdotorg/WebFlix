@@ -71,6 +71,9 @@ export * from "./library";
 // Watch state + playback sessions.
 export * from "./watch";
 
+// R04 — history removals + exclusions (the event-sink law projections).
+export * from "./history-exclusions";
+
 // Intents + recommendation state.
 export * from "./intents";
 export * from "./recommendation-state";
