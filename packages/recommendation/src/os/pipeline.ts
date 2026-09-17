@@ -31,6 +31,7 @@ import type {
 
 import { composeFeed } from "./composition";
 import { diversify } from "./diversity";
+import { applyFeedback, type RecommendationFeedbackRecord } from "./feedback";
 import { assembleFeatures } from "./features";
 import { applyPolicy } from "./policy";
 import { createHeuristicModel, score } from "./scoring";
@@ -53,6 +54,15 @@ export interface RunRecommendationOptions {
    * hardcode a provider — injection is the only model channel.
    */
   model?: RecommendationModel;
+  /**
+   * R05 — the profile's feedback control records (`GET /experience/
+   * feedback`): reversible per-profile controls (not-interested,
+   * source/creator suppression, already-watched, more-like-this) applied
+   * BEFORE the policy stage so their effects flow through every later
+   * constraint honestly. Optional (a profile with no controls runs the
+   * pipeline unchanged).
+   */
+  feedback?: readonly RecommendationFeedbackRecord[];
 }
 
 // ---------------------------------------------------------------------------
@@ -149,8 +159,11 @@ export async function runRecommendation(
   const pooledCtx: RecommendationContext = { ...ctx, candidatePool: [...intake.pool] };
   const scoring = await score(pooledCtx, features, model);
 
+  // --- stage 3.5 (R05): feedback controls (reversible, per-profile) --------
+  const feedback = applyFeedback(scoring.scored, options?.feedback ?? []);
+
   // --- stage 4: policy constraints ------------------------------------------
-  const policy = applyPolicy(ctx, scoring.scored);
+  const policy = applyPolicy(ctx, feedback.ranked);
 
   // --- stage 5: intent-aware diversity --------------------------------------
   const diversity = diversify(policy.ranked, ctx.intents, ctx.policy);
@@ -180,9 +193,9 @@ export async function runRecommendation(
     },
     {
       stage: "policy",
-      inputCount: scoring.scored.length,
+      inputCount: feedback.ranked.length,
       outputCount: policy.ranked.length,
-      decisions: policy.decisions,
+      decisions: [...feedback.decisions, ...policy.decisions],
     },
     {
       stage: "diversity",

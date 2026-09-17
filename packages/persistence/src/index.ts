@@ -32,6 +32,8 @@
  * - `watch.ts`          — watch-history projection + playback sessions
  * - `intents.ts`        — the durable intent store
  * - `recommendation-state.ts` — policy + opaque engine state per user
+ * - `feedback.ts`      — R05: the recommendation feedback controls store
+ *                         (per profile, timestamped, reversible)
  * - `connector-accounts.ts` — AES-256-GCM envelope-encrypted credentials
  * - `envelope-crypto.ts`— seal/open + key decode/fingerprint
  * - `model-input.ts`    — R03: the model-input privacy law (structurally
@@ -77,6 +79,9 @@ export * from "./history-exclusions";
 // Intents + recommendation state.
 export * from "./intents";
 export * from "./recommendation-state";
+
+// R05 — the recommendation feedback controls (per profile, reversible).
+export * from "./feedback";
 
 // Connector accounts + credential envelope encryption + the R03
 // model-input privacy law (the structurally secret-free summary + guard).

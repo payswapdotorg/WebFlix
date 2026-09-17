@@ -224,6 +224,22 @@ export function candidateErrors(candidate: unknown): string[] {
       `features.nextEpisodeOf: expected a non-empty canonical item id string when present, got ${previewValue(features.nextEpisodeOf)}`,
     );
   }
+  if (
+    features.topic !== undefined &&
+    (typeof features.topic !== "string" || features.topic.trim().length === 0)
+  ) {
+    errors.push(
+      `features.topic: expected a non-empty string when present, got ${previewValue(features.topic)}`,
+    );
+  }
+  if (
+    features.creatorId !== undefined &&
+    (typeof features.creatorId !== "string" || features.creatorId.trim().length === 0)
+  ) {
+    errors.push(
+      `features.creatorId: expected a non-empty string when present, got ${previewValue(features.creatorId)}`,
+    );
+  }
   return errors;
 }
 

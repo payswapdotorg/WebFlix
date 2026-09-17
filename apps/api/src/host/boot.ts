@@ -76,6 +76,7 @@ import {
 } from "@wfx/persistence";
 
 import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
+import { RecommendationControlsHost } from "./controls";
 import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
 import { HistoryHost } from "./history";
 import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
@@ -148,6 +149,13 @@ export interface ApiBoot {
    * uses the removal store for re-materialization on re-watch.
    */
   readonly history: HistoryHost;
+  /**
+   * R05 — the recommendation-controls host: the policy + intent + feedback
+   * composition over the profile-scoped persistence stores. The
+   * `/experience/{policy,intents,feedback}/**` routes answer against it
+   * (the lead-ratified HTTP mapping both adapters already implement).
+   */
+  readonly controls: RecommendationControlsHost;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -320,6 +328,11 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
   // event clears the removal row).
   const history = new HistoryHost({ db: persistence.db, clock, ids });
 
+  // R05 — the recommendation-controls host: policy + intents + feedback
+  // over the profile-scoped stores (the /experience/{policy,intents,
+  // feedback} routes' backing — the seam the R02 adapters already target).
+  const controls = new RecommendationControlsHost({ db: persistence.db, clock, ids });
+
   // 6. The service Ports bundle: the fan-out + the 052 transactional
   //    outbox event sink (PostgresEventSink from the persistence boot)
   //    + the shared seams.
@@ -343,6 +356,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     sourceManagement,
     connectorAccounts,
     history,
+    controls,
   };
 }
 
