@@ -35,6 +35,19 @@
  *                  model (demand/priority/config), pure `planPriorities`,
  *                  `createScheduler` driver (injected clock, idempotent
  *                  foreground-first ticks), `shouldStallProtect` signal
+ * - background/*          — WFX-024 background completion: pure policy
+ *                  (`decideCompletion`, `decideEviction`), the storage
+ *                  governor, the stateful completion driver
+ * - service-process/*     — R10 THE PRODUCTION PATH: the REAL engine
+ *                  (local files + the asset store + SHA-256 integrity),
+ *                  the append-only session journal with crash recovery,
+ *                  the production loopback range gateway over the real
+ *                  bytes, the engine service host (assembly + the
+ *                  translated WFX-023 wiring + the WFX-024 driver), the
+ *                  child-process transport, and the SPAWNABLE stdio
+ *                  entry (main.ts). The simulation (engine/simulation)
+ *                  stays TEST/DEV-only — production paths never import
+ *                  it (enforced by tests/production-import-guard.test.ts).
  *
  * Domain types (`NativeMediaSession`, `NativeMediaEngine`) come from
  * `@wfx/domain`, the frozen public entry — never deep paths.
@@ -61,3 +74,9 @@ export * from "./scheduler/stall-guard";
 export * from "./background/policy";
 export * from "./background/storage";
 export * from "./background/completion-driver";
+export * from "./service-process/store";
+export * from "./service-process/journal";
+export * from "./service-process/engine";
+export * from "./service-process/gateway";
+export * from "./service-process/service";
+export * from "./service-process/process";

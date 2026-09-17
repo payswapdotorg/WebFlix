@@ -40,6 +40,17 @@
  *    with a different version (or any malformed shape) fails the runtime
  *    guards and is rejected with a typed `INTERNAL` error — never parsed
  *    optimistically.
+ * 5. INTEGRITY (the R10 lead-authorized extension). `EngineSessionDto`
+ *    carries an OPTIONAL `integrity` field (`"unknown" | "verified" |
+ *    `"failed"` — the frozen `NativeMediaSession.integrity` union).
+ *    Senders MAY omit it (legacy v1 senders keep working verbatim; an
+ *    absent field means `"unknown"` — NO verdict claimed); receivers MUST
+ *    accept both forms and validate the verdict when present. Because the
+ *    field is optional-additive — no DTO shape, guard, or semantic that v1
+ *    defined is broken — `PROTOCOL_VERSION` STAYS 1 per this module's own
+ *    rule ("bump ONLY on a breaking DTO/semantic change"). The extension
+ *    closes the R08-escalated contract gap: bindings no longer need to
+ *    derive verdicts from `complete`/`VERIFICATION_FAILED` alone.
  *
  * This module contains no simulation and no subprocess: it is the frozen
  * seam BOTH sides compile against.
@@ -58,8 +69,27 @@ import { isSessionState } from "../session";
 // Protocol version
 // ---------------------------------------------------------------------------
 
-/** Wire protocol version. Bump ONLY on a breaking DTO/semantic change. */
+/**
+ * Wire protocol version. Bump ONLY on a breaking DTO/semantic change.
+ *
+ * VERSION DECISION (R10): the v1 `integrity` extension on
+ * {@link EngineSessionDto} is OPTIONAL-ADDITIVE — legacy six-field DTOs
+ * still pass every guard and legacy receivers ignore the extra field —
+ * so it is NOT a breaking change and the version stays 1.
+ */
 export const PROTOCOL_VERSION = 1;
+
+/**
+ * The integrity verdict a session report may carry — the frozen
+ * `NativeMediaSession["integrity"]` union ("unknown" = no verdict
+ * claimed; "verified" = full-asset hash matched its recorded digest;
+ * "failed" = mismatch). Runtime guard for wire data.
+ */
+export function isSessionIntegrity(
+  x: unknown,
+): x is "unknown" | "verified" | "failed" {
+  return x === "unknown" || x === "verified" || x === "failed";
+}
 
 // ---------------------------------------------------------------------------
 // Config
@@ -177,7 +207,13 @@ export type EngineCommand =
 // DTOs — events
 // ---------------------------------------------------------------------------
 
-/** A session snapshot on the wire (field-for-field the frozen session). */
+/**
+ * A session snapshot on the wire (field-for-field the frozen session).
+ *
+ * `integrity` is the R10 lead-authorized OPTIONAL extension (see module
+ * docs, rule 5): present when the engine can state a verdict, absent for
+ * legacy senders (equivalent to `"unknown"` — never a fabricated claim).
+ */
 export interface EngineSessionDto {
   id: string;
   assetId: string;
@@ -191,6 +227,8 @@ export interface EngineSessionDto {
     | "failed";
   bufferedMs: number;
   positionMs: number;
+  /** R10 extension: the engine's explicit integrity verdict, when it has one. */
+  integrity?: "unknown" | "verified" | "failed";
 }
 
 /**
@@ -240,18 +278,29 @@ function isNonNegativeSafeInteger(x: unknown): x is number {
   return typeof x === "number" && Number.isSafeInteger(x) && x >= 0;
 }
 
-/** Runtime guard for {@link EngineSessionDto}. */
+/**
+ * Runtime guard for {@link EngineSessionDto}. Accepts BOTH the legacy
+ * six-field form (no `integrity` — v1 senders) and the seven-field R10
+ * form; a PRESENT `integrity` must be a valid verdict (never trusted
+ * verbatim, never silently dropped).
+ */
 export function isEngineSessionDto(x: unknown): x is EngineSessionDto {
   if (typeof x !== "object" || x === null) return false;
   const d = x as Record<string, unknown>;
-  return (
-    isNonEmptyString(d.id) &&
-    isNonEmptyString(d.assetId) &&
-    isNonEmptyString(d.fileId) &&
-    isSessionState(d.state) &&
-    isNonNegativeFinite(d.bufferedMs) &&
-    isNonNegativeFinite(d.positionMs)
-  );
+  if (
+    !isNonEmptyString(d.id) ||
+    !isNonEmptyString(d.assetId) ||
+    !isNonEmptyString(d.fileId) ||
+    !isSessionState(d.state) ||
+    !isNonNegativeFinite(d.bufferedMs) ||
+    !isNonNegativeFinite(d.positionMs)
+  ) {
+    return false;
+  }
+  if (d.integrity !== undefined && !isSessionIntegrity(d.integrity)) {
+    return false;
+  }
+  return true;
 }
 
 /** Runtime guard for {@link EngineCommand} (checks `protocolVersion`). */
@@ -337,7 +386,8 @@ export function sessionToDto(session: NativeMediaSession): EngineSessionDto {
     !isNonEmptyString(s.fileId) ||
     !isSessionState(s.state) ||
     !isNonNegativeFinite(s.bufferedMs) ||
-    !isNonNegativeFinite(s.positionMs)
+    !isNonNegativeFinite(s.positionMs) ||
+    !isSessionIntegrity(s.integrity)
   ) {
     throw new NativeMediaError("INTERNAL", {
       detail: "sessionToDto: malformed session (missing or invalid frozen fields)",
@@ -350,6 +400,9 @@ export function sessionToDto(session: NativeMediaSession): EngineSessionDto {
     state: s.state,
     bufferedMs: s.bufferedMs,
     positionMs: s.positionMs,
+    // The R10 extension: the engine's own verdict crosses the wire
+    // explicitly (absence on the receiving side still means "unknown").
+    integrity: s.integrity,
   };
 }
 
@@ -371,7 +424,10 @@ export function sessionFromDto(dto: unknown): NativeMediaSession {
     state: dto.state,
     bufferedMs: dto.bufferedMs,
     positionMs: dto.positionMs,
-    integrity: "unknown",
+    // The R10 extension: adopt the engine's explicit verdict when the
+    // wire carries one; an absent field is the honest "no verdict
+    // claimed" — never a fabricated default beyond that.
+    integrity: dto.integrity ?? "unknown",
   };
 }
 
