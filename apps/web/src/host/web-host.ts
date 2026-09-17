@@ -49,6 +49,7 @@ import { createWebServerPort } from "@/platform/server-port";
 import type { WebEnvironment } from "@/platform/environment";
 import { WebClock } from "@/platform/lifecycle";
 
+import { createWebSurfaceResolver } from "./media-surface";
 import { createFixtureBackedServerPort } from "./dev-fixture-server-port";
 import type { HostEnv, HostMode } from "./config";
 import { resolveHostConfig } from "./config";
@@ -163,10 +164,16 @@ export async function bootWebRuntimeHost(
 
   // 4. THE runtime: truth-checked bundle + transport + session (one law,
   //    one instance — `createRuntime` re-runs the capability truth check).
+  //    R09: THE FROZEN PRECEDENCE IS WIRED — the Web adapter's Media
+  //    Surface resolver seam (the frozen `resolveSurface` over THIS
+  //    bundle's truthful device derivation) decides playback resolution;
+  //    the answer's precedence trace rides on the playback state.
   const runtime = createRuntime(capabilities, serverPort, {
     context: session.context,
     clock: new WebClock(),
     ids,
+  }, {
+    surfaceResolver: createWebSurfaceResolver({ capabilities, clock: new WebClock() }),
   });
 
   // 5. The boot-completion signal (the lifecycle's ready event, exactly once).

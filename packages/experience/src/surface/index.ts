@@ -19,6 +19,14 @@
  * - `matrix.ts`          — device profiles + `capabilityMatrix()` for tests
  *                          and WFX-043 release acceptance
  * - `fixtures.ts`        — deterministic test fixtures (never production)
+ * - `embed.ts`           — R09: the OFFICIAL-EMBED capability model (the
+ *                          provider-attested marker the matrix consumes) +
+ *                          the shared embed containment law
+ * - `external.ts`        — R09: the external handoff's RETURN CONTEXT (J09 —
+ *                          the durable continuation: item + position)
+ * - `media-surface.ts`   — R09: `answerMediaSurface` — the frozen precedence
+ *                          WIRED: the resolution + the named rung verdicts +
+ *                          the embed truth + the return-context seed
  */
 
 export * from "./request";
@@ -26,3 +34,6 @@ export * from "./resolve";
 export * from "./session-builder";
 export * from "./matrix";
 export * from "./fixtures";
+export * from "./embed";
+export * from "./external";
+export * from "./media-surface";

@@ -61,6 +61,10 @@ import { CanonicalItemRegistry } from "./registry";
 import type { RuntimeClock, RuntimeIdGen } from "./runtime-seams";
 import { serverFailureKind } from "./errors";
 import type { RuntimeContext, ServerPort, ServerResult } from "./server-port";
+import {
+  assertSurfaceResolverSeam,
+  type SurfaceResolverSeam,
+} from "./surface-resolution";
 import type { SearchResult } from "@wfx/domain";
 import { createNavigationStore, type NavigationController } from "./navigation";
 import { createSourceStateStore, type SourceStateOperations } from "./sources";
@@ -83,6 +87,24 @@ export interface RuntimeSession {
   readonly clock: RuntimeClock;
   /** The id seam (the runtime never mints randomness). */
   readonly ids: RuntimeIdGen;
+}
+
+/**
+ * R09: optional runtime wiring beyond the session bundle.
+ *
+ * `surfaceResolver` — the injected Media Surface resolution seam: the
+ * ADAPTER's wiring of the FROZEN resolver (`@wfx/experience`'s
+ * `resolveSurface`, whose `SurfaceResolution` satisfies the seam's
+ * structural contract without any package dependency). When injected,
+ * THE FROZEN PRECEDENCE (Native > Embed > Browser > External) decides
+ * playback resolution — the answer's precedence trace rides on the
+ * playback state so the adapters render what was chosen and why.
+ * Absent ⇒ the runtime's built-in capability-filtered precedence walk
+ * (the R01 default, unchanged).
+ */
+export interface RuntimeOptions {
+  /** The Media Surface resolution seam (see the module doc). */
+  readonly surfaceResolver?: SurfaceResolverSeam;
 }
 
 /** The shared client runtime (the sketch surface + the R01 operations). */
@@ -141,6 +163,7 @@ export function createRuntime(
   platform: PlatformCapabilities,
   server: ServerPort,
   session: RuntimeSession,
+  options?: RuntimeOptions,
 ): ClientRuntime {
   // — session validation (caller misuse — typed throw) —
   if (!isRecord(session)) {
@@ -179,6 +202,10 @@ export function createRuntime(
   if (typeof server?.serviceId !== "string" || server.serviceId.length === 0) {
     problems.push(`server: expected a ServerPort with a non-empty serviceId, got ${previewValue((server as { serviceId?: unknown })?.serviceId)}`);
   }
+  // R09: the surface seam, validated when injected (adapter wiring).
+  if (options?.surfaceResolver !== undefined) {
+    assertSurfaceResolverSeam(options.surfaceResolver);
+  }
   if (problems.length > 0) throw new RuntimeError("invalid-input", problems.join("; "));
 
   // — capability truth (never boot on a lying adapter) —
@@ -212,6 +239,11 @@ export function createRuntime(
 
   const durationOf = (itemId: string): number | undefined =>
     registry.get(itemId)?.item.durationMs;
+
+  // R09: the canonical item record feeding the surface seam (the frozen
+  // resolver validates the item's shape; the registry's own record is the
+  // truthful carrier when the item is known).
+  const itemOf = (itemId: string) => registry.get(itemId)?.item;
 
   const playbackOperations: PlaybackOperations = {
     controller: (sessionId) => playbackControllers.get(sessionId),
@@ -293,6 +325,10 @@ export function createRuntime(
           ids: session.ids,
           context: session.context,
           durationOf,
+          itemOf,
+          ...(options?.surfaceResolver !== undefined
+            ? { surfaceResolver: options.surfaceResolver }
+            : {}),
         },
         input,
       );

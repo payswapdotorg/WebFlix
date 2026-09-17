@@ -16,6 +16,8 @@
 // - `platform/lifecycle.ts`      — `LifecyclePort` over native window events
 // - `platform/storage.ts`        — `StoragePort` over the app-data filesystem
 // - `platform/browser-host.ts`   — `BrowserHostPort` over isolated webviews
+//                                  (R09: + the session registry + the honest
+//                                  capability truth; the embed rung's mount)
 // - `platform/notifications.ts`  — `NotificationPort` over OS notifications
 // - `platform/background-work.ts`— `BackgroundWorkPort` over the task registry
 // - `platform/sharing.ts`        — `SharingPort` over the OS share sheet
@@ -24,6 +26,10 @@
 // - `platform/native-media-binding.ts` — THE R10 SEAM: `NativeMediaPort`
 //                                  over the spawned engine process
 // - `platform/shell-engine-process.ts` — the shell-backed engine transport
+// - `platform/media-surface.ts`  — R09: `createDesktopSurfaceResolver` —
+//                                  the frozen resolver wired to the truthful
+//                                  Desktop device derivation (the seam the
+//                                  runtime's playback resolution consumes)
 // - `surface/desktop-surface.ts` — the thin runtime-state UI projection
 
 export * from "./main";
@@ -39,4 +45,5 @@ export * from "./platform/sharing";
 export * from "./platform/server-port";
 export * from "./platform/native-media-binding";
 export * from "./platform/shell-engine-process";
+export * from "./platform/media-surface";
 export * from "./surface/desktop-surface";

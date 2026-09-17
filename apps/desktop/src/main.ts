@@ -44,6 +44,7 @@ import {
   assertDesktopCapabilityTruth,
   type DesktopCapabilities,
 } from "./platform/capabilities";
+import { createDesktopSurfaceResolver } from "./platform/media-surface";
 import {
   createNativeMediaBinding,
   type DeadlineMapper,
@@ -158,7 +159,22 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
   assertDesktopCapabilityTruth(capabilities);
 
   // The shared runtime over the truthful bundle (the R01 contract).
-  const runtime = createRuntime(capabilities as PlatformCapabilities, options.server, options.session);
+  // R09: THE FROZEN PRECEDENCE IS WIRED — the Desktop adapter's Media
+  // Surface resolver seam (the frozen `resolveSurface` over THIS bundle's
+  // truthful device derivation — native included, the R10 engine binding
+  // backing the NATIVE rung) decides playback resolution; the answer's
+  // precedence trace rides on the playback state.
+  const runtime = createRuntime(
+    capabilities as PlatformCapabilities,
+    options.server,
+    options.session,
+    {
+      surfaceResolver: createDesktopSurfaceResolver({
+        capabilities: capabilities as PlatformCapabilities,
+        clock: options.session.clock,
+      }),
+    },
+  );
 
   const surface = createDesktopSurface(runtime, capabilities);
 

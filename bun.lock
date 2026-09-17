@@ -37,6 +37,7 @@
       "devDependencies": {
         "@wfx/client-runtime": "workspace:*",
         "@wfx/domain": "workspace:*",
+        "@wfx/experience": "workspace:*",
         "@wfx/native-media": "workspace:*",
         "@wfx/platform-contracts": "workspace:*",
       },

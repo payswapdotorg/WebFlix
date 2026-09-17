@@ -32,6 +32,8 @@
  *                               management's observed model)
  * - `registry.ts`             — the canonical item registry
  * - `runtime-seams.ts`        — the clock/id seams
+ * - `surface-resolution.ts`  — R09: the Media Surface resolution seam (the
+ *                               injectable wiring of the frozen resolver)
  * - `testing.ts`              — ⚠️ TEST DOUBLES — production code never imports it
  */
 
@@ -42,13 +44,14 @@ export * from "./runtime-seams";
 export * from "./navigation";
 export * from "./sources";
 export * from "./playback";
+export * from "./surface-resolution";
 export * from "./watch-state";
 export * from "./library";
 export * from "./actions";
 export * from "./intent";
 export * from "./models";
 export * from "./registry";
-export { createRuntime, type ClientRuntime, type RuntimeSession } from "./runtime";
+export { createRuntime, type ClientRuntime, type RuntimeSession, type RuntimeOptions } from "./runtime";
 
 // Test doubles — clearly marked, testing-only (see testing.ts module doc).
 export * from "./testing";
