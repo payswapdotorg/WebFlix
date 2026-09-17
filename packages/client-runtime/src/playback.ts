@@ -30,15 +30,22 @@
  * Platform engagement at `prepare`:
  * - `browser` mode — the runtime OPENS the contained BrowserHostPort
  *   surface at the realization URL (cookie-isolated, provider-owned).
+ * - `embed` mode — R09: contained EXACTLY LIKE THE BROWSER RUNG — where
+ *   the platform truthfully hosts a contained surface, the embed session
+ *   opens through the SAME BrowserHostPort (the Desktop adapter's native
+ *   contained webview; the Web adapter's sandboxed opaque-origin iframe).
+ *   Without a contained host or an embed URL, the surface stays
+ *   adapter-owned and `prepare` is the readiness signal.
  * - `native` mode — the runtime OPENS a NativeMediaPort session with the
  *   caller-supplied authorized open input (the R10 service binding seam;
  *   the runtime never invents torrent/magnet logic — that is R11's, behind
  *   the native-media boundary).
- * - `embed`/`external` — the adapter owns the surface; `prepare` is its
- *   readiness signal (the command resolves when the adapter confirms).
+ * - `external` — the adapter owns the handoff; `prepare` is its readiness
+ *   signal (the command resolves when the adapter confirms).
  */
 
 import type {
+  EntertainmentItem,
   PlaybackMode,
   PlaybackRealization,
   PlaybackSession,
@@ -63,6 +70,7 @@ import { supportsBrowserHost, supportsNativeMedia } from "@wfx/platform-contract
 import { RuntimeError, serverFailureError } from "./errors";
 import type { RuntimeClock, RuntimeIdGen, RuntimeContext } from "./runtime-seams";
 import type { ServerPort } from "./server-port";
+import type { SurfaceResolverSeam, SurfaceResolutionOutcome } from "./surface-resolution";
 import type { WatchStateEngine } from "./watch-state";
 
 // ---------------------------------------------------------------------------
@@ -155,6 +163,22 @@ export interface PlaybackState {
   readonly failure?: { readonly kind: RuntimeErrorKindOfFailure; readonly detail: string };
   /** ISO timestamp when the session was created. */
   readonly createdAt: string;
+  /**
+   * R09: the Media Surface precedence trace WHEN the session was resolved
+   * through the injected surface-resolver seam — one line per rung in
+   * frozen precedence order. The answer NAMES what was chosen and why;
+   * absent when the runtime used its built-in capability-filtered walk
+   * (no seam injected).
+   */
+  readonly precedenceTrace?: readonly string[];
+  /**
+   * R09: the engaged CONTAINED surface session (browser rung, and the
+   * embed rung where the platform hosts a contained surface): the host's
+   * opaque session id + the URL it was opened at. Absent when no
+   * contained surface is engaged (native/external rungs, or the adapter
+   * owns the surface).
+   */
+  readonly containedSurface?: { readonly id: string; readonly url: string };
 }
 
 /** The failure kinds a playback state can carry (subset of the taxonomy). */
@@ -328,6 +352,10 @@ export class PlaybackSessionController implements PlaybackController {
   private browserUnsubscribe: Unsubscribe | null = null;
   private nativeUnsubscribe: Unsubscribe | null = null;
   private nativeSessionId: string | null = null;
+  /** R09: the precedence trace (present iff resolved through the seam). */
+  private readonly precedenceTrace: readonly string[] | undefined;
+  /** R09: the engaged contained surface (id + URL) once one is opened. */
+  private containedSurface: PlaybackState["containedSurface"] = undefined;
 
   private constructor(
     private readonly session: PlaybackSession,
@@ -337,8 +365,10 @@ export class PlaybackSessionController implements PlaybackController {
     private readonly clock: RuntimeClock,
     readonly itemId: string,
     private readonly durationMs: number | undefined,
+    precedenceTrace?: readonly string[],
   ) {
     this.positionMs = session.resumePositionMs;
+    this.precedenceTrace = precedenceTrace;
   }
 
   /** Internal factory (used by the runtime). */
@@ -349,6 +379,7 @@ export class PlaybackSessionController implements PlaybackController {
     watch: WatchStateEngine,
     clock: RuntimeClock,
     durationMs: number | undefined,
+    precedenceTrace?: readonly string[],
   ): PlaybackSessionController {
     return new PlaybackSessionController(
       session,
@@ -358,6 +389,7 @@ export class PlaybackSessionController implements PlaybackController {
       clock,
       session.itemId,
       durationMs,
+      precedenceTrace,
     );
   }
 
@@ -378,6 +410,8 @@ export class PlaybackSessionController implements PlaybackController {
       ...(this.degradedDetail !== undefined ? { degradedDetail: this.degradedDetail } : {}),
       ...(this.failure !== undefined ? { failure: this.failure } : {}),
       createdAt: this.session.createdAt,
+      ...(this.precedenceTrace !== undefined ? { precedenceTrace: this.precedenceTrace } : {}),
+      ...(this.containedSurface !== undefined ? { containedSurface: this.containedSurface } : {}),
     };
   }
 
@@ -430,6 +464,7 @@ export class PlaybackSessionController implements PlaybackController {
           restrictCookies: "isolate",
           purpose: "playback",
         });
+        this.containedSurface = { id: surface.id, url: surface.url };
         this.browserUnsubscribe = surface.subscribe((event: BrowserSurfaceEvent) => {
           if (event.kind === "closed") {
             // The user (or host) closed the provider surface: honest stop.
@@ -441,6 +476,46 @@ export class PlaybackSessionController implements PlaybackController {
           "unavailable",
           `contained browser surface failed to open: ${thrown instanceof Error ? thrown.message : String(thrown)}`,
         );
+      }
+      this.phase = "buffering";
+      this.emit();
+      return { ok: true };
+    }
+
+    if (mode === "embed") {
+      // R09: the EMBED rung is CONTAINED EXACTLY LIKE THE BROWSER RUNG —
+      // where the platform truthfully hosts a contained surface, the
+      // embed session opens through the SAME BrowserHostPort (cookie-
+      // isolated, provider-owned, opaque origin); on the Desktop adapter
+      // that is the contained native webview. A platform without a
+      // contained host, or a realization without an embed URL, leaves the
+      // surface adapter-owned (the honest readiness signal below — the
+      // adapter renders the honest no-url/adapter-owned stage).
+      const port = this.capabilities.ports.browserHost;
+      const url = this.session.realization.url;
+      if (port !== null && url !== undefined && url.length > 0) {
+        this.phase = "preparing";
+        this.emit();
+        try {
+          const surface = await port.open({
+            url,
+            restrictCookies: "isolate",
+            purpose: "playback",
+          });
+          this.containedSurface = { id: surface.id, url: surface.url };
+          this.browserUnsubscribe = surface.subscribe((event: BrowserSurfaceEvent) => {
+            if (event.kind === "closed") {
+              // The user (or host) closed the provider's embed surface:
+              // honest stop — the provider page stays provider-owned.
+              void this.finishStop(false);
+            }
+          });
+        } catch (thrown) {
+          return this.fail(
+            "unavailable",
+            `contained embed surface failed to open: ${thrown instanceof Error ? thrown.message : String(thrown)}`,
+          );
+        }
       }
       this.phase = "buffering";
       this.emit();
@@ -703,6 +778,7 @@ export class PlaybackSessionController implements PlaybackController {
       this.browserUnsubscribe();
       this.browserUnsubscribe = null;
     }
+    this.containedSurface = undefined;
     if (this.nativeUnsubscribe !== null) {
       this.nativeUnsubscribe();
       this.nativeUnsubscribe = null;
@@ -757,6 +833,83 @@ export interface PlaybackResolutionDeps {
   readonly context: RuntimeContext;
   /** Duration registry access (for honest completion ratios). */
   readonly durationOf: (itemId: string) => number | undefined;
+  /**
+   * Canonical-item registry access (R09: feeds the surface seam).
+   * Optional — a caller without a registry resolves through the seam with
+   * the item id alone (the resolver validates the item's shape only).
+   */
+  readonly itemOf?: (itemId: string) => EntertainmentItem | undefined;
+  /**
+   * R09: the injected Media Surface resolution seam — the adapter's wiring
+   * of the FROZEN resolver (`@wfx/experience`'s `resolveSurface`). Absent ⇒
+   * the runtime keeps its built-in capability-filtered precedence walk.
+   */
+  readonly surfaceResolver?: SurfaceResolverSeam;
+}
+
+/**
+ * Adopt the seam's answer as THE precedence decision (R09). Returns the
+ * chosen realization + its precedence trace, or throws the typed
+ * `RuntimeError` — LOUDLY, never a silent fallback:
+ * - a malformed answer (shape/mode disagreement) is an incoherent wiring;
+ * - a chosen mode the platform TRUTHFULLY cannot realize is an incoherent
+ *   wiring (the seam's derived device truth disagrees with the runtime's
+ *   own bundle) — typed `unsupported-capability`, named.
+ */
+function adoptSurfaceResolution(
+  capabilities: PlatformCapabilities,
+  outcome: SurfaceResolutionOutcome,
+  itemId: string,
+): { chosen: PlaybackRealization; precedenceTrace: readonly string[] } {
+  if (!isRecord(outcome) || outcome.ok !== true) {
+    throw new RuntimeError(
+      "invalid-input",
+      "surfaceResolver.resolve: expected a SurfaceResolutionOutcome object with ok: true (the runtime's failure path handles the unresolvable channel)",
+    );
+  }
+  const chosenCheck = validatePlaybackRealization(outcome.chosen);
+  if (!chosenCheck.ok) {
+    throw new RuntimeError(
+      "invalid-input",
+      `surfaceResolver.resolve: the chosen realization is invalid (${chosenCheck.errors.join("; ")})`,
+    );
+  }
+  if (outcome.mode !== chosenCheck.value.mode) {
+    throw new RuntimeError(
+      "invalid-input",
+      `surfaceResolver.resolve: mode '${String(outcome.mode)}' disagrees with the chosen realization's mode '${chosenCheck.value.mode}'`,
+    );
+  }
+  if (outcome.itemId !== itemId) {
+    throw new RuntimeError(
+      "invalid-input",
+      `surfaceResolver.resolve: itemId '${String(outcome.itemId)}' disagrees with the playback intent's item '${itemId}'`,
+    );
+  }
+  if (!Array.isArray(outcome.precedenceTrace)) {
+    throw new RuntimeError(
+      "invalid-input",
+      "surfaceResolver.resolve: expected a precedenceTrace array of trace lines",
+    );
+  }
+  if (!canUsePlaybackMode(capabilities, chosenCheck.value.mode)) {
+    throw new RuntimeError(
+      "unsupported-capability",
+      `the injected surface resolver chose '${chosenCheck.value.mode}' playback but platform '${capabilities.platform}' truthfully cannot realize it (the seam's device-capability derivation disagrees with the runtime's capability bundle — fix the adapter wiring)`,
+    );
+  }
+  return { chosen: chosenCheck.value, precedenceTrace: [...outcome.precedenceTrace] };
+}
+
+/**
+ * The seam's UNRESOLVABLE reasons, surfaced verbatim in the runtime's own
+ * typed failure (never swallowed — the dead-end audit rides along).
+ */
+function surfaceReasonsOf(outcome: SurfaceResolutionOutcome): string[] {
+  if (isRecord(outcome) && outcome.ok === false && Array.isArray(outcome.reasons)) {
+    return outcome.reasons.map((reason) => String(reason));
+  }
+  return [];
 }
 
 /**
@@ -766,6 +919,16 @@ export interface PlaybackResolutionDeps {
  * `network`/`unauthorized`/`unavailable` (transport), and
  * `unsupported-capability` when realizations exist but THIS PLATFORM
  * truthfully cannot play any of them.
+ *
+ * R09: when `deps.surfaceResolver` is injected, THE FROZEN PRECEDENCE
+ * decides — the seam (the adapter's wiring of `@wfx/experience`'s
+ * `resolveSurface`) resolves the candidate set, the runtime adopts its
+ * answer (re-checked against its own capability truth — an incoherent
+ * wiring fails loudly), and the answer's `precedenceTrace` rides on the
+ * playback state so the adapters render WHAT WAS CHOSEN AND WHY. The
+ * unresolvable channel keeps the runtime's own error law verbatim (the
+ * capability-skip reasons stay in the failure) with the seam's reasons
+ * appended — never swallowed, never fabricated.
  */
 export async function resolvePlaybackSession(
   deps: PlaybackResolutionDeps,
@@ -808,6 +971,57 @@ export async function resolvePlaybackSession(
       );
     }
     candidates = result.value;
+  }
+
+  // R09 — THE FROZEN PRECEDENCE, WIRED: the injected seam decides.
+  if (deps.surfaceResolver !== undefined) {
+    const knownItem = deps.itemOf !== undefined ? deps.itemOf(intent.itemId) : undefined;
+    const outcome = deps.surfaceResolver.resolve({
+      itemId: intent.itemId,
+      ...(knownItem !== undefined ? { item: knownItem } : {}),
+      realizations: candidates,
+    });
+    if (isRecord(outcome) && outcome.ok === true) {
+      const adopted = adoptSurfaceResolution(deps.capabilities, outcome, intent.itemId);
+      const session: PlaybackSession = {
+        id: PLAYBACK_SESSION_ID_PREFIX + deps.ids.next(),
+        userId: deps.context.userId,
+        itemId: intent.itemId,
+        realization: adopted.chosen,
+        resumePositionMs: intent.resumePositionMs ?? 0,
+        createdAt: new Date(deps.clock.now()).toISOString(),
+      };
+      const controller = PlaybackSessionController.create(
+        session,
+        deps.capabilities,
+        deps.server,
+        deps.watch,
+        deps.clock,
+        deps.durationOf(intent.itemId),
+        adopted.precedenceTrace,
+      );
+      return { session, controller };
+    }
+    // The seam's unresolvable dead end: the runtime's own error law stays
+    // verbatim (kind + capability-skip reasons), the seam's reasons ride
+    // along — the honest dead-end audit, never swallowed.
+    const builtin = resolveRealizations(deps.capabilities, candidates);
+    const surfaceReasons = surfaceReasonsOf(outcome);
+    if (builtin.chosen === null && builtin.skipped.length > 0) {
+      const reasons = builtin.skipped.map((entry) => entry.reason).join("; ");
+      throw new RuntimeError(
+        "unsupported-capability",
+        `realizations exist but platform '${deps.capabilities.platform}' truthfully cannot play any: ${reasons}${
+          surfaceReasons.length > 0 ? ` | media surface resolution: ${surfaceReasons.join(" | ")}` : ""
+        }`,
+      );
+    }
+    throw new RuntimeError(
+      "unavailable",
+      `no valid playback realization could be resolved for this item${
+        surfaceReasons.length > 0 ? `: ${surfaceReasons.join(" | ")}` : ""
+      }`,
+    );
   }
 
   const outcome = resolveRealizations(deps.capabilities, candidates);

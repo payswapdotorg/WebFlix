@@ -29,6 +29,9 @@ import type {
   SearchModel,
 } from "@wfx/client-runtime";
 import type { PlaybackRealization, SourceItem, UserAction } from "@wfx/domain";
+import { buildExternalReturnContext, isOfficialEmbed } from "@wfx/experience";
+
+import { WebClock } from "@/platform/lifecycle";
 
 import type { WebRuntimeHost } from "./web-host";
 import { canonicalIdFor } from "./web-host";
@@ -423,10 +426,35 @@ export interface PlayerView {
   readonly phase: PlaybackState["phase"];
   /** The realizations the platform CANNOT play, named (capability honesty). */
   readonly skippedForCapability: readonly { readonly mode: string; readonly reason: string }[];
-  /** The contained-surface session (browser mode; the rendered mount's iframe). */
+  /** The contained-surface session (browser AND embed rungs; the rendered mount's iframe). */
   readonly browserSurface: { readonly id: string; readonly url: string } | null;
   /** The honest failure when the session could not start (never a fake stage). */
   readonly failure: { readonly kind: string; readonly detail: string } | null;
+  /**
+   * R09: the Media Surface precedence trace — one line per rung in frozen
+   * precedence order. The answer NAMES what was chosen and why (present
+   * when the runtime resolved through the injected surface seam).
+   */
+  readonly precedenceTrace: readonly string[];
+  /**
+   * R09: the chosen embed realization's official-embed attestation truth
+   * (`"official"` when the provider attested their embeddable player,
+   * `"unofficial"` when the realization carries no marker; `null` for
+   * non-embed modes — never fabricated).
+   */
+  readonly embedAttestation: "official" | "unofficial" | null;
+  /**
+   * R09 (J09): the external handoff's RETURN CONTEXT — the durable
+   * continuation (item + position at handoff) so the journey can return to
+   * the same place. Present iff the external rung won.
+   */
+  readonly externalReturn: {
+    readonly itemId: string;
+    readonly connectorId: string;
+    readonly externalRef: string;
+    readonly positionMs: number;
+    readonly handedOffAt: string;
+  } | null;
 }
 
 /** Load the player view: resolve + prepare one playback session through the runtime. */
@@ -470,18 +498,46 @@ export async function loadPlayerView(
         skippedForCapability: [],
         browserSurface: null,
         failure: { kind: "not-found", detail: "the runtime does not know this playback session" },
+        precedenceTrace: [],
+        embedAttestation: null,
+        externalReturn: null,
       };
     }
-    // Engage the surface for the resolved mode (embed/external resolve
-    // synchronously; browser opens the contained surface — the rendered
-    // mount records it and this view carries it for the iframe).
+    // Engage the surface for the resolved mode (embed/browser open the
+    // contained surface — the rendered mount records it and the state
+    // carries it; external resolves synchronously as the handoff signal).
     const prepared = await controller.prepare();
     const state = controller.state();
-    const renderedSurfaces =
-      session.realization.mode === "browser" ? host.browserHost.renderedSessions() : [];
-    const browserSurface = renderedSurfaces.length > 0
-      ? { id: renderedSurfaces[0]!.id, url: renderedSurfaces[0]!.url }
-      : null;
+    // The session-scoped contained-surface view (the controller's own
+    // engaged surface — never a process-global sniff).
+    const browserSurface =
+      state.containedSurface !== undefined
+        ? { id: state.containedSurface.id, url: state.containedSurface.url }
+        : null;
+    // R09: the official-embed attestation of the chosen realization
+    // (null for non-embed modes — never fabricated).
+    const embedAttestation: PlayerView["embedAttestation"] =
+      session.realization.mode === "embed"
+        ? isOfficialEmbed(session.realization)
+          ? "official"
+          : "unofficial"
+        : null;
+    // R09 (J09): the external handoff's return context — the durable
+    // continuation (item + position at handoff) so the journey can return.
+    // The handoff instant is the adapter's real clock read (the same law
+    // the web host's boot seams follow).
+    const externalReturn: PlayerView["externalReturn"] =
+      session.realization.mode === "external"
+        ? buildExternalReturnContext(
+            {
+              itemId: input.itemId,
+              connectorId: session.realization.connectorId,
+              externalRef: session.realization.externalRef ?? input.externalRef,
+              positionMs: session.resumePositionMs,
+            },
+            new Date(new WebClock().now()).toISOString(),
+          )
+        : null;
     return {
       mode: host.mode,
       kind: "session",
@@ -501,6 +557,9 @@ export async function loadPlayerView(
         : [{ mode: session.realization.mode, reason: prepared.detail }],
       browserSurface,
       failure: prepared.ok ? null : { kind: "unavailable", detail: prepared.detail },
+      precedenceTrace: [...state.precedenceTrace ?? []],
+      embedAttestation,
+      externalReturn,
     };
   } catch (thrown) {
     // resolvePlayback throws the typed RuntimeError for resolution failures
@@ -524,6 +583,9 @@ export async function loadPlayerView(
       skippedForCapability: [],
       browserSurface: null,
       failure: { kind: typeof kind === "string" ? kind : "unavailable", detail },
+      precedenceTrace: [],
+      embedAttestation: null,
+      externalReturn: null,
     };
   }
 }

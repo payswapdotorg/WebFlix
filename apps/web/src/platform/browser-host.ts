@@ -79,6 +79,61 @@ const SURFACE_SANDBOX_TOKENS: readonly string[] = [
 /** The surface-session id prefix (host-minted, opaque). */
 const SURFACE_ID_PREFIX = "wfxsurf-";
 
+// ---------------------------------------------------------------------------
+// R09 — the web contained surface's honest CAPABILITY TRUTH (J08)
+// ---------------------------------------------------------------------------
+
+/** The mount the contained surface runs on in this boot context. */
+export type WebSurfaceMount = "dom" | "rendered";
+
+/**
+ * The web contained surface's honest capability truth — what the browser
+ * platform PERMITS (J08: "Constrained" where webview APIs are absent).
+ * Pure data derived from the environment; never a probe at read time.
+ */
+export interface WebSurfaceCapabilityTruth {
+  /** Which mount `open()` uses in this boot context. */
+  readonly mount: WebSurfaceMount;
+  /** The cookie/storage isolation discipline (the sandbox law, verbatim). */
+  readonly cookieIsolation: "opaque-origin-sandbox";
+  /**
+   * The honest navigation-observation truth: the host observes ONLY the
+   * navigations IT commands (`navigate()` + the load of the URL it set);
+   * in-surface user navigation is invisible BY ORIGIN ISOLATION — the
+   * provider-owned boundary (never intercepted, never steered).
+   */
+  readonly navigationObservation: "host-commands-only";
+  /**
+   * J08's honest "Constrained" answer: `true` when this boot context has
+   * no DOM (a server render pass) and the surface is therefore constrained
+   * to the rendered mount — sessions are recorded for the render layer,
+   * `navigate()` applies on the next render (the documented limitation).
+   * `false` in a browser context (the DOM mount: real iframes, live).
+   */
+  readonly constrained: boolean;
+  /** NON-EMPTY honest constraint note (present when `constrained`). */
+  readonly constraint: string;
+}
+
+/**
+ * The web contained surface's capability truth for one environment (pure;
+ * J08's constrained-platform answer where the DOM is absent).
+ */
+export function webSurfaceCapabilityTruth(
+  environment: Pick<WebEnvironment, "document">,
+): WebSurfaceCapabilityTruth {
+  const domMounted = environment.document !== null;
+  return {
+    mount: domMounted ? "dom" : "rendered",
+    cookieIsolation: "opaque-origin-sandbox",
+    navigationObservation: "host-commands-only",
+    constrained: !domMounted,
+    constraint: domMounted
+      ? "the DOM mount holds live sandboxed iframes in this context"
+      : "this boot context has no DOM (a server render pass) — the contained surface is CONSTRAINED to the rendered mount: sessions are recorded for the render layer and navigation applies on the next render (J08's honest Constrained answer)",
+  };
+}
+
 /** Options for {@link createWebBrowserHostPort}. */
 export interface WebBrowserHostPortOptions {
   /** The environment (default: no DOM — the rendered mount). */
@@ -95,8 +150,10 @@ export interface WebBrowserHostPortOptions {
 }
 
 /**
- * The web BrowserHostPort: the frozen port plus the rendered-mount view
- * (`renderedSessions`) the player surface renders iframes from.
+ * The web BrowserHostPort: the frozen port plus the R09 productionization
+ * surface — `renderedSessions` (the render layer's view) and `sessions()`
+ * (the full open-session enumeration, both mounts) plus the host's own
+ * capability truth (`surfaceCapabilityTruth()`).
  */
 export interface WebBrowserHostPort extends BrowserHostPort {
   /**
@@ -106,6 +163,20 @@ export interface WebBrowserHostPort extends BrowserHostPort {
    * iframes). Read-only copies.
    */
   renderedSessions(): readonly { readonly id: string; readonly url: string; readonly purpose: string }[];
+  /**
+   * R09: EVERY open surface session of this host, in open order, with its
+   * mount — the session-lifecycle enumeration (open/navigate/close
+   * round-trips are observable on it). Read-only copies.
+   */
+  sessions(): readonly {
+    readonly id: string;
+    readonly url: string;
+    readonly purpose: BrowserSurfaceRequest["purpose"];
+    readonly mount: WebSurfaceMount;
+    readonly closed: false;
+  }[];
+  /** R09: the honest capability truth of this host's boot context (J08). */
+  surfaceCapabilityTruth(): WebSurfaceCapabilityTruth;
 }
 
 /** One session's internal record. */
@@ -189,6 +260,17 @@ export function createWebBrowserHostPort(
       [...records.values()]
         .filter((record) => record.rendered)
         .map((record) => ({ id: record.id, url: record.url, purpose: record.purpose })),
+
+    sessions: () =>
+      [...records.values()].map((record) => ({
+        id: record.id,
+        url: record.url,
+        purpose: record.purpose,
+        mount: (record.rendered ? "rendered" : "dom") as WebSurfaceMount,
+        closed: false as const,
+      })),
+
+    surfaceCapabilityTruth: () => webSurfaceCapabilityTruth({ document }),
 
     async open(request: BrowserSurfaceRequest): Promise<BrowserSurfaceSession> {
       // The cookie-isolation contract is not optional — a caller that does
