@@ -88,6 +88,81 @@ export function upstreamFailure(kind: string, detail: string): Response {
 }
 
 /**
+ * R03: map a source-management failure to its typed HTTP answer. The status
+ * code law (documented for the adapters):
+ * - 404 `unknown-connector` / `no-account` — the named source (or the
+ *   account to reauthorize) does not exist here;
+ * - 410 `expired-pending` — the handshake's TTL elapsed (dead is dead);
+ * - 409 `flow-missing` / `exchange-rejected` — the deployment cannot run
+ *   this flow / the provider definitively refused the code;
+ * - 403 `provider-denied` — the user denied consent at the provider;
+ * - 400 `credential-required` / `wrong-flow` — the body conflicts with the
+ *   flow kind;
+ * - 502 `exchange-transport` / `degraded` — retryable upstream failures.
+ */
+export function sourceFailureResponse(
+  failure: import("./source-management").SourceManagementFailure,
+): Response {
+  switch (failure.kind) {
+    case "unknown-connector":
+      return Response.json(
+        {
+          error: "unknown-connector",
+          detail: `connector '${failure.connectorId}' is not wired to this service`,
+        },
+        { status: 404 },
+      );
+    case "no-account":
+      return Response.json(
+        {
+          error: "no-account",
+          detail: `no connected account for '${failure.connectorId}' — connect first (reauthorize is for existing connections)`,
+        },
+        { status: 404 },
+      );
+    case "expired-pending":
+      return Response.json(
+        {
+          error: "expired-pending",
+          detail: `the authorization handshake expired at ${failure.expiredAt} — start again`,
+        },
+        { status: 410 },
+      );
+    case "flow-missing":
+      return Response.json(
+        {
+          error: "flow-missing",
+          detail:
+            `connector '${failure.connectorId}' declares auth '${failure.authMode}' but this deployment has no ` +
+            "provisioned flow wiring for it (operator action required) — no URL is ever invented",
+        },
+        { status: 409 },
+      );
+    case "exchange-rejected":
+      return Response.json(
+        { error: "exchange-rejected", detail: failure.detail },
+        { status: 409 },
+      );
+    case "provider-denied":
+      return Response.json({ error: "provider-denied", detail: failure.detail }, { status: 403 });
+    case "credential-required":
+    case "wrong-flow":
+      return Response.json({ error: "invalid-request", detail: failure.detail }, { status: 400 });
+    case "unknown-pending":
+      return Response.json(
+        {
+          error: "unknown-pending",
+          detail: `no live authorization handshake for state '${failure.state}' — it was never started, completed, or was superseded`,
+        },
+        { status: 404 },
+      );
+    case "exchange-transport":
+    case "degraded":
+      return Response.json({ error: "sources-unavailable", detail: failure.detail }, { status: 502 });
+  }
+}
+
+/**
  * Is this thrown failure a LOUD one (config crime / bad deploy / bug —
  * 500 territory), as opposed to the 052 degradation family the WFX-003
  * law maps to honest degraded answers?

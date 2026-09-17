@@ -66,6 +66,23 @@
  * answer (reads) or a failed receipt (writes) and the failure is recorded
  * per source in `lastDegradations()` — diagnosable, never silent, never
  * fabricated.
+ *
+ * R03 — AUTH-STATE-AWARE FAN-OUT (source management): an optional
+ * `authGate` seam consults each ACCOUNT-BOUND source's CURRENT
+ * authorization state per request (`ctx.userId`-scoped):
+ *
+ * - `signedIn` (or no account binding at all — the gate answers
+ *   `{ verdict: "query" }`) → the source is queried normally;
+ * - `signedOut` → SKIPPED with an honest per-source note in
+ *   `lastSkips()` — never an error, never a fabricated contribution;
+ * - `expired` → skipped with the `expired` note (the J28 journey seed —
+ *   the surfaced truth that drives reauthorization);
+ * - `authorizing` / `failed` → skipped with their notes.
+ *
+ * The skip diary is SEPARATE from `lastDegradations()` — a skip is an
+ * authorization state, not an outage. `sourceRows()` serves each wired
+ * source's capability-matrix row (the "see actual capabilities" truth the
+ * R03 /sources endpoint composes with account state).
  */
 
 import type {
@@ -135,7 +152,82 @@ export interface FanOutConnectorOptions {
   readonly clock: Clock;
   /** The descriptor version (default: the service version). */
   readonly version?: string;
+  /**
+   * R03: the per-request auth-state gate for ACCOUNT-BOUND sources.
+   * Optional (absent ⇒ every source is queried — the pre-R03 behavior).
+   * The gate is consulted BEFORE a source participates in any fan-out
+   * operation; a skip is recorded per source, never an error.
+   */
+  readonly authGate?: FanOutAuthGate;
 }
+
+/** The per-source reference the R03 auth gate sees. */
+export interface FanOutSourceRef {
+  /** The wired source's own connector id. */
+  readonly id: string;
+  /** The source's declared auth mode (the descriptor truth). */
+  readonly auth: ConnectorDescriptor["auth"];
+  /** The source's declared capabilities (the descriptor truth). */
+  readonly capabilities: readonly Capability[];
+}
+
+/** The R03 auth-state gate: may this source serve this request's user? */
+export interface FanOutAuthGate {
+  /**
+   * Check one account-bound source for one request context. Answer
+   * `{ verdict: "query" }` to include the source (also the answer for
+   * sources with no account binding — e.g. `auth: "none"`), or a skip
+   * verdict naming the CURRENT authorization state + an honest note.
+   * NEVER THROWS — a broken gate degrades to "query" (the source's own
+   * typed degradation handles the rest), same as the pre-R03 behavior.
+   */
+  check(source: FanOutSourceRef, ctx: ConnectorContext): Promise<FanOutAuthVerdict>;
+}
+
+/** One gate verdict. */
+export type FanOutAuthVerdict =
+  | { readonly verdict: "query" }
+  | {
+      readonly verdict: "skip";
+      /** The current authorization state (the skip's honest reason). */
+      readonly state: "signedOut" | "authorizing" | "expired" | "failed";
+      /** The honest per-source note (surfaced via `lastSkips()`). */
+      readonly detail: string;
+    };
+
+/**
+ * R03: one wired source's capability-matrix row (the "see actual
+ * capabilities" truth — every frozen capability with an explicit
+ * declared/not-declared flag, never guessed).
+ */
+export interface FanOutSourceRow {
+  readonly id: string;
+  readonly displayName: string;
+  readonly version: string;
+  readonly auth: ConnectorDescriptor["auth"];
+  readonly capabilities: Readonly<Record<Capability, boolean>>;
+  readonly hasInstance: true;
+}
+
+/** The frozen capability vocabulary (the truth-record key set). */
+const ALL_CAPABILITIES: readonly Capability[] = [
+  "identity",
+  "catalogSearch",
+  "metadata",
+  "playNative",
+  "playEmbed",
+  "playBrowser",
+  "playExternal",
+  "availability",
+  "libraryRead",
+  "libraryWrite",
+  "like",
+  "save",
+  "follow",
+  "comment",
+  "download",
+  "transform",
+];
 
 /**
  * The fan-out connector: a `ConnectorPort` whose optional library methods
@@ -153,6 +245,21 @@ export interface FanOutConnector extends ConnectorPort {
    * Never used to answer — only to diagnose. Empty map = everything healthy.
    */
   lastDegradations(): ReadonlyMap<string, string>;
+  /**
+   * R03: per-source SKIP diary — source id → the last authorization-state
+   * skip ("signed out", "expired", …) recorded for a fan-out call. A skip
+   * is an honest authorization state, NOT an outage (that's
+   * `lastDegradations`); the R03 /sources surface surfaces the same truth
+   * per account. Empty map = every gated source is currently authorized.
+   */
+  lastSkips(): ReadonlyMap<string, string>;
+  /**
+   * R03: each wired source's capability-matrix row (id, displayName,
+   * version, auth mode, and the FULL capability truth record), in probe
+   * order — the "see actual capabilities" truth the /sources endpoint
+   * composes with per-account authorization state.
+   */
+  sourceRows(): readonly FanOutSourceRow[];
   /** The merged library read (always implemented — see the class doc). */
   readLibrary(ctx: ConnectorContext): Promise<LibraryEntry[]>;
   /** The probed library write (always implemented — see the class doc). */
@@ -208,7 +315,11 @@ export interface ProfileScopedSource {
 interface WiredSource {
   readonly connector: ConnectorPort;
   readonly id: string;
+  readonly auth: ConnectorDescriptor["auth"];
+  readonly displayName: string;
+  readonly version: string;
   readonly capabilities: readonly Capability[];
+  readonly capabilityRecord: Readonly<Record<Capability, boolean>>;
 }
 
 /** Stamp an ISO instant from the injected clock (never a hidden wall clock). */
@@ -239,9 +350,23 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
   }
 
   const clock = options.clock;
+  const authGate = options.authGate;
   const sources: WiredSource[] = options.sources.map((connector) => {
     const descriptor = connector.descriptor();
-    return { connector, id: descriptor.id, capabilities: [...descriptor.capabilities] };
+    const declared = new Set<string>(descriptor.capabilities);
+    const capabilityRecord = {} as Record<Capability, boolean>;
+    for (const capability of ALL_CAPABILITIES) {
+      capabilityRecord[capability] = declared.has(capability);
+    }
+    return {
+      connector,
+      id: descriptor.id,
+      auth: descriptor.auth,
+      displayName: descriptor.displayName,
+      version: descriptor.version,
+      capabilities: [...descriptor.capabilities],
+      capabilityRecord: Object.freeze(capabilityRecord),
+    };
   });
   const sourceIds = sources.map((source) => source.id);
 
@@ -253,9 +378,33 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
   const capabilities = CANONICAL_CAPABILITY_ORDER.filter((capability) => union.has(capability));
 
   const degradations = new Map<string, string>();
+  const skips = new Map<string, string>();
 
   function record(sourceId: string, detail: string): void {
     degradations.set(sourceId, detail);
+  }
+
+  function recordSkip(sourceId: string, detail: string): void {
+    skips.set(sourceId, detail);
+  }
+
+  /** The R03 gate check (no gate / no verdict ⇒ query — pre-R03 behavior). */
+  async function gate(source: WiredSource, ctx: ConnectorContext): Promise<boolean> {
+    if (authGate === undefined) return true;
+    let verdict: FanOutAuthVerdict;
+    try {
+      verdict = await authGate.check(
+        { id: source.id, auth: source.auth, capabilities: source.capabilities },
+        ctx,
+      );
+    } catch {
+      // A broken gate degrades to "query" — the source's own typed
+      // degradation handles any failure from there (never an outage here).
+      return true;
+    }
+    if (verdict.verdict === "query") return true;
+    recordSkip(source.id, `${verdict.state}: ${verdict.detail}`);
+    return false;
   }
 
   /**
@@ -297,6 +446,21 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       return new Map(degradations);
     },
 
+    lastSkips() {
+      return new Map(skips);
+    },
+
+    sourceRows(): readonly FanOutSourceRow[] {
+      return sources.map((source) => ({
+        id: source.id,
+        displayName: source.displayName,
+        version: source.version,
+        auth: source.auth,
+        capabilities: source.capabilityRecord,
+        hasInstance: true as const,
+      }));
+    },
+
     descriptor(): ConnectorDescriptor {
       return {
         id: EXPERIENCE_SERVICE_CONNECTOR_ID,
@@ -309,10 +473,16 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
     async search(ctx: ConnectorContext, query: string): Promise<SearchResult[]> {
       if (typeof query !== "string" || query.trim().length === 0) return [];
+      // R03: gate each source on the request's CURRENT auth state first —
+      // an unauthorized source is skipped with a note, never queried.
+      const active: WiredSource[] = [];
+      for (const source of sources) {
+        if (await gate(source, ctx)) active.push(source);
+      }
       // Fan out concurrently; collect by SOURCE ORDER (not completion
       // order) so the merge is deterministic.
       const perSource = await Promise.all(
-        sources.map((source) =>
+        active.map((source) =>
           guardedRead(source, "search", () => source.connector.search(ctx, query), [] as SearchResult[]),
         ),
       );
@@ -337,6 +507,7 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
     async metadata(ctx: ConnectorContext, ref: string): Promise<SourceItem | null> {
       if (typeof ref !== "string" || ref.length === 0) return null;
       for (const source of sources) {
+        if (!(await gate(source, ctx))) continue; // R03: skipped with a note
         const item = await guardedRead(
           source,
           "metadata",
@@ -351,6 +522,7 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
     async resolve(ctx: ConnectorContext, ref: string): Promise<PlaybackRealization[]> {
       if (typeof ref !== "string" || ref.length === 0) return [];
       for (const source of sources) {
+        if (!(await gate(source, ctx))) continue; // R03: skipped with a note
         const realizations = await guardedRead(
           source,
           "resolve",
@@ -423,6 +595,14 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
       const failures: string[] = [];
       for (const source of targets) {
+        // R03: an unauthorized source is skipped with its honest note; the
+        // receipt names the skip (an action on a signed-out source is a
+        // FAILED receipt naming why, never a fabricated success).
+        if (!(await gate(source, ctx))) {
+          const note = skips.get(source.id);
+          failures.push(`${source.id}: ${note ?? "skipped: source not currently authorized"}`);
+          continue;
+        }
         // Rewrite the binding id to the probed source's own id — the SDK
         // law that an action is bound to its own connector.
         const routed: UserAction = { ...action, connectorId: source.id };
@@ -454,8 +634,12 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
     },
 
     async readLibrary(ctx: ConnectorContext): Promise<LibraryEntry[]> {
+      const active: WiredSource[] = [];
+      for (const source of sources) {
+        if (await gate(source, ctx)) active.push(source);
+      }
       const perSource = await Promise.all(
-        sources.map((source) =>
+        active.map((source) =>
           guardedRead(source, "readLibrary", () => readLibraryOf(source, ctx), [] as LibraryEntry[]),
         ),
       );
@@ -476,7 +660,9 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
     async readLibraryForProfile(profileId: string): Promise<LibraryEntry[]> {
       // R02: only sources that OWN a service-side library contribute (the
-      // webflix-catalog); provider-scoped libraries are R03's lane.
+      // webflix-catalog); provider-scoped libraries are R03's lane — which
+      // also means there is nothing to auth-gate here (the contributing
+      // source is auth:none). The signature is R02's, unchanged (ADD-ONLY).
       const perSource = await Promise.all(
         sources.map((source) =>
           guardedRead(
@@ -530,6 +716,12 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       // order; the first source that answers a non-failed receipt wins.
       const failures: string[] = [];
       for (const source of sources) {
+        // R03: an unauthorized source is skipped with its honest note.
+        if (!(await gate(source, ctx))) {
+          const note = skips.get(source.id);
+          failures.push(`${source.id}: ${note ?? "skipped: source not currently authorized"}`);
+          continue;
+        }
         if (typeof source.connector.writeLibrary !== "function") {
           failures.push(`${source.id}: writeLibrary not implemented`);
           continue;
@@ -601,6 +793,12 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       // (it cannot attribute this write).
       const failures: string[] = [];
       for (const source of sources) {
+        // R03: an unauthorized source is skipped with its honest note.
+        if (!(await gate(source, ctx))) {
+          const note = skips.get(source.id);
+          failures.push(`${source.id}: ${note ?? "skipped: source not currently authorized"}`);
+          continue;
+        }
         const scoped = source.connector as Partial<ProfileScopedSource>;
         if (typeof scoped.writeLibraryForProfile !== "function") {
           failures.push(`${source.id}: writeLibraryForProfile not implemented`);
@@ -700,6 +898,12 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
       const failures: string[] = [];
       for (const source of targets) {
+        // R03: an unauthorized source is skipped with its honest note.
+        if (!(await gate(source, ctx))) {
+          const note = skips.get(source.id);
+          failures.push(`${source.id}: ${note ?? "skipped: source not currently authorized"}`);
+          continue;
+        }
         const routed: UserAction = { ...action, connectorId: source.id };
         const scoped = source.connector as Partial<ProfileScopedSource>;
         let receipt: ActionReceipt;

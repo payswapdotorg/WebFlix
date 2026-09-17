@@ -45,10 +45,37 @@
  * scoped library read is `readProfileLibrary` (the spec's "readLibrary"
  * profile-aware read, renamed to honor the ADD-not-reshape law — flagged
  * for the lead's ratification).
+ *
+ * THE R03 SOURCE EXTENSION (ADD-ONLY — the source-management work item;
+ * every R01/R02 member keeps its exact semantics):
+ *
+ * The port gains `readSources()` — the user's source-management truth as
+ * `SourceInfo[]` (descriptor + capability truth + authorization state +
+ * last-checked), the read behind the settings/sources surface (R01's
+ * `SettingsSection` vocabulary: sources | model | general). The CONNECT and
+ * DISCONNECT flows themselves run through the ADAPTER's platform UX (the
+ * OAuth dance is a web/desktop transport concern — browser redirects,
+ * provider pages); the runtime models the RESULTING STATE through the
+ * source-state store (`sources.ts`): refresh from the port + observe
+ * post-flow transitions, never the handshake itself. Answers carry the
+ * typed `ServerResult` failures — a failing source read is an ERROR model,
+ * never a fake empty list.
+ *
+ * > **Ratification item for the lead (the R03 transport seam):** unlike the
+ * > R02 profile members — which could be REQUIRED because no adapter had
+ * > shipped when R02 landed — `readSources` is OPTIONAL because the frozen
+ * > R07/R08 adapters (the web + desktop ServerPort implementations) implement
+ * > `ServerPort` TODAY and this work item may not edit them. The runtime
+ * > answers the honest `unavailable` failure ("the adapter transport has
+ * > not implemented the source read yet") until the lead wires the R03
+ * > HTTP mapping (`GET /sources`, delivered by this work item) onto the
+ * > adapters — the same integration step that wired the R02 members
+ * > post-merge. The shape is final; only the adapters' wiring is pending.
  */
 
 import type {
   ActionReceipt,
+  Capability,
   EntertainmentEvent,
   IntentRecord,
   LibraryCommand,
@@ -202,6 +229,107 @@ export interface ServerPort {
    * dials). Typed failures — never a fabricated success.
    */
   writePolicy(policy: RecommendationPolicyCommand): Promise<ServerResult<void>>;
+
+  // — the R03 source extension (ADD-ONLY; see the module doc + the
+  // ratification note on why this member is optional until the lead wires
+  // the adapters) —
+
+  /**
+   * The user's source-management truth (R03): every known source's
+   * descriptor truth + capability truth + CURRENT authorization state +
+   * account linkage + availability notes. Anonymous sessions answer the
+   * HONEST empty list (the anonymous user has no connected sources — never
+   * a fake one). Typed failures — never a fake empty list.
+   *
+   * OPTIONAL until the lead wires the adapters' transports (see the module
+   * doc's ratification note): the runtime's source-state store answers the
+   * honest `unavailable` failure when the bound port does not implement it.
+   */
+  readSources?(): Promise<ServerResult<readonly SourceInfo[]>>;
+}
+
+// ---------------------------------------------------------------------------
+// The R03 source-management truth shape
+// ---------------------------------------------------------------------------
+
+/** The authorization-state vocabulary of a source (the SDK's session states). */
+export type SourceAuthState =
+  | "signedOut"
+  | "authorizing"
+  | "signedIn"
+  | "expired"
+  | "failed";
+
+/** Every value of `SourceAuthState`, in union order. */
+export const SOURCE_AUTH_STATES: readonly SourceAuthState[] = [
+  "signedOut",
+  "authorizing",
+  "signedIn",
+  "expired",
+  "failed",
+] as const;
+
+/** Runtime membership check against the `SourceAuthState` union. */
+export function isSourceAuthState(x: unknown): x is SourceAuthState {
+  return typeof x === "string" && SOURCE_AUTH_STATES.includes(x as SourceAuthState);
+}
+
+/** The auth modes a source's descriptor can declare (the SDK's union). */
+export type SourceAuthMode = "none" | "oauth" | "device" | "local";
+
+/** Every value of `SourceAuthMode`, in union order. */
+export const SOURCE_AUTH_MODES: readonly SourceAuthMode[] = [
+  "none",
+  "oauth",
+  "device",
+  "local",
+] as const;
+
+/** Runtime membership check against the `SourceAuthMode` union. */
+export function isSourceAuthMode(x: unknown): x is SourceAuthMode {
+  return typeof x === "string" && SOURCE_AUTH_MODES.includes(x as SourceAuthMode);
+}
+
+/**
+ * One source's management-view truth (R03 — the architecture's seven user
+ * abilities: connect / see actual capabilities / see authorization state /
+ * reconnect / disconnect / inspect availability / sync-vs-local). Aligned
+ * with the service's `GET /sources` row; adapters render it directly and
+ * NEVER guess capability or authorization truth.
+ */
+export interface SourceInfo {
+  /** The connector's stable id (the SDK descriptor id). */
+  readonly connectorId: string;
+  /** Human display name (the SDK descriptor). */
+  readonly displayName: string;
+  /** The connector's version (the SDK descriptor). */
+  readonly version: string;
+  /** The declared auth mode (the SDK descriptor). */
+  readonly authMode: SourceAuthMode;
+  /**
+   * Capability truth: EVERY frozen capability with an explicit declared /
+   * not-declared flag — the "see actual capabilities" ability. Truthfully
+   * shows what each source CAN and CANNOT do.
+   */
+  readonly capabilities: Readonly<Record<Capability, boolean>>;
+  /** The CURRENT authorization state (the session machine's truth). */
+  readonly authState: SourceAuthState;
+  /** False only for `authMode: "none"` sources (they need no authorization). */
+  readonly requiresAuthorization: boolean;
+  /** Whether a connected account exists (account linkage). */
+  readonly connected: boolean;
+  /** The account id when connected (an opaque handle — NEVER a credential). */
+  readonly accountId: string | null;
+  /** When the CURRENT authorization was granted (null when never/not). */
+  readonly authorizedAt: string | null;
+  /** When the authorization state last changed. */
+  readonly lastStateChange: string | null;
+  /** The authorization's expiry (ISO instant) when the server reports one. */
+  readonly expiresAt: string | null;
+  /** Source-specific availability notes (quota/health truth — never secrets). */
+  readonly availabilityNotes: readonly string[];
+  /** When the server last checked this source's truth (ISO instant). */
+  readonly lastChecked: string;
 }
 
 /**

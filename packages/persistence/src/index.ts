@@ -34,6 +34,9 @@
  * - `recommendation-state.ts` — policy + opaque engine state per user
  * - `connector-accounts.ts` — AES-256-GCM envelope-encrypted credentials
  * - `envelope-crypto.ts`— seal/open + key decode/fingerprint
+ * - `model-input.ts`    — R03: the model-input privacy law (structurally
+ *                         secret-free source summaries + the loud
+ *                         credential-material guard)
  * - `ports.ts`          — the composition root: SystemClock, CryptoUlidIdGen,
  *                         makePostgresPorts (the full Ports bundle), and the
  *                         one-call bootPersistence production boot
@@ -72,9 +75,11 @@ export * from "./watch";
 export * from "./intents";
 export * from "./recommendation-state";
 
-// Connector accounts + credential envelope encryption.
+// Connector accounts + credential envelope encryption + the R03
+// model-input privacy law (the structurally secret-free summary + guard).
 export * from "./envelope-crypto";
 export * from "./connector-accounts";
+export * from "./model-input";
 
 // The composition root (Ports bundle + production boot).
 export * from "./ports";

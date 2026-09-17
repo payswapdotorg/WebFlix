@@ -63,6 +63,7 @@ import { serverFailureKind } from "./errors";
 import type { RuntimeContext, ServerPort, ServerResult } from "./server-port";
 import type { SearchResult } from "@wfx/domain";
 import { createNavigationStore, type NavigationController } from "./navigation";
+import { createSourceStateStore, type SourceStateOperations } from "./sources";
 import {
   WatchStateEngine,
   type WatchEventRetryReport,
@@ -118,6 +119,12 @@ export interface ClientRuntime {
   shorts(input?: ShortsQuery): Promise<SearchModel>;
   /** Re-attempt every pending watch event (the at-least-once retry). */
   retryPendingWatchEvents(): Promise<WatchEventRetryReport>;
+  /**
+   * R03: the source-state operations (the settings/sources surface's data —
+   * refresh from the server + observe post-flow transitions; the flows
+   * themselves run through the adapter's platform UX).
+   */
+  readonly sources: SourceStateOperations;
 }
 
 // ---------------------------------------------------------------------------
@@ -196,6 +203,7 @@ export function createRuntime(
   const actions = new ActionEngine(server, platform, session.clock, session.ids);
   const libraryEngine = new LibraryEngine(server, registry, watch, session.clock);
   const intents = new IntentStore(session.clock, session.ids);
+  const sources = createSourceStateStore(server);
 
   // — the at-least-once flush hook (adapters await async shutdown hooks) —
   platform.ports.lifecycle.hook("shutdown", async () => {
@@ -315,6 +323,7 @@ export function createRuntime(
     watchState: watch.operations(),
     libraryOps: libraryEngine.operations(),
     intents: intents.operations(),
+    sources,
 
     retryPendingWatchEvents: () => watch.retryPendingWatchEvents(),
   };

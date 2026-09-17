@@ -28,6 +28,8 @@
  * - `actions.ts`              — action state (requested/confirmed/unsupported/failed)
  * - `intent.ts`               — intent submission + attention-mode policy
  * - `models.ts`               — the read models (home/search/shorts/library)
+ * - `sources.ts`              — R03: the source-state store (source
+ *                               management's observed model)
  * - `registry.ts`             — the canonical item registry
  * - `runtime-seams.ts`        — the clock/id seams
  * - `testing.ts`              — ⚠️ TEST DOUBLES — production code never imports it
@@ -38,6 +40,7 @@ export * from "./errors";
 export * from "./server-port";
 export * from "./runtime-seams";
 export * from "./navigation";
+export * from "./sources";
 export * from "./playback";
 export * from "./watch-state";
 export * from "./library";

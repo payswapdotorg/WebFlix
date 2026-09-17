@@ -280,3 +280,50 @@ export function parseProfileMutationBody(input: unknown): ParseResult<ProfileMut
   };
   return { ok: true, value: body };
 }
+
+// ---------------------------------------------------------------------------
+// R03 — source-management bodies
+// ---------------------------------------------------------------------------
+
+/** The optional connect/reauthorize body: `{ credential?: string }` (local flows). */
+export interface SourceConnectBody {
+  readonly credential?: string;
+}
+
+/** Max accepted credential length (bounded, provider tokens are far smaller). */
+const MAX_CREDENTIAL_LENGTH = 8192;
+
+/**
+ * Parse the OPTIONAL `POST /sources/:connectorId/connect|reauthorize` body.
+ * The body is optional in its entirety (oauth/device flows carry nothing);
+ * a `credential` is only meaningful for `local` flows — the service answers
+ * the typed wrong-flow failure when it appears elsewhere.
+ */
+export function parseSourceConnectBody(input: unknown): ParseResult<SourceConnectBody> {
+  if (input === undefined || input === null) return { ok: true, value: {} };
+  if (!isRecord(input)) {
+    return { ok: false, problems: ["body: expected a SourceConnect JSON object (or no body at all)"] };
+  }
+  const problems: string[] = [];
+  let credential: string | undefined;
+  const raw = input.credential;
+  if (raw !== undefined && raw !== null) {
+    if (typeof raw !== "string" || raw.length === 0) {
+      problems.push("credential: when present, expected a non-empty string");
+    } else if (raw.length > MAX_CREDENTIAL_LENGTH) {
+      problems.push(`credential: longer than ${MAX_CREDENTIAL_LENGTH} characters`);
+    } else {
+      credential = raw;
+    }
+  }
+  for (const key of Object.keys(input)) {
+    if (key !== "credential") {
+      problems.push(`body: unknown field '${key}' (allowed: credential)`);
+    }
+  }
+  if (problems.length > 0) return { ok: false, problems };
+  return {
+    ok: true,
+    value: credential !== undefined ? { credential } : {},
+  };
+}

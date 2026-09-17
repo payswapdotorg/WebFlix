@@ -34,11 +34,11 @@
  * - clock = `SystemClock`, ids = `CryptoUlidIdGen` — the 052
  *   composition-root seams (shared by every port in the bundle: ONE clock
  *   and ONE id source per boot, never per request).
- * - The YouTube credential source is the WFX-054 in-memory per-instance
- *   source — the honest documented stopgap until the OAuth host wiring
- *   lands (tokens never survive an instance; users appear signed-out to
- *   the secondary after a recycle). Public-data operations still work via
- *   `YOUTUBE_API_KEY` when provisioned.
+ * - R03: the YouTube credential source is the connector's PERSISTENCE-backed
+ *   adapter over the durable connector-account store (envelope-encrypted,
+ *   WFX-052 + migration 0008) — the /sources connect/reauthorize/disconnect
+ *   routes write exactly what the connector reads. The WFX-054 in-memory
+ *   per-instance stopgap is retired (tokens now survive recycles).
  *
  * SINGLETON LAW: module-level cached promise — every route handler in the
  * App Router shares this module, so the boot runs ONCE per instance,
@@ -58,24 +58,33 @@
 
 import {
   createFetchYouTubeTransport,
-  createInMemoryYouTubeCredentialSource,
   createYouTubeConnector,
+  PersistenceYouTubeCredentialSource,
 } from "@wfx/connectors";
 import type { ConnectorPort, Ports } from "@wfx/experience";
 import {
   bootPersistence,
   CryptoUlidIdGen,
+  PostgresConnectorAccountStore,
   PostgresEventSink,
   PostgresIdentityService,
   PostgresProfileService,
   PostgresSessionService,
   SystemClock,
+  decodeEncryptionKey,
   type PersistenceBoot,
 } from "@wfx/persistence";
 
 import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
-import { createFanOutConnector, type FanOutConnector } from "./fan-out";
+import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
 import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
+import {
+  createSourceManagementService,
+  createYouTubeSourceWiring,
+  deriveAuthState,
+  type SourceManagementService,
+  type SourceAuthWiring,
+} from "./source-management";
 import { API_SERVICE_VERSION } from "./version";
 
 /** What a successful service boot assembles. */
@@ -117,6 +126,20 @@ export interface ApiBoot {
    * adapter over the same db/clock/ids — safe alongside `ports.events`.
    */
   readonly profileEvents: PostgresEventSink;
+  /**
+   * R03 — the source-management service: the /sources routes (list /
+   * connect / reauthorize / disconnect / callback) answer against it, and
+   * the fan-out's auth gate derives each account-bound source's CURRENT
+   * authorization state through the same account store + derivation.
+   */
+  readonly sourceManagement: SourceManagementService;
+  /**
+   * R03 — the durable connector-account store (envelope-encrypted
+   * credentials + pending authorizations). Shared by the source-management
+   * service and the auth gate; the connector runtime lane (token refresh)
+   * reads through `loadAccount` exclusively.
+   */
+  readonly connectorAccounts: PostgresConnectorAccountStore;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -154,13 +177,28 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
   const profiles = new PostgresProfileService({ db: persistence.db, ids, clock });
   const profileEvents = new PostgresEventSink({ db: persistence.db, ids, clock });
 
-  // 3. The content sources, in PROBE ORDER (primary first).
+  // 3. The R03 durable connector-account store — created BEFORE the
+  //    content sources so the YouTube connector's credential seam binds to
+  //    the DURABLE store (the connector's own persistence-backed adapter):
+  //    a user connected through /sources is a user the connector serves.
+  const connectorAccounts = new PostgresConnectorAccountStore({
+    db: persistence.db,
+    clock,
+    key: decodeEncryptionKey(config.encryptionKey),
+    ids,
+  });
+
+  // 4. The content sources, in PROBE ORDER (primary first).
   const sources: ConnectorPort[] = [persistence.ports.connector];
 
-  // 4. The secondary YouTube source — wired ONLY when the operator
-  //    provisioned YOUTUBE_* (honest absence otherwise: without
-  //    credentials its calls would degrade typed `unauthorized`, so not
-  //    wiring it is the honest cheaper equivalent).
+  // 4.1. The secondary YouTube source — wired ONLY when the operator
+  //      provisioned YOUTUBE_* (honest absence otherwise: without
+  //      credentials its calls would degrade typed `unauthorized`, so not
+  //      wiring it is the honest cheaper equivalent). R03: the credential
+  //      source is the connector's PERSISTENCE-backed adapter over the
+  //      durable account store — connections made through /sources flow
+  //      straight into the connector's auth resolution (the in-memory
+  //      per-instance stopgap is retired).
   if (config.youtube !== null) {
     const youtube = config.youtube;
     const hasOAuthPair =
@@ -168,9 +206,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     sources.push(
       createYouTubeConnector({
         transport: createFetchYouTubeTransport(),
-        // In-memory per-instance credential source — the documented
-        // stopgap until the OAuth host wiring lands (see module doc).
-        credentialSource: createInMemoryYouTubeCredentialSource(),
+        credentialSource: new PersistenceYouTubeCredentialSource(connectorAccounts),
         clock,
         ...(youtube.apiKey !== undefined ? { apiKey: youtube.apiKey } : {}),
         ...(hasOAuthPair
@@ -180,11 +216,93 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     );
   }
 
-  // 5. The app-level fan-out behind the single Ports.connector seam.
+  // 4.5. R03 — the per-connector auth-flow wirings (documented provider
+  //      facts only; the YouTube OAuth triple comes from the operator's
+  //      env, an unwired flow stays honestly flow-missing).
+  const wirings = new Map<string, SourceAuthWiring>();
+  if (config.youtube?.clientId !== undefined && config.youtube.clientSecret !== undefined) {
+    if (config.youtube.redirectUri !== undefined) {
+      wirings.set(
+        "youtube",
+        createYouTubeSourceWiring({
+          clientId: config.youtube.clientId,
+          clientSecret: config.youtube.clientSecret,
+          redirectUri: config.youtube.redirectUri,
+        }),
+      );
+    }
+    // Pair without redirect URI: token rotation works (the connector's
+    // own wiring), but the connect FLOW is honestly not provisioned — the
+    // /sources view reports it not connectable with the note why.
+  }
+
+  // 5. The app-level fan-out behind the single Ports.connector seam, now
+  //    auth-state aware (R03): account-bound sources are consulted for
+  //    their CURRENT authorization state per request; an unauthorized
+  //    source is skipped with an honest note, never queried, never an
+  //    error.
+  const authGate: FanOutAuthGate = {
+    async check(source, ctx) {
+      if (source.auth === "none" || source.auth === "local") {
+        return { verdict: "query" }; // no provider account binding in this deployment
+      }
+      if (!wirings.has(source.id)) {
+        return { verdict: "query" }; // not connectable here: a public-data wiring — the connector degrades typed itself
+      }
+      let records: Awaited<ReturnType<PostgresConnectorAccountStore["listForUser"]>>;
+      let pendings: Awaited<ReturnType<PostgresConnectorAccountStore["listPendingAuthorizationsForUser"]>>;
+      try {
+        records = await connectorAccounts.listForUser(ctx.userId);
+        pendings = await connectorAccounts.listPendingAuthorizationsForUser(ctx.userId);
+      } catch {
+        return { verdict: "query" }; // a broken gate read degrades to the source's own typed handling
+      }
+      const row = records.find((record) => record.connectorId === source.id) ?? null;
+      const pending = pendings.find((p) => p.connectorId === source.id) ?? null;
+      const state = deriveAuthState(row, pending, clock.now());
+      switch (state) {
+        case "signedIn":
+          return { verdict: "query" };
+        case "signedOut":
+          return {
+            verdict: "skip",
+            state: "signedOut",
+            detail: "the source is signed out — connect it in Settings › Sources to include it",
+          };
+        case "expired":
+          return {
+            verdict: "skip",
+            state: "expired",
+            detail: "the stored authorization expired — reconnect the source to restore it",
+          };
+        case "authorizing":
+          return {
+            verdict: "skip",
+            state: "authorizing",
+            detail: "an authorization handshake is in progress — the source joins once it completes",
+          };
+        case "failed":
+          return {
+            verdict: "skip",
+            state: "failed",
+            detail: "the last authorization failed — reconnect the source to retry",
+          };
+      }
+    },
+  };
+
   const connector = createFanOutConnector({
     sources,
     clock,
     version: API_SERVICE_VERSION,
+    authGate,
+  });
+
+  const sourceManagement = createSourceManagementService({
+    sourceRows: connector.sourceRows(),
+    wirings,
+    accounts: connectorAccounts,
+    clock,
   });
 
   // 6. The service Ports bundle: the fan-out + the 052 transactional
@@ -197,7 +315,19 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     ids,
   };
 
-  return { config, persistence, connector, seed, ports, identity, sessions, profiles, profileEvents };
+  return {
+    config,
+    persistence,
+    connector,
+    seed,
+    ports,
+    identity,
+    sessions,
+    profiles,
+    profileEvents,
+    sourceManagement,
+    connectorAccounts,
+  };
 }
 
 /** The module-level singleton slot (see the SINGLETON LAW above). */
