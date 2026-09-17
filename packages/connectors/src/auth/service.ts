@@ -111,6 +111,13 @@ function invalidAuthInput(detail: string): AuthError {
  * A begun (in-flight) auth attempt: the flow the CALLER must follow plus
  * the opaque id used to complete it. Issued by `beginAuth`; the pending
  * expires at `expiresAt` (epoch ms).
+ *
+ * R03 — the pending-authorization extension: when the caller supplied a
+ * `state` token, it is echoed here (`state`) — the OPAQUE token the
+ * provider redirects back with (the OAuth CSRF `state`). A host that
+ * persists its pendings durably keys them BY this state (the callback
+ * route's lookup key); the pending itself (user, connector, flow, expiry)
+ * lives server-side only — never in URLs.
  */
 export interface PendingAuthInfo {
   /** Opaque id for `completeAuth` (and only for that). */
@@ -123,6 +130,22 @@ export interface PendingAuthInfo {
   readonly flow: AuthFlow;
   /** When this pending expires (epoch ms). */
   readonly expiresAt: number;
+  /** R03: the caller-minted opaque state token (OAuth CSRF state), when supplied. */
+  readonly state?: string;
+}
+
+/**
+ * R03 — options for {@link ConnectorAuthService.beginAuth}.
+ */
+export interface BeginAuthOptions {
+  /**
+   * The caller-minted OPAQUE state token (the OAuth CSRF `state` a
+   * provider echoes back on redirect). When supplied it travels on the
+   * pending (`PendingAuthInfo.state`) for the caller's URL builder and
+   * durable bookkeeping. Shape-checked only (non-empty, bounded, no
+   * control characters) — the service never derives meaning from it.
+   */
+  readonly state?: string;
 }
 
 /** A completed auth: the session is signed in and the secret is stored. */
@@ -221,6 +244,8 @@ interface PendingAuth {
   readonly userId: string;
   readonly flow: AuthFlow;
   readonly expiresAt: number;
+  /** R03: the caller-minted opaque state token, when supplied. */
+  readonly state?: string;
 }
 
 /**
@@ -331,6 +356,11 @@ export class ConnectorAuthService {
    * pendingAuthId becomes unknown). For non-`none` flows the session moves
    * to `authorizing` (legal from signedOut/signedIn/expired/failed).
    *
+   * R03: `options.state` threads the caller-minted OPAQUE OAuth state onto
+   * the pending (`PendingAuthInfo.state`) — hosts key their durable
+   * pending-authorizations by it. Shape-checked; garbage answers the typed
+   * `invalid-input`.
+   *
    * Typed errors: `unknown-connector`, `flow-missing` (oauth/device
    * without registered details), `invalid-input`.
    *
@@ -338,9 +368,16 @@ export class ConnectorAuthService {
    *         match the descriptor's auth mode (wiring error — loud, not a
    *         faked result).
    */
-  beginAuth(ctx: ConnectorContext, connectorId: string): AuthResult<PendingAuthInfo> {
+  beginAuth(
+    ctx: ConnectorContext,
+    connectorId: string,
+    options?: BeginAuthOptions,
+  ): AuthResult<PendingAuthInfo> {
     const inputError = validateContext(ctx) ?? validateNonEmpty("connectorId", connectorId);
     if (inputError !== null) return err(inputError);
+
+    const stateError = validateStateOption(options);
+    if (stateError !== null) return err(stateError);
 
     const row = this.rowFor(connectorId);
     if (row === null) {
@@ -365,16 +402,25 @@ export class ConnectorAuthService {
       session.transition("authorizing");
     }
 
+    const state = options?.state;
     const pending: PendingAuth = {
       pendingAuthId,
       connectorId,
       userId: ctx.userId,
       flow,
       expiresAt,
+      ...(state !== undefined ? { state } : {}),
     };
     this.pendings.set(pendingAuthId, pending);
 
-    return ok({ pendingAuthId, connectorId, userId: ctx.userId, flow, expiresAt });
+    return ok({
+      pendingAuthId,
+      connectorId,
+      userId: ctx.userId,
+      flow,
+      expiresAt,
+      ...(state !== undefined ? { state } : {}),
+    });
   }
 
   /**
@@ -622,6 +668,31 @@ function validateContext(ctx: unknown): AuthError | null {
 function validateNonEmpty(field: string, value: unknown): AuthError | null {
   if (typeof value !== "string" || value.trim().length === 0) {
     return invalidAuthInput(`'${field}' must be a non-empty string`);
+  }
+  return null;
+}
+
+/** Max accepted length of the caller-minted opaque state token. */
+const MAX_STATE_LENGTH = 256;
+
+/** Control characters (C0 + DEL) — never legitimate in a state token. */
+const CONTROL_CHARS = /[\u0000-\u001F\u007F]/;
+
+/** R03: shape-check the optional beginAuth state token (opaque to the service). */
+function validateStateOption(options: unknown): AuthError | null {
+  if (options === undefined) return null;
+  if (!isPlainObject(options)) {
+    return invalidAuthInput("'options' must be a BeginAuthOptions object");
+  }
+  const state = options["state"];
+  if (state === undefined) return null;
+  if (typeof state !== "string" || state.length === 0 || state.length > MAX_STATE_LENGTH) {
+    return invalidAuthInput(
+      `'options.state' must be a non-empty string of at most ${MAX_STATE_LENGTH} characters`,
+    );
+  }
+  if (CONTROL_CHARS.test(state)) {
+    return invalidAuthInput("'options.state' must not contain control characters");
   }
   return null;
 }

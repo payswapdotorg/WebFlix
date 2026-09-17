@@ -66,6 +66,15 @@
  * answer (reads) or a failed receipt (writes) and the failure is recorded
  * per source in `lastDegradations()` — diagnosable, never silent, never
  * fabricated.
+ *
+ * R03 — AUTH-STATE-AWARE QUERYING: with an `authGate` wired, every
+ * per-source call FIRST honors the source's CURRENT per-user authorization
+ * state: a signedOut/expired/authorizing/failed source is SKIPPED with an
+ * honest per-source note in `lastSourceSkips()` (a signedOut source is
+ * never an error and never silently queried; an expired source surfaces
+ * `expired` — the J28 journey seed). A gate failure degrades to ungated
+ * operation (each source's own typed degradation still covers it). Without
+ * a gate the fan-out behaves EXACTLY as before (the gate is additive).
  */
 
 import type {
@@ -135,7 +144,32 @@ export interface FanOutConnectorOptions {
   readonly clock: Clock;
   /** The descriptor version (default: the service version). */
   readonly version?: string;
+  /**
+   * R03 — the per-USER source auth gate: resolves each wired source's
+   * CURRENT authorization state for the request's user (the source-
+   * management service's `authGateFor`). A source the gate marks unusable
+   * is SKIPPED with an honest per-source note (`lastSourceSkips`) — a
+   * signedOut source is never queried, an expired source surfaces
+   * `expired` (the J28 journey seed), and a source absent from the gate's
+   * map is queried ungated (its own typed degradation covers it).
+   */
+  readonly authGate?: FanOutAuthGate;
 }
+
+/** One wired source's CURRENT auth state as the fan-out sees it (R03). */
+export interface FanOutSourceAuthState {
+  readonly connectorId: string;
+  readonly session: "signedOut" | "authorizing" | "signedIn" | "expired" | "failed";
+  /** Usable for authenticated operations (auth:none sources: always). */
+  readonly usable: boolean;
+  /** Optional honest detail (e.g. the expiry instant). */
+  readonly detail?: string;
+}
+
+/** The per-user auth-state resolver (R03) — see FanOutConnectorOptions. */
+export type FanOutAuthGate = (
+  ctx: ConnectorContext,
+) => Promise<ReadonlyMap<string, FanOutSourceAuthState>>;
 
 /**
  * The fan-out connector: a `ConnectorPort` whose optional library methods
@@ -153,6 +187,14 @@ export interface FanOutConnector extends ConnectorPort {
    * Never used to answer — only to diagnose. Empty map = everything healthy.
    */
   lastDegradations(): ReadonlyMap<string, string>;
+  /**
+   * R03 — the per-source SKIP diary: source id → the last honest auth-state
+   * note that skipped the source from a fan-out call (signed out / expired
+   * / authorizing / failed). Skips are HONEST STATES, not failures — they
+   * live apart from `lastDegradations`; a signedOut source skipped with a
+   * note is never an error and never silently queried.
+   */
+  lastSourceSkips(): ReadonlyMap<string, string>;
   /** The merged library read (always implemented — see the class doc). */
   readLibrary(ctx: ConnectorContext): Promise<LibraryEntry[]>;
   /** The probed library write (always implemented — see the class doc). */
@@ -253,9 +295,68 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
   const capabilities = CANONICAL_CAPABILITY_ORDER.filter((capability) => union.has(capability));
 
   const degradations = new Map<string, string>();
+  const skips = new Map<string, string>();
 
   function record(sourceId: string, detail: string): void {
     degradations.set(sourceId, detail);
+  }
+
+  function recordSkip(sourceId: string, note: string): void {
+    skips.set(sourceId, note);
+  }
+
+  /**
+   * R03: resolve the per-user gate ONCE per fan-out call. A gate failure is
+   * a degradation (named, logged in the diary) — the call proceeds UNGATED
+   * (each source's own typed degradation covers its failures honestly).
+   */
+  async function resolveGate(
+    ctx: ConnectorContext,
+  ): Promise<ReadonlyMap<string, FanOutSourceAuthState> | null> {
+    if (options.authGate === undefined) return null;
+    try {
+      return await options.authGate(ctx);
+    } catch (thrown) {
+      record("auth-gate", `auth gate failed: ${describeThrown(thrown)} — proceeding ungated`);
+      return null;
+    }
+  }
+
+  /**
+   * The honest skip note for a gated-out source, or null when the source
+   * should be queried (usable, or the gate did not speak for it).
+   */
+  function gateSkipNote(state: FanOutSourceAuthState): string | null {
+    if (state.usable) return null;
+    switch (state.session) {
+      case "signedOut":
+        return "skipped: the source is signed out — connect it in settings";
+      case "expired":
+        return `expired: ${
+          state.detail ?? "the stored authorization expired"
+        } — reauthorize the source`;
+      case "authorizing":
+        return "skipped: the connection is in progress (authorizing)";
+      case "failed":
+        return `skipped: the authorization failed${
+          state.detail !== undefined ? ` (${state.detail})` : ""
+        } — reconnect the source`;
+      case "signedIn":
+        // usable=false but signedIn (a gate inconsistency): the source's
+        // own truth decides — query it.
+        return null;
+    }
+  }
+
+  /** The skip note for one source under one resolved gate (null = query). */
+  function skipFor(
+    gate: ReadonlyMap<string, FanOutSourceAuthState> | null,
+    source: WiredSource,
+  ): string | null {
+    if (gate === null) return null;
+    const state = gate.get(source.id);
+    if (state === undefined) return null;
+    return gateSkipNote(state);
   }
 
   /**
@@ -297,6 +398,10 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       return new Map(degradations);
     },
 
+    lastSourceSkips() {
+      return new Map(skips);
+    },
+
     descriptor(): ConnectorDescriptor {
       return {
         id: EXPERIENCE_SERVICE_CONNECTOR_ID,
@@ -309,12 +414,18 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
     async search(ctx: ConnectorContext, query: string): Promise<SearchResult[]> {
       if (typeof query !== "string" || query.trim().length === 0) return [];
+      const gate = await resolveGate(ctx);
       // Fan out concurrently; collect by SOURCE ORDER (not completion
       // order) so the merge is deterministic.
       const perSource = await Promise.all(
-        sources.map((source) =>
-          guardedRead(source, "search", () => source.connector.search(ctx, query), [] as SearchResult[]),
-        ),
+        sources.map((source) => {
+          const skip = skipFor(gate, source);
+          if (skip !== null) {
+            recordSkip(source.id, `search: ${skip}`);
+            return Promise.resolve([] as SearchResult[]);
+          }
+          return guardedRead(source, "search", () => source.connector.search(ctx, query), [] as SearchResult[]);
+        }),
       );
       const seen = new Set<string>();
       const merged: SearchResult[] = [];
@@ -336,7 +447,13 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
     async metadata(ctx: ConnectorContext, ref: string): Promise<SourceItem | null> {
       if (typeof ref !== "string" || ref.length === 0) return null;
+      const gate = await resolveGate(ctx);
       for (const source of sources) {
+        const skip = skipFor(gate, source);
+        if (skip !== null) {
+          recordSkip(source.id, `metadata: ${skip}`);
+          continue; // a skip is not an answer — probe the next source
+        }
         const item = await guardedRead(
           source,
           "metadata",
@@ -350,7 +467,13 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
     async resolve(ctx: ConnectorContext, ref: string): Promise<PlaybackRealization[]> {
       if (typeof ref !== "string" || ref.length === 0) return [];
+      const gate = await resolveGate(ctx);
       for (const source of sources) {
+        const skip = skipFor(gate, source);
+        if (skip !== null) {
+          recordSkip(source.id, `resolve: ${skip}`);
+          continue; // a skip is not an answer — probe the next source
+        }
         const realizations = await guardedRead(
           source,
           "resolve",
@@ -421,8 +544,17 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
         };
       }
 
+      const gate = await resolveGate(ctx);
       const failures: string[] = [];
       for (const source of targets) {
+        // R03: a gated-out source answers the honest failed receipt naming
+        // its auth state (an expired source surfaces `expired` — J28).
+        const skip = skipFor(gate, source);
+        if (skip !== null) {
+          recordSkip(source.id, `executeAction: ${skip}`);
+          failures.push(`${source.id}: ${skip}`);
+          continue;
+        }
         // Rewrite the binding id to the probed source's own id — the SDK
         // law that an action is bound to its own connector.
         const routed: UserAction = { ...action, connectorId: source.id };
@@ -454,10 +586,16 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
     },
 
     async readLibrary(ctx: ConnectorContext): Promise<LibraryEntry[]> {
+      const gate = await resolveGate(ctx);
       const perSource = await Promise.all(
-        sources.map((source) =>
-          guardedRead(source, "readLibrary", () => readLibraryOf(source, ctx), [] as LibraryEntry[]),
-        ),
+        sources.map((source) => {
+          const skip = skipFor(gate, source);
+          if (skip !== null) {
+            recordSkip(source.id, `readLibrary: ${skip}`);
+            return Promise.resolve([] as LibraryEntry[]);
+          }
+          return guardedRead(source, "readLibrary", () => readLibraryOf(source, ctx), [] as LibraryEntry[]);
+        }),
       );
       const seen = new Set<string>();
       const merged: LibraryEntry[] = [];
@@ -477,6 +615,8 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
     async readLibraryForProfile(profileId: string): Promise<LibraryEntry[]> {
       // R02: only sources that OWN a service-side library contribute (the
       // webflix-catalog); provider-scoped libraries are R03's lane.
+      // (No auth gate here: the profile library is the WebFlix-owned
+      // service library, not a provider-scoped read.)
       const perSource = await Promise.all(
         sources.map((source) =>
           guardedRead(
@@ -528,8 +668,15 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
 
       // The frozen LibraryCommand carries no connector id — probe in wiring
       // order; the first source that answers a non-failed receipt wins.
+      const gate = await resolveGate(ctx);
       const failures: string[] = [];
       for (const source of sources) {
+        const skip = skipFor(gate, source);
+        if (skip !== null) {
+          recordSkip(source.id, `writeLibrary: ${skip}`);
+          failures.push(`${source.id}: ${skip}`);
+          continue;
+        }
         if (typeof source.connector.writeLibrary !== "function") {
           failures.push(`${source.id}: writeLibrary not implemented`);
           continue;
@@ -599,8 +746,15 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
       // Same probe law as writeLibrary, but profile-aware sources take the
       // explicit profile; a source without profile support honestly says so
       // (it cannot attribute this write).
+      const gate = await resolveGate(ctx);
       const failures: string[] = [];
       for (const source of sources) {
+        const skip = skipFor(gate, source);
+        if (skip !== null) {
+          recordSkip(source.id, `writeLibraryForProfile: ${skip}`);
+          failures.push(`${source.id}: ${skip}`);
+          continue;
+        }
         const scoped = source.connector as Partial<ProfileScopedSource>;
         if (typeof scoped.writeLibraryForProfile !== "function") {
           failures.push(`${source.id}: writeLibraryForProfile not implemented`);
@@ -698,8 +852,15 @@ export function createFanOutConnector(options: FanOutConnectorOptions): FanOutCo
         };
       }
 
+      const gate = await resolveGate(ctx);
       const failures: string[] = [];
       for (const source of targets) {
+        const skip = skipFor(gate, source);
+        if (skip !== null) {
+          recordSkip(source.id, `executeActionForProfile: ${skip}`);
+          failures.push(`${source.id}: ${skip}`);
+          continue;
+        }
         const routed: UserAction = { ...action, connectorId: source.id };
         const scoped = source.connector as Partial<ProfileScopedSource>;
         let receipt: ActionReceipt;

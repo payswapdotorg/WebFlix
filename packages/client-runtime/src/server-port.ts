@@ -45,10 +45,28 @@
  * scoped library read is `readProfileLibrary` (the spec's "readLibrary"
  * profile-aware read, renamed to honor the ADD-not-reshape law — flagged
  * for the lead's ratification).
+ *
+ * THE R03 SOURCE EXTENSION (ADD-ONLY + OPTIONAL — see `readSources`):
+ *
+ * `SourceInfo` is the source-management read model (descriptor + capability
+ * truth + authorization state + account linkage + availability notes),
+ * aligned with the architecture's seven source-management abilities; the
+ * settings surface's `sources` section (R01's `SettingsSection` vocabulary:
+ * sources | model | general) renders it. The port member is declared
+ * OPTIONAL deliberately: the frozen Web and Desktop adapters (R07/R08)
+ * already implement `ServerPort` without it, and this work item may not
+ * edit them — an adapter that has not wired the source read yet keeps
+ * compiling, and the runtime's `sources()` op degrades the absence to the
+ * typed `unavailable` error section (never a fake empty list). The lead's
+ * integration completion promotes the member to required when the adapters
+ * implement it — the exact precedent of R02's profile extension ("lead: R02
+ * integration completion — desktop/web ServerPort implements the profile
+ * extension").
  */
 
 import type {
   ActionReceipt,
+  Capability,
   EntertainmentEvent,
   IntentRecord,
   LibraryCommand,
@@ -60,6 +78,7 @@ import type {
   UserAction,
 } from "@wfx/domain";
 
+import type { RuntimeErrorKind } from "./errors";
 import type { RecommendationPolicyCommand, UserIntentCommand } from "./intent";
 
 // ---------------------------------------------------------------------------
@@ -202,6 +221,154 @@ export interface ServerPort {
    * dials). Typed failures — never a fabricated success.
    */
   writePolicy(policy: RecommendationPolicyCommand): Promise<ServerResult<void>>;
+
+  // — the R03 source extension (ADD-ONLY + OPTIONAL; see the module doc) —
+
+  /**
+   * R03 — the user's source-management read: one `SourceInfo` per source
+   * (descriptor + capability truth + authorization state + account linkage
+   * + availability notes). The settings surface's `sources` section renders
+   * it; the connect/disconnect FLOWS run through the adapter's platform UX
+   * (the OAuth dance is the adapter's, never the runtime's) — this read
+   * models the RESULTING state.
+   *
+   * OPTIONAL on purpose (see the module doc): the frozen Web/Desktop
+   * adapters implement `ServerPort` without it; the runtime's `sources()`
+   * op degrades the absence to the typed `unavailable` error section —
+   * never a fake empty list. Anonymous sessions answer the honest EMPTY
+   * list server-side (an anonymous user has no connected sources — never
+   * a fabricated one).
+   */
+  readSources?(): Promise<ServerResult<readonly SourceInfo[]>>;
+}
+
+// ---------------------------------------------------------------------------
+// The R03 source-management read model
+// ---------------------------------------------------------------------------
+
+/** A source's auth mode (mirrors the frozen descriptor `auth` union). */
+export type SourceAuthMode = "none" | "oauth" | "device" | "local";
+
+/** Every value of `SourceAuthMode`, in union order. */
+export const SOURCE_AUTH_MODES: readonly SourceAuthMode[] = [
+  "none",
+  "oauth",
+  "device",
+  "local",
+];
+
+/**
+ * A source's authorization state (mirrors the connector SDK's
+ * `AuthSessionState` — the session state machine's vocabulary; an expired
+ * token is REPORTED expired, never silently "connected").
+ */
+export type SourceAuthorizationState =
+  | "signedOut"
+  | "authorizing"
+  | "signedIn"
+  | "expired"
+  | "failed";
+
+/** Every value of `SourceAuthorizationState`, in union order. */
+export const SOURCE_AUTHORIZATION_STATES: readonly SourceAuthorizationState[] = [
+  "signedOut",
+  "authorizing",
+  "signedIn",
+  "expired",
+  "failed",
+];
+
+/**
+ * One source's management truth (R03): what it IS (descriptor identity +
+ * capability truth), whether the user's authorization to it is usable, and
+ * the source-specific availability notes. Structurally secret-FREE —
+ * provider credentials never enter this shape (the runtime privacy law);
+ * notes carry non-secret quota/health truth only.
+ */
+export interface SourceInfo {
+  /** The connector's stable kebab-case id. */
+  readonly connectorId: string;
+  readonly displayName: string;
+  readonly version: string;
+  /** The declared auth handshake this source uses. */
+  readonly authMode: SourceAuthMode;
+  /** The CURRENT authorization state (expired is reported expired). */
+  readonly authState: SourceAuthorizationState;
+  /**
+   * Usable for authenticated operations: true for `authMode: "none"`
+   * sources (no authorization needed) and for `authState: "signedIn"`
+   * sources; false otherwise.
+   */
+  readonly usable: boolean;
+  /** Whether the user has a linked account row for this source. */
+  readonly connected: boolean;
+  /**
+   * The capability truth row: EVERY frozen capability with declared =
+   * true — Web truthfully shows what each source CAN and CANNOT do.
+   */
+  readonly capabilities: Readonly<Record<Capability, boolean>>;
+  /** ISO instant of the current credential's authorization, when linked. */
+  readonly authorizedAt: string | null;
+  /** ISO instant of the last authorization-state change, when known. */
+  readonly lastStateChange: string | null;
+  /** ISO instant of the stored authorization's expiry, when it carries one. */
+  readonly expiresAt: string | null;
+  /** Source-specific availability notes (non-secret quota/health truth). */
+  readonly notes: readonly string[];
+}
+
+/**
+ * The source-management read model (the runtime's `sources()` answer): the
+ * honest section status + the per-source truth. Degradation lives IN THE
+ * MODEL (the R01 law): a failing read is an ERROR section, never a fake
+ * empty list.
+ */
+export interface SourcesModel {
+  readonly status: {
+    readonly state: "ready" | "error";
+    readonly error?: { readonly kind: RuntimeErrorKind; readonly detail: string };
+  };
+  /** Present iff `status.state === "ready"`: the sources (validated shape). */
+  readonly sources: readonly SourceInfo[];
+}
+
+/**
+ * Structural shape guard for one `SourceInfo` (the transport boundary's
+ * honesty filter — a malformed entry is skipped by the runtime, never
+ * rendered as a card, the same law as search hits). Exported for the
+ * adapters' lead-integration (the web/desktop ports validate their HTTP
+ * payloads with the same shape).
+ */
+export function isUsableSourceInfo(value: unknown): value is SourceInfo {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) return false;
+  const info = value as Record<string, unknown>;
+  if (typeof info.connectorId !== "string" || info.connectorId.length === 0) return false;
+  if (typeof info.displayName !== "string" || info.displayName.length === 0) return false;
+  if (typeof info.version !== "string" || info.version.length === 0) return false;
+  if (!(SOURCE_AUTH_MODES as readonly string[]).includes(String(info.authMode))) return false;
+  if (
+    !(SOURCE_AUTHORIZATION_STATES as readonly string[]).includes(String(info.authState))
+  ) {
+    return false;
+  }
+  if (typeof info.usable !== "boolean") return false;
+  if (typeof info.connected !== "boolean") return false;
+  if (
+    typeof info.capabilities !== "object" ||
+    info.capabilities === null ||
+    Array.isArray(info.capabilities)
+  ) {
+    return false;
+  }
+  const optionalIso = (x: unknown): boolean =>
+    x === null || (typeof x === "string" && x.length > 0);
+  if (!optionalIso(info.authorizedAt)) return false;
+  if (!optionalIso(info.lastStateChange)) return false;
+  if (!optionalIso(info.expiresAt)) return false;
+  if (!Array.isArray(info.notes) || info.notes.some((note) => typeof note !== "string")) {
+    return false;
+  }
+  return true;
 }
 
 /**

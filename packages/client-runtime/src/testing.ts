@@ -65,6 +65,7 @@ import type {
   ServerFailure,
   ServerPort,
   ServerResult,
+  SourceInfo,
 } from "./server-port";
 import type { RecommendationPolicyCommand, UserIntentCommand } from "./intent";
 
@@ -147,7 +148,14 @@ export class InMemoryServerPort implements ServerPort {
   /** Every policy command the port accepted (R02 assertion surface). */
   readonly policyWrites: RecommendationPolicyCommand[] = [];
 
+  private readonly sourcesReadAnswers: ScriptedServerAnswer<readonly SourceInfo[]>[] = [];
+
   // — scripting —
+
+  /** R03: script the next sources read(s) (the source-management read). */
+  scriptSourcesRead(answer: ScriptedServerAnswer<readonly SourceInfo[]>): void {
+    this.sourcesReadAnswers.push(answer);
+  }
 
   scriptSearch(query: string, answer: ScriptedServerAnswer<readonly SearchResult[]>): void {
     this.searchAnswers.set(query, answer);
@@ -303,6 +311,16 @@ export class InMemoryServerPort implements ServerPort {
     const scripted = this.policyWriteAnswers.shift();
     if (scripted !== undefined) return toResult(scripted);
     return { ok: true, value: undefined };
+  }
+
+  // — the R03 source extension (implemented — the double is the reference
+  // implementation of the port contract; unscripted reads answer the
+  // honest empty default, tests script what they assert) —
+
+  async readSources(): Promise<ServerResult<readonly SourceInfo[]>> {
+    const scripted = this.sourcesReadAnswers.shift();
+    if (scripted !== undefined) return toResult(scripted);
+    return { ok: true, value: [] };
   }
 }
 

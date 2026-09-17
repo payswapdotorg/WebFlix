@@ -21,6 +21,7 @@ import type {
 } from "@wfx/domain";
 
 import { BaseConnector, type AsyncConnectorResultInput } from "./base";
+import { defineAuthFlow, type AuthFlow } from "./auth/flows";
 
 /** Stable id of the stub connector fixture. */
 export const STUB_CONNECTOR_ID = "stub-test";
@@ -145,4 +146,130 @@ export class StubTestConnector extends BaseConnector {
  */
 export function makeStubConnector(overrides?: StubConnectorOverrides): StubTestConnector {
   return new StubTestConnector(overrides);
+}
+
+// ---------------------------------------------------------------------------
+// R03 — stub AUTH fixtures (test-only; never production sources)
+// ---------------------------------------------------------------------------
+
+/**
+ * The auth kinds the stub auth fixtures cover (the three COMPLETABLE kinds —
+ * `none` is covered by {@link makeStubConnector}).
+ */
+export type StubAuthKind = "oauth" | "device" | "local";
+
+/** Stable ids of the stub auth fixtures (distinct from `stub-test`). */
+export const STUB_OAUTH_CONNECTOR_ID = "stub-oauth";
+export const STUB_DEVICE_CONNECTOR_ID = "stub-device";
+export const STUB_LOCAL_CONNECTOR_ID = "stub-local";
+
+/** The stub auth fixtures' capability set — minimal, like the base stub's. */
+const STUB_AUTH_CAPABILITIES: readonly Capability[] = ["catalogSearch", "metadata"];
+
+/** The stub oauth fixture's documented authorization endpoint shape. */
+export const STUB_OAUTH_AUTHORIZATION_URL_TEMPLATE =
+  "https://stub.example/oauth/authorize?client_id={clientId}&response_type=code&redirect_uri={redirectUri}&state={state}";
+
+/** The stub device fixture's documented verification endpoint shape. */
+export const STUB_DEVICE_VERIFICATION_URL_TEMPLATE =
+  "https://stub.example/device/activate?code={code}";
+
+/**
+ * The auth-flow details for each stub auth fixture — the wiring shape hosts
+ * hand a `ConnectorAuthService` (or the R03 source-management service) for
+ * these connectors. Templates point at the RESERVED `.example` TLD: no real
+ * provider, no invented real endpoints.
+ */
+export function stubAuthFlowDetails(kind: StubAuthKind): AuthFlow {
+  switch (kind) {
+    case "oauth":
+      return defineAuthFlow({
+        kind: "oauth",
+        authorizationUrlTemplate: STUB_OAUTH_AUTHORIZATION_URL_TEMPLATE,
+        scopes: ["stub.read"],
+        tokenRefresh: false,
+      });
+    case "device":
+      return defineAuthFlow({
+        kind: "device",
+        verificationUrlTemplate: STUB_DEVICE_VERIFICATION_URL_TEMPLATE,
+        pollIntervalSeconds: 5,
+      });
+    case "local":
+      return defineAuthFlow({ kind: "local", method: "token" });
+  }
+}
+
+/**
+ * A stub connector TEST FIXTURE with a configurable AUTH MODE — the R03
+ * source-management lanes exercise begin/complete/disconnect per flow kind
+ * without any network. Same limited capabilities as the base stub; the auth
+ * mode is the ONLY difference.
+ */
+export class StubAuthTestConnector extends BaseConnector {
+  /** Brand: this object is a test fixture, never a production source. */
+  public static readonly isTestFixture = true as const;
+  public readonly isTestFixture = true as const;
+
+  constructor(input: { readonly auth: StubAuthKind; readonly id?: string }) {
+    super({
+      id: input.id ?? stubAuthConnectorId(input.auth),
+      version: "0.1.0",
+      displayName: `Stub ${input.auth} Auth Connector (TEST FIXTURE — never production)`,
+      capabilities: [...STUB_AUTH_CAPABILITIES],
+      auth: input.auth,
+    });
+  }
+
+  protected override onSearch(): AsyncConnectorResultInput<SearchResult[]> {
+    return [...STUB_DEFAULT_SEARCH_RESULTS];
+  }
+
+  protected override onMetadata(
+    _ctx: ConnectorContext,
+    ref: string,
+  ): AsyncConnectorResultInput<SourceItem | null> {
+    return this.stubMetadataByRef[ref] ?? null;
+  }
+
+  protected override onResolve(): AsyncConnectorResultInput<PlaybackRealization[]> {
+    return [...STUB_DEFAULT_REALIZATIONS];
+  }
+
+  protected override onExecuteAction(): AsyncConnectorResultInput<ActionReceipt> {
+    // Unreachable in practice: the stub declares no action capability.
+    return {
+      kind: "unsupported",
+      capability: "like",
+      detail: "the stub auth fixtures declare no action capabilities",
+    };
+  }
+
+  private readonly stubMetadataByRef: Record<string, SourceItem | null> = {
+    "stub:1": STUB_DEFAULT_METADATA,
+  };
+}
+
+/** The canonical id of the stub auth fixture for a kind. */
+export function stubAuthConnectorId(kind: StubAuthKind): string {
+  switch (kind) {
+    case "oauth":
+      return STUB_OAUTH_CONNECTOR_ID;
+    case "device":
+      return STUB_DEVICE_CONNECTOR_ID;
+    case "local":
+      return STUB_LOCAL_CONNECTOR_ID;
+  }
+}
+
+/**
+ * Create a stub AUTH connector TEST FIXTURE (`stub-oauth` / `stub-device` /
+ * `stub-local` by kind). Returned in the `registered` state. NEVER register
+ * as a production source.
+ */
+export function makeStubAuthConnector(
+  kind: StubAuthKind,
+  options: { readonly id?: string } = {},
+): StubAuthTestConnector {
+  return new StubAuthTestConnector({ auth: kind, ...(options.id !== undefined ? { id: options.id } : {}) });
 }

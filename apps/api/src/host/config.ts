@@ -80,6 +80,14 @@ export interface YouTubeEnv {
   readonly clientId?: string;
   /** `YOUTUBE_CLIENT_SECRET` — OAuth client (rotation of user tokens). */
   readonly clientSecret?: string;
+  /**
+   * `YOUTUBE_REDIRECT_URI` (R03) — the OAuth redirect the Google Cloud
+   * project registered (the authorization-code flow echoes the code back
+   * to it). Optional: without it the youtube source is wired for public
+   * data but user OAuth CONNECT is honestly unavailable (the source list
+   * says so; connect answers the typed flow-missing failure).
+   */
+  readonly redirectUri?: string;
 }
 
 /** The resolved service configuration. */
@@ -166,6 +174,7 @@ export function resolveApiConfig(env: ApiEnv = process.env): ApiConfig {
   const apiKey = readVar(env, "YOUTUBE_API_KEY");
   const clientId = readVar(env, "YOUTUBE_CLIENT_ID");
   const clientSecret = readVar(env, "YOUTUBE_CLIENT_SECRET");
+  const redirectUri = readVar(env, "YOUTUBE_REDIRECT_URI");
   const hasClientHalf = clientId !== undefined || clientSecret !== undefined;
   if (hasClientHalf && (clientId === undefined || clientSecret === undefined)) {
     throw new ApiConfigError(
@@ -183,6 +192,8 @@ export function resolveApiConfig(env: ApiEnv = process.env): ApiConfig {
       ...(clientId !== undefined && clientSecret !== undefined
         ? { clientId, clientSecret }
         : {}),
+      // R03: the OAuth redirect (only meaningful with the client pair).
+      ...(redirectUri !== undefined ? { redirectUri } : {}),
     };
   }
 

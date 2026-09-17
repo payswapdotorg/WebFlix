@@ -20,10 +20,22 @@
  * network.
  */
 
+import {
+  ConnectorRegistry,
+  fillFlowTemplate,
+  makeStubAuthConnector,
+  stubAuthFlowDetails,
+  STUB_DEVICE_CONNECTOR_ID,
+  STUB_LOCAL_CONNECTOR_ID,
+  STUB_OAUTH_AUTHORIZATION_URL_TEMPLATE,
+  STUB_OAUTH_CONNECTOR_ID,
+} from "@wfx/connectors";
 import { FixedClock, SequentialIdGen } from "@wfx/experience";
 import type { Ports } from "@wfx/experience";
 import {
   bootPersistence,
+  decodeEncryptionKey,
+  PostgresConnectorAccountStore,
   PostgresEventSink,
   PostgresIdentityService,
   PostgresProfileService,
@@ -34,6 +46,11 @@ import {
 import type { ApiBoot } from "../src/host/boot";
 import { resolveApiConfig } from "../src/host/config";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
+import {
+  SourceManagementService,
+  type CodeExchangeOutcome,
+  type OAuthWiring,
+} from "../src/host/sources";
 import { API_SERVICE_VERSION } from "../src/host/version";
 import { createTestDb, TEST_DATABASE_URL, TEST_ENCRYPTION_KEY_BASE64, type TestDb } from "./test-db";
 
@@ -54,11 +71,49 @@ export interface ApiTestBoot {
   readonly testDb: TestDb;
   readonly clock: FixedClock;
   readonly ids: SequentialIdGen;
+  /**
+   * R03: the injectable stub OAuth exchange (deterministic, no network) —
+   * script what the next callback exchange answers.
+   */
+  readonly stubExchange: {
+    script(outcome: CodeExchangeOutcome): void;
+    calls: string[];
+  };
+}
+
+/** The default stub exchange outcome: a valid non-refreshable token set. */
+function defaultStubExchangeOutcome(clock: FixedClock): CodeExchangeOutcome {
+  return {
+    ok: true,
+    secret: JSON.stringify({
+      v: 1,
+      accessToken: "stub-at",
+      tokenType: "Bearer",
+      scope: "stub.read",
+      // A NON-refreshable credential that expires in 1 hour — the
+      // expired-state truth tests advance the clock past this.
+      expiresAtMs: clock.now() + 3_600_000,
+      obtainedAtMs: clock.now(),
+    }),
+    kind: "oauth-token",
+    metadata: {
+      connector: STUB_OAUTH_CONNECTOR_ID,
+      tokenType: "Bearer",
+      scope: "stub.read",
+      expiresAtMs: clock.now() + 3_600_000,
+      hasRefreshToken: false,
+    },
+  };
 }
 
 /**
  * Boot the complete service composition over a FRESH PGlite database (real
- * migrations incl. the 0007 seed, real adapters, deterministic seams).
+ * migrations incl. the 0007 seed, real adapters, deterministic seams). R03:
+ * the source-management service is composed over the SAME registry pattern
+ * the production boot wires, with the SDK's stub AUTH fixtures (oauth /
+ * device / local — reserved `.example` endpoints, no network) plus the
+ * real webflix-catalog primary, and an INJECTABLE stub OAuth exchange for
+ * the callback round-trip.
  */
 export async function createApiTestBoot(): Promise<ApiTestBoot> {
   const testDb = await createTestDb();
@@ -77,12 +132,70 @@ export async function createApiTestBoot(): Promise<ApiTestBoot> {
     ids,
   });
 
+  // The R03 source-management registry: the real catalog primary + the SDK's
+  // stub AUTH fixtures (test-only connectors with oauth/device/local auth
+  // modes — the source-management flows exercise every flow kind).
+  const registry = new ConnectorRegistry();
+  registry.register(persistence.ports.connector);
+  registry.register(makeStubAuthConnector("oauth"));
+  registry.register(makeStubAuthConnector("device"));
+  registry.register(makeStubAuthConnector("local"));
+
+  const accountStore = new PostgresConnectorAccountStore({
+    db: testDb.db,
+    clock,
+    ids,
+    key: decodeEncryptionKey(TEST_ENCRYPTION_KEY_BASE64),
+  });
+
+  // The injectable stub exchange (deterministic, no network): the callback
+  // round-trip completes against whatever the test scripted.
+  const exchangeCalls: string[] = [];
+  const scriptedExchanges: CodeExchangeOutcome[] = [];
+  const stubExchange = {
+    script(outcome: CodeExchangeOutcome): void {
+      scriptedExchanges.push(outcome);
+    },
+    calls: exchangeCalls,
+  };
+  const stubOAuthWiring: OAuthWiring = {
+    connectorId: STUB_OAUTH_CONNECTOR_ID,
+    clientId: "stub-client-id",
+    redirectUri: "https://api.test/sources/callback/{state}",
+    buildAuthorizationUrl: (state: string): string =>
+      fillFlowTemplate(STUB_OAUTH_AUTHORIZATION_URL_TEMPLATE, {
+        clientId: "stub-client-id",
+        redirectUri: "https://api.test/sources/callback/" + state,
+        state,
+      }),
+    exchangeCode: async (code: string): Promise<CodeExchangeOutcome> => {
+      exchangeCalls.push(code);
+      const scripted = scriptedExchanges.shift();
+      return scripted ?? defaultStubExchangeOutcome(clock);
+    },
+  };
+
+  const sourcesService = new SourceManagementService({
+    registry,
+    accounts: accountStore,
+    flows: {
+      [STUB_OAUTH_CONNECTOR_ID]: stubAuthFlowDetails("oauth"),
+      [STUB_DEVICE_CONNECTOR_ID]: stubAuthFlowDetails("device"),
+      [STUB_LOCAL_CONNECTOR_ID]: stubAuthFlowDetails("local"),
+    },
+    oauthWirings: { [STUB_OAUTH_CONNECTOR_ID]: stubOAuthWiring },
+    clock,
+    ids,
+  });
+
   // The exact fan-out wiring bootApi performs (primary source only — the
-  // PGlite composition stands in for the Neon-backed webflix-catalog).
+  // PGlite composition stands in for the Neon-backed webflix-catalog; R03:
+  // gated by the source service's per-user auth states, like production).
   const connector: FanOutConnector = createFanOutConnector({
     sources: [persistence.ports.connector],
     clock,
     version: API_SERVICE_VERSION,
+    authGate: (ctx) => sourcesService.authGateFor(ctx.userId),
   });
 
   // The R02 identity services — the SAME wiring bootApi performs (the
@@ -118,8 +231,9 @@ export async function createApiTestBoot(): Promise<ApiTestBoot> {
     sessions,
     profiles,
     profileEvents,
+    sources: sourcesService,
   };
-  return { boot, testDb, clock, ids };
+  return { boot, testDb, clock, ids, stubExchange };
 }
 
 // ---------------------------------------------------------------------------

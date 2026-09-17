@@ -262,6 +262,40 @@ export function defineAuthFlow(input: unknown): AuthFlow {
 }
 
 // ---------------------------------------------------------------------------
+// Template materialization (R03)
+// ---------------------------------------------------------------------------
+
+/**
+ * R03 — fill a URL template's `{placeholder}` segments with the caller's
+ * parameters (each value percent-encoded), the generic twin of a provider's
+ * dedicated URL builder. Every placeholder present in the template MUST have
+ * a parameter; a missing parameter is the typed `AuthFlowValidationError`
+ * — this helper NEVER fabricates a URL with an unfilled or defaulted
+ * placeholder.
+ */
+export function fillFlowTemplate(
+  template: string,
+  params: Readonly<Record<string, string>>,
+): string {
+  if (typeof template !== "string" || template.length === 0) {
+    throw new AuthFlowValidationError("'template' must be a non-empty string");
+  }
+  if (params === null || typeof params !== "object" || Array.isArray(params)) {
+    throw new AuthFlowValidationError("'params' must be a record of placeholder values");
+  }
+  return template.replace(/\{([^{}]+)\}/g, (_match, rawName: string) => {
+    const name = rawName.trim();
+    const value = params[name];
+    if (typeof value !== "string" || value.length === 0) {
+      throw new AuthFlowValidationError(
+        `template placeholder '{${rawName}}' has no parameter value — the URL cannot be fabricated`,
+      );
+    }
+    return encodeURIComponent(value);
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Derivation
 // ---------------------------------------------------------------------------
 

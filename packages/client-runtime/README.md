@@ -81,6 +81,38 @@ cross-device server saves; a failing server read is an ERROR section —
 never a fake empty one. `getHome`'s Continue Watching stays session-local
 (R04/R05 extend it — documented, not silently changed).
 
+### The R03 source extension (ADD-ONLY + OPTIONAL)
+
+R03 (source management) extends the port with the SOURCE-MANAGEMENT read:
+`readSources()` answers `SourceInfo[]` — per source, the descriptor truth
+(`connectorId`/`displayName`/`version`/`authMode`), the EVALUATED
+authorization state (`authState`: signedOut/authorizing/signedIn/expired/
+failed — an expired token is REPORTED expired, never silently
+"connected"), `usable` (an `authMode: "none"` source is always usable),
+`connected` (account linkage), the full capability-truth row
+(`capabilities`: EVERY frozen capability, declared = true — Web
+truthfully shows what each source CAN and CANNOT do), the lifecycle
+instants (`authorizedAt`/`lastStateChange`/`expiresAt`), and non-secret
+availability `notes`. `SourceInfo` is structurally secret-FREE (the
+runtime privacy law: provider credentials never enter model prompts, and
+they never enter this shape either).
+
+The runtime's `sources()` operation answers the `SourcesModel`
+(`{ status, sources }`) — the payload the settings surface's `sources`
+section (R01's `SettingsSection` vocabulary: sources | model | general)
+renders. It models the RESULTING state of connect/disconnect flows; the
+FLOWS themselves (the OAuth dance) run through the adapter's platform UX —
+never the runtime.
+
+**The member is declared OPTIONAL (`readSources?`) deliberately** — a
+documented deviation from the R02 precedent, flagged for the lead: the
+frozen Web and Desktop adapters (R07/R08) already implement `ServerPort`
+without it, and R03 may not edit them. An adapter that has not wired the
+source read keeps compiling; `sources()` degrades the absence to the typed
+`unavailable` ERROR section (never a fake empty list — tested). The lead's
+integration completion promotes the member to required when the adapters
+implement it (the exact precedent of R02's profile-extension completion).
+
 ## The semantics (and where their laws are tested)
 
 | Area | Module | Key laws |

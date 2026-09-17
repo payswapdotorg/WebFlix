@@ -60,7 +60,14 @@ import {
 import { CanonicalItemRegistry } from "./registry";
 import type { RuntimeClock, RuntimeIdGen } from "./runtime-seams";
 import { serverFailureKind } from "./errors";
-import type { RuntimeContext, ServerPort, ServerResult } from "./server-port";
+import type {
+  RuntimeContext,
+  ServerPort,
+  ServerResult,
+  SourcesModel,
+  SourceInfo,
+} from "./server-port";
+import { isUsableSourceInfo } from "./server-port";
 import type { SearchResult } from "@wfx/domain";
 import { createNavigationStore, type NavigationController } from "./navigation";
 import {
@@ -118,6 +125,15 @@ export interface ClientRuntime {
   shorts(input?: ShortsQuery): Promise<SearchModel>;
   /** Re-attempt every pending watch event (the at-least-once retry). */
   retryPendingWatchEvents(): Promise<WatchEventRetryReport>;
+  /**
+   * R03 — the source-management read model (the settings surface's
+   * `sources` section renders it). STATE OBSERVATION only: the connect/
+   * disconnect flows run through the adapter's platform UX; the runtime
+   * models the RESULTING state. Degrades honestly — a port without the
+   * R03 member or a failing read is a typed ERROR section, never a fake
+   * empty list.
+   */
+  sources(): Promise<SourcesModel>;
 }
 
 // ---------------------------------------------------------------------------
@@ -317,6 +333,46 @@ export function createRuntime(
     intents: intents.operations(),
 
     retryPendingWatchEvents: () => watch.retryPendingWatchEvents(),
+
+    sources: async (): Promise<SourcesModel> => {
+      // The R03 law: an adapter that has not wired the source read yet
+      // (the frozen R07/R08 ports) answers the typed `unavailable` error
+      // section — never a fake empty list.
+      const read = server.readSources;
+      if (read === undefined) {
+        return {
+          status: {
+            state: "error",
+            error: {
+              kind: "unavailable",
+              detail:
+                "the adapter's server port does not implement readSources yet (the R03 source-management read)",
+            },
+          },
+          sources: [],
+        };
+      }
+      const result = await read.call(server);
+      if (!result.ok) {
+        return {
+          status: {
+            state: "error",
+            error: {
+              kind: serverFailureKind(result.failure),
+              detail: result.failure.detail,
+            },
+          },
+          sources: [],
+        };
+      }
+      // The transport-boundary honesty filter (the search-hit law): a
+      // malformed entry is skipped, never rendered as source truth.
+      const sources: SourceInfo[] = [];
+      for (const info of result.value) {
+        if (isUsableSourceInfo(info)) sources.push(info);
+      }
+      return { status: { state: "ready" }, sources };
+    },
   };
 
   return runtime;

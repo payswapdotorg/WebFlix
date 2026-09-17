@@ -57,14 +57,22 @@
  */
 
 import {
+  ConnectorRegistry,
   createFetchYouTubeTransport,
   createInMemoryYouTubeCredentialSource,
   createYouTubeConnector,
+  exchangeYouTubeCode,
+  buildYouTubeAuthorizationUrl,
+  serializeYouTubeTokenSet,
+  youtubeAuthFlowDetails,
+  YOUTUBE_CONNECTOR_ID,
 } from "@wfx/connectors";
 import type { ConnectorPort, Ports } from "@wfx/experience";
 import {
   bootPersistence,
   CryptoUlidIdGen,
+  decodeEncryptionKey,
+  PostgresConnectorAccountStore,
   PostgresEventSink,
   PostgresIdentityService,
   PostgresProfileService,
@@ -75,6 +83,7 @@ import {
 
 import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
 import { createFanOutConnector, type FanOutConnector } from "./fan-out";
+import { SourceManagementService, type OAuthWiring } from "./sources";
 import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
 import { API_SERVICE_VERSION } from "./version";
 
@@ -117,6 +126,14 @@ export interface ApiBoot {
    * adapter over the same db/clock/ids — safe alongside `ports.events`.
    */
   readonly profileEvents: PostgresEventSink;
+  /**
+   * R03 — the source-management service: connect/reauthorize/disconnect,
+   * the OAuth callback, the per-user source list (capability truth +
+   * authorization state), and the auth gate the fan-out consumes.
+   * Backed by the 052+R03 connector-account store (envelope-encrypted
+   * credentials) and the connector SDK's registry/flow/session contracts.
+   */
+  readonly sources: SourceManagementService;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -180,11 +197,103 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     );
   }
 
-  // 5. The app-level fan-out behind the single Ports.connector seam.
+  // 4.5. R03 — the source-management lane over the SAME seams: the
+  //      registry (capability truth), the durable connector-account store
+  //      (envelope-encrypted credentials + pending authorizations), the
+  //      per-connector flow details and OAuth wirings (the youtube client
+  //      config when the operator provisioned the full pair + redirect).
+  const registry = new ConnectorRegistry();
+  for (const source of sources) registry.register(source);
+
+  const accountStore = new PostgresConnectorAccountStore({
+    db: persistence.db,
+    clock,
+    ids,
+    key: decodeEncryptionKey(config.encryptionKey),
+  });
+
+  const flows: Record<string, ReturnType<typeof youtubeAuthFlowDetails>> = {};
+  const oauthWirings: Record<string, OAuthWiring> = {};
+  if (config.youtube !== null && config.youtube.clientId !== undefined && config.youtube.clientSecret !== undefined) {
+    flows[YOUTUBE_CONNECTOR_ID] = youtubeAuthFlowDetails();
+    // The OAuth client wiring exists only when the redirect URI is
+    // provisioned too — without it the source list honestly says connect
+    // is unavailable and connect answers the typed flow-missing failure.
+    if (config.youtube.redirectUri !== undefined) {
+      const clientId = config.youtube.clientId;
+      const clientSecret = config.youtube.clientSecret;
+      const redirectUri = config.youtube.redirectUri;
+      const youtubeOAuthConfig = { clientId, clientSecret, redirectUri };
+      const transport = createFetchYouTubeTransport();
+      oauthWirings[YOUTUBE_CONNECTOR_ID] = {
+        connectorId: YOUTUBE_CONNECTOR_ID,
+        clientId,
+        redirectUri,
+        buildAuthorizationUrl: (state: string): string => {
+          const built = buildYouTubeAuthorizationUrl(youtubeOAuthConfig, { state });
+          if (!built.ok) {
+            // A config crime the operator must see — never a fabricated URL.
+            throw new Error(`youtube oauth url: ${built.error.detail}`);
+          }
+          return built.value;
+        },
+        exchangeCode: async (code: string) => {
+          const exchanged = await exchangeYouTubeCode(
+            youtubeOAuthConfig,
+            transport,
+            code,
+            clock.now(),
+          );
+          if (!exchanged.ok) {
+            return {
+              ok: false as const,
+              kind:
+                exchanged.error.kind === "exchange-rejected"
+                  ? ("rejected" as const)
+                  : exchanged.error.kind === "malformed-response"
+                    ? ("malformed" as const)
+                    : ("transport" as const),
+              detail: exchanged.error.detail,
+            };
+          }
+          const tokens = exchanged.value;
+          return {
+            ok: true as const,
+            // The serialized token set the connector's credential source
+            // parses back (same envelope format the runtime loads).
+            secret: serializeYouTubeTokenSet(tokens),
+            kind: "oauth-token" as const,
+            metadata: {
+              connector: YOUTUBE_CONNECTOR_ID,
+              tokenType: tokens.tokenType,
+              scope: tokens.scope,
+              expiresAtMs: tokens.expiresAtMs,
+              hasRefreshToken: tokens.refreshToken !== undefined,
+            },
+          };
+        },
+      };
+    }
+  }
+
+  const sources_ = new SourceManagementService({
+    registry,
+    accounts: accountStore,
+    flows,
+    oauthWirings,
+    clock,
+    ids,
+  });
+
+  // 5. The app-level fan-out behind the single Ports.connector seam — R03:
+  //    wired with the per-user auth gate (auth-state-aware querying; a
+  //    signedOut source is skipped with an honest note, an expired source
+  //    surfaces `expired`).
   const connector = createFanOutConnector({
     sources,
     clock,
     version: API_SERVICE_VERSION,
+    authGate: (ctx) => sources_.authGateFor(ctx.userId),
   });
 
   // 6. The service Ports bundle: the fan-out + the 052 transactional
@@ -197,7 +306,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     ids,
   };
 
-  return { config, persistence, connector, seed, ports, identity, sessions, profiles, profileEvents };
+  return { config, persistence, connector, seed, ports, identity, sessions, profiles, profileEvents, sources: sources_ };
 }
 
 /** The module-level singleton slot (see the SINGLETON LAW above). */

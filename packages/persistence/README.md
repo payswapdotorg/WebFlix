@@ -156,6 +156,67 @@ detection) — plaintext never lands in the table. AAD binds the envelope to
 fail typed (`CredentialDecryptError` / `{ reason: "key-mismatch" }`) — never
 garbage plaintext, never fake success.
 
+## The account lifecycle (R03 — source management)
+
+Migration `0008` extends the account row with the lifecycle truth the
+source-management surface reports:
+
+- `authorized_at` — when the CURRENT credential completed authorization;
+  re-stamped on every reauthorize upsert (the account row and id are
+  PRESERVED — the store's one-row-per-(user, connector) law).
+- `last_state_change` — when `auth_state` last changed (stamped by
+  `saveAccount` and `setAuthState`; never silently stale).
+- `health` — per-account quota/health notes (typed
+  `ConnectorAccountHealth`: `quota`, `lastDegradation`, `notes`); resets to
+  NULL on credential rotation (the new credential's posture is unknown
+  until observed — stale notes would be a lie); `saveAccountHealth` answers
+  honest `null` for a disconnected source.
+
+**Pending authorizations** (`connector_pending_authorizations`): the
+durable in-flight handshake records the API's connect flow persists
+SERVER-SIDE — never in URLs. The OAuth/CSRF `state` is the caller-minted
+opaque token the provider echoes back (the callback route's lookup key);
+the authorization itself (user, connector, flow kind, expiry) lives only in
+the table. ONE live pending per (user, connector) — a new begin supersedes
+the old (UNIQUE index + the store's evict-then-insert transaction; the SDK
+`ConnectorAuthService`'s evict-on-begin law made durable). An expired
+pending is consumed by its own read (`loadPendingAuthorization` answers
+the typed `{ reason: "expired", expiredAt }` and deletes the row — never
+resurrected). `livePendingFor` answers the in-flight handshake for the
+honest `authorizing` projection.
+
+## THE MODEL-INPUT PRIVACY LAW — enforced here (R03)
+
+> "Provider credentials never enter model prompts. Model privacy policy is
+> enforced at the runtime boundary." (the frozen architecture)
+
+The enforcement point for persistence-backed lanes is this package, at
+THREE layers:
+
+1. **Compile time** — `ConnectorAccountSafeView` (minted ONLY by
+   `toSafeAccountView`, consumed via `safeViewsForUser`) is a brand-
+   protected projection with NO secret and NO raw metadata field; an
+   `OpenedConnectorAccount` is NOT assignable to it. Model-input lanes
+   (model-fabric prompt builders, recommendation feature assembly) consume
+   the safe view — the opened-secret channel (`loadAccount`) exists for
+   the connector runtime alone.
+2. **Runtime** — `assertModelInputFreeOfCredentialMaterial`
+   (`src/model-input-guard.ts`) deep-walks any model-input payload and
+   throws the typed `CredentialMaterialError` naming the offending field
+   and path (`secret`, `accessToken`, `refresh_token`, `clientSecret`,
+   `ciphertext`, …) the moment credential material appears — bounded,
+   cycle-safe, no guessing by value shape.
+3. **Write boundary** — `saveAccount`'s `metadata`,
+   `savePendingAuthorization`'s `metadata`, and `saveAccountHealth` REJECT
+   secret-shaped fields typed (`PersistenceError invalid-input`) before
+   they can land in a client-visible column — the metadata/health columns
+   can never become a side door around the envelope.
+
+The enforcement test (`tests/source-accounts.test.ts`) proves all three:
+the type-level brand proof, a model-input builder over `safeViewsForUser`
+whose serialized payload contains no credential material, and the at-rest
+scan of every client-visible column.
+
 ## Degradation contract (docs/infrastructure/degradation-behavior.md §1)
 
 Every driver failure is classified (src/classify.ts) into the typed taxonomy

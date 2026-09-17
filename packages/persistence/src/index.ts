@@ -72,9 +72,11 @@ export * from "./watch";
 export * from "./intents";
 export * from "./recommendation-state";
 
-// Connector accounts + credential envelope encryption.
+// Connector accounts + credential envelope encryption + the R03 model-input
+// credential guard (the privacy law's enforcement point).
 export * from "./envelope-crypto";
 export * from "./connector-accounts";
+export * from "./model-input-guard";
 
 // The composition root (Ports bundle + production boot).
 export * from "./ports";
