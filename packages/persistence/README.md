@@ -47,12 +47,71 @@ There is **no fixture fallback**: `WFX_DEV_FIXTURES` is a web-host concern
 | `0005_connector_accounts` | `connector_accounts` (envelope-encrypted credentials) |
 | `0006_event_outbox` | `event_outbox` |
 | `0007_profiles` (R02) | `profiles`; `sessions.active_profile_id`; `profile_id` scoping on `watch_history` / `library_entries` / `user_intents` / `recommendation_state` / `event_outbox` |
+| `0008_source_management` (R03) | `connector_accounts` lifecycle columns (`authorized_at`, `last_state_change`, `availability_notes`); `connector_pending_authorizations` |
+| `0009_canonical_library_history_exclusions` (R04) | `library_entries.item_id` (canonical-key discipline); `history_removals`; `history_exclusions` |
 
 Runner laws (src/migrations.ts): files are applied in lexicographic order,
 each inside ONE transaction together with its `persistence_migrations`
 bookkeeping insert; re-runs verify checksums and apply nothing; an applied
 file whose content changed is a `MigrationError` (forward-only contract —
 fix drift with a NEW migration). No down path, by design.
+
+## R04 — canonical-keyed library + history removals/exclusions
+
+**The canonical-key discipline (migration 0009).** The library becomes
+CANONICAL-KEYED: ONE row per `(COALESCE(profile_id, 'user:' || user_id),
+item_id)` — NOT per realization. A second save of the same canonical item
+from a DIFFERENT source is a no-op on the list count (one row); the
+realization set in `metadata.realizations` GROWS (jsonb concatenation on
+conflict — dedup happens at read time / in the runtime's library.read()
+via the registry). The primary realization reference (`connector_id` +
+`external_ref`) updates to the LATEST save (the cross-source replacement
+law: a saved item never breaks when a source disappears IF another
+realization exists; when the LAST realization vanishes, the row stays
+listed honestly — the save is the user's intent, not a lease on a source's
+lifetime).
+
+The realization-keyed unique index from migration 0007
+(`library_entries_profile_key`) is KEPT alongside the new canonical-keyed
+index (`library_entries_profile_canonical_key`): the realization-keyed
+index catches re-saves of the SAME realization when `item_id` is NULL
+(the realization has no catalog row — the legacy "listed honestly even
+when the realization vanished" path). The `addWithin` store method picks
+the ON CONFLICT target based on whether `item_id` is resolved.
+
+The frozen `LibraryEntry` wire shape is unchanged (`connectorId` +
+`externalRef` + `title` + `addedAt` + `metadata?`); the canonical item id
+travels in `metadata.canonicalItemId` for the runtime to ADOPT (R04 §4 —
+durable canonical identity). The catalog connector's
+`readLibraryForProfile` lists ALL profile rows via `listAllForProfile`
+(the WebFlix-owned service library owns ALL rows saved via the service,
+regardless of which realization source the user saved from).
+
+**The event-sink law (R04 §2).** The recorded events in `event_outbox`
+are the IMMUTABLE TRUTH; the history read model (`watch_history` projection)
+is their PROJECTION. Removal (`DELETE /experience/history/:itemId`) and
+exclusion (`POST /experience/history/exclusions`) NEVER falsify recorded
+events — they are projection-side filters in two new tables:
+
+- `history_removals` — one row per `(effective_profile, item_id)` the
+  user removed from history. The history read model and Continue Watching
+  filter these out. A re-watch (a new watch-state event arriving through
+  the relay's fold) DELETES the removal row — the item re-materializes
+  in history (`PostgresHistoryRemovalStore.clearRemoval`, called by the
+  relay's `makeWatchHistoryDeliverer`).
+- `history_exclusions` — one row per `(effective_profile, item_id)` the
+  user excluded from history-derived surfaces. These stay excluded until
+  the user explicitly removes the exclusion
+  (`DELETE /experience/history/exclusions/:itemId`). A re-watch does NOT
+  clear an exclusion (the user's explicit choice persists).
+
+The `HistoryHost` (apps/api/src/host/history.ts) composes the read model:
+`readHistory(profileId)` returns `ProfileHistoryEntry[]` (newest-first,
+removal/exclusion-aware); `readContinueWatching(profileId)` returns the
+Continue Watching shelf (in-progress items with a resumable position,
+ordered by most-recent progress, capped, removal/exclusion-aware). The
+relay's `scheduleOpportunisticDrain` and `runRelayDrain` carry the
+removal store so the fold clears removals on re-watch.
 
 ## Identity + profiles (R02 — identity and profiles)
 
