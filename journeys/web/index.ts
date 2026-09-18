@@ -41,6 +41,7 @@ import { j24BackgroundCompletion } from "./j24-background-completion";
 import { j25InterruptionRecovery } from "./j25-interruption-recovery";
 import { j26VerifiedAssetInLibrary } from "./j26-verified-asset-in-library";
 import { j27NativePlayback } from "./j27-native-playback";
+import { j28CredentialExpiry } from "./j28-credential-expiry";
 import { j29NetworkLossRecovery } from "./j29-network-loss-recovery";
 import { j30CapabilityHonesty } from "./j30-capability-honesty";
 import { j31CrossPlatformParity } from "./j31-cross-platform-parity";
@@ -75,9 +76,12 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   j25InterruptionRecovery,
   j26VerifiedAssetInLibrary,
   j27NativePlayback,
-  // J28 — credential expiry/recovery: NOT encodable on the web fixtures
-  // boot (the auth flows are the service-side source-management lane).
-  // Declared below as a not-run entry with its exact procedure.
+  // R17 — J28 (credential expiry/recovery) is now ENCODED over the
+  // fixtures' scripted source-auth lifecycle (the R14/R16 scripted-feed
+  // pattern): expiry → the named expired state → the typed unauthorized
+  // read → reauthorize → recovery. The REAL provider OAuth round trips
+  // remain the service-mode local-only procedure (listed below).
+  j28CredentialExpiry,
   j29NetworkLossRecovery,
   j30CapabilityHonesty,
   j31CrossPlatformParity,
@@ -95,8 +99,8 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
   {
     journeyId: "J28",
     kind: "local-only",
-    note: "Provider credential expiry/recovery round trips (connect → expiry → typed unauthorized read → reauthorize → recovery) are the service-side source-management lane: apps/api /auth + /sources routes over the durable connector-account store. The web fixtures boot has no auth surface to drive.",
-    procedure: "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), expire the token, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot.",
+    note: "The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.",
+    procedure: "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot.",
   },
   {
     journeyId: "J09",
@@ -113,8 +117,8 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
   {
     journeyId: "J14",
     kind: "local-only",
-    note: "The connect/reauthorize/disconnect ROUND TRIPS are the service-side source-management routes (R03's delivery over the connector-account store). The web fixtures boot renders the honest no-sources state (encoded); the round trips are not drivable here.",
-    procedure: "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect, capturing each state.",
+    note: "The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.",
+    procedure: "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state.",
   },
   {
     journeyId: "J15",

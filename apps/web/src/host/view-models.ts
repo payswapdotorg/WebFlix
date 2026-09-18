@@ -510,6 +510,9 @@ export async function loadPlayerView(
     const session = await host.runtime.resolvePlayback({
       itemId: input.itemId,
       externalRef: input.externalRef,
+      // R17: attribute the resolve to its source — the honest unavailable
+      // dead end names the missing source (never a source-less error).
+      connectorId: input.connectorId,
       ...(input.resumePositionMs !== undefined && input.resumePositionMs > 0
         ? { resumePositionMs: input.resumePositionMs }
         : {}),

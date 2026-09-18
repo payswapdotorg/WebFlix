@@ -277,24 +277,54 @@ export function ActionButtons({
         </button>
       )}
       {likeState.failure !== null ? (
-        <span
-          className="wfx-actionbar__status wfx-actionbar__status--error"
-          role="alert"
-          data-wfx-action-failure="like"
-          data-wfx-action-state={likeState.failureKind ?? "failed"}
-        >
-          {likeState.failure}
-        </span>
+        <>
+          <span
+            className="wfx-actionbar__status wfx-actionbar__status--error"
+            role="alert"
+            data-wfx-action-failure="like"
+            data-wfx-action-state={likeState.failureKind ?? "failed"}
+          >
+            {likeState.failure}
+          </span>
+          {like !== null && likeState.failureKind === "failed" ? (
+            <button
+              type="button"
+              className="wfx-btn wfx-btn--sm"
+              onClick={() => {
+                void fire(like, likeDispatch);
+              }}
+              disabled={likeState.pending}
+              data-wfx-action-retry="like"
+            >
+              Try again
+            </button>
+          ) : null}
+        </>
       ) : null}
       {saveState.failure !== null ? (
-        <span
-          className="wfx-actionbar__status wfx-actionbar__status--error"
-          role="alert"
-          data-wfx-action-failure="save"
-          data-wfx-action-state={saveState.failureKind ?? "failed"}
-        >
-          {saveState.failure}
-        </span>
+        <>
+          <span
+            className="wfx-actionbar__status wfx-actionbar__status--error"
+            role="alert"
+            data-wfx-action-failure="save"
+            data-wfx-action-state={saveState.failureKind ?? "failed"}
+          >
+            {saveState.failure}
+          </span>
+          {save !== null && saveState.failureKind === "failed" ? (
+            <button
+              type="button"
+              className="wfx-btn wfx-btn--sm"
+              onClick={() => {
+                void fire(save, saveDispatch);
+              }}
+              disabled={saveState.pending}
+              data-wfx-action-retry="save"
+            >
+              Try again
+            </button>
+          ) : null}
+        </>
       ) : null}
       {settledMarker(likeState, "like")}
       {settledMarker(saveState, "save")}

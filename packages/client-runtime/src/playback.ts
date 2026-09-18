@@ -292,10 +292,45 @@ export interface PlaybackIntent {
   readonly itemId: string;
   /** External reference to resolve (required when no realization is chosen). */
   readonly externalRef?: string;
+  /**
+   * R17: the source the external ref belongs to (optional attribution).
+   * Used ONLY to name the missing source in the honest `unavailable`
+   * dead end — the UI states which source offers no realization, never a
+   * source-less "item unavailable" that hides the truth.
+   */
+  readonly connectorId?: string;
   /** A chosen realization (skips server resolution; still capability-checked). */
   readonly realization?: PlaybackRealization;
   /** Resume position in milliseconds (>= 0); defaults to 0. */
   readonly resumePositionMs?: number;
+}
+
+/**
+ * R17 — the honest `unavailable` dead-end sentence: NAMES THE MISSING
+ * SOURCE(S). The candidates' own connector ids come first (the sources that
+ * offered realizations the runtime could not use); when no candidate
+ * carries one, the intent's attribution names the source that offered
+ * nothing. Never a source-less "item unavailable" — and never an invented
+ * realization instead. (Pure.)
+ */
+function unavailableRealizationDetail(
+  intent: PlaybackIntent,
+  candidates: readonly PlaybackRealization[],
+): string {
+  const offered = [
+    ...new Set(
+      candidates
+        .map((candidate) => candidate.connectorId)
+        .filter((id): id is string => typeof id === "string" && id.length > 0),
+    ),
+  ];
+  const named =
+    offered.length > 0
+      ? `source${offered.length === 1 ? "" : "s"} '${offered.join("', '")}' offered no playable realization for this item`
+      : intent.connectorId !== undefined
+        ? `source '${intent.connectorId}' offers no playback realization for this item`
+        : "no source offers a playback realization for this item";
+  return `no valid playback realization could be resolved — ${named}`;
 }
 
 /** The playback controller surface (the command API). */
@@ -1018,7 +1053,7 @@ export async function resolvePlaybackSession(
     }
     throw new RuntimeError(
       "unavailable",
-      `no valid playback realization could be resolved for this item${
+      `${unavailableRealizationDetail(intent, candidates)}${
         surfaceReasons.length > 0 ? `: ${surfaceReasons.join(" | ")}` : ""
       }`,
     );
@@ -1033,10 +1068,7 @@ export async function resolvePlaybackSession(
         `realizations exist but platform '${deps.capabilities.platform}' truthfully cannot play any: ${reasons}`,
       );
     }
-    throw new RuntimeError(
-      "unavailable",
-      "no valid playback realization could be resolved for this item",
-    );
+    throw new RuntimeError("unavailable", unavailableRealizationDetail(intent, candidates));
   }
 
   const session: PlaybackSession = {

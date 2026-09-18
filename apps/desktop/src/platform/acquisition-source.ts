@@ -138,6 +138,19 @@ export type AcquisitionRetryRecipe = () => Promise<{
   value: { readonly sessionId: string };
 } | { ok: false; error: { code: string; detail: string } }>;
 
+/**
+ * R17 — the typed CLEAN-RESTART recipe: how the composition root discards
+ * one item's saved progress and starts a FRESH acquisition (stop + clear
+ * the persisted session data + a fresh ingestion). The explicit
+ * resume-or-clean-restart choice: `resume` keeps the retained progress,
+ * `restart` throws it away — and the surface says which is which.
+ * Returns the NEW session id.
+ */
+export type AcquisitionRestartRecipe = () => Promise<{
+  ok: true;
+  value: { readonly sessionId: string };
+} | { ok: false; error: { code: string; detail: string } }>;
+
 // ---------------------------------------------------------------------------
 // Options + surface
 // ---------------------------------------------------------------------------
@@ -158,12 +171,15 @@ export interface DesktopAcquisitionSource {
    * Bind a session to the canonical item it realizes (the same R04
    * composition `exposeCompletedSelection` takes — the caller derives it
    * from the library keys when the user starts the acquisition), with
-   * the optional typed RETRY recipe (the recoverable-failure path).
+   * the optional typed RETRY recipe (the recoverable-failure path) and
+   * the optional R17 CLEAN-RESTART recipe (the interrupted-session
+   * discard-and-start-over path).
    */
   bindSession(
     sessionId: string,
     identity: AcquisitionIdentity,
     retry?: AcquisitionRetryRecipe,
+    restart?: AcquisitionRestartRecipe,
   ): void;
   /** Drop a binding (the attempt was cancelled/removed). Idempotent. */
   unbindSession(sessionId: string): void;
@@ -181,6 +197,14 @@ export interface DesktopAcquisitionSource {
    * bound item, or no recipe (the caller did not wire a retry).
    */
   attemptRetry(itemId: string): Promise<TorrentResult<{ readonly sessionId: string }>>;
+  /**
+   * R17 — execute the typed CLEAN RESTART of one item's INTERRUPTED
+   * session: runs the bound restart recipe (discard the saved progress +
+   * a fresh acquisition), rebinds the new session, and reports the fresh
+   * facts. Typed refusals: no bound item, no interrupted proof, or no
+   * recipe (the caller did not wire a restart).
+   */
+  attemptRestart(itemId: string): Promise<TorrentResult<{ readonly sessionId: string }>>;
   /**
    * THE GATED ADVANCED DIAGNOSTICS of one item (protocol vocabulary —
    * renders ONLY inside the explicitly gated diagnostics surface).
@@ -288,6 +312,8 @@ interface ItemBinding {
   resumed: { retainedFraction: number; pieceMapReused: boolean } | undefined;
   /** The typed retry recipe (the recoverable-failure path). */
   retry: AcquisitionRetryRecipe | undefined;
+  /** R17 — the typed clean-restart recipe (the interrupted-session path). */
+  restart: AcquisitionRestartRecipe | undefined;
 }
 
 /**
@@ -371,6 +397,19 @@ export function createDesktopAcquisitionSource(
           ? status.value.progress.fraction
           : null, // honestly unknown while nothing is verifiable
       ...(binding.resumed !== undefined ? { resumed: binding.resumed } : {}),
+      // R17 — the MEASURED starvation truth (peer starvation / network
+      // loss): the R11 stall law's own numbers passed through verbatim
+      // (protocol-free: the peer/piece vocabulary stays gated). A starved
+      // session renders its honest waiting state — never a fake progress.
+      ...(status.value.stalled
+        ? {
+            starved: {
+              stalledMs: status.value.stallDurationMs ?? 0,
+              bytesPerSecond: status.value.rates.downloadBytesPerSec,
+              sourcesConnected: status.value.peers.connected,
+            },
+          }
+        : {}),
     };
     const playback = playbackFactsOf(engine, binding.sessionId);
     return { ...base, transfer, ...(playback !== undefined ? { playback } : {}) } as AcquisitionFacts;
@@ -381,6 +420,7 @@ export function createDesktopAcquisitionSource(
       sessionId: string,
       identity: AcquisitionIdentity,
       retry?: AcquisitionRetryRecipe,
+      restart?: AcquisitionRestartRecipe,
     ): void {
       if (typeof sessionId !== "string" || sessionId.trim().length === 0) {
         throw new RuntimeError("invalid-input", "bindSession: sessionId must be a non-empty string");
@@ -415,6 +455,7 @@ export function createDesktopAcquisitionSource(
         sessionId,
         resumed: undefined,
         retry,
+        restart,
       });
     },
 
@@ -456,6 +497,48 @@ export function createDesktopAcquisitionSource(
         });
       }
       // Rebind to the fresh attempt (the recipe's session) + report.
+      this.bindSession(outcome.value.sessionId, bound.identity, bound.retry);
+      this.refresh();
+      return { ok: true, value: { sessionId: outcome.value.sessionId } };
+    },
+
+    async attemptRestart(itemId: string): Promise<TorrentResult<{ readonly sessionId: string }>> {
+      let bound: ItemBinding | undefined;
+      for (const binding of bySession.values()) {
+        if (
+          binding.identity.canonicalItemId === itemId &&
+          binding.sessionId !== null
+        ) {
+          bound = binding;
+        }
+      }
+      if (bound === undefined) {
+        return torrentError("NOT_FOUND", {
+          detail: `attemptRestart: no acquisition session is bound for '${itemId}'`,
+        });
+      }
+      if (bound.resumed === undefined) {
+        return torrentError("INVALID_STATE", {
+          detail:
+            `attemptRestart: no interrupted-session proof exists for '${itemId}' — restart ` +
+            "applies to an interrupted session with saved progress (pause/resume is the ordinary path)",
+        });
+      }
+      if (bound.restart === undefined) {
+        return torrentError("INVALID_STATE", {
+          detail:
+            `attemptRestart: no restart recipe is bound for '${itemId}' — the composition root owns the ` +
+            "discard-and-start-over logic (stop the session, clear its persisted data, re-ingest fresh)",
+        });
+      }
+      const outcome = await bound.restart();
+      if (!outcome.ok) {
+        return torrentError("LIBRARY_ERROR", {
+          detail: `attemptRestart: the restart recipe failed: ${outcome.error.detail}`,
+        });
+      }
+      // The restarted attempt is FRESH: no resume proof, no retained
+      // progress — rebind clean and report.
       this.bindSession(outcome.value.sessionId, bound.identity, bound.retry);
       this.refresh();
       return { ok: true, value: { sessionId: outcome.value.sessionId } };

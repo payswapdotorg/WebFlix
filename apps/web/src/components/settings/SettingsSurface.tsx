@@ -6,8 +6,14 @@
  * as the user-facing truth table — the UI honesty law: unsupported
  * capabilities render as unsupported, NEVER as success or hidden:
  *
- * - SOURCES: source management arrives with R03; until then the section
- *   shows the honest anonymous-session state (no fake connected sources).
+ * - SOURCES (R17): the runtime's sources model — each connected source's
+ *   card states its authorization truth (Connected / Sign-in expired /
+ *   Not connected / Connection failed) with its typed recovery action
+ *   (reconnect / connect / disconnect). An EXPIRED source is its own
+ *   named state — never a silent fallback to "not connected", never a
+ *   fake "connected". When the transport cannot read sources (the service
+ *   transport has not implemented the R03 read yet), the section renders
+ *   the honest not-wired state — never a fabricated connected source.
  * - MODEL: model/AI controls arrive with R06; the honest absent state.
  * - GENERAL: the capability table (storage/browser host/native media/
  *   background work/sharing/notifications), each with its level and the
@@ -18,10 +24,67 @@
 
 import type { JSX } from "react";
 
+import type { SourcesModel, SourceInfo } from "@wfx/client-runtime";
+import { sourceRecoveryAction } from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
+import { SourceActions } from "@/components/settings/SourceActions";
+
+/** The auth-state chip vocabulary (the honest per-state truth). */
+const AUTH_STATE_LABELS: Readonly<Record<string, string>> = {
+  signedIn: "Connected",
+  signedOut: "Not connected",
+  expired: "Sign-in expired",
+  authorizing: "Connecting…",
+  failed: "Connection failed",
+};
+
+/** One source's card: the authorization truth + its typed recovery action. */
+function SourceCard({
+  source,
+  mode,
+}: {
+  readonly source: SourceInfo;
+  readonly mode: "fixtures" | "service";
+}): JSX.Element {
+  const recovery = sourceRecoveryAction(source);
+  const expired = source.authState === "expired";
+  return (
+    <li
+      className="wfx-queue__item"
+      data-wfx-source={source.connectorId}
+      data-wfx-source-auth-state={source.authState}
+      {...(expired ? { "data-wfx-source-expired": "true" } : {})}
+    >
+      <span className="wfx-card__meta">
+        <span className="wfx-badge wfx-badge--type">{source.displayName}</span>
+        <span
+          className="wfx-badge wfx-badge--type"
+          data-wfx-source-auth-chip={source.authState}
+        >
+          {AUTH_STATE_LABELS[source.authState] ?? source.authState}
+        </span>
+      </span>
+      <p className="wfx-row__reason" data-wfx-source-recovery-detail>
+        {recovery.detail}
+      </p>
+      {source.availabilityNotes.length > 0 ? (
+        <ul className="wfx-row__reason" data-wfx-source-notes>
+          {source.availabilityNotes.map((note) => (
+            <li key={note}>{note}</li>
+          ))}
+        </ul>
+      ) : null}
+      <SourceActions
+        connectorId={source.connectorId}
+        action={{ kind: recovery.kind, label: recovery.label }}
+        mode={mode}
+      />
+    </li>
+  );
+}
 
 /** One capability row of the truth table. */
 function CapabilityRow({
@@ -65,6 +128,7 @@ export function SettingsSurface({
   session,
   mode,
   section,
+  sources,
 }: {
   /** The truthful platform bundle (the runtime's own declaration). */
   readonly capabilities: WebPlatformBundle;
@@ -74,6 +138,8 @@ export function SettingsSurface({
   readonly mode: "fixtures" | "service";
   /** The active settings section (the runtime's navigation payload). */
   readonly section?: "sources" | "model" | "general";
+  /** The runtime's sources model (R17: the sources section's data). */
+  readonly sources?: SourcesModel;
 }): JSX.Element {
   const descriptor = capabilities.descriptor;
   const limitations = descriptor.limitations ?? {};
@@ -115,18 +181,50 @@ export function SettingsSurface({
       {section === "sources" ? (
         <section className="wfx-detail__section" aria-label="Sources" data-wfx-settings-sources>
           <h2>Sources</h2>
-          <div className="wfx-state" data-wfx-sources-empty>
-            <span className="wfx-state__icon">
-              <Icon name="browser" />
-            </span>
-            <p className="wfx-state__title">No sources connected</p>
-            <p className="wfx-state__detail">
-              Source management (connect, reauthorize, disconnect, per-source capabilities and
-              authorization state) arrives with the source-management lane (R03). Until then this
-              host browses whatever its configured service carries — and never pretends a source
-              is connected.
-            </p>
-          </div>
+          {sources !== undefined && sources.status.state === "ready" && sources.sources.length > 0 ? (
+            <>
+              <p className="wfx-detail__meta">
+                The authorization truth of every connected source — an expired sign-in is its own
+                named state with its reconnect path (never a silent fallback, never a fake
+                connection).
+              </p>
+              <ul
+                className="wfx-queue__list"
+                style={{ listStyle: "none", padding: 0 }}
+                data-wfx-sources-list
+              >
+                {sources.sources.map((source) => (
+                  <SourceCard key={source.connectorId} source={source} mode={mode} />
+                ))}
+              </ul>
+            </>
+          ) : sources !== undefined && sources.status.state === "error" ? (
+            <div className="wfx-state" data-wfx-sources-error>
+              <span className="wfx-state__icon">
+                <Icon name="browser" />
+              </span>
+              <p className="wfx-state__title">Source states are unavailable right now</p>
+              <p className="wfx-state__detail">
+                {sources.status.error?.detail ??
+                  "the source read did not complete — the last observed states stand"}
+                . This host browses whatever its configured service carries — and never pretends a
+                source is connected.
+              </p>
+            </div>
+          ) : (
+            <div className="wfx-state" data-wfx-sources-empty>
+              <span className="wfx-state__icon">
+                <Icon name="browser" />
+              </span>
+              <p className="wfx-state__title">No sources connected</p>
+              <p className="wfx-state__detail">
+                Source management (connect, reauthorize, disconnect, per-source capabilities and
+                authorization state) arrives with the source-management lane (R03). Until then this
+                host browses whatever its configured service carries — and never pretends a source
+                is connected.
+              </p>
+            </div>
+          )}
         </section>
       ) : null}
 

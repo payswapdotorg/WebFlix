@@ -119,13 +119,18 @@ describe("R14 web — every lifecycle state renders truthfully", () => {
   it("the fixture feed seeds the honest scripted items (available / ready / resuming / failed)", async () => {
     const host = await bootHost();
     const views = host.runtime.acquisition.views();
-    expect(views.length).toBe(4); // Asteroid (available), Harbor (ready), DeepField (resuming), Desert (failed)
+    // Asteroid (available), Harbor (ready), DeepField (resuming), Desert
+    // (failed), Static Bloom + Midnight Scoop (R17's network-loss and
+    // metadata-failure scripted items — both start available).
+    expect(views.length).toBe(6);
     const byTitle = new Map(views.map((view) => [view.title, view]));
     expect(byTitle.get("Asteroid Drift")?.state).toBe("available");
     expect(byTitle.get("Harbor Lights")?.state).toBe("ready-offline");
     expect(byTitle.get("Deep Field Diary")?.state).toBe("completing");
     expect(byTitle.get("Deep Field Diary")?.resumed).toBe(true);
     expect(byTitle.get("Desert Rain Doc")?.state).toBe("failed");
+    expect(byTitle.get("Static Bloom")?.state).toBe("available");
+    expect(byTitle.get("Midnight Scoop")?.state).toBe("available");
   });
 
   it("the item surface renders the honest lifecycle for the acquiring title (J21)", async () => {
@@ -400,7 +405,7 @@ describe("R14 web — the typed actions wire through the route", () => {
     expect(response.status).toBe(200);
     const body = (await response.json()) as { mode: string; views: AcquisitionStatusView[] };
     expect(body.mode).toBe("fixtures");
-    expect(body.views.length).toBe(4);
+    expect(body.views.length).toBe(6);
     expect(body.views.every((view) => typeof view.state === "string")).toBe(true);
   });
 

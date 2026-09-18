@@ -342,6 +342,22 @@ export interface AcquisitionTransferFacts {
     /** R13's proof flag: the piece map was reused, not re-downloaded. */
     readonly pieceMapReused: boolean;
   };
+  /**
+   * R17 — the honest STARVATION truth (peer starvation / network loss),
+   * MEASURED by the adapter (never fabricated, never extrapolated): the
+   * transfer has stopped receiving anything. Protocol-free by type (the
+   * peer/piece vocabulary lives only in the gated diagnostics); the
+   * numbers are the adapter's own measurements passed through verbatim.
+   * Absent = no starvation was measured (the honest default).
+   */
+  readonly starved?: {
+    /** How long nothing has arrived, in ms (the adapter's stall clock). */
+    readonly stalledMs: number;
+    /** The measured arrival rate in bytes/second over the stall (0 when starved). */
+    readonly bytesPerSecond: number;
+    /** The measured count of connected download sources (protocol-free). */
+    readonly sourcesConnected: number;
+  };
 }
 
 /** The playback truth of one item's acquisition (from the R12 scheduler). */
@@ -496,6 +512,42 @@ export function assertValidAcquisitionFacts(facts: AcquisitionFacts): void {
         );
       }
     }
+    if (transfer.starved !== undefined) {
+      if (!isRecord(transfer.starved)) {
+        throw new RuntimeError("invalid-input", "facts.transfer.starved: expected an object when present");
+      }
+      const { stalledMs, bytesPerSecond, sourcesConnected } = transfer.starved;
+      if (
+        typeof stalledMs !== "number" ||
+        !Number.isFinite(stalledMs) ||
+        stalledMs < 0
+      ) {
+        throw new RuntimeError(
+          "invalid-input",
+          `facts.transfer.starved.stalledMs: expected a finite number >= 0, got ${previewValue(stalledMs)}`,
+        );
+      }
+      if (
+        typeof bytesPerSecond !== "number" ||
+        !Number.isFinite(bytesPerSecond) ||
+        bytesPerSecond < 0
+      ) {
+        throw new RuntimeError(
+          "invalid-input",
+          `facts.transfer.starved.bytesPerSecond: expected a finite number >= 0, got ${previewValue(bytesPerSecond)}`,
+        );
+      }
+      if (
+        typeof sourcesConnected !== "number" ||
+        !Number.isSafeInteger(sourcesConnected) ||
+        sourcesConnected < 0
+      ) {
+        throw new RuntimeError(
+          "invalid-input",
+          `facts.transfer.starved.sourcesConnected: expected a safe integer >= 0, got ${previewValue(sourcesConnected)}`,
+        );
+      }
+    }
   }
   if (failure !== undefined) {
     if (!isRecord(failure)) {
@@ -636,6 +688,13 @@ export type AcquisitionAction =
   | { readonly kind: "resume" }
   /** Retry a RECOVERABLE failure (R13's resume path — retained progress). */
   | { readonly kind: "retry" }
+  /**
+   * R17 — the CLEAN RESTART of an interrupted session: discard the saved
+   * progress and start over from the beginning. Offered alongside `resume`
+   * whenever the resumed proof exists, so resume-or-clean-restart is an
+   * EXPLICIT choice — and the surface says which is which.
+   */
+  | { readonly kind: "restart" }
   /** Dismiss the failure view (it re-surfaces if facts fail again). */
   | { readonly kind: "dismiss" }
   /** Play the verified offline copy (from `ready-offline`). */
@@ -669,6 +728,17 @@ export interface AcquisitionStatusView {
   readonly resumed: boolean;
   /** J25: the retained verified fraction at recovery (with `resumed`). */
   readonly retainedFraction: number | null;
+  /**
+   * R17 — the honest starvation truth, MEASURED (present iff the adapter
+   * reported `transfer.starved`): how long nothing has arrived, the
+   * measured rate, and the connected-source count — every number a
+   * pass-through (never a fabricated ETA, never a fake moving progress).
+   */
+  readonly starved?: {
+    readonly stalledMs: number;
+    readonly bytesPerSecond: number;
+    readonly sourcesConnected: number;
+  };
   /** The typed failure (present iff `state === "failed"`). */
   readonly failure?: AcquisitionViewFailure;
   /** The earned offline verdict (present iff `state === "ready-offline"`). */
@@ -700,8 +770,16 @@ function percentSentence(fraction: number | null): string {
 }
 
 /** Derive the typed actions of one in-progress state (pure). */
-function inProgressActions(state: AcquisitionState, paused: boolean): readonly AcquisitionAction[] {
-  if (paused) return [{ kind: "resume" }];
+function inProgressActions(
+  state: AcquisitionState,
+  paused: boolean,
+  interrupted: boolean,
+): readonly AcquisitionAction[] {
+  if (paused) {
+    // R17: an INTERRUPTED paused session offers the EXPLICIT choice —
+    // resume (keep the saved progress) or restart (discard it, start over).
+    return interrupted ? [{ kind: "resume" }, { kind: "restart" }] : [{ kind: "resume" }];
+  }
   if (state === "preparing" || state === "buffering" || state === "playing" || state === "completing") {
     return [{ kind: "pause" }];
   }
@@ -748,6 +826,7 @@ export function mapAcquisitionStatus(facts: AcquisitionFacts): AcquisitionStatus
   const resumed = transfer?.resumed !== undefined;
   const retainedFraction =
     transfer?.resumed !== undefined ? transfer.resumed.retainedFraction : null;
+  const starved = transfer?.starved;
   const base = {
     itemId,
     ...(title !== undefined ? { title } : {}),
@@ -756,6 +835,15 @@ export function mapAcquisitionStatus(facts: AcquisitionFacts): AcquisitionStatus
     paused,
     resumed,
     retainedFraction,
+    ...(starved !== undefined
+      ? {
+          starved: {
+            stalledMs: starved.stalledMs,
+            bytesPerSecond: starved.bytesPerSecond,
+            sourcesConnected: starved.sourcesConnected,
+          },
+        }
+      : {}),
   };
 
   // 1. FAILURE (the loudest fact).
@@ -842,6 +930,19 @@ export function mapAcquisitionStatus(facts: AcquisitionFacts): AcquisitionStatus
           ? "Checking the finished files."
           : "Finishing the offline copy in the background.";
     }
+    // R17 — the honest starvation modifier (measured, protocol-free): a
+    // starved transfer states the waiting truth with its measured numbers —
+    // never a silent frozen bar, never a fabricated ETA. The lifecycle
+    // state stays truthful (the transfer HAS not progressed); only the
+    // sentence tells the waiting truth.
+    if (starved !== undefined) {
+      const seconds = Math.round(starved.stalledMs / 1000);
+      detail = `${detail} Nothing has arrived for ${seconds}s — ${Math.round(
+        starved.bytesPerSecond,
+      )} B/s measured from ${starved.sourcesConnected} connected source${
+        starved.sourcesConnected === 1 ? "" : "s"
+      }. Waiting for the download to continue.`;
+    }
     // The resumed modifier: J25 — resuming, never fresh.
     if (resumed && retainedFraction !== null) {
       const percent = percentSentence(retainedFraction);
@@ -849,7 +950,7 @@ export function mapAcquisitionStatus(facts: AcquisitionFacts): AcquisitionStatus
         percent !== "" ? `${percent} already saved` : "the saved progress is being reused"
       }.`;
     }
-    return { ...base, state, label, detail, actions: inProgressActions(state, paused) };
+    return { ...base, state, label, detail, actions: inProgressActions(state, paused, resumed) };
   }
 
   // 4. DEGRADED OFFLINE (the exposure's bytes vanished — typed, recoverable).

@@ -134,16 +134,12 @@ describe("journeys — the encoded catalog's integrity", () => {
     expect(ids).toEqual(sorted);
   });
 
-  it("the encoded set is J01–J27 + J29–J32 (31 journeys; J28 is the declared not-run)", () => {
+  it("the encoded set is J01–J32 (32 journeys — R17 encoded J28 over the scripted source-auth feed)", () => {
     const ids = new Set(WEB_JOURNEYS.map((journey) => journey.id));
-    for (let number = 1; number <= 27; number += 1) {
+    for (let number = 1; number <= 32; number += 1) {
       expect(ids.has(`J${String(number).padStart(2, "0")}`)).toBe(true);
     }
-    expect(ids.has("J28")).toBe(false);
-    for (const id of ["J29", "J30", "J31", "J32"]) {
-      expect(ids.has(id)).toBe(true);
-    }
-    expect(WEB_JOURNEYS).toHaveLength(31);
+    expect(WEB_JOURNEYS).toHaveLength(32);
   });
 
   it("every encoded journey is ci-feasible (the CI set is the whole encoded set)", () => {

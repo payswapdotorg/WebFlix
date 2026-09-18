@@ -28,6 +28,7 @@ const ACTIONS = new Set([
   "pause",
   "resume",
   "retry",
+  "restart",
   "dismiss",
   "play-offline",
   "reverify-offline",

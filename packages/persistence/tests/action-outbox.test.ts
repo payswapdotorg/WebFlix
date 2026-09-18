@@ -490,3 +490,48 @@ describe("the durable dispatcher end-to-end (the real SyncDispatcher over the re
   });
 });
 
+
+// ---------------------------------------------------------------------------
+// R17 — the durable idempotent retry (failed -> pending, same key, no double-fire)
+// ---------------------------------------------------------------------------
+
+describe("R17 — retryFailed (the durable idempotent retry of a failed sync)", () => {
+  it("re-queues a failed record: pending, attempts reset, immediately due, SAME idempotency key", async () => {
+    const result = await outbox.enqueue(entry({ externalRef: "ext:r17retry", clientRequestToken: "rt-r17" }));
+    const id = result.record.id;
+    await outbox.beginAttempt(id);
+    await outbox.markFailed(id, { kind: "wiring", detail: "the wired connector vanished" });
+    const failed = await outbox.get(id);
+    expect(failed?.status).toBe("failed");
+
+    clock.set(CLOCK_START + 60_000);
+    const requeued = await outbox.retryFailed(id, clock.now());
+    expect(requeued.status).toBe("pending");
+    expect(requeued.attempts).toBe(0);
+    expect(requeued.idempotencyKey).toBe(result.record.idempotencyKey);
+    expect(requeued.id).toBe(id);
+    expect(requeued.nextAttemptAt).toBe(new Date(clock.now()).toISOString());
+    // Immediately due: the next dispatch tick claims it.
+    const due = await outbox.due(clock.now());
+    expect(due.some((record) => record.id === id)).toBe(true);
+    // Still exactly one row for the key — never a second record.
+    const byKey = await outbox.getByIdempotencyKey(result.record.idempotencyKey);
+    expect(byKey?.id).toBe(id);
+  });
+
+  it("refuses every non-failed status with the typed OutboxStateError (never a silent overwrite)", async () => {
+    const pending = await outbox.enqueue(entry({ externalRef: "ext:r17pending", clientRequestToken: "rt-p" }));
+    await expect(outbox.retryFailed(pending.record.id, clock.now())).rejects.toThrow(OutboxStateError);
+
+    const delivered = await outbox.enqueue(entry({ externalRef: "ext:r17delivered", clientRequestToken: "rt-d" }));
+    await outbox.beginAttempt(delivered.record.id);
+    await outbox.markDelivered(
+      delivered.record.id,
+      { status: "confirmed", externalId: "src-r17", occurredAt: new Date(clock.now()).toISOString() },
+      clock.now(),
+    );
+    await expect(outbox.retryFailed(delivered.record.id, clock.now())).rejects.toThrow(OutboxStateError);
+
+    await expect(outbox.retryFailed("wfxout_r17nosuch", clock.now())).rejects.toThrow(OutboxStateError);
+  });
+});

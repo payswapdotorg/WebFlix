@@ -24,8 +24,9 @@ import type { AcquisitionAction, AcquisitionStatusView } from "@wfx/client-runti
 const ACTION_LABELS: Readonly<Record<AcquisitionAction["kind"], string>> = {
   acquire: "Make available offline",
   pause: "Pause download",
-  resume: "Resume download",
+  resume: "Resume download — keep saved progress",
   retry: "Try again",
+  restart: "Start over — discard saved progress",
   dismiss: "Dismiss",
   "play-offline": "Play offline copy",
   "reverify-offline": "Re-check the offline copy",

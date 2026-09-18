@@ -56,6 +56,12 @@ export interface DesktopAcquisitionSurface {
    * recipe — the composition root's fresh re-acquisition).
    */
   attemptAcquisitionRetry(itemId: string): Promise<TorrentResult<{ readonly sessionId: string }>>;
+  /**
+   * R17 — execute the typed CLEAN RESTART of one item's INTERRUPTED session
+   * (the bound restart recipe — discard the saved progress + a fresh
+   * acquisition; the explicit resume-or-clean-restart choice).
+   */
+  attemptAcquisitionRestart(itemId: string): Promise<TorrentResult<{ readonly sessionId: string }>>;
   /** Observe lifecycle-view changes. */
   observeAcquisition(listener: (views: readonly AcquisitionStatusView[]) => void): Unsubscribe;
 }
@@ -74,6 +80,11 @@ export function createUnboundAcquisitionSurface(
       torrentError("INVALID_STATE", {
         detail:
           "attemptAcquisitionRetry: the torrent-engine acquisition block is not bound in this build — the retry action is honestly unavailable (never a fixture fallback)",
+      }),
+    attemptAcquisitionRestart: async () =>
+      torrentError("INVALID_STATE", {
+        detail:
+          "attemptAcquisitionRestart: the torrent-engine acquisition block is not bound in this build — the restart action is honestly unavailable (never a fixture fallback)",
       }),
     observeAcquisition: (listener) => runtime.acquisition.subscribe(listener),
   };
@@ -95,6 +106,7 @@ export function createDesktopAcquisitionSurface(
     acquisitionDiagnostics: (itemId) => source.diagnostics(itemId),
     refreshAcquisition: (recovery?: TorrentRecoveryReport) => source.refresh(recovery),
     attemptAcquisitionRetry: (itemId) => source.attemptRetry(itemId),
+    attemptAcquisitionRestart: (itemId) => source.attemptRestart(itemId),
     observeAcquisition: (listener) => runtime.acquisition.subscribe(listener),
   };
 }

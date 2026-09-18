@@ -513,7 +513,9 @@ describe("R14 desktop — J25 interruption surfaces RESUMING with real retained 
     expect(resumed?.retainedFraction).toBeCloseTo(4 / 6, 10);
     expect(resumed?.detail).toContain("Resuming where it left off");
     expect(resumed?.detail).toContain("67% already saved");
-    expect(resumed?.actions.map((a) => a.kind)).toEqual(["resume"]);
+    // R17: the interrupted paused session offers the EXPLICIT choice —
+    // resume (keep) or restart (discard) — both typed actions.
+    expect(resumed?.actions.map((a) => a.kind)).toEqual(["resume", "restart"]);
 
     // The user resumes: the SAME lifecycle continues with the retained
     // proof still named (never a fresh start).
@@ -846,5 +848,178 @@ describe("R14 desktop — the composition root binds the acquisition block", () 
     expect(app.acquisition.bound).toBe(false);
     expect(app.acquisition.acquisitionViews()).toEqual([]);
     app.dispose();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R17 — network loss / peer starvation + the explicit resume-or-clean-restart
+// ---------------------------------------------------------------------------
+
+describe("R17 desktop — the measured starvation truth (peer starvation / network loss)", () => {
+  it("a STALLED session derives the starved facts: the measured numbers passed through verbatim, protocol-free", () => {
+    const { engine, runtime, source } = bootHarness();
+    engine.script(
+      "s-1",
+      statusOf({
+        sessionId: "s-1",
+        state: "downloading",
+        stalled: true,
+        stallDurationMs: 92_000,
+        peers: { connected: 0 },
+        rates: { downloadBytesPerSec: 0, uploadBytesPerSec: 0 },
+        progress: { selectedPieces: 40, verifiedSelectedPieces: 14, selectedBytes: 655_360, verifiedSelectedBytes: 229_376, fraction: 0.35 },
+      }),
+      "idle",
+      truthOf(),
+    );
+    source.refresh();
+
+    const view = runtime.acquisition.view(ITEM);
+    expect(view?.state).toBe("completing"); // the lifecycle stays truthful
+    expect(view?.starved).toEqual({ stalledMs: 92_000, bytesPerSecond: 0, sourcesConnected: 0 });
+    expect(view?.progress).toBe(0.35); // the MEASURED fraction — never a fake bar
+    expect(view?.detail).toContain("Nothing has arrived for 92s");
+    expect(view?.detail).toContain("0 B/s measured from 0 connected sources");
+    expect(containsAcquisitionProtocolTerminology(view?.detail ?? "")).toBe(false); // the leak law
+  });
+
+  it("a HEALTHY session carries no starvation marker (absent = not measured)", () => {
+    const { engine, runtime, source } = bootHarness();
+    engine.script(
+      "s-1",
+      statusOf({
+        sessionId: "s-1",
+        state: "downloading",
+        stalled: false,
+        peers: { connected: 6 },
+        rates: { downloadBytesPerSec: 262_144, uploadBytesPerSec: 32_768 },
+      }),
+      "idle",
+      truthOf(),
+    );
+    source.refresh();
+    const view = runtime.acquisition.view(ITEM);
+    expect(view?.starved).toBeUndefined();
+    expect(view?.detail).not.toContain("Nothing has arrived");
+  });
+
+  it("the interrupted paused session offers the EXPLICIT resume-or-clean-restart choice", () => {
+    const { engine, runtime, source } = bootHarness();
+    const recovery: TorrentRecoveryReport = {
+      recovered: [{ sessionId: "s-1", state: "seeding-paused", resumeTarget: "downloading", verifiedPieces: 4, diskVerifiedPieces: 4, pieceMapReused: true }],
+      terminal: [],
+      failed: [],
+      skipped: [],
+      rearmed: [],
+      rearmRefused: [],
+    };
+    engine.script(
+      "s-1",
+      statusOf({
+        sessionId: "s-1",
+        state: "seeding-paused",
+        peers: { connected: 0 },
+        rates: { downloadBytesPerSec: 0, uploadBytesPerSec: 0 },
+        progress: { selectedPieces: 6, verifiedSelectedPieces: 4, selectedBytes: 98_304, verifiedSelectedBytes: 65_536, fraction: 4 / 6 },
+      }),
+      "idle",
+      truthOf(),
+    );
+    source.refresh(recovery);
+    const view = runtime.acquisition.view(ITEM);
+    expect(view?.paused).toBe(true);
+    expect(view?.resumed).toBe(true);
+    expect(view?.actions.map((action) => action.kind)).toEqual(["resume", "restart"]);
+  });
+});
+
+describe("R17 desktop — attemptRestart (the typed clean-restart wiring)", () => {
+  it("runs the bound restart recipe, rebinds the FRESH session (no resume proof), and reports", async () => {
+    const { engine, runtime, source, identity } = bootHarness();
+    // The interrupted proof first (the restart applies only to it).
+    const recovery: TorrentRecoveryReport = {
+      recovered: [{ sessionId: "s-1", state: "seeding-paused", resumeTarget: "downloading", verifiedPieces: 4, diskVerifiedPieces: 4, pieceMapReused: true }],
+      terminal: [],
+      failed: [],
+      skipped: [],
+      rearmed: [],
+      rearmRefused: [],
+    };
+    engine.script(
+      "s-1",
+      statusOf({ sessionId: "s-1", state: "seeding-paused", peers: { connected: 0 }, rates: { downloadBytesPerSec: 0, uploadBytesPerSec: 0 } }),
+      "idle",
+      truthOf(),
+    );
+
+    let ran = false;
+    // Bind the restart recipe FIRST (a fresh bindSession resets the resume
+    // proof — the binding is the attempt's own state), then land the
+    // interrupted proof through the recovery report.
+    source.bindSession(
+      "s-1",
+      identity,
+      undefined,
+      async () => {
+        ran = true;
+        engine.script(
+          "s-2",
+          statusOf({ sessionId: "s-2", state: "discovering-metadata", peers: { connected: 0 }, rates: { downloadBytesPerSec: 0, uploadBytesPerSec: 0 } }),
+          "idle",
+          truthOf(),
+        );
+        return { ok: true, value: { sessionId: "s-2" } };
+      },
+    );
+    source.refresh(recovery);
+    const outcome = await source.attemptRestart(ITEM);
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(ran).toBe(true);
+    expect(outcome.value.sessionId).toBe("s-2");
+    const fresh = runtime.acquisition.view(ITEM);
+    expect(fresh?.resumed).toBe(false); // FRESH — the progress was discarded
+    expect(fresh?.retainedFraction).toBeNull();
+    expect(fresh?.state).toBe("preparing"); // locating — the fresh attempt
+  });
+
+  it("refuses a session with NO interrupted proof (the typed INVALID_STATE — restart is not a silent reset)", async () => {
+    const { engine, source } = bootHarness();
+    engine.script(
+      "s-1",
+      statusOf({ sessionId: "s-1", state: "downloading", stalled: false }),
+      "idle",
+      truthOf(),
+    );
+    source.refresh();
+    const refused = await source.attemptRestart(ITEM);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) return;
+    expect(refused.error.code).toBe("INVALID_STATE");
+    expect(refused.error.detail).toContain("no interrupted-session proof");
+  });
+
+  it("refuses honestly when NO restart recipe is bound (the composition root owns the discard logic)", async () => {
+    const { engine, source } = bootHarness();
+    const recovery: TorrentRecoveryReport = {
+      recovered: [{ sessionId: "s-1", state: "seeding-paused", resumeTarget: "downloading", verifiedPieces: 4, diskVerifiedPieces: 4, pieceMapReused: true }],
+      terminal: [],
+      failed: [],
+      skipped: [],
+      rearmed: [],
+      rearmRefused: [],
+    };
+    engine.script(
+      "s-1",
+      statusOf({ sessionId: "s-1", state: "seeding-paused", peers: { connected: 0 }, rates: { downloadBytesPerSec: 0, uploadBytesPerSec: 0 } }),
+      "idle",
+      truthOf(),
+    );
+    source.refresh(recovery);
+    const refused = await source.attemptRestart(ITEM);
+    expect(refused.ok).toBe(false);
+    if (refused.ok) return;
+    expect(refused.error.code).toBe("INVALID_STATE");
+    expect(refused.error.detail).toContain("no restart recipe is bound");
   });
 });

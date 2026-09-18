@@ -209,6 +209,101 @@ const desertScript: readonly AcquisitionFacts[] = [
   },
 ];
 
+/**
+ * R17/J29 — the network-loss + interrupted-session journey (Static
+ * Bloom): healthy transfer → connection lost (the MEASURED starvation
+ * truth: nothing arriving, 0 B/s, 0 connected sources — never a fake
+ * moving bar) → the session interrupted and paused with its retained
+ * progress (the explicit resume-or-clean-restart choice) → resumed and
+ * progressed (never fresh, never falsely complete) → earned offline.
+ */
+const staticBloomScript: readonly AcquisitionFacts[] = [
+  { itemId: "PENDING", title: "Static Bloom" },
+  {
+    itemId: "PENDING",
+    title: "Static Bloom",
+    transfer: { phase: "locating", paused: false, progressFraction: null },
+  },
+  {
+    itemId: "PENDING",
+    title: "Static Bloom",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.35 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Static Bloom",
+    transfer: {
+      phase: "transferring",
+      paused: false,
+      progressFraction: 0.35,
+      starved: { stalledMs: 92_000, bytesPerSecond: 0, sourcesConnected: 0 },
+    },
+  },
+  {
+    itemId: "PENDING",
+    title: "Static Bloom",
+    transfer: {
+      phase: "transferring",
+      paused: true,
+      progressFraction: 0.35,
+      resumed: { retainedFraction: 0.35, pieceMapReused: true },
+    },
+  },
+  {
+    itemId: "PENDING",
+    title: "Static Bloom",
+    transfer: {
+      phase: "transferring",
+      paused: false,
+      progressFraction: 0.55,
+      resumed: { retainedFraction: 0.35, pieceMapReused: true },
+    },
+  },
+  {
+    itemId: "PENDING",
+    title: "Static Bloom",
+    offlineReady: { verified: true, degraded: false, assetCount: 1, sizeBytes: 753_664, exposedAtMs: T0 },
+  },
+];
+
+/**
+ * R17 — the metadata-failure journey (Midnight Scoop): the details could
+ * not be found (the named `details-not-found` state with its retry) → the
+ * retry lands preparing → transfers → earned offline. The UX mirror of
+ * the engine's typed `metadata-failed` dead end.
+ */
+const midnightScoopScript: readonly AcquisitionFacts[] = [
+  { itemId: "PENDING", title: "Midnight Scoop" },
+  {
+    itemId: "PENDING",
+    title: "Midnight Scoop",
+    transfer: { phase: "locating", paused: false, progressFraction: null },
+  },
+  {
+    itemId: "PENDING",
+    title: "Midnight Scoop",
+    failure: {
+      cause: "details-not-found",
+      detail: "The details for this title could not be found right now. You can try again — the source may come back.",
+    },
+  },
+  {
+    itemId: "PENDING",
+    title: "Midnight Scoop",
+    transfer: { phase: "locating", paused: false, progressFraction: null },
+  },
+  {
+    itemId: "PENDING",
+    title: "Midnight Scoop",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.5 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Midnight Scoop",
+    offlineReady: { verified: true, degraded: false, assetCount: 1, sizeBytes: 524_288, exposedAtMs: T0 },
+  },
+];
+
 /** The scripted items (fixture content — deterministic order). */
 const SCRIPTED: readonly ScriptedAcquisition[] = [
   {
@@ -279,6 +374,40 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
     },
     itemId: null,
   },
+  {
+    externalRef: "fake:video-2",
+    searchQuery: "Static Bloom",
+    script: staticBloomScript,
+    protocol: {
+      infoHash: "5555555555555555555555555555555555555555",
+      peersConnected: 0,
+      piecesVerified: 14,
+      piecesTotal: 40,
+      downloadBytesPerSec: 0,
+      uploadBytesPerSec: 0,
+      sourceId: "vault:family-media",
+      basis: "user-owned",
+      dataDir: "<app-data>/webflix/native-media/sessions/wfx-ts-5/data",
+    },
+    itemId: null,
+  },
+  {
+    externalRef: "fake:short-2",
+    searchQuery: "Midnight Scoop",
+    script: midnightScoopScript,
+    protocol: {
+      infoHash: "4444444444444444444444444444444444444444",
+      peersConnected: 0,
+      piecesVerified: 0,
+      piecesTotal: 24,
+      downloadBytesPerSec: 0,
+      uploadBytesPerSec: 0,
+      sourceId: "vault:family-media",
+      basis: "user-owned",
+      dataDir: "<app-data>/webflix/native-media/sessions/wfx-ts-6/data",
+    },
+    itemId: null,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -293,9 +422,11 @@ interface FixtureDriveState {
   readonly cursor: number;
   readonly paused: boolean;
   readonly dismissed: boolean;
+  /** R17 — the clean-restart marker: the saved progress was discarded; the store clears before reporting (a fresh attempt, never a false continuation). */
+  readonly restarted: boolean;
 }
 
-const INITIAL_DRIVE: FixtureDriveState = { cursor: 0, paused: false, dismissed: false };
+const INITIAL_DRIVE: FixtureDriveState = { cursor: 0, paused: false, dismissed: false, restarted: false };
 
 /** Read the whole drive state (missing/corrupt file ⇒ the initial state). */
 function readDriveState(): Map<string, FixtureDriveState> {
@@ -310,6 +441,7 @@ function readDriveState(): Map<string, FixtureDriveState> {
         cursor: typeof raw.cursor === "number" ? raw.cursor : 0,
         paused: raw.paused === true,
         dismissed: raw.dismissed === true,
+        restarted: raw.restarted === true,
       });
     }
   } catch {
@@ -390,9 +522,12 @@ export function reportAcquisitionFixtures(host: {
   for (const item of SCRIPTED) {
     if (item.itemId === null) continue;
     const drive = byRef.get(item.externalRef) ?? INITIAL_DRIVE;
-    if (drive.dismissed) {
+    if (drive.dismissed || drive.restarted) {
+      // The dismissal/clean-restart path: the old view is cleared first —
+      // the next report is a FRESH observation (never a false continuation
+      // of the discarded attempt).
       host.runtime.acquisition.clear(item.itemId);
-      host.runtime.acquisition.report(factsAt(item, { ...INITIAL_DRIVE }));
+      host.runtime.acquisition.report(factsAt(item, drive));
       continue;
     }
     host.runtime.acquisition.report(factsAt(item, drive));
@@ -476,7 +611,12 @@ export function driveAcquisitionFixture(
       if (drive.cursor >= last) {
         return { ok: true, view: persist(drive) }; // the script's end (idempotent)
       }
-      return { ok: true, view: persist({ ...drive, cursor: drive.cursor + 1 }) };
+      // R17 — a post-restart advance returns to normal observation (the
+      // fresh attempt is now an ordinary session).
+      return {
+        ok: true,
+        view: persist({ ...drive, cursor: drive.cursor + 1, restarted: false }),
+      };
     }
     case "acquire": {
       if (drive.cursor !== 0 || drive.dismissed) {
@@ -491,6 +631,26 @@ export function driveAcquisitionFixture(
       }
       return { ok: true, view: persist({ ...INITIAL_DRIVE, cursor: 1 }) };
     }
+    case "restart": {
+      // R17 — the CLEAN RESTART of an interrupted session: discard the
+      // saved progress and start over. The marker clears the old view
+      // before the fresh attempt reports (a fresh observation — never a
+      // false continuation, never a silent progress reset).
+      const current = runtime.acquisition.view(item.itemId!);
+      if (current === null || !current.resumed) {
+        return {
+          ok: false,
+          status: 409,
+          error: "restart applies to an interrupted session with saved progress (use retry for failures)",
+        };
+      }
+      runtime.acquisition.clear(item.itemId!);
+      const next: FixtureDriveState = { ...INITIAL_DRIVE, cursor: 1, restarted: true };
+      byRef.set(item.externalRef, next);
+      writeDriveState(byRef);
+      runtime.acquisition.report(factsAt(item, next));
+      return { ok: true, view: runtime.acquisition.view(item.itemId!)! };
+    }
     case "pause":
     case "resume": {
       if (drive.dismissed) {
@@ -500,7 +660,10 @@ export function driveAcquisitionFixture(
       if (facts.transfer === undefined) {
         return { ok: false, status: 409, error: `${input.action} applies to an in-progress download` };
       }
-      return { ok: true, view: persist({ ...drive, paused: input.action === "pause" }) };
+      return {
+        ok: true,
+        view: persist({ ...drive, paused: input.action === "pause", restarted: false }),
+      };
     }
     case "dismiss": {
       if (!drive.dismissed) {

@@ -23,7 +23,41 @@
  *    section, never a fake empty one.
  */
 
-import type { ServerFailure } from "./server-port";
+import type { CredentialFailure, ServerFailure } from "./server-port";
+
+// ---------------------------------------------------------------------------
+// The named credential-expired state (R17)
+// ---------------------------------------------------------------------------
+
+/**
+ * The NAMED credential failure state an `unauthorized` error may carry
+ * (R17): provider credential expiry is its own typed state — never a
+ * silent fallback, never a fake success, never indistinguishable from a
+ * generic rejection. The recovery path is always re-authentication
+ * (`RecoveryAction "re-authenticate"`).
+ */
+export type CredentialFailureState = CredentialFailure;
+
+/** The user-language sentences naming each credential state (deterministic). */
+export const CREDENTIAL_FAILURE_SENTENCES: Readonly<
+  Record<CredentialFailure["state"], string>
+> = {
+  expired: "the source's sign-in expired — reconnect the source to restore it",
+  rejected: "the source refused the stored sign-in — reconnect the source to restore it",
+  missing: "the source is not signed in — connect the source to use it",
+};
+
+/**
+ * The recovery hint for a classified credential failure (the named state +
+ * its re-auth path). Pure; total over the three states.
+ */
+export function credentialRecoveryHint(credential: CredentialFailure): RecoveryHint {
+  const who = credential.connectorId !== undefined ? ` (source '${credential.connectorId}')` : "";
+  return {
+    action: "re-authenticate",
+    detail: `${CREDENTIAL_FAILURE_SENTENCES[credential.state]}${who}`,
+  };
+}
 
 /** The closed runtime error vocabulary. */
 export type RuntimeErrorKind =
@@ -79,13 +113,28 @@ export class RuntimeError extends Error {
   readonly kind: RuntimeErrorKind;
   readonly retryable: boolean;
   readonly recovery: RecoveryHint;
+  /**
+   * R17: the classified credential truth, present iff the failure is an
+   * `unauthorized` whose cause the transport honestly classified
+   * (expired/rejected/missing). The named expired-credential state —
+   * DATA on the error, never a string the UI has to sniff.
+   */
+  readonly credential?: CredentialFailure;
 
-  constructor(kind: RuntimeErrorKind, detail: string, recovery?: RecoveryHint) {
+  constructor(
+    kind: RuntimeErrorKind,
+    detail: string,
+    recovery?: RecoveryHint,
+    credential?: CredentialFailure,
+  ) {
     super(`client-runtime failure (${kind}): ${detail}`);
     this.name = "RuntimeError";
     this.kind = kind;
     this.retryable = RETRYABLE_KINDS.has(kind);
     this.recovery = recovery ?? DEFAULT_RECOVERY[kind];
+    if (credential !== undefined) {
+      this.credential = credential;
+    }
   }
 }
 
@@ -161,12 +210,23 @@ export function serverFailureKind(failure: ServerFailure): RuntimeErrorKind {
   }
 }
 
-/** Build the typed `RuntimeError` for a server failure (detail preserved). */
+/**
+ * Build the typed `RuntimeError` for a server failure (detail preserved).
+ * R17: an `unauthorized` failure whose credential truth the transport
+ * classified carries the NAMED credential state and its re-auth recovery
+ * hint (the expired state says so, by name — never a generic 401 sniff).
+ */
 export function serverFailureError(operation: string, failure: ServerFailure): RuntimeError {
   const kind = serverFailureKind(failure);
+  const credential =
+    kind === "unauthorized" && failure.credential !== undefined
+      ? failure.credential
+      : undefined;
   const hint: RecoveryHint =
     kind === "unauthorized"
-      ? DEFAULT_RECOVERY.unauthorized
+      ? credential !== undefined
+        ? credentialRecoveryHint(credential)
+        : DEFAULT_RECOVERY.unauthorized
       : kind === "network"
         ? {
             action: "retry",
@@ -176,5 +236,9 @@ export function serverFailureError(operation: string, failure: ServerFailure): R
             action: "retry",
             detail: `${operation} is unavailable right now — retry later`,
           };
-  return new RuntimeError(kind, `${operation}: ${failure.detail}`, hint);
+  const detail =
+    credential !== undefined
+      ? `${operation}: ${failure.detail} (${CREDENTIAL_FAILURE_SENTENCES[credential.state]})`
+      : `${operation}: ${failure.detail}`;
+  return new RuntimeError(kind, detail, hint, credential);
 }
