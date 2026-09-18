@@ -19,6 +19,7 @@
         "@wfx/connectors": "workspace:*",
         "@wfx/domain": "workspace:*",
         "@wfx/experience": "workspace:*",
+        "@wfx/model-fabric": "workspace:*",
         "@wfx/persistence": "workspace:*",
         "@wfx/recommendation": "workspace:*",
         "next": "^16.3.5",
