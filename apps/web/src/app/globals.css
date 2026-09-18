@@ -1375,3 +1375,115 @@ body {
 .wfx-pwa-card--ok {
   border-color: var(--wfx-ok);
 }
+
+/* ==========================================================================
+   R14 — the acquisition surfaces (the honest lifecycle + the gated
+   diagnostics disclosure). The default vocabulary is protocol-free; the
+   wfx-acquisition__diagnostics block is the ONLY place protocol detail
+   renders (closed by default — a <details> disclosure).
+   ========================================================================== */
+
+.wfx-acquisition {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wfx-acquisition__progress {
+  width: 100%;
+  max-width: 28rem;
+  height: 0.5rem;
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--wfx-surface, #17151d);
+}
+
+.wfx-acquisition__progress::-webkit-progress-bar {
+  background: var(--wfx-surface, #17151d);
+  border-radius: 999px;
+}
+
+.wfx-acquisition__progress::-webkit-progress-value {
+  background: var(--wfx-accent, #f43f5e);
+  border-radius: 999px;
+}
+
+.wfx-acquisition__progress::-moz-progress-bar {
+  background: var(--wfx-accent, #f43f5e);
+  border-radius: 999px;
+}
+
+.wfx-acquisition__failure {
+  color: var(--wfx-text-dim);
+  font-style: italic;
+}
+
+.wfx-acquisition__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.wfx-acquisition__badge--progress {
+  background: rgba(244, 63, 94, 0.16);
+}
+
+.wfx-acquisition__badge--live {
+  background: rgba(34, 197, 94, 0.18);
+}
+
+.wfx-acquisition__badge--ready {
+  background: rgba(34, 197, 94, 0.24);
+}
+
+.wfx-acquisition__badge--failed {
+  background: rgba(148, 163, 184, 0.18);
+}
+
+.wfx-btn--dev {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.wfx-acquisition__diagnostics {
+  margin-top: 0.75rem;
+  border: 1px dashed var(--wfx-border-strong, #3a3547);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.85rem;
+}
+
+.wfx-acquisition__diagnostics > summary {
+  cursor: pointer;
+  color: var(--wfx-text-dim);
+  font-size: 0.85rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.wfx-acquisition__diagnostics[open] > summary {
+  color: var(--wfx-text);
+}
+
+.wfx-acquisition__diagnostics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.5rem 1.25rem;
+  margin: 0.5rem 0 0.25rem;
+}
+
+.wfx-acquisition__diagnostics-grid dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-acquisition__diagnostics-grid dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  word-break: break-all;
+}

@@ -30,6 +30,15 @@
  * - `models.ts`               — the read models (home/search/shorts/library)
  * - `sources.ts`              — R03: the source-state store (source
  *                               management's observed model)
+ * - `acquisition.ts`          — R14: the native acquisition UX seam — the
+ *                               frozen lifecycle vocabulary's transition
+ *                               law, the protocol-free facts intake, the
+ *                               pure mapper to the honest status views
+ *                               (Available/Preparing/Buffering/Playing/
+ *                               Completing/Ready offline/Failed), the
+ *                               typed failure causes (recoverable vs
+ *                               fatal), the protocol leak guard, and the
+ *                               gated advanced-diagnostics view type
  * - `registry.ts`             — the canonical item registry
  * - `runtime-seams.ts`        — the clock/id seams
  * - `surface-resolution.ts`  — R09: the Media Surface resolution seam (the
@@ -43,6 +52,7 @@ export * from "./server-port";
 export * from "./runtime-seams";
 export * from "./navigation";
 export * from "./sources";
+export * from "./acquisition";
 export * from "./playback";
 export * from "./surface-resolution";
 export * from "./watch-state";

@@ -51,6 +51,7 @@ import { WebClock } from "@/platform/lifecycle";
 
 import { createWebSurfaceResolver } from "./media-surface";
 import { createFixtureBackedServerPort } from "./dev-fixture-server-port";
+import { resetAcquisitionFixturesForTests, seedAcquisitionFixtures } from "./acquisition-fixtures";
 import type { HostEnv, HostMode } from "./config";
 import { resolveHostConfig } from "./config";
 import type { WebSession } from "./session";
@@ -176,6 +177,15 @@ export async function bootWebRuntimeHost(
     surfaceResolver: createWebSurfaceResolver({ capabilities, clock: new WebClock() }),
   });
 
+  // 4b. R14 — fixtures mode ONLY (the loud dev badge): seed the scripted
+  //     acquisition feed (the browser-validation harness for J21-J26). In
+  //     service mode NOTHING seeds — the acquisition surfaces render their
+  //     honest empty states (a fixture is never silently presented as
+  //     production capability — invariant 10).
+  if (config.mode === "fixtures") {
+    await seedAcquisitionFixtures({ mode: config.mode, runtime });
+  }
+
   // 5. The boot-completion signal (the lifecycle's ready event, exactly once).
   capabilities.ports.lifecycle.markReady();
 
@@ -230,4 +240,5 @@ export function resetWebRuntimeHostForTests(): void {
   bootPromise = null;
   canonicalJoin.clear();
   joinCounter = 0;
+  resetAcquisitionFixturesForTests();
 }

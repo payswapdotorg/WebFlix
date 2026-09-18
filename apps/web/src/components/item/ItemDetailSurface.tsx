@@ -14,6 +14,7 @@ import type { JSX } from "react";
 import type { DetailView } from "@/host/view-models";
 import { ItemCard } from "@/components/cards/ItemCard";
 import { playerHref } from "@/app/routing";
+import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, percentWatched, placeholderArt, placeholderMonogram } from "@/components/ui/format";
@@ -139,6 +140,13 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
           </p>
         ) : null}
       </section>
+      <AcquisitionPanel
+        view={view.acquisition.view}
+        diagnostics={view.acquisition.diagnostics}
+        mode={view.mode}
+        canAcquireOnThisDevice={false}
+        sourceRef={view.externalRef}
+      />
       {view.related.length > 0 ? (
         <section className="wfx-detail__section" aria-label="Related content">
           <h2>More to explore</h2>
