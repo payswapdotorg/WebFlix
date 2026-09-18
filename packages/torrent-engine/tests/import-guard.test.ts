@@ -1,6 +1,7 @@
 /**
- * R11/R12 — the boundary import guard (the R10 production-import-guard
- * pattern, extended to the torrent-engine lanes and R12's scheduler).
+ * R11/R12/R13 — the boundary import guard (the R10 production-import-guard
+ * pattern, extended to the torrent-engine lanes, R12's scheduler, and
+ * R13's persistence core).
  *
  * The laws enforced LINT-VISIBLY (a violation fails the suite):
  *
@@ -20,6 +21,12 @@
  *    engine facade; it never reaches sideways into another package), and
  *    the public entry re-exports its vocabulary (the seam consumers
  *    import from "@wfx/torrent-engine" only).
+ * 7. R13 — THE PERSISTENCE LANE LAW: `src/persistence.ts` is engine-
+ *    internal persistence vocabulary: it imports NOTHING from `@wfx/*`
+ *    (the journal folds + re-arm validation never reach across lanes),
+ *    the journal carries the R13 record vocabulary, and the public entry
+ *    re-exports the R13 surface (folds, re-arm inputs, offline-ready
+ *    types — consumers import from "@wfx/torrent-engine" only).
  */
 
 import { describe, expect, it } from "bun:test";
@@ -187,5 +194,72 @@ describe("R11/R12 — the boundary import guard", () => {
     expect(importStatements).not.toContain("loopback");
     expect(importStatements).not.toContain("helpers/");
     expect(importStatements).not.toContain('from "webtorrent"');
+  });
+});
+
+describe("R13 — the persistence lane laws", () => {
+  it("src/persistence.ts exists and imports NOTHING from @wfx/* (engine-internal vocabulary)", () => {
+    const persistencePath = join(SRC, "persistence.ts");
+    expect(existsSync(persistencePath)).toBe(true);
+    const source = readFileSync(persistencePath, "utf8");
+    // IMPORT STATEMENTS only — module doc comments may name packages.
+    const importStatements = source
+      .split("\n")
+      .filter((line) => line.trim().startsWith("import") || line.trim().startsWith("export"))
+      .join("\n");
+    expect(importStatements).not.toContain("@wfx/");
+    // And it stays pure: no node:fs, no clock, no I/O of any kind.
+    expect(importStatements).not.toContain("node:");
+  });
+
+  it("the journal carries the R13 record vocabulary (scheduler-checkpoint + asset-exposed + compaction)", () => {
+    const journal = readFileSync(join(SRC, "journal.ts"), "utf8");
+    expect(journal).toContain('"scheduler-checkpoint"');
+    expect(journal).toContain('"asset-exposed"');
+    expect(journal).toContain("selectCompactionKeepers");
+    expect(journal).toContain("renameSync"); // the ATOMIC rotation
+    // The fold carries the re-arm control point.
+    expect(journal).toContain("schedulerCheckpoint?: JournalSchedulerCheckpointRecord");
+  });
+
+  it("the scheduler owns the persist hook + the re-arm path (R13's cross-restart continuity)", () => {
+    const scheduler = readFileSync(join(SRC, "scheduler", "session-scheduler.ts"), "utf8");
+    expect(scheduler).toContain("SchedulerPersistHook");
+    expect(scheduler).toContain("rearm");
+    expect(scheduler).toContain("emitCheckpoint");
+    // The re-arm path drives the FSM's OWN legal transitions (never a
+    // fabricated hop).
+    expect(scheduler).toContain('this.fsm.transitionTo("startup")');
+  });
+
+  it("the engine wires the persist hook + the exposure surface (verified-before-ready)", () => {
+    const engine = readFileSync(join(SRC, "engine.ts"), "utf8");
+    expect(engine).toContain("persistSchedulerCheckpoint");
+    expect(engine).toContain("recordAssetExposure");
+    expect(engine).toContain("exposedAssets");
+    expect(engine).toContain("verified-before-ready");
+    expect(engine).toContain("schedulerRearmInputsFromRecord");
+    expect(engine).toContain("pieceMapReused");
+  });
+
+  it("the adapter owns the exposure seam (the ONLY @wfx/native-media path, extended)", () => {
+    const adapter = readFileSync(join(SRC, "adapter", "native-media-adapter.ts"), "utf8");
+    expect(adapter).toContain("exposeCompletedSelection");
+    expect(adapter).toContain("listOfflineReady");
+    expect(adapter).toContain("verifyOfflineReadyEntry");
+    expect(adapter).toContain("offlineReadyIdentityKey");
+  });
+
+  it("the public entry re-exports the R13 vocabulary (the seam consumers' import path)", () => {
+    const index = readFileSync(join(SRC, "index.ts"), "utf8");
+    expect(index).toContain("./persistence");
+    for (const name of [
+      "OfflineReadyTorrentAsset",
+      "OfflineReadyEntry",
+      "OfflineReadyAsset",
+      "LibraryIdentityInput",
+    ]) {
+      expect(index).toContain(name);
+    }
   });
 });

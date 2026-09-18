@@ -21,6 +21,12 @@ import { join } from "node:path";
 import { TorrentEngineError, torrentError, type TorrentResult } from "./errors";
 import { createTorrentSessionJournal, type TorrentSessionJournal } from "./journal";
 import {
+  extractExposedAssets,
+  offlineReadyIdentityKey,
+  schedulerRearmInputsFromRecord,
+  type ExposedTorrentExposure,
+} from "./persistence";
+import {
   metainfoFromLibrary,
   type TorrentMetainfo,
   type TorrentFileEntry,
@@ -38,6 +44,7 @@ import {
 } from "./selection";
 import {
   TorrentEngineSession,
+  countBits,
   type TorrentEngineSessionInputs,
   type SessionProvenance,
   type TorrentFailureReason,
@@ -144,8 +151,15 @@ export interface RecoveredTorrentSession {
   readonly state: "seeding-paused";
   /** What `resume()` returns to. */
   readonly resumeTarget: TorrentSessionState;
-  /** The journaled verified-piece count at the control point. */
+  /** The journaled verified-piece count at the control point (the PROOF). */
   readonly verifiedPieces: number;
+  /**
+   * R13: the pieces the library RE-VERIFIED from the bytes actually on
+   * disk at recovery (the disk truth — piece-map reuse, not a claim).
+   */
+  readonly diskVerifiedPieces: number;
+  /** R13: the resume reuses proved pieces (journal proof + disk truth). */
+  readonly pieceMapReused: boolean;
 }
 
 /** One terminal session restored from the journal (terminal stays terminal). */
@@ -153,6 +167,17 @@ export interface TerminalRestoredSession {
   readonly sessionId: string;
   readonly state: "completed" | "failed";
   readonly reason?: TorrentFailureReason;
+}
+
+/** One re-armed playback scheduler (R13 — the persisted intent restored). */
+export interface RearmedScheduler {
+  readonly sessionId: string;
+  readonly schedulerState: PlaybackSchedulerState;
+  readonly positionBytes?: number;
+  readonly bytesPerSecond?: number;
+  readonly playableFile?:
+    | { readonly fileIndex: number; readonly path: string; readonly lengthBytes: number }
+    | undefined;
 }
 
 /** The honest report of a recovery pass. */
@@ -169,6 +194,10 @@ export interface TorrentRecoveryReport {
   }[];
   /** Sessions already live (idempotent recovery — the R10 law). */
   readonly skipped: readonly { readonly sessionId: string }[];
+  /** R13: playback schedulers re-armed from persisted checkpoints. */
+  readonly rearmed: readonly RearmedScheduler[];
+  /** R13: persisted scheduler checkpoints that could NOT re-arm (honest). */
+  readonly rearmRefused: readonly { readonly sessionId: string; readonly detail: string }[];
 }
 
 // ---------------------------------------------------------------------------
@@ -332,9 +361,42 @@ export interface TorrentEngine {
    * with their journaled control points, terminal sessions stay terminal,
    * and VANISHED DATA (progress proved but bytes gone) is an honest
    * `data-vanished` failure — never a silent restart from zero.
+   * R13: the playback scheduler of every restored live session is RE-ARMED
+   * from its persisted checkpoint (state + playhead + priorities — honestly
+   * resuming, never fresh), and the journal is compacted (the atomic
+   * rotation) so a restart also bounds the journal's growth.
    * Idempotent.
    */
   recover(): Promise<TorrentResult<TorrentRecoveryReport>>;
+
+  /**
+   * R13 — the durable library-exposure truth: every offline-ready exposure
+   * the journal proves (a pure fold; one exposure per identity key, the
+   * R04 canonical composition winning duplicates). Survives restarts.
+   */
+  exposedAssets(): readonly ExposedTorrentExposure[];
+
+  /**
+   * R13 — record ONE verified-asset exposure (the adapter's seam). The
+   * engine validates the VERIFIED-BEFORE-READY law against the journal
+   * itself: the session must be recorded `completed` and every asset's
+   * digest must match the journaled completion digests — a typed refusal
+   * otherwise (never an exposure of unverified bytes). The provenance and
+   * infohash come from the JOURNALED session record, never the caller.
+   */
+  recordAssetExposure(input: {
+    sessionId: string;
+    assets: readonly {
+      assetId: string;
+      sourcePath: string;
+      contentPath: string;
+      sizeBytes: number;
+      sha256: string;
+      contentType?: string;
+    }[];
+    /** The R04 canonical-identity composition, when the caller has one. */
+    library?: { profileKey: string; canonicalItemId: string };
+  }): TorrentResult<ExposedTorrentExposure>;
 
   /** Tear the engine down (destroys library sessions; journal persists). */
   destroy(): Promise<void>;
@@ -635,11 +697,23 @@ class TorrentEngineImpl implements TorrentEngine {
     if (!session.ok) return session;
     const stopped = await session.value.stop();
     if (stopped.ok) {
+      // R13: the user STOPPED the session — the playback intent honestly
+      // ends with it (the R11 law). A final `idle` checkpoint lands so a
+      // restart restores the session paused WITHOUT re-arming a plan the
+      // user abandoned (a fresh playback command starts a fresh plan).
+      const scheduler = this.schedulersBySession.get(sessionId);
+      if (scheduler !== undefined) {
+        this.journal.appendSchedulerCheckpoint({
+          sessionId,
+          schedulerState: "idle",
+          rangeRequests: [],
+          priorities: [],
+          reason: "session-stopped",
+        });
+      }
       this.sessionsById.delete(sessionId);
-      // The scheduler slot detaches with the session (its playback intent
-      // does not survive a stop; a fresh command on a future recovered
-      // session starts a fresh scheduler — R13 owns cross-restart
-      // continuity).
+      // The scheduler slot detaches with the session (a crash mid-STOP —
+      // before the idle checkpoint — still recovers the last real plan).
       this.schedulersBySession.get(sessionId)?.detach();
       this.schedulersBySession.delete(sessionId);
     }
@@ -677,10 +751,48 @@ class TorrentEngineImpl implements TorrentEngine {
     }
     let scheduler = this.schedulersBySession.get(sessionId);
     if (scheduler === undefined) {
-      scheduler = new PlaybackSessionScheduler(this.schedulerConfig, this.clock);
+      scheduler = new PlaybackSessionScheduler(this.schedulerConfig, this.clock, {
+        persist: (payload) => this.persistSchedulerCheckpoint(sessionId, payload),
+      });
       this.schedulersBySession.set(sessionId, scheduler);
     }
     return { ok: true, value: { session, scheduler } };
+  }
+
+  /** R13: the journal hook every scheduler checkpoint flows through. */
+  private persistSchedulerCheckpoint(
+    sessionId: string,
+    payload: {
+      schedulerState: PlaybackSchedulerState;
+      fileIndex?: number;
+      positionBytes?: number;
+      bytesPerSecond?: number;
+      seekTargetBytes?: number;
+      rangeRequests: readonly {
+        offsetBytes: number;
+        lengthBytes: number;
+        deadlineMs: number;
+        receivedAtMs: number;
+      }[];
+      priorities: readonly { fromPiece: number; toPiece: number; urgency: number }[];
+      reason: string;
+    },
+  ): void {
+    this.journal.appendSchedulerCheckpoint({
+      sessionId,
+      schedulerState: payload.schedulerState,
+      ...(payload.fileIndex !== undefined ? { fileIndex: payload.fileIndex } : {}),
+      ...(payload.positionBytes !== undefined ? { positionBytes: payload.positionBytes } : {}),
+      ...(payload.bytesPerSecond !== undefined
+        ? { bytesPerSecond: payload.bytesPerSecond }
+        : {}),
+      ...(payload.seekTargetBytes !== undefined
+        ? { seekTargetBytes: payload.seekTargetBytes }
+        : {}),
+      rangeRequests: payload.rangeRequests,
+      priorities: payload.priorities,
+      reason: payload.reason,
+    });
   }
 
   private buildPlaybackSurface(): TorrentPlaybackSurface {
@@ -779,6 +891,8 @@ class TorrentEngineImpl implements TorrentEngine {
       detail: string;
     }[] = [];
     const skipped: { sessionId: string }[] = [];
+    const rearmed: RearmedScheduler[] = [];
+    const rearmRefused: { sessionId: string; detail: string }[] = [];
     for (const view of this.journal.sessions()) {
       const sessionId = view.sessionId;
       if (this.sessionsById.has(sessionId)) {
@@ -870,13 +984,25 @@ class TorrentEngineImpl implements TorrentEngine {
         started.metainfoB64 !== undefined
           ? new Uint8Array(Buffer.from(started.metainfoB64, "base64"))
           : undefined;
+      // R13 — PIECE-MAP-AWARE MAGNET RESUME: when the journal holds the
+      // magnet session's resolved metadata + selection, the library session
+      // is re-created with the JOURNALED selection and DISK RE-VERIFICATION —
+      // the piece map is rebuilt from the bytes that provably landed (no
+      // redownload-from-zero). Without journaled metadata there are no piece
+      // hashes to verify against yet — the honest pre-metadata restart.
+      const magnetMetadataKnown =
+        started.ingestionKind === "magnet" &&
+        view.metadata !== undefined &&
+        context.selectionIndexes.length > 0;
       const spec =
         started.ingestionKind === "magnet"
           ? {
               dataDir: started.dataDir,
               ...(started.magnetUri !== undefined ? { magnetUri: started.magnetUri } : {}),
-              selectedFileIndexes: [] as readonly number[],
-              verifyExistingData: false,
+              selectedFileIndexes: magnetMetadataKnown
+                ? context.selectionIndexes
+                : ([] as readonly number[]),
+              verifyExistingData: magnetMetadataKnown,
             }
           : {
               dataDir: started.dataDir,
@@ -913,21 +1039,241 @@ class TorrentEngineImpl implements TorrentEngine {
         librarySession.value,
       );
       this.sessionsById.set(sessionId, session);
+      // R13 — the piece-map reuse truth: what the library RE-VERIFIED from
+      // the bytes actually on disk, right now, with ZERO transfers (the
+      // disk truth alongside the journal's control-point proof).
+      const totalPieces = context.metainfo?.pieceCount ?? 0;
+      const diskVerifiedPieces = countBits(
+        librarySession.value.snapshot().bitfield,
+        totalPieces,
+      );
       recovered.push({
         sessionId,
         state: "seeding-paused",
         resumeTarget,
         verifiedPieces: persistedPieces,
+        diskVerifiedPieces,
+        pieceMapReused: persistedPieces > 0 && diskVerifiedPieces > 0,
       });
+
+      // R13 — RE-ARM the playback scheduler from the persisted checkpoint:
+      // the session restores PAUSED (the paused law: completion priority,
+      // hints cleared); the scheduler reconstructs its persisted state so
+      // the next tick/command after resume continues the SAME plan —
+      // honestly resuming, never fresh. An `idle` checkpoint (a session the
+      // user stopped) carries no intent and is skipped by design.
+      const checkpoint = view.schedulerCheckpoint;
+      if (checkpoint !== undefined && checkpoint.schedulerState !== "idle") {
+        const inputs = schedulerRearmInputsFromRecord(checkpoint);
+        if (!inputs.ok) {
+          rearmRefused.push({
+            sessionId,
+            detail: `the persisted scheduler checkpoint is malformed and was not re-armed: ${inputs.error.detail}`,
+          });
+        } else {
+          const scheduler = new PlaybackSessionScheduler(
+            this.schedulerConfig,
+            this.clock,
+            { persist: (payload) => this.persistSchedulerCheckpoint(sessionId, payload) },
+          );
+          const outcome = scheduler.rearm(this.schedulerViewFor(session), inputs.value);
+          if (!outcome.ok) {
+            rearmRefused.push({
+              sessionId,
+              detail: `the persisted scheduler checkpoint could not re-arm: ${outcome.error.detail}`,
+            });
+          } else {
+            this.schedulersBySession.set(sessionId, scheduler);
+            rearmed.push({
+              sessionId,
+              schedulerState: outcome.value.schedulerState,
+              ...(outcome.value.positionBytes !== undefined
+                ? { positionBytes: outcome.value.positionBytes }
+                : {}),
+              ...(outcome.value.bytesPerSecond !== undefined
+                ? { bytesPerSecond: outcome.value.bytesPerSecond }
+                : {}),
+              ...(outcome.value.playableFile !== undefined
+                ? { playableFile: outcome.value.playableFile }
+                : {}),
+            });
+          }
+        }
+      }
     }
-    const report: TorrentRecoveryReport = { recovered, terminal, failed, skipped };
+    // R13 — the journal rotation: compact ATOMICALLY (fold-equivalent; the
+    // exposure audit trail + terminal facts + latest control points stay)
+    // so a restart also bounds the journal's growth. THEN the evidence lands
+    // (evidence records are dropped by the NEXT compaction — diagnostics,
+    // never recovery state).
+    const compaction = this.journal.compact();
+    const report: TorrentRecoveryReport = {
+      recovered,
+      terminal,
+      failed,
+      skipped,
+      rearmed,
+      rearmRefused,
+    };
     this.journal.appendEvidence("recovery-complete", {
       recovered: report.recovered.length,
       terminal: report.terminal.length,
       failed: report.failed.length,
       skipped: report.skipped.length,
+      rearmed: report.rearmed.length,
+      rearmRefused: report.rearmRefused.length,
+      journalCompacted: compaction,
     });
     return { ok: true, value: report };
+  }
+
+  // --- R13: the library-exposure surface ---------------------------------------
+
+  exposedAssets(): readonly ExposedTorrentExposure[] {
+    return extractExposedAssets(this.journal.readAll());
+  }
+
+  recordAssetExposure(input: {
+    sessionId: string;
+    assets: readonly {
+      assetId: string;
+      sourcePath: string;
+      contentPath: string;
+      sizeBytes: number;
+      sha256: string;
+      contentType?: string;
+    }[];
+    library?: { profileKey: string; canonicalItemId: string };
+  }): TorrentResult<ExposedTorrentExposure> {
+    if (typeof input !== "object" || input === null) {
+      return torrentError("INVALID_INPUT", {
+        detail: "recordAssetExposure: input must be an object",
+      });
+    }
+    if (typeof input.sessionId !== "string" || input.sessionId.length === 0) {
+      return torrentError("INVALID_INPUT", {
+        detail: "recordAssetExposure: sessionId must be a non-empty string",
+      });
+    }
+    if (!Array.isArray(input.assets) || input.assets.length === 0) {
+      return torrentError("INVALID_INPUT", {
+        detail:
+          "recordAssetExposure: assets must be a non-empty array (an exposure batch with no assets is not an exposure)",
+      });
+    }
+    for (const asset of input.assets) {
+      if (
+        typeof asset !== "object" || asset === null ||
+        typeof asset.assetId !== "string" || asset.assetId.trim().length === 0 ||
+        typeof asset.sourcePath !== "string" || asset.sourcePath.trim().length === 0 ||
+        typeof asset.contentPath !== "string" || asset.contentPath.trim().length === 0 ||
+        typeof asset.sizeBytes !== "number" || !Number.isSafeInteger(asset.sizeBytes) ||
+        asset.sizeBytes <= 0 ||
+        typeof asset.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(asset.sha256)
+      ) {
+        return torrentError("INVALID_INPUT", {
+          sessionId: input.sessionId,
+          detail:
+            "recordAssetExposure: each asset must be { assetId, sourcePath, contentPath non-empty; sizeBytes a positive safe integer; sha256 64 lowercase hex }",
+        });
+      }
+      if (asset.contentType !== undefined && typeof asset.contentType !== "string") {
+        return torrentError("INVALID_INPUT", {
+          sessionId: input.sessionId,
+          detail: "recordAssetExposure: contentType must be a string when present",
+        });
+      }
+    }
+    if (
+      input.library !== undefined &&
+      (typeof input.library !== "object" || input.library === null ||
+        typeof input.library.profileKey !== "string" || input.library.profileKey.trim().length === 0 ||
+        typeof input.library.canonicalItemId !== "string" ||
+        input.library.canonicalItemId.trim().length === 0)
+    ) {
+      return torrentError("INVALID_INPUT", {
+        sessionId: input.sessionId,
+        detail:
+          "recordAssetExposure: the library identity must be { profileKey, canonicalItemId } non-empty strings (the R04 canonical composition)",
+      });
+    }
+
+    // THE VERIFIED-BEFORE-READY LAW (enforced against the JOURNAL itself —
+    // the engine refuses to record an exposure the journal cannot prove):
+    // the session must be recorded TERMINAL-COMPLETED with per-file
+    // digests, and every exposed asset must match the journaled digest.
+    const view = this.journal
+      .sessions()
+      .find((candidate) => candidate.sessionId === input.sessionId);
+    if (view === undefined) {
+      return torrentError("NOT_FOUND", {
+        sessionId: input.sessionId,
+        detail: "recordAssetExposure: the journal holds no such session",
+      });
+    }
+    if (view.terminal === undefined || view.terminal.kind !== "completed") {
+      return torrentError("INVALID_STATE", {
+        sessionId: input.sessionId,
+        detail:
+          "recordAssetExposure: verified-before-ready — the journal does not prove this session " +
+          "completed integrity verification, so its assets may not be exposed as offline-ready " +
+          "(only a `completed` session's digests are exposure-grade evidence)",
+      });
+    }
+    for (const asset of input.assets) {
+      const digest = view.terminal.files.find((file) => file.path === asset.sourcePath);
+      if (digest === undefined) {
+        return torrentError("INVALID_STATE", {
+          sessionId: input.sessionId,
+          detail:
+            `recordAssetExposure: the completed session's digest record does not name '${asset.sourcePath}' — ` +
+            "an asset that was not part of the verified selection may not be exposed",
+        });
+      }
+      if (digest.sha256 !== asset.sha256 || digest.sizeBytes !== asset.sizeBytes) {
+        return torrentError("INVALID_STATE", {
+          sessionId: input.sessionId,
+          detail:
+            `recordAssetExposure: digest cross-check FAILED for '${asset.sourcePath}': the exposure claims ` +
+            `${asset.sha256} (${asset.sizeBytes} bytes) but the journal's completion record proves ` +
+            `${digest.sha256} (${digest.sizeBytes} bytes) — the bytes changed between verification and exposure`,
+        });
+      }
+    }
+
+    // The provenance + infohash come from the JOURNALED session record —
+    // authorization is a durable fact, never re-supplied by the caller.
+    const started = view.started;
+    const record = this.journal.appendAssetExposure({
+      sessionId: input.sessionId,
+      infoHash: started.infoHash,
+      provenance: {
+        sourceId: started.provenance.sourceId,
+        basis: started.provenance.basis,
+      },
+      ...(input.library !== undefined ? { library: input.library } : {}),
+      assets: input.assets.map((asset) => ({
+        assetId: asset.assetId,
+        sourcePath: asset.sourcePath,
+        contentPath: asset.contentPath,
+        sizeBytes: asset.sizeBytes,
+        sha256: asset.sha256,
+        ...(asset.contentType !== undefined ? { contentType: asset.contentType } : {}),
+      })),
+    });
+    const exposures = extractExposedAssets(this.journal.readAll());
+    const exposure = exposures.find(
+      (candidate) =>
+        offlineReadyIdentityKey(candidate) === offlineReadyIdentityKey(record),
+    );
+    if (exposure === undefined) {
+      return torrentError("INTERNAL", {
+        sessionId: input.sessionId,
+        detail:
+          "recordAssetExposure: the exposure record landed but the fold cannot see it — the journal is inconsistent",
+      });
+    }
+    return { ok: true, value: exposure };
   }
 
   async destroy(): Promise<void> {
