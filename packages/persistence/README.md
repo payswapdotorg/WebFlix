@@ -359,3 +359,45 @@ frozen packages (`@wfx/domain`, `@wfx/experience`, …), contains no provider
 logic in domain cores, and depends on `@wfx/experience` for TYPES only
 (`import type` — the Ports seams). Fixture ports are untouched and remain
 test/dev-only in `@wfx/experience`.
+
+## R06 — model and AI controls stores (migration 0011)
+
+Three durable surfaces back the `/experience/{model-policy,model-providers,transforms}/**`
+routes (the `ModelControlsHost` in `apps/api/src/host/model-controls.ts`):
+
+| Store | Table(s) | Law |
+|---|---|---|
+| `PostgresModelPolicyStore` | `model_policies` | ONE policy per (effective profile, task) — the FROZEN `ModelPolicy` shape, upserted; honest null-miss; total validation + SQL CHECK second line. |
+| `PostgresModelProviderBindingStore` | `model_provider_bindings` | ONE binding per (profile, provider); the API key is SEALED (below). |
+| `PostgresTransformOperationStore` | `transform_operations` + `transform_operation_events` | The explicit `queued → running → succeeded | failed | cancelled` machine; APPEND-ONLY history; guarded transitions. |
+
+### The BYOM sealing discipline (the connector-accounts law, verbatim)
+
+`model_provider_bindings` stores BYOM provider keys the way
+`connector_accounts` stores OAuth tokens: AES-256-GCM envelope encryption
+(`src/envelope-crypto.ts`, key = `APP_ENCRYPTION_KEY`) — ciphertext + IV +
+authTag + keyId columns, **plaintext NEVER at rest**. The discipline:
+
+- `saveBinding` seals the raw key BEFORE SQL; the PUT answer is the
+  secret-free record (handle + endpoint + tasks + privacy + keyId).
+- `loadBinding` is the ONLY method that can produce the key — the PROVIDER
+  TRANSPORT lane (mirroring `loadAccount`): never logged, never persisted,
+  never surfaced by any read view. THE DOUBLED PRIVACY LAW: BYOM keys never
+  enter logs, URLs, or model prompts.
+- `key_id` mismatch is detected BEFORE decryption (the typed
+  `key-mismatch` load outcome — rotation observability); tampered
+  envelopes fail typed (`decrypt-failed`) — never garbage plaintext.
+- `deleteBinding` DESTROYS the sealed row (the vault's delete discipline —
+  nothing salvageable remains).
+- Re-binding REPLACES the sealed material and keeps the binding id +
+  created_at stable (the "reauthorize preserves the row" law).
+
+### Transform operations (append-only state history)
+
+`transform_operation_events` is INSERT-ONLY: no store method updates or
+deletes a history row. `transition` runs the history insert + the guarded
+state-column update (`WHERE state = expectedFrom`) inside ONE transaction;
+a mismatch answers the typed `conflict` — never a silent overwrite. The
+engine (`@wfx/model-fabric` `transform/operations.ts`) defines the seam
+STRUCTURALLY: this package implements it without importing the fabric (the
+lane law — mirrored vocabularies, CHECK-constrained SQL).

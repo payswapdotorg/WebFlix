@@ -18,6 +18,10 @@
  *     typed `cost-ceiling` denial BEFORE invocation (never a silent overrun).
  *     The fabric independently re-enforces the ceiling against providers'
  *     DECLARED costs — layered defense, both semantics reused, not duplicated.
+ *     (R06: every observed stage boundary REPORTS PROGRESS through the
+ *     optional `onProgress` hook — progress where the fabric reports it,
+ *     honest about the provider black-box between `budget-checked` and
+ *     `provider-returned`.)
  *  4. ROUTE through the fabric with an explicit synthesized `ModelPolicy`
  *     (task registry + router + gateway semantics: privacy class, provider
  *     fallback, per-provider timeout, declared-cost budget, tracing). The
@@ -76,6 +80,17 @@ export interface TransformationRunOptions {
   maxCostPerOperation?: number;
   /** Per-provider timeout override in milliseconds. */
   timeoutMs?: number;
+  /**
+   * R06 (ADD-ONLY): progress reporting WHERE THE FABRIC REPORTS IT. The
+   * pipeline calls the hook at its observed stage boundaries — after input
+   * validation (0.1), after the permission verdict (0.2), after the cost
+   * pre-flight (0.3), after the fabric invocation returned (0.85), and at
+   * the realized receipt (1.0). Between 0.3 and 0.85 the provider is a
+   * black box — NO intermediate progress is invented. A hook rejection
+   * propagates (a progress channel that fails is a real failure — never
+   * swallowed, never fake success).
+   */
+  onProgress?: (fraction: number, stage: string) => void | Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -174,6 +189,12 @@ function validateRunOptions(options: TransformationRunOptions | undefined): Vali
       message: `expected a positive finite number, got ${previewValue(options.timeoutMs)}`,
     });
   }
+  if (options.onProgress !== undefined && typeof options.onProgress !== "function") {
+    issues.push({
+      path: "options.onProgress",
+      message: `expected a function when present, got ${previewValue(options.onProgress)}`,
+    });
+  }
   return issues;
 }
 
@@ -215,6 +236,10 @@ export async function runTransformation<
     return { ok: false, error: { kind: "permission", task: task.kind, verdict } };
   }
 
+  // R06: progress where the fabric reports it — the observed boundaries.
+  await report(options, 0.1, "validated");
+  await report(options, 0.2, "permitted");
+
   // --- 3. deterministic cost estimate vs the policy ceiling -----------------
   const costEstimate = task.estimateCost(value);
   const ceiling = options?.maxCostPerOperation;
@@ -224,6 +249,7 @@ export async function runTransformation<
       error: { kind: "cost-ceiling", task: task.kind, estimate: costEstimate, ceiling },
     };
   }
+  await report(options, 0.3, "budget-checked");
 
   // --- 4. synthesize the explicit fabric policy (fail-closed defaults) ------
   const policy: ModelPolicy = {
@@ -254,6 +280,7 @@ export async function runTransformation<
           : { kind: "fabric", task: task.kind, error: fabricResult.error, trace: fabricResult.trace },
     };
   }
+  await report(options, 0.85, "provider-returned");
 
   // --- 6. realize (composing tasks only) ------------------------------------
   let output: TOutput;
@@ -280,6 +307,7 @@ export async function runTransformation<
   }
 
   // --- 7. receipt -------------------------------------------------------------
+  await report(options, 1.0, "realized");
   return {
     ok: true,
     task: task.kind,
@@ -290,6 +318,21 @@ export async function runTransformation<
     permission: verdict,
     trace: fabricResult.trace,
   };
+}
+
+// ---------------------------------------------------------------------------
+// R06: the progress-report helper (hook ABSENT ⇒ no call — zero behavior
+// change for existing callers; hook PRESENT ⇒ awaited at every boundary).
+// ---------------------------------------------------------------------------
+
+async function report(
+  options: TransformationRunOptions | undefined,
+  fraction: number,
+  stage: string,
+): Promise<void> {
+  const hook = options?.onProgress;
+  if (hook === undefined) return;
+  await hook(fraction, stage);
 }
 
 // ---------------------------------------------------------------------------

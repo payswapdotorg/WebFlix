@@ -79,6 +79,7 @@ import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
 import { RecommendationControlsHost } from "./controls";
 import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
 import { HistoryHost } from "./history";
+import { ModelControlsHost } from "./model-controls";
 import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
 import {
   createSourceManagementService,
@@ -156,6 +157,14 @@ export interface ApiBoot {
    * (the lead-ratified HTTP mapping both adapters already implement).
    */
   readonly controls: RecommendationControlsHost;
+  /**
+   * R06 — the model-and-AI-controls host: the model policy + provider
+   * catalog + BYOM bindings + explicit transform operations over the
+   * persistence stores and the model fabric. The
+   * `/experience/{model-policy,model-providers,transforms}/**` routes
+   * answer against it.
+   */
+  readonly modelControls: ModelControlsHost;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -333,6 +342,19 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
   // feedback} routes' backing — the seam the R02 adapters already target).
   const controls = new RecommendationControlsHost({ db: persistence.db, clock, ids });
 
+  // R06 — the model-and-AI-controls host: model policy + provider catalog +
+  // BYOM bindings + explicit transform operations. Production registers
+  // ONLY the first-party model provider (local, recommendation/ranking — the
+  // honest provider truth; real transformation providers arrive in later
+  // work items, so production transform submissions answer the fabric's
+  // typed no-provider failure on the operation record).
+  const modelControls = new ModelControlsHost({
+    db: persistence.db,
+    clock,
+    ids,
+    key: decodeEncryptionKey(config.encryptionKey),
+  });
+
   // 6. The service Ports bundle: the fan-out + the 052 transactional
   //    outbox event sink (PostgresEventSink from the persistence boot)
   //    + the shared seams.
@@ -357,6 +379,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     connectorAccounts,
     history,
     controls,
+    modelControls,
   };
 }
 

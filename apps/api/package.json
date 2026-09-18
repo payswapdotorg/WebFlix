@@ -12,6 +12,7 @@
   "dependencies": {
     "@wfx/domain": "workspace:*",
     "@wfx/experience": "workspace:*",
+    "@wfx/model-fabric": "workspace:*",
     "@wfx/persistence": "workspace:*",
     "@wfx/connectors": "workspace:*",
     "@wfx/recommendation": "workspace:*",

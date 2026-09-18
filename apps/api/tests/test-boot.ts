@@ -38,6 +38,7 @@ import { resolveApiConfig } from "../src/host/config";
 import { RecommendationControlsHost } from "../src/host/controls";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
 import { HistoryHost } from "../src/host/history";
+import { ModelControlsHost } from "../src/host/model-controls";
 import {
   createSourceManagementService,
   type SourceAuthWiring,
@@ -62,6 +63,12 @@ export interface ApiTestBoot {
   readonly testDb: TestDb;
   readonly clock: FixedClock;
   readonly ids: SequentialIdGen;
+  /**
+   * R06 — the transform run promises the collecting scheduler holds (the
+   * deterministic twin of the production background kick-off; tests await
+   * them to observe terminal operation states).
+   */
+  readonly transformRuns: readonly Promise<unknown>[];
 }
 
 /**
@@ -72,12 +79,23 @@ export interface ApiTestBoot {
  * connector — the SDK's testing.ts pattern) and per-connector auth-flow
  * wirings (a stubbed token exchange), so the /sources routes' round-trips
  * are exercised deterministically with NO network.
+ *
+ * R06: `modelOverrides` injects EXTRA fabric providers (the fabric's TEST
+ * FIXTURES — `transform/fakes.ts`, never production providers) and swaps
+ * the transform run scheduler to a COLLECTING one (each submitted run's
+ * promise is exposed as `transformRuns` for deterministic awaiting — the
+ * honest twin of the production fire-and-forget background kick-off).
  */
-export async function createApiTestBoot(sourceOverrides?: {
-  readonly extraSources?: readonly import("@wfx/experience").ConnectorPort[];
-  readonly wirings?: ReadonlyMap<string, SourceAuthWiring>;
-  readonly authGate?: import("../src/host/fan-out").FanOutAuthGate;
-}): Promise<ApiTestBoot> {
+export async function createApiTestBoot(
+  sourceOverrides?: {
+    readonly extraSources?: readonly import("@wfx/experience").ConnectorPort[];
+    readonly wirings?: ReadonlyMap<string, SourceAuthWiring>;
+    readonly authGate?: import("../src/host/fan-out").FanOutAuthGate;
+  },
+  modelOverrides?: {
+    readonly extraProviders?: readonly import("@wfx/model-fabric").RegisteredModelProvider[];
+  },
+): Promise<ApiTestBoot> {
   const testDb = await createTestDb();
   const clock = new FixedClock(HANDLER_TEST_CLOCK_MS);
   const ids = new SequentialIdGen();
@@ -128,6 +146,24 @@ export async function createApiTestBoot(sourceOverrides?: {
   // R05 — the recommendation-controls host (the exact wiring bootApi performs).
   const controls = new RecommendationControlsHost({ db: testDb.db, clock, ids });
 
+  // R06 — the model-and-AI-controls host: the exact wiring bootApi performs,
+  // plus the TEST overrides (the fabric's transform fakes + the collecting
+  // run scheduler — never production providers; the WFX-055A pattern).
+  const transformRuns: Promise<unknown>[] = [];
+  const modelControls = new ModelControlsHost({
+    db: testDb.db,
+    clock,
+    ids,
+    key: decodeEncryptionKey(TEST_ENCRYPTION_KEY_BASE64),
+    ...(modelOverrides?.extraProviders !== undefined
+      ? { extraProviders: modelOverrides.extraProviders }
+      : {}),
+    scheduler: (run) => {
+      const promise = run();
+      transformRuns.push(promise);
+    },
+  });
+
   // The R02 identity services — the SAME wiring bootApi performs (the
   // boot's 2.6 step): register/authenticate, session tokens, profiles,
   // and the profile-aware event sink, all over the shared seams.
@@ -165,8 +201,9 @@ export async function createApiTestBoot(sourceOverrides?: {
     connectorAccounts,
     history,
     controls,
+    modelControls,
   };
-  return { boot, testDb, clock, ids };
+  return { boot, testDb, clock, ids, transformRuns };
 }
 
 // ---------------------------------------------------------------------------

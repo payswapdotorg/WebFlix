@@ -34,11 +34,13 @@ export * from "./types";
 export * from "./registry";
 export * from "./router";
 export * from "./fabric";
+export * from "./policy"; // R06 — policy validation, effective-policy resolution (BYOM replacement), provider catalog with capability truth.
 export * from "./testing";
 export * from "./transform/subtitle";
 export * from "./transform/tasks";
 export * from "./transform/permissions";
 export * from "./transform/pipeline";
+export * from "./transform/operations"; // R06 — the explicit transform operation state machine + engine.
 export * from "./transform/fakes";
 export * from "./wfx-model"; // WFX-031 — the first-party recommendation model adapter (Lane A).
 export * from "./byom"; // WFX-032 — the BYOM (bring-your-own-model) adapter (Lane A).

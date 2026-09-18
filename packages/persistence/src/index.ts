@@ -83,6 +83,11 @@ export * from "./recommendation-state";
 // R05 — the recommendation feedback controls (per profile, reversible).
 export * from "./feedback";
 
+// R06 — the model and AI controls stores: per-profile model policy,
+// envelope-sealed BYOM provider bindings, and the explicit transform
+// operation records with append-only state history.
+export * from "./model-controls";
+
 // Connector accounts + credential envelope encryption + the R03
 // model-input privacy law (the structurally secret-free summary + guard).
 export * from "./envelope-crypto";

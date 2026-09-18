@@ -71,6 +71,39 @@
  * > HTTP mapping (`GET /sources`, delivered by this work item) onto the
  * > adapters — the same integration step that wired the R02 members
  * > post-merge. The shape is final; only the adapters' wiring is pending.
+ *
+ * THE R06 MODEL/TRANSFORM EXTENSION (ADD-ONLY — the model-and-AI-controls
+ * work item; every R01/R02/R03 member keeps its exact semantics):
+ *
+ * The port gains the model-controls operations behind the settings
+ * surface's "model" section (`SettingsSection` vocabulary) and the explicit
+ * AI-media-transformation operations (the architecture's law: explicit
+ * user actions with progress and results — never implicit background
+ * magic):
+ *
+ * - `readModelPolicy(task)` / `writeModelPolicy(policy)` — the ACTIVE
+ *   profile's per-task model policy (the frozen `ModelPolicy` shape) with
+ *   the honest defaults view;
+ * - `readModelProviders()` — the provider catalog with per-task capability
+ *   truth (first-party / BYOM-bound / local; local-model support honestly
+ *   reported per task);
+ * - `bindByomProvider(command)` / `unbindByomProvider(providerId)` — the
+ *   BYOM bind/unbind surface (the command carries the key for the
+ *   transport to seal; the ADAPTER's transport owns sending it — identity
+ *   and secrets never appear in URLs);
+ * - `submitTransform(command)` / `readTransform(id)` / `cancelTransform(id)`
+ *   — the explicit transformation operations (state machine `queued →
+ *   running → succeeded | failed | cancelled`, progress where the fabric
+ *   reports it, result reference on success).
+ *
+ * > **Ratification item for the lead (the R06 transport seam, the R03
+ * > precedent verbatim):** these members are OPTIONAL because the frozen
+ * > R07/R08 adapters implement `ServerPort` today and this work item may
+ * > not edit them. The runtime's model-settings surface answers the honest
+ * > `unavailable` failure until the lead wires the R06 HTTP mapping (the
+ * > `/experience/{model-policy,model-providers,transforms}/**` routes,
+ * > delivered by this work item) onto the adapters. The shapes are final;
+ * > only the adapters' wiring is pending.
  */
 
 import type {
@@ -80,6 +113,8 @@ import type {
   IntentRecord,
   LibraryCommand,
   LibraryEntry,
+  ModelPolicy,
+  ModelTask,
   PlaybackRealization,
   RecommendationPolicy,
   SearchResult,
@@ -246,6 +281,73 @@ export interface ServerPort {
    * honest `unavailable` failure when the bound port does not implement it.
    */
   readSources?(): Promise<ServerResult<readonly SourceInfo[]>>;
+
+  // — the R06 model/transform extension (ADD-ONLY; see the module doc +
+  // the ratification note on why these members are optional until the lead
+  // wires the adapters) —
+
+  /**
+   * The ACTIVE profile's model-policy view for ONE task (R06): the stored
+   * frozen `ModelPolicy` (HONEST null when unset) + the fail-closed
+   * defaults visibly labeled as defaults + per-task provider capability
+   * truth. Typed failures — never a fabricated default-as-if-configured.
+   *
+   * OPTIONAL until the lead wires the adapters (the R03 ratification
+   * pattern): the runtime's model-settings surface answers the honest
+   * `unavailable` failure when the bound port does not implement it.
+   */
+  readModelPolicy?(task: ModelTask): Promise<ServerResult<ModelPolicyView>>;
+
+  /**
+   * Write the ACTIVE profile's model policy for its task (the frozen
+   * `ModelPolicy` shape, validated server-side against the frozen
+   * contract). Typed failures — never a fabricated success.
+   */
+  writeModelPolicy?(policy: ModelPolicy): Promise<ServerResult<ModelPolicy>>;
+
+  /**
+   * The provider catalog (R06): first-party, BYOM-bound, and local rows
+   * with per-task capability truth and the honest local-support report.
+   */
+  readModelProviders?(): Promise<ServerResult<readonly ModelProviderInfo[]>>;
+
+  /**
+   * Bind a BYOM provider (R06): the command carries the endpoint, tasks,
+   * privacy class, and the API KEY (the ADAPTER's transport seals it —
+   * identity and secrets never appear in URLs; the answer NEVER echoes
+   * the key material). Typed failures — never a fabricated binding.
+   */
+  bindByomProvider?(command: ByomBindingCommand): Promise<ServerResult<ByomBindingInfo>>;
+
+  /**
+   * Unbind a BYOM provider (R06): the sealed material is destroyed
+   * server-side. Typed failures; a missing binding answers `ok: false`
+   * honestly (the adapters map 404 → the `unavailable`/`malformed` family
+   * with the typed detail).
+   */
+  unbindByomProvider?(providerId: string): Promise<ServerResult<void>>;
+
+  /**
+   * Submit ONE explicit AI media transformation (R06): the kind + the task
+   * input; the server answers the operation record (state machine queued →
+   * running → succeeded | failed | cancelled). Permission denials answer
+   * typed failures (the J20 constrained truth — never a fake success).
+   */
+  submitTransform?(
+    command: TransformSubmitCommand,
+  ): Promise<ServerResult<TransformOperationInfo>>;
+
+  /**
+   * Read one transform operation's current truth (state, history, progress
+   * where the fabric reported it, result reference on success).
+   */
+  readTransform?(id: string): Promise<ServerResult<TransformOperationInfo>>;
+
+  /**
+   * Cancel one transform operation (legal from queued/running — the user's
+   * undo; a completed operation answers the typed invalid-state failure).
+   */
+  cancelTransform?(id: string): Promise<ServerResult<TransformOperationInfo>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -347,5 +449,159 @@ export interface ProfileHistoryEntry {
   /** The last folded watch-state event type, when the server reports one. */
   readonly lastEventType: string | null;
   /** ISO 8601 instant of the latest update (the recency order key). */
+  readonly updatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// The R06 model/transform vocabulary (structurally identical to the API's
+// wire shapes — the lane law: no cross-import; TypeScript's structural
+// typing keeps them compatible)
+// ---------------------------------------------------------------------------
+
+/**
+ * The model-policy view (R06): the stored policy for one task (HONEST null
+ * when unset) plus the fail-closed defaults, visibly labeled as defaults
+ * (never as configured choices — the anonymous-honesty law).
+ */
+export interface ModelPolicyView {
+  /** The task this view answers for (the frozen per-task ModelPolicy). */
+  readonly task: ModelTask;
+  /** The stored policy, or null when unset (never a fabricated default). */
+  readonly policy: ModelPolicy | null;
+  /** The fail-closed defaults, always labeled `source: "default"`. */
+  readonly defaults: {
+    readonly source: "default";
+    readonly preferredProvider: string;
+    readonly fallbackProviders: readonly string[];
+    readonly privacy: "local-only";
+  };
+  /** Per-task capability truth for every provider (local availability included). */
+  readonly providers: readonly ModelProviderInfo[];
+  /** The honest local-model support truth for this task. */
+  readonly localSupport: boolean;
+}
+
+/** How a provider row relates to the user's configuration (R06). */
+export type ModelProviderOrigin = "first-party" | "byom" | "local";
+
+/**
+ * One provider row of the catalog (R06) — the "see actual capabilities"
+ * law applied to models: per-task declared truth, never guessed.
+ */
+export interface ModelProviderInfo {
+  /** The provider id (the route-plan identity). */
+  readonly id: string;
+  /** Where the provider runs (the registration truth). */
+  readonly privacy: "local" | "cloud";
+  /** How this row relates to the user's configuration. */
+  readonly origin: ModelProviderOrigin;
+  /** Whether the provider is bound for this profile (built-in or BYOM-bound). */
+  readonly bound: boolean;
+  /** Per-task capability truth over every frozen ModelTask. */
+  readonly capabilities: readonly {
+    readonly task: ModelTask;
+    /** Declared (true) or not (false) — capability truth, never guessed. */
+    readonly available: boolean;
+    /** The declared cost for one operation; absent = undeclared. */
+    readonly declaredCost?: number;
+  }[];
+  /** Honest note (metadata only — NEVER key material). */
+  readonly note: string;
+}
+
+/** The BYOM binding command (R06): what `bindByomProvider` sends. */
+export interface ByomBindingCommand {
+  readonly providerId: string;
+  /** The binding's endpoint URL (absolute http(s)). */
+  readonly endpoint: string;
+  /** The frozen ModelTasks this binding covers (non-empty). */
+  readonly tasks: readonly ModelTask[];
+  /** The binding's privacy class (where the bound model's input may travel). */
+  readonly privacy: "local-only" | "trusted-cloud" | "any-cloud";
+  /**
+   * The RAW API key — handed to the ADAPTER's transport for the server to
+   * seal (envelope-encrypted at rest). NEVER echoed in any answer; NEVER
+   * in URLs (the transport owns the sealed channel).
+   */
+  readonly apiKey: string;
+}
+
+/** The BYOM binding record (R06): the secret-free projection the server answers. */
+export interface ByomBindingInfo {
+  /** The canonical binding handle (`wfxbyom_…`). */
+  readonly id: string;
+  readonly providerId: string;
+  /** The binding's endpoint URL (public metadata — never key material). */
+  readonly endpoint: string;
+  readonly tasks: readonly ModelTask[];
+  readonly privacy: "local-only" | "trusted-cloud" | "any-cloud";
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/** The transformation kinds (R06 — the closed vocabulary the server enforces). */
+export type TransformKind =
+  | "transcript"
+  | "translation"
+  | "subtitle"
+  | "summary"
+  | "speech"
+  | "transcribe"
+  | "dubbing"
+  | "commentary";
+
+/** The transform operation states (R06 — the explicit state machine). */
+export type TransformOperationStatus =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+/** The transform submission command (R06): what `submitTransform` sends. */
+export interface TransformSubmitCommand {
+  /** The transformation kind (the closed vocabulary). */
+  readonly kind: TransformKind;
+  /** The task input (the kind's validated input shape — the server validates). */
+  readonly input: unknown;
+}
+
+/** One append-only state-history entry of a transform operation (R06). */
+export interface TransformHistoryEntry {
+  readonly from: TransformOperationStatus;
+  readonly to: TransformOperationStatus;
+  readonly event: "start" | "succeed" | "fail" | "cancel";
+  readonly at: string;
+  readonly reason?: string;
+}
+
+/**
+ * One transform operation's truth (R06): the explicit state machine's
+ * current state, the append-only history, progress where the fabric
+ * reported it, the error detail on failure, and the result reference on
+ * success.
+ */
+export interface TransformOperationInfo {
+  /** The canonical operation id (`wfxop_…`). */
+  readonly id: string;
+  /** The transformation kind. */
+  readonly kind: TransformKind;
+  /** The current state (queued → running → succeeded | failed | cancelled). */
+  readonly state: TransformOperationStatus;
+  /** Fabric-reported progress in [0, 1]; ABSENT when none was reported. */
+  readonly progress?: number;
+  /** The result reference + material, present only on `succeeded`. */
+  readonly result?: {
+    readonly reference: string;
+    readonly providerId: string;
+    readonly output: unknown;
+    readonly costEstimate: number;
+    readonly durationEstimateMs: number;
+  };
+  /** The failure detail, present only on `failed`. */
+  readonly error?: { readonly kind: string; readonly detail: string };
+  /** Every transition, in order — append-only. */
+  readonly stateHistory: readonly TransformHistoryEntry[];
+  readonly createdAt: string;
   readonly updatedAt: string;
 }
