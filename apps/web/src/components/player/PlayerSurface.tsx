@@ -44,7 +44,7 @@ function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
     return (
       <div className="wfx-player__handoff" data-wfx-player-mode="failed">
         <Icon name="skip" size={28} />
-        <p data-wfx-player-failure>
+        <p data-wfx-player-failure data-wfx-player-failure-kind={view.failure.kind}>
           Playback could not start ({view.failure.kind}): {view.failure.detail}
         </p>
       </div>

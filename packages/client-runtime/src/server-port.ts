@@ -114,11 +114,52 @@ export const SERVER_FAILURE_KINDS: readonly ServerFailureKind[] = [
   "malformed",
 ];
 
+/**
+ * The typed credential truth of an `unauthorized` failure (R17). Present
+ * ONLY when the transport can honestly classify WHY the credential failed —
+ * a server that just answers 401 without a reason leaves it absent (a
+ * generic unauthorized, still honest, still recoverable by re-auth).
+ */
+export interface CredentialFailure {
+  /**
+   * WHY the credential failed:
+   * - `expired` — a previously valid credential elapsed (the named
+   *   expired state; recovery: reauthorize the source).
+   * - `rejected` — the provider refused the credential (revoked/invalid).
+   * - `missing` — no credential is stored for the source.
+   */
+  readonly state: "expired" | "rejected" | "missing";
+  /** The connector whose credential failed (when the transport names it). */
+  readonly connectorId?: string;
+}
+
+/** Every value of `CredentialFailure["state"]`, in union order. */
+export const CREDENTIAL_FAILURE_STATES: readonly CredentialFailure["state"][] = [
+  "expired",
+  "rejected",
+  "missing",
+];
+
+/** Runtime guard for the credential-failure state union. */
+export function isCredentialFailureState(x: unknown): x is CredentialFailure["state"] {
+  return (
+    typeof x === "string" &&
+    (CREDENTIAL_FAILURE_STATES as readonly string[]).includes(x)
+  );
+}
+
 /** One typed transport failure. */
 export interface ServerFailure {
   readonly kind: ServerFailureKind;
   /** Non-empty human-readable detail (what exactly failed). */
   readonly detail: string;
+  /**
+   * R17: the classified credential truth — present iff `kind ===
+   * "unauthorized"` AND the transport honestly knows WHY (expired /
+   * rejected / missing). Absent = a generic unauthorized (never guessed,
+   * never fabricated).
+   */
+  readonly credential?: CredentialFailure;
 }
 
 /** The result envelope every ServerPort operation answers with. */

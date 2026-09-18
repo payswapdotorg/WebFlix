@@ -1442,6 +1442,7 @@ describe("R15 — profile attribution through the sync lane", () => {
       markUnsupported: (id, cause) => base.markUnsupported(id, cause),
       markConflict: (id, cause) => base.markConflict(id, cause),
       markFailed: (id, cause) => base.markFailed(id, cause),
+      retryFailed: (id, now) => base.retryFailed(id, now),
     };
 
     const registry = new ConnectorRegistry();

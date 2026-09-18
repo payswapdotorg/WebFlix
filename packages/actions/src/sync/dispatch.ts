@@ -26,8 +26,11 @@
  *    - error `unsupported`          → `unsupported` (terminal — the belt-and-
  *      braces path: the gate passed but the connector still answers typed
  *      unsupported, e.g. per-item).
- *    - error `transport`/`unauthorized` → retryable (transient transport, or
- *      credential state that may change once the user signs in).
+ *    - error `transport`            → retryable (transient transport).
+ *    - error `unauthorized`         → `failed` TERMINAL (R17: a rejected or
+ *      expired credential never succeeds on retry — the named credential
+ *      cause is stored; recovery is reauthorization, then the operator's
+ *      idempotent `retryFailed` re-queues the SAME record).
  *    - error `invalid-input`        → `failed` (terminal — retrying identical
  *      bytes can never succeed).
  *    - driver THREW or returned a malformed receipt → typed failure (throw:
@@ -542,7 +545,20 @@ export class SyncDispatcher {
       await this.logTransition(now, "in-flight", updated, text);
       return this.finish(from, updated, text);
     }
-    if (error.kind === "transport" || error.kind === "unauthorized") {
+    if (error.kind === "unauthorized") {
+      // R17 — a rejected/expired credential is a NAMED terminal failure,
+      // never a burn-to-exhaustion retry loop: retrying identical bytes
+      // with a dead credential can never succeed (the runtime taxonomy's
+      // own law — `unauthorized` is not retryable; recovery is
+      // reauthorization, then the operator's idempotent `retryFailed`).
+      const cause: OutboxFailureCause = { kind: "connector-error", error };
+      const updated = await this.outbox.markFailed(inFlight.id, cause);
+      const text = describeConnectorError(error);
+      const named = `${text} — the source's credential was rejected or expired; reconnect the source, then retry the sync`;
+      await this.logTransition(now, "in-flight", updated, named);
+      return this.finish(from, updated, `failed: ${named}`);
+    }
+    if (error.kind === "transport") {
       return await this.retryOrExhaust(from, inFlight, { kind: "connector-error", error }, now);
     }
     // invalid-input: retrying identical bytes can never succeed.

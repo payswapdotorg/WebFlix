@@ -38,7 +38,14 @@ import type {
   UserAction,
 } from "@wfx/domain";
 import type { BaseConnector, ConnectorResult } from "@wfx/connectors";
-import { errResult, invalidInput, okResult, transport, unsupported } from "@wfx/connectors";
+import {
+  errResult,
+  invalidInput,
+  okResult,
+  transport,
+  unauthorized,
+  unsupported,
+} from "@wfx/connectors";
 
 import type { Clock } from "./outbox";
 
@@ -158,6 +165,9 @@ export function createConnectorDriver(executor: TypedActionExecutor): SyncDriver
  *                          kind; "timeout" below is the flavored variant).
  * - `non-retryable-error` — typed `invalid-input` error (the canonical
  *                          non-retryable kind in the closed vocabulary).
+ * - `unauthorized`        — typed `unauthorized` error (R17: the
+ *                          expired/rejected credential injection — the
+ *                          dispatcher settles the named terminal failure).
  * - `timeout`             — typed `transport` error whose detail names the
  *                          timeout.
  */
@@ -173,6 +183,7 @@ export type FixtureScriptEntry =
   | { outcome: "unsupported"; reason?: string }
   | { outcome: "retryable-error"; reason?: string }
   | { outcome: "non-retryable-error"; reason?: string }
+  | { outcome: "unauthorized"; reason?: string }
   | { outcome: "timeout"; reason?: string };
 
 /**
@@ -300,6 +311,8 @@ export function createFixtureDriver(
           return errResult(
             invalidInput(entry.reason ?? "fixture: deliberate non-retryable failure"),
           );
+        case "unauthorized":
+          return errResult(unauthorized(request.action.connectorId));
         case "timeout":
           return errResult(
             transport(

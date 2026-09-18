@@ -220,6 +220,15 @@ export interface TorrentEngineOptions {
    * 60 000 ms.
    */
   readonly stallThresholdMs?: number;
+  /**
+   * R17 — the metadata deadline: a `discovering-metadata` session whose
+   * magnet metadata has not resolved within this many milliseconds of
+   * ACTIVE discovery fails with the typed `metadata-failed` reason (the
+   * named error state — no hang, no invented metadata). Paused discovery
+   * does not accrue; resuming re-arms the deadline. `0` disables the
+   * deadline (the R11 behavior). Default 120 000 ms.
+   */
+  readonly metadataTimeoutMs?: number;
   /** Journal a progress checkpoint every N verified pieces. Default 16. */
   readonly checkpointEveryPieces?: number;
   /**
@@ -407,6 +416,7 @@ export interface TorrentEngine {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_STALL_THRESHOLD_MS = 60_000;
+const DEFAULT_METADATA_TIMEOUT_MS = 120_000;
 const DEFAULT_CHECKPOINT_EVERY_PIECES = 16;
 
 class TorrentEngineImpl implements TorrentEngine {
@@ -419,6 +429,7 @@ class TorrentEngineImpl implements TorrentEngine {
   private readonly journal: TorrentSessionJournal;
   private readonly clock: () => number;
   private readonly stallThresholdMs: number;
+  private readonly metadataTimeoutMs: number;
   private readonly checkpointEveryPieces: number;
   private readonly schedulerConfig: PlaybackSchedulerConfig;
   private readonly sessionsById = new Map<string, TorrentEngineSession>();
@@ -462,6 +473,18 @@ class TorrentEngineImpl implements TorrentEngine {
       options.stallThresholdMs === undefined
         ? DEFAULT_STALL_THRESHOLD_MS
         : options.stallThresholdMs;
+    if (
+      options.metadataTimeoutMs !== undefined &&
+      (!Number.isFinite(options.metadataTimeoutMs) || options.metadataTimeoutMs < 0)
+    ) {
+      throw new TorrentEngineError("INVALID_INPUT", {
+        detail: `createTorrentEngine: metadataTimeoutMs must be a finite number >= 0 (0 disables the deadline), got ${String(options.metadataTimeoutMs)}`,
+      });
+    }
+    this.metadataTimeoutMs =
+      options.metadataTimeoutMs === undefined
+        ? DEFAULT_METADATA_TIMEOUT_MS
+        : options.metadataTimeoutMs;
     this.checkpointEveryPieces =
       options.checkpointEveryPieces === undefined
         ? DEFAULT_CHECKPOINT_EVERY_PIECES
@@ -656,6 +679,7 @@ class TorrentEngineImpl implements TorrentEngine {
         journal: this.journal,
         clock: this.clock,
         stallThresholdMs: this.stallThresholdMs,
+        metadataTimeoutMs: this.metadataTimeoutMs,
         checkpointEveryPieces: this.checkpointEveryPieces,
       },
       librarySession.value,
@@ -1306,6 +1330,12 @@ class TorrentEngineImpl implements TorrentEngine {
 
   private hasLiveSessionFor(infoHash: string): boolean {
     for (const session of this.sessionsById.values()) {
+      // R17: TERMINAL sessions (completed/failed) never block a fresh
+      // attempt — the duplicate law guards the mature library's LIVE
+      // sessions; a failed session must not make retry impossible (the
+      // named `metadata-failed` state offers re-ingestion as its recovery).
+      const state = session.currentState();
+      if (state === "completed" || state === "failed") continue;
       if (session.infoHash === infoHash) return true;
     }
     return false;
@@ -1431,6 +1461,7 @@ class TorrentEngineImpl implements TorrentEngine {
       journal: this.journal,
       clock: this.clock,
       stallThresholdMs: this.stallThresholdMs,
+      metadataTimeoutMs: this.metadataTimeoutMs,
       checkpointEveryPieces: this.checkpointEveryPieces,
     };
   }

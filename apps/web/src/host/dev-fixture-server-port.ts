@@ -41,10 +41,18 @@ import type {
   ProfileHistoryEntry,
   RecommendationPolicyCommand,
   RuntimeContext,
+  ServerFailure,
   ServerPort,
   ServerResult,
+  SourceInfo,
   UserIntentCommand,
 } from "@wfx/client-runtime";
+
+import {
+  fixtureSourceInfoOf,
+  fixtureSourceReadFailure,
+  readFixtureSourceAuthState,
+} from "./source-auth-fixtures";
 
 /** Options for {@link createFixtureBackedServerPort}. */
 export interface FixtureServerPortOptions {
@@ -62,10 +70,25 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
   const ports = options.ports ?? makeFixturePorts();
   const ctx = toConnectorContext(options.context);
 
+  // R17 — the scripted source-authorization read: the fixtures' own source
+  // truth (the J28 lifecycle), read fresh from the shared state per call.
+  // The row answers the REAL SourceInfo shape the runtime validates.
+  const readSources = async (): Promise<ServerResult<readonly SourceInfo[]>> => {
+    return { ok: true, value: [fixtureSourceInfoOf(readFixtureSourceAuthState())] };
+  };
+
+  // R17 — the typed unauthorized read guard: an EXPIRED or SIGNED-OUT
+  // scripted authorization refuses the source's reads with the CLASSIFIED
+  // credential failure (never a silent fallback, never a fake success).
+  const readGuard = (): ServerFailure | null => fixtureSourceReadFailure();
+
   return {
     serviceId: FIXTURE_SERVER_SERVICE_ID,
+    readSources,
 
     async search(query: string): Promise<ServerResult<readonly SearchResult[]>> {
+      const refusal = readGuard();
+      if (refusal !== null) return { ok: false, failure: refusal };
       try {
         return { ok: true, value: await ports.connector.search(ctx, query) };
       } catch (thrown) {
@@ -74,6 +97,8 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
     },
 
     async shorts(query?: string): Promise<ServerResult<readonly SearchResult[]>> {
+      const refusal = readGuard();
+      if (refusal !== null) return { ok: false, failure: refusal };
       try {
         // The same frozen short-form eligibility law as the production
         // port (one law, two transports).
@@ -98,6 +123,8 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
     },
 
     async metadata(ref: string): Promise<ServerResult<SourceItem | null>> {
+      const refusal = readGuard();
+      if (refusal !== null) return { ok: false, failure: refusal };
       try {
         return { ok: true, value: await ports.connector.metadata(ctx, ref) };
       } catch (thrown) {
@@ -106,6 +133,8 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
     },
 
     async resolve(ref: string): Promise<ServerResult<readonly PlaybackRealization[]>> {
+      const refusal = readGuard();
+      if (refusal !== null) return { ok: false, failure: refusal };
       try {
         return { ok: true, value: await ports.connector.resolve(ctx, ref) };
       } catch (thrown) {

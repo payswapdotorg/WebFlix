@@ -21,7 +21,7 @@ import type { JourneyContext } from "../lib/journeys";
 /** Click one acquisition action and wait for the reload + expected text. */
 export async function driveAcquisition(
   context: JourneyContext,
-  action: "acquire" | "advance" | "retry" | "pause" | "resume" | "dismiss",
+  action: "acquire" | "advance" | "retry" | "restart" | "pause" | "resume" | "dismiss",
   expectedText: string,
 ): Promise<void> {
   // The robust island click: scrolled into view (a below-the-fold center

@@ -178,6 +178,80 @@ export function isUsableSourceInfo(value: unknown): value is SourceInfo {
 }
 
 // ---------------------------------------------------------------------------
+// The typed recovery action (R17 — the expired-credential recovery path)
+// ---------------------------------------------------------------------------
+
+/** The typed source-recovery action a surface may offer for a source's auth state. */
+export type SourceRecoveryActionKind =
+  /** Re-run the authorization flow for an EXISTING connection (expired/failed). */
+  | "reauthorize"
+  /** Start a fresh connection (a signed-out source that supports authorization). */
+  | "connect"
+  /** Remove the connection (a signed-in source). */
+  | "disconnect"
+  /** No recovery action applies (authorizing, or a source with no auth mode). */
+  | "none";
+
+/** One typed recovery action + its honest user-language sentence. */
+export interface SourceRecoveryAction {
+  readonly kind: SourceRecoveryActionKind;
+  /** The action's control label (user vocabulary). */
+  readonly label: string;
+  /** Why the action is offered — the honest state sentence. */
+  readonly detail: string;
+}
+
+/**
+ * R17: derive the typed recovery action of one source's authorization state
+ * (pure; total over the auth-state vocabulary). THE EXPIRED-CREDENTIAL LAW:
+ * an `expired` source always carries the named expired state and the
+ * `reauthorize` recovery path — never a silent fallback (the source is NOT
+ * silently treated as signed-out) and never a fake success (it is NOT
+ * rendered as connected).
+ */
+export function sourceRecoveryAction(source: SourceInfo): SourceRecoveryAction {
+  switch (source.authState) {
+    case "expired":
+      return {
+        kind: "reauthorize",
+        label: "Reconnect",
+        detail: "The stored sign-in expired — reconnect to restore this source.",
+      };
+    case "failed":
+      return {
+        kind: "reauthorize",
+        label: "Try connecting again",
+        detail: "The last connection attempt failed — you can try again.",
+      };
+    case "signedOut":
+      if (source.authMode === "none") {
+        return {
+          kind: "none",
+          label: "",
+          detail: "This source needs no sign-in.",
+        };
+      }
+      return {
+        kind: "connect",
+        label: "Connect",
+        detail: "This source is not connected — connect it to use it.",
+      };
+    case "authorizing":
+      return {
+        kind: "none",
+        label: "",
+        detail: "A connection attempt is in progress.",
+      };
+    case "signedIn":
+      return {
+        kind: "disconnect",
+        label: "Disconnect",
+        detail: "This source is connected.",
+      };
+  }
+}
+
+// ---------------------------------------------------------------------------
 // The store
 // ---------------------------------------------------------------------------
 

@@ -109,6 +109,15 @@ export function AcquisitionPanel({
               Resuming
             </span>
           ) : null}
+          {view.starved !== undefined ? (
+            <span
+              className="wfx-badge"
+              data-wfx-acquisition-starved="true"
+              data-wfx-acquisition-waiting
+            >
+              Waiting for the download source
+            </span>
+          ) : null}
           {percent !== null ? <span data-wfx-acquisition-percent>{percent}%</span> : null}
           {view.state === "playing" && view.runwaySeconds !== null ? (
             <span data-wfx-acquisition-runway>{Math.round(view.runwaySeconds)}s buffered ahead</span>

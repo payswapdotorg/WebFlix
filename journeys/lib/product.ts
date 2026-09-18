@@ -44,6 +44,12 @@ export const ACQUISITION_FIXTURE_STATE_FILE = join(
   "wfx-dev-acquisition-fixtures.json",
 );
 
+/** The shared source-auth fixture state file (R17 — J28's scripted lifecycle). */
+export const SOURCE_AUTH_FIXTURE_STATE_FILE = join(
+  tmpdir(),
+  "wfx-dev-source-auth-fixtures.json",
+);
+
 /** A running product handle. */
 export interface ProductHandle {
   /** The base URL journeys navigate (http://localhost:3101). */
@@ -81,6 +87,20 @@ export function resetAcquisitionFixtureState(): void {
   }
 }
 
+/**
+ * R17 — delete the shared source-auth fixture state so every run starts
+ * the scripted source signed IN (determinism — J28 drives expiry →
+ * recovery itself, and every later journey reads from a healthy source,
+ * never a stale expired cursor).
+ */
+export function resetSourceAuthFixtureState(): void {
+  try {
+    rmSync(SOURCE_AUTH_FIXTURE_STATE_FILE, { force: true });
+  } catch {
+    // An absent file is already pristine (the signed-in default).
+  }
+}
+
 /** Whether anything is already listening on the port (a loud pre-flight). */
 async function portIsTaken(port: number): Promise<boolean> {
   try {
@@ -111,8 +131,10 @@ export async function bootWebFixturesProduct(
     );
   }
 
-  // Determinism: the scripted acquisition journeys start from step 0.
+  // Determinism: the scripted acquisition journeys start from step 0,
+  // and the scripted source-auth lifecycle starts signed in (R17/J28).
   resetAcquisitionFixtureState();
+  resetSourceAuthFixtureState();
 
   const server: BackgroundProc = startBackgroundProc(
     "bun",

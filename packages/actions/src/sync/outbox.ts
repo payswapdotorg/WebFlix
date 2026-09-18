@@ -520,6 +520,14 @@ export interface ActionOutboxStore {
   markConflict(id: string, cause: OutboxFailureCause): Promise<OutboxRecord>;
   /** Settle as `failed` (terminal) — the typed cause is stored. */
   markFailed(id: string, cause: OutboxFailureCause): Promise<OutboxRecord>;
+  /**
+   * R17 — the IDEMPOTENT RETRY of a terminally `failed` record: back to
+   * `pending` with the attempt budget reset and the SAME idempotency key
+   * (the provider-side dedupe holds — a retried record can never
+   * double-fire). `nextAttemptAt` is `now` (immediately due). Illegal
+   * from any other status (the typed `OutboxStateError`).
+   */
+  retryFailed(id: string, now: number): Promise<OutboxRecord>;
 }
 
 // ---------------------------------------------------------------------------
@@ -763,6 +771,31 @@ export class ActionOutbox implements ActionOutboxStore {
     return this.replace(id, "markFailed", (current) => {
       this.assertTransition(current, "markFailed", ["pending", "in-flight"]);
       return { ...current, status: "failed", lastCause: cause };
+    });
+  }
+
+  /**
+   * R17 — re-queue a terminally `failed` record for a fresh dispatch
+   * cycle: `failed` → `pending`, `attempts` reset to 0 (the full backoff
+   * budget again), `nextAttemptAt` = `now`, and the SAME idempotency key
+   * (never a second record — the provider-side dedupe key holds, so a
+   * retry can never double-fire). The previous `lastCause` is KEPT as
+   * history until the next attempt overwrites it.
+   */
+  async retryFailed(id: string, now: number): Promise<OutboxRecord> {
+    if (!Number.isFinite(now)) {
+      throw new ActionSyncError(
+        `retryFailed: now: expected a finite epoch-milliseconds number, got ${previewValue(now)}`,
+      );
+    }
+    return this.replace(id, "retryFailed", (current) => {
+      this.assertTransition(current, "retryFailed", ["failed"]);
+      return {
+        ...current,
+        status: "pending",
+        attempts: 0,
+        nextAttemptAt: isoOf(now),
+      };
     });
   }
 

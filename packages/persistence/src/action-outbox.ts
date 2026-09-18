@@ -494,6 +494,29 @@ export class PostgresActionOutbox implements ActionOutboxStore {
     });
   }
 
+  /**
+   * R17 — the idempotent retry of a terminally `failed` record: back to
+   * `pending`, attempts reset, immediately due, SAME idempotency key (the
+   * provider-side dedupe holds — a retried record can never double-fire).
+   * Guarded to `status = 'failed'` only (the typed `OutboxStateError`
+   * otherwise — same law as every other transition).
+   */
+  async retryFailed(id: string, now: number): Promise<OutboxRecord> {
+    if (!Number.isFinite(now)) {
+      throw new PersistenceError(
+        "invalid-input",
+        `retryFailed: now: expected a finite epoch-milliseconds number, got ${String(now)}`,
+      );
+    }
+    return this.transition(id, "retryFailed", ["failed"], {
+      set: [
+        { fragment: "status = 'pending'" },
+        { fragment: "attempts = 0" },
+        { fragment: "next_attempt_at = ?", param: epochMsToIso(now) },
+      ],
+    });
+  }
+
   // --- the audit read side -----------------------------------------------------
 
   /** The user's local action-audit rows, newest first (the local-first record). */

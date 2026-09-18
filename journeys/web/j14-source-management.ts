@@ -5,17 +5,16 @@
  * Doc expectation (matrix J14): source management — connect, see
  * capabilities/authorization state, reconnect, disconnect.
  *
- * Web-fixture-boot encoding: the HONEST pre-configuration state — the
- * settings sources section renders the typed "No sources connected"
- * state with the truthful note (this host browses its configured
- * service; never pretends a source is connected). Capability truth
- * before any connect: no fabricated connected sources anywhere.
- *
- * HONEST LIMIT (listed): the connect/reauthorize/disconnect ROUND TRIPS
- * are the service-side source-management lane (apps/api /sources routes
- * over the connector account store — R03's delivery). The web fixtures
- * boot cannot exercise them without the service; the manifest
- * limitation names the exact local procedure.
+ * Web-fixture-boot encoding (R17): the fixtures' scripted source-auth
+ * lifecycle over the REAL runtime source-state machinery — the settings
+ * sources section renders the scripted source's card with its honest
+ * authorization truth (the signed-in state, its Connected chip, the
+ * connect/reauthorize/disconnect action vocabulary). No fabricated state
+ * renders beyond the scripted truth (an expired marker while signed in is
+ * structurally absent). The expiry → reauthorize → recovery ROUND TRIP is
+ * J28's own encoding; the REAL provider round trips (a real OAuth dance
+ * against a real provider) remain the service-mode local-only procedure
+ * (listed in the manifest's limitations).
  */
 
 import { describe } from "./journey-description";
@@ -31,29 +30,57 @@ export const j14SourceManagement: Journey = {
     const { assert, browser } = context;
     await goto(context, "/settings?section=sources");
 
-    // The honest sources state.
+    // The sources section + the scripted source's card (the honest truth).
     await assert.visible("[data-wfx-settings-sources]", "the settings sources section renders");
-    await assert.visible("[data-wfx-sources-empty]", "the sources section renders its typed empty state (no sources connected)");
-    await assert.textContains("[data-wfx-settings-sources]", "No sources connected", "the sources section states the honest no-sources truth");
+    await assert.visible(
+      "[data-wfx-source='fake-source']",
+      "the source card renders (the runtime's own sources read)",
+    );
+    await assert.attrEquals(
+      "[data-wfx-source='fake-source']",
+      "data-wfx-source-auth-state",
+      "signedIn",
+      "the source states its authorization truth (never a fabricated state)",
+    );
+    await assert.textContains(
+      "[data-wfx-source-auth-chip='signedIn']",
+      "Connected",
+      "the signed-in source renders its Connected chip",
+    );
+    await assert.textContains(
+      "[data-wfx-source-recovery-detail]",
+      "This source is connected",
+      "the source card states its connection truth",
+    );
 
-    // The truth note: never pretends a source is connected.
-    await assert.textContains("[data-wfx-settings-sources]", "never pretends", "the sources section states the never-pretend law");
+    // The typed action vocabulary exists (the source-management grammar).
+    await assert.countAtLeast(
+      "[data-wfx-source-action='disconnect']",
+      1,
+      "the signed-in source offers its typed disconnect action",
+    );
+
+    // No fabricated states beyond the scripted truth: while signed in,
+    // the expired/failed/signed-out markers are structurally absent.
+    const html = await browser.tryHtml("[data-wfx-settings-sources]");
+    assert.that(
+      "no fabricated authorization states render beyond the scripted truth",
+      "no expired/failed chips while signed in",
+      html !== null && html.includes("Sign-in expired") ? "an expired chip rendered" : "no expired chip",
+      html === null || !html.includes("Sign-in expired"),
+    );
+    await assert.countExactly(
+      "[data-wfx-source-auth-state='expired']",
+      0,
+      "no expired source row renders while signed in (never a fabricated state)",
+    );
 
     // The section navigation works (the destination is reachable from settings).
     await assert.countAtLeast("[data-wfx-settings-sections] a[href='/settings?section=sources']", 1, "the sources section is linked from the settings sections nav");
     await assert.countAtLeast("[data-wfx-settings-sections] a[href='/settings?section=model']", 1, "the model section is linked from the settings sections nav");
     await assert.countAtLeast("[data-wfx-settings-sections] a[href='/settings?section=general']", 1, "the general section is linked from the settings sections nav");
 
-    // No fabricated connected-source row renders.
-    const html = await browser.tryHtml("[data-wfx-settings-sources]");
-    assert.that(
-      "no fabricated connected-source rows render in the fixtures configuration",
-      "no source rows with authorization states",
-      html !== null && html.includes("Reauthorize") ? "a reauthorize control rendered" : "no connected-source controls",
-      html === null || !html.includes("Reauthorize"),
-    );
-
     await context.screenshot("j14-source-management");
-    await describe(context, "the settings sources section rendered the typed no-sources state with the never-pretend note (the connect/reauthorize/disconnect round trips are the service-mode local-only procedure — listed)");
+    await describe(context, "the settings sources section rendered the scripted source's card with its signed-in truth, Connected chip, and typed disconnect action (the expiry/reauthorize round trip is J28's encoding; the real provider round trips are the service-mode local-only procedure — listed)");
   },
 };

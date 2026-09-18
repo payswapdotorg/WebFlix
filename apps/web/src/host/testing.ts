@@ -27,15 +27,17 @@
 import { resetWebRuntimeHostForTests } from "./web-host";
 import { resetItemJoinForTests } from "./view-models";
 import { resetAcquisitionFixturesForTests } from "./acquisition-fixtures";
+import { resetSourceAuthFixturesForTests } from "./source-auth-fixtures";
 
 /**
  * Reset the web host's PROCESS-LIFETIME state to pristine: the runtime
  * boot promise (the next `getWebRuntimeHost` boots fresh), the canonical
- * join, the item join, and the R14 acquisition fixture feed. TEST-ONLY —
- * see the module doc.
+ * join, the item join, the R14 acquisition fixture feed, and the R17
+ * source-auth fixture state. TEST-ONLY — see the module doc.
  */
 export function resetWebHostProcessState(): void {
   resetWebRuntimeHostForTests();
   resetItemJoinForTests();
   resetAcquisitionFixturesForTests();
+  resetSourceAuthFixturesForTests();
 }

@@ -286,6 +286,12 @@ export interface TorrentEngineSessionInputs {
   readonly journal: TorrentSessionJournal;
   readonly clock: () => number;
   readonly stallThresholdMs: number;
+  /**
+   * R17 — the metadata deadline in ms (0 disables): active
+   * `discovering-metadata` past this deadline fails `metadata-failed`
+   * (named error state, no hang). Paused discovery does not accrue.
+   */
+  readonly metadataTimeoutMs: number;
   readonly checkpointEveryPieces: number;
 }
 
@@ -316,6 +322,16 @@ export class TorrentEngineSession {
   private failure: { reason: TorrentFailureReason; detail: string } | undefined;
   private digests: readonly TorrentSessionDigest[] | undefined;
   private lastPeerContactAt: number | undefined;
+  /**
+   * R17 — when active metadata discovery must give up (undefined: not
+   * discovering, paused, disabled, or already resolved). The deadline is
+   * the honest bound on `discovering-metadata`: no hang, no invented
+   * metadata — the typed `metadata-failed` state with the elapsed time.
+   * `metadataDiscoveringSince` is when the CURRENT discovery window began
+   * (paused time never counts — the waited time is ACTIVE discovery only).
+   */
+  private metadataDeadlineAt: number | undefined;
+  private metadataDiscoveringSince: number | undefined;
   private readonly startedAt: number;
   private verifiedPieceEvents = 0;
   private piecesSinceCheckpoint = 0;
@@ -325,6 +341,7 @@ export class TorrentEngineSession {
   private readonly journal: TorrentSessionJournal;
   private readonly clock: () => number;
   private readonly stallThresholdMs: number;
+  private readonly metadataTimeoutMs: number;
   private readonly checkpointEveryPieces: number;
 
   private constructor(inputs: TorrentEngineSessionInputs) {
@@ -340,10 +357,18 @@ export class TorrentEngineSession {
     this.journal = inputs.journal;
     this.clock = inputs.clock;
     this.stallThresholdMs = inputs.stallThresholdMs;
+    this.metadataTimeoutMs = Math.max(0, inputs.metadataTimeoutMs);
     this.checkpointEveryPieces = Math.max(1, inputs.checkpointEveryPieces);
     this.startedAt = this.clock();
     this.state =
       inputs.metainfo === undefined ? "discovering-metadata" : "selecting";
+    // R17 — arm the metadata deadline only for sessions that START in
+    // active discovery (magnet kind). Torrent-file sessions know their
+    // metadata at construction and never discover.
+    if (this.state === "discovering-metadata" && this.metadataTimeoutMs > 0) {
+      this.metadataDeadlineAt = this.startedAt + this.metadataTimeoutMs;
+      this.metadataDiscoveringSince = this.startedAt;
+    }
     mkdirSync(inputs.dataDir, { recursive: true });
   }
 
@@ -447,6 +472,10 @@ export class TorrentEngineSession {
       });
     }
     this.transitionTo("seeding-paused", "user pause");
+    // R17 — paused discovery does not accrue: the deadline is disarmed and
+    // re-armed fresh on resume (a pause must never time out underneath the
+    // user).
+    this.metadataDeadlineAt = undefined;
     this.librarySession?.pause();
     this.writeCheckpoint();
     return { ok: true, value: undefined };
@@ -468,6 +497,13 @@ export class TorrentEngineSession {
     }
     const target = this.pausedFrom ?? "downloading";
     this.transitionTo(target, "user resume");
+    // R17 — resuming INTO active discovery re-arms the deadline from NOW
+    // (the fresh discovery window; the paused time never counts).
+    if (target === "discovering-metadata" && this.metadataTimeoutMs > 0) {
+      const now = this.clock();
+      this.metadataDeadlineAt = now + this.metadataTimeoutMs;
+      this.metadataDiscoveringSince = now;
+    }
     this.librarySession?.resume();
     return { ok: true, value: undefined };
   }
@@ -523,6 +559,31 @@ export class TorrentEngineSession {
     const snap = this.librarySession?.snapshot();
     if (snap !== undefined && snap.connectedPeers > 0) {
       this.lastPeerContactAt = now;
+    }
+    // R17 — THE METADATA DEADLINE (the observation-is-the-tick law: the
+    // host owns cadence; the engine has no hidden timers. status() is the
+    // engine's observability tick — the same precedent as the stall-clock
+    // bookkeeping above). An ACTIVE discovery session past its deadline
+    // fails with the NAMED `metadata-failed` reason: the typed error
+    // state, the honest elapsed time, never a hang, never invented
+    // metadata. (Terminal states never re-fail; `fail` is a no-op there.)
+    if (
+      this.state === "discovering-metadata" &&
+      this.metadataDeadlineAt !== undefined &&
+      now >= this.metadataDeadlineAt
+    ) {
+      const activeMs =
+        this.metadataDiscoveringSince !== undefined
+          ? now - this.metadataDiscoveringSince
+          : this.metadataTimeoutMs;
+      this.fail(
+        "metadata-failed",
+        `the metadata did not arrive within ${this.metadataTimeoutMs}ms of active discovery ` +
+          `(waited ${activeMs}ms) — no file list exists, so nothing can be selected or ` +
+          "transferred; nothing was invented. Re-ingest and start a fresh session to retry.",
+      );
+      this.metadataDeadlineAt = undefined;
+      this.metadataDiscoveringSince = undefined;
     }
     const peers: TorrentPeerStats = {
       connected: snap?.connectedPeers ?? 0,
@@ -622,6 +683,9 @@ export class TorrentEngineSession {
     trackers: readonly string[];
     isPrivate: boolean;
   }): void {
+    // R17 — metadata resolved: the deadline is spent (discovery succeeded).
+    this.metadataDeadlineAt = undefined;
+    this.metadataDiscoveringSince = undefined;
     if (this.metainfo !== undefined) {
       // Metadata already known (torrent-file ingestion): the library must
       // agree — an infohash mismatch is a deep inconsistency, failed
