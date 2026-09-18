@@ -80,6 +80,8 @@ import type {
   IntentRecord,
   LibraryCommand,
   LibraryEntry,
+  ModelPolicy,
+  ModelTask,
   PlaybackRealization,
   RecommendationPolicy,
   SearchResult,
@@ -246,6 +248,81 @@ export interface ServerPort {
    * honest `unavailable` failure when the bound port does not implement it.
    */
   readSources?(): Promise<ServerResult<readonly SourceInfo[]>>;
+
+  // — the R06 model-and-AI-controls extension (ADD-ONLY — the documented
+  // extension this work item authorizes; every R01/R02/R03 member keeps
+  // its exact semantics; the SettingsSection "model" vocabulary the R01
+  // runtime's navigation declares is the surface these read/write) —
+
+  /**
+   * The ACTIVE profile's ModelPolicy for `task` (preferred provider +
+   * fallback chain + privacy class + cost ceiling), or the HONEST null
+   * when unset (the R05/R06 honesty law — never a fabricated
+   * default-as-if-configured). Typed failures — never a fake null.
+   *
+   * OPTIONAL until the lead wires the adapters' transports (same
+   * ratification note as `readSources`): the runtime answers the honest
+   * `unavailable` failure when the bound port does not implement it.
+   */
+  readModelPolicy?(task: ModelTask): Promise<ServerResult<ModelPolicy | null>>;
+
+  /**
+   * Write the ACTIVE profile's ModelPolicy (the validated command). Typed
+   * failures — never a fabricated success (a model-policy write failure is
+   * an ERROR STATE).
+   */
+  writeModelPolicy?(command: ModelPolicyCommand): Promise<ServerResult<void>>;
+
+  /**
+   * The provider registry view (first-party + BYOM + local where
+   * supported) with per-task capability truth — the "see actual
+   * capabilities" law applied to models. BYOM bindings are listed as
+   * secret-free projections ONLY (the response NEVER contains key
+   * material — the R06 privacy law). Anonymous sessions answer the
+   * first-party providers honestly (the BYOM list is empty for
+   * anonymous — never a fake one).
+   */
+  readModelProviders?(): Promise<ServerResult<readonly ModelProviderInfo[]>>;
+
+  /**
+   * Store a BYOM provider binding (the key SEALED via the envelope-
+   * encrypted account-store pattern — plaintext NEVER at rest). The
+   * transport returns the HANDLE + metadata ONLY (never the key). Typed
+   * failures — never a fabricated success.
+   */
+  bindByomProvider?(command: ByomBindingCommand): Promise<ServerResult<ByomBindingHandle>>;
+
+  /**
+   * DELETE one BYOM binding (the vault's delete discipline — the sealed
+   * material is destroyed). Typed failures — never a fabricated success.
+   */
+  unbindByomProvider?(providerId: string): Promise<ServerResult<void>>;
+
+  /**
+   * Submit one explicit transformation (kind + input + options). The
+   * transport creates a `queued` operation and answers the operation
+   * record immediately; the pipeline runs ASYNCHRONOUSLY. Typed failures
+   * — never a fabricated success (a submit failure is an ERROR STATE).
+   */
+  submitTransform?(command: TransformSubmitCommand): Promise<ServerResult<TransformOperation>>;
+
+  /**
+   * Read one transform operation's current state + the append-only state
+   * history. The 404 (`not-found`) is the honest miss.
+   */
+  readTransform?(operationId: string): Promise<ServerResult<TransformOperation>>;
+
+  /**
+   * Cancel a queued/running transform operation (the explicit
+   * cancellation path — never a silent drop). Terminal operations reject.
+   */
+  cancelTransform?(operationId: string): Promise<ServerResult<TransformOperation>>;
+
+  /**
+   * DELETE the result of a succeeded transform (result cleanup). Rejects
+   * when the operation is not in the succeeded state.
+   */
+  clearTransformResult?(operationId: string): Promise<ServerResult<TransformOperation>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -348,4 +425,151 @@ export interface ProfileHistoryEntry {
   readonly lastEventType: string | null;
   /** ISO 8601 instant of the latest update (the recency order key). */
   readonly updatedAt: string;
+}
+
+// ---------------------------------------------------------------------------
+// The R06 model-and-AI-controls truth shapes
+// ---------------------------------------------------------------------------
+
+/**
+ * The model-policy write command (the wire shape the runtime sends to
+ * `writeModelPolicy`). Structurally identical to the API's
+ * `ModelPolicyCommandWire` — the lane rule.
+ */
+export interface ModelPolicyCommand {
+  readonly task: ModelTask;
+  readonly preferredProvider?: string;
+  readonly fallbackProviders: readonly string[];
+  readonly privacy: ModelPolicy["privacy"];
+  readonly maxCostPerOperation?: number;
+}
+
+/**
+ * The BYOM binding write command (the wire shape the runtime sends to
+ * `bindByomProvider`). The `key` is the secret; the transport SEALS it
+ * via the envelope-encrypted account-store pattern.
+ */
+export interface ByomBindingCommand {
+  readonly providerId: string;
+  readonly endpointUrl: string;
+  readonly key: string;
+  readonly metadata?: Record<string, unknown>;
+  /** The capabilities the binding's model declares (the frozen ModelTask set). */
+  readonly capabilities?: readonly ModelTask[];
+  /** The model's declared cost per call (fabric abstract units). */
+  readonly costPerCall?: number;
+}
+
+/**
+ * The BYOM binding HANDLE the transport returns from `bindByomProvider`
+ * — the secret-free projection (the response NEVER contains key material
+ * — the R06 privacy law).
+ */
+export interface ByomBindingHandle {
+  readonly id: string;
+  readonly providerId: string;
+  readonly endpointUrl: string;
+  readonly keyId: string;
+  readonly metadata: Record<string, unknown> | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * The transform submit command (the wire shape the runtime sends to
+ * `submitTransform`). `kind` is one of the closed transform vocabulary;
+ * `input` is the task's validated input shape; `options` carries privacy
+ * class + provider hints + cost ceiling + timeout.
+ */
+export interface TransformSubmitCommand {
+  readonly kind: string;
+  readonly input: unknown;
+  readonly options?: {
+    readonly privacy?: ModelPolicy["privacy"];
+    readonly preferredProvider?: string;
+    readonly fallbackProviders?: readonly string[];
+    readonly maxCostPerOperation?: number;
+    readonly timeoutMs?: number;
+  };
+}
+
+/** The closed transform-operation state union (mirrors the fabric). */
+export type TransformOperationState =
+  | "queued"
+  | "running"
+  | "succeeded"
+  | "failed"
+  | "cancelled";
+
+/** Every value of `TransformOperationState`, in union order. */
+export const TRANSFORM_OPERATION_STATES: readonly TransformOperationState[] = [
+  "queued",
+  "running",
+  "succeeded",
+  "failed",
+  "cancelled",
+] as const;
+
+/** Runtime membership check against the state union. */
+export function isTransformOperationState(
+  x: unknown,
+): x is TransformOperationState {
+  return (
+    typeof x === "string" &&
+    (TRANSFORM_OPERATION_STATES as readonly string[]).includes(
+      x as TransformOperationState,
+    )
+  );
+}
+
+/**
+ * One transform operation's current state + the snapshot read-model. The
+ * append-only state history is fetched alongside the operation when the
+ * transport supports it.
+ */
+export interface TransformOperation {
+  readonly id: string;
+  readonly kind: string;
+  readonly targetRef: string;
+  readonly options: Record<string, unknown>;
+  readonly state: TransformOperationState;
+  readonly progress: number | null;
+  readonly resultRef: string | null;
+  readonly errorDetail: string | null;
+  readonly createdAt: string;
+  readonly updatedAt: string;
+}
+
+/**
+ * One entry in the operation's append-only state history (every
+ * transition recorded, never overwritten — honest audit truth).
+ */
+export interface TransformOperationStateHistoryEntry {
+  readonly id: string;
+  readonly operationId: string;
+  readonly state: TransformOperationState;
+  readonly progress: number | null;
+  readonly detail: string | null;
+  readonly transitionedAt: string;
+}
+
+/**
+ * The provider registry view (the "see actual capabilities" law applied to
+ * models). One row per provider — first-party (local, cost 0), BYOM-bound
+ * (cloud, the binding's declared cost), and local (where supported). The
+ * `availability` field carries the J20 "Constrained" truth: an
+ * unsupported capability is named, never a fake success.
+ */
+export interface ModelProviderInfo {
+  readonly id: string;
+  /** Where the provider runs (local | cloud — the registry vocabulary). */
+  readonly privacy: "local" | "cloud";
+  /** The frozen ModelTask set the provider declares. */
+  readonly capabilities: readonly ModelTask[];
+  /** Whether the provider is bound BYOM (true) or first-party/local (false). */
+  readonly byomBound: boolean;
+  /** The declared cost per operation, per task (absent tasks not in the map). */
+  readonly costs: Readonly<Record<string, number>>;
+  /** Honest availability truth: 'available' | 'unsupported' (J20 Constrained). */
+  readonly availability: "available" | "unsupported";
 }

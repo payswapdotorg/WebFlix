@@ -38,6 +38,7 @@ import { resolveApiConfig } from "../src/host/config";
 import { RecommendationControlsHost } from "../src/host/controls";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
 import { HistoryHost } from "../src/host/history";
+import { ModelControlsHost } from "../src/host/model-controls";
 import {
   createSourceManagementService,
   type SourceAuthWiring,
@@ -128,6 +129,14 @@ export async function createApiTestBoot(sourceOverrides?: {
   // R05 — the recommendation-controls host (the exact wiring bootApi performs).
   const controls = new RecommendationControlsHost({ db: testDb.db, clock, ids });
 
+  // R06 — the model-and-AI-controls host (the exact wiring bootApi performs).
+  const modelControls = new ModelControlsHost({
+    db: testDb.db,
+    clock,
+    ids,
+    key: decodeEncryptionKey(TEST_ENCRYPTION_KEY_BASE64),
+  });
+
   // The R02 identity services — the SAME wiring bootApi performs (the
   // boot's 2.6 step): register/authenticate, session tokens, profiles,
   // and the profile-aware event sink, all over the shared seams.
@@ -165,6 +174,7 @@ export async function createApiTestBoot(sourceOverrides?: {
     connectorAccounts,
     history,
     controls,
+    modelControls,
   };
   return { boot, testDb, clock, ids };
 }

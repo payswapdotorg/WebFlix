@@ -89,5 +89,12 @@ export * from "./envelope-crypto";
 export * from "./connector-accounts";
 export * from "./model-input";
 
+// R06 — model and AI controls: per-profile ModelPolicy, BYOM provider
+// bindings (envelope-encrypted), and transform operation records with
+// append-only state history (the explicit transformation state machine).
+export * from "./model-policy";
+export * from "./byom-bindings";
+export * from "./transform-operations";
+
 // The composition root (Ports bundle + production boot).
 export * from "./ports";

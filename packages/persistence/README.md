@@ -50,6 +50,7 @@ There is **no fixture fallback**: `WFX_DEV_FIXTURES` is a web-host concern
 | `0008_source_management` (R03) | `connector_accounts` lifecycle columns (`authorized_at`, `last_state_change`, `availability_notes`); `connector_pending_authorizations` |
 | `0009_canonical_library_history_exclusions` (R04) | `library_entries.item_id` (canonical-key discipline); `history_removals`; `history_exclusions` |
 | `0010_recommendation_feedback` (R05) | `recommendation_feedback` (the J15 control set — per-profile, timestamped, reversible) |
+| `0011_model_policy_byom_transforms` (R06) | `model_policy` (per-profile `ModelPolicy`); `byom_provider_bindings` (envelope-encrypted BYOM keys); `transform_operations` + `transform_operation_states` (the explicit transform-operation state machine + append-only state history) |
 
 Runner laws (src/migrations.ts): files are applied in lexicographic order,
 each inside ONE transaction together with its `persistence_migrations`
@@ -359,3 +360,89 @@ frozen packages (`@wfx/domain`, `@wfx/experience`, …), contains no provider
 logic in domain cores, and depends on `@wfx/experience` for TYPES only
 (`import type` — the Ports seams). Fixture ports are untouched and remain
 test/dev-only in `@wfx/experience`.
+
+## R06 — model and AI controls (per-profile policy + BYOM bindings + transform operations)
+
+Migration `0011_model_policy_byom_transforms` ships three stores backing
+the R06 control surface:
+
+- **`model_policy`** (`src/model-policy.ts`) — the per-profile frozen
+  `ModelPolicy` shape: `{ task, preferredProvider?, fallbackProviders[],
+  privacy: 'local-only' | 'trusted-cloud' | 'any-cloud',
+  maxCostPerOperation? }`. One row per (effective profile, ModelTask);
+  UPSERT preserves the canonical id + created_at across re-writes
+  (rotation law — same as `connector_accounts`). Reads answer the
+  HONEST null when unset (the R05 honesty law carried into R06 — never
+  a fabricated default-as-if-configured). Validation is against the
+  frozen contract; the database's CHECK constraint is the last line of
+  defense.
+- **`byom_provider_bindings`** (`src/byom-bindings.ts`) — envelope-
+  encrypted BYOM provider credentials. ONE per (effective profile,
+  providerId) — UNIQUE, upserted. The key material is sealed with
+  AES-256-GCM (`src/envelope-crypto.ts`, key = APP_ENCRYPTION_KEY):
+  ciphertext + IV + auth_tag + key_id stored, plaintext NEVER at rest.
+  `saveBinding` accepts the raw key and seals it; `loadBinding` opens
+  the envelope and hands the key to the CALLER ONLY — never logged,
+  never persisted, never in a URL, never in a model prompt. The save
+  answers a HANDLE + metadata ONLY (the response NEVER contains key
+  material). `deleteBinding` destroys the sealed material per the
+  vault's delete discipline (the same law as `connector_accounts`).
+
+  **THE PRIVACY LAW (R06, doubled):** provider credentials never enter
+  model prompts AND BYOM keys never enter logs, URLs, or model prompts.
+  The binding's KEY surfaces ONLY through `loadBinding` for the
+  TRANSPORT LANE (provider invocation) — never for model/recommendation
+  inputs. The store's read-side list (`listForProfile`) answers ONLY
+  the secret-free projections — `ByomProviderBindingRecord`. A test
+  (`tests/model-controls.test.ts`) pins the structural isolation.
+- **`transform_operations` + `transform_operation_states`**
+  (`src/transform-operations.ts`) — the explicit transformation state
+  machine. Each row is one submitted transform: kind + target + options
+  + the EXPLICIT state (queued | running | succeeded | failed |
+  cancelled) + progress (when the fabric reports it) + result reference
+  (on success) + error detail (on failure). State transitions are
+  APPENDED to `transform_operation_states` — never an overwrite — so
+  the operation's lifecycle is honest audit truth. The legal
+  transitions: `queued → running | cancelled`; `running → succeeded |
+  failed | cancelled`; terminal states are terminal. `clearResult`
+  transitions a succeeded operation to cancelled and clears the result
+  reference (the spec's "DELETE for result cleanup where applicable").
+
+  **THE EVENT-SINK LAW (R04, preserved):** nothing here touches
+  `event_outbox` or `watch_history` — transforms are explicit user
+  actions with their own audit trail, never engagement events.
+
+### The sealing discipline (the R06 privacy law)
+
+The BYOM-binding store's sealing discipline is the 0005 connector-
+accounts discipline VERBATIM, applied to BYOM keys per the R06 spec:
+
+1. **Envelope encryption:** AES-256-GCM, 12-byte fresh IV per envelope,
+   16-byte GCM auth tag stored alongside, key_id rotation fingerprint
+   traveling with each envelope, AAD binds the envelope to its purpose
+   (`wfx/persistence/credential/v1`). Tampering is DETECTED, not
+   silent: a tampered/foreign-key envelope fails with the typed
+   `CredentialDecryptError` (never garbage plaintext, never fake
+   success).
+2. **Key rotation observability:** `key_id` mismatch is detected BEFORE
+   decryption is attempted — loading under a different key answers the
+   typed `{ ok: false, reason: "key-mismatch" }` result (the same law
+   as `connector_accounts`).
+3. **The HANDLE pattern:** `saveBinding` accepts the raw key, seals
+   it, and returns a secret-free `ByomProviderBindingRecord` — the
+   response NEVER contains key material. The route's PUT response
+   carries the handle + metadata ONLY. Verified by
+   `tests/model-controls.test.ts > the response NEVER contains key
+   material` (raw-SQL check + JSON-shape check).
+4. **The vault's delete discipline:** `deleteBinding` removes the row;
+   the sealed material is destroyed. The delete is a REAL delete (no
+   soft-delete theater — the R06 reversibility law, same as R05
+   feedback).
+5. **The model-input lane isolation:** the model-input lane (R03's
+   `model-input.ts` — the structurally secret-free `ModelSafeSource`
+   summary + the loud `assertNoCredentialMaterial` guard) is the
+   second line of defense. The BYOM-binding store's `listForProfile`
+   answers ONLY secret-free projections; the KEY surfaces ONLY
+   through `loadBinding` for the transport lane (provider invocation).
+   A test pins this in `tests/model-controls.test.ts` (the save
+   response + raw-SQL row + load-API check + listing).
