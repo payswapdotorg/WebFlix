@@ -8,18 +8,25 @@
  * calls (drivers injected at the seam in sync/drivers.ts).
  *
  * Surface (import ONLY from "@wfx/actions"):
- * - sync/outbox.ts    — `ActionOutbox` (transactional record store,
- *                       idempotency keys, deterministic record ids),
- *                       `OutboxRecord`/`OutboxEntry`/`EnqueueResult`,
- *                       `OutboxFailureCause`, typed error channels
+ * - sync/outbox.ts    — `ActionOutboxStore` (R15: THE store contract — the
+ *                       in-memory and SQL-backed stores both implement it),
+ *                       `ActionOutbox` (transactional in-memory record
+ *                       store, idempotency keys, deterministic record ids),
+ *                       `OutboxRecord`/`OutboxEntry`/`EnqueueResult`
+ *                       (R15: `profileId` attribution), `OutboxFailureCause`,
+ *                       typed error channels
  * - sync/drivers.ts   — `SyncDriver` (the execution seam),
  *                       `createConnectorDriver` (production adapter over
- *                       the SDK's `executeActionResult`),
+ *                       the SDK's `executeActionResult`; R15: the optional
+ *                       profile-aware typed surface is preferred when the
+ *                       request carries a profileId),
  *                       `createFixtureDriver` (deterministic TEST FIXTURE)
  * - sync/dispatch.ts  — `SyncDispatcher` (the durable worker: capability
  *                       gate, typed result mapping, retries with backoff,
- *                       attempts cap), `SyncLog` (audit trail),
- *                       `TickReport`, `RetryPolicy`
+ *                       attempts cap, superseded-claim race handling),
+ *                       `SyncAuditLog` (the audit contract) + `SyncLog`
+ *                       (the in-memory implementation), `TickReport`,
+ *                       `RetryPolicy`
  * - sync/reconcile.ts — `reconcile` (drift REPORTING only — never
  *                       auto-mutates), `ReconciliationDrift`
  */

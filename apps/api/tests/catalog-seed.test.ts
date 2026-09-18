@@ -110,7 +110,7 @@ afterAll(async () => {
 });
 
 describe("catalog seed — convergence + idempotency (boot-if-empty, never overwrite)", () => {
-  it("the schema baseline is untouched: the migration set re-verifies clean (eleven)", async () => {
+  it("the schema baseline is untouched: the migration set re-verifies clean (twelve)", async () => {
     // R02 added migration 0007 (profiles + profile scoping — SCHEMA, not
     // app-owned data; the seed's never-into-the-migration-dir decision
     // record is about DATA). R03 added migration 0008 (the source-management
@@ -119,8 +119,10 @@ describe("catalog seed — convergence + idempotency (boot-if-empty, never overw
     // exclusions tables — SCHEMA again). R05 added migration 0010 (the
     // recommendation feedback controls table — SCHEMA again). R06 added
     // migration 0011 (the model policy + BYOM bindings + transform
-    // operations + append-only state history tables — SCHEMA again). The
-    // re-verify law is unchanged: nothing new applies, no drift.
+    // operations + append-only state history tables — SCHEMA again). R15
+    // added its 0011 (the durable action outbox + local action audit +
+    // sync log tables — SCHEMA again; distinct filename/id, sorted order).
+    // The re-verify law is unchanged: nothing new applies, no drift.
     const again = await runMigrations(first.db);
     expect(again.applied).toEqual([]);
     expect(again.total).toBe(11);

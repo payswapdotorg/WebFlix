@@ -1,7 +1,8 @@
 "use client";
 
 /**
- * @wfx/app-web — the like/save action controls (WFX-051, client).
+ * @wfx/app-web — the like/save action controls (WFX-051, client; R15/J10
+ * surfacing).
  *
  * Optimistic UI with the honesty law: an optimistic state is shown the
  * instant the control fires, and is ROLLED BACK unless the source's
@@ -9,11 +10,21 @@
  * is never shown as success ("never fake success"). Receipt semantics are
  * the frozen `ActionReceipt` statuses, rendered verbatim:
  *
- * - `confirmed`   — the source confirmed; the optimistic state stands.
- * - `local-only`  — recorded locally in WebFlix, sync pending (the social
- *                   sync boundary: local state ≠ confirmed external sync).
+ * - `confirmed`   — the source confirmed (provider-confirmed): the
+ *                   optimistic state stands, labeled as SYNCED.
+ * - `local-only`  — recorded locally in WebFlix, external sync pending
+ *                   (the R15 social sync boundary: the action IS
+ *                   WebFlix-confirmed — the button reflects the local
+ *                   truth — while the status line differentiates it from
+ *                   provider confirmation, including the failed-with-retry
+ *                   detail when the receipt carries one).
  * - `unsupported` — the source lacks the capability; rollback + message.
  * - `failed`      — the source declined; rollback + the source's detail.
+ *
+ * J10's differentiation law: WebFlix-confirmed (`local-only`) and
+ * provider-confirmed (`confirmed`) render as DISTINCT states
+ * (`data-wfx-action-state`), and `unsupported`/`failed` never render as
+ * success (`data-wfx-action-state` + rollback).
  *
  * Capability honesty BEFORE the click: a control whose capability the
  * card does not declare is rendered as the typed-absent note (never a
@@ -40,30 +51,80 @@ interface ActionUiState {
   optimistic: boolean;
   /** The last failure message (null when the last receipt was not a failure). */
   failure: string | null;
+  /** Which terminal non-success the last receipt carried (J10 marker). */
+  failureKind: "unsupported" | "failed" | null;
+  /** The last receipt detail for the pending-sync states (retry reasons). */
+  pendingDetail: string | null;
+  /** The provider's external id when provider-confirmed. */
+  externalId: string | null;
   /** True while the request is in flight. */
   pending: boolean;
 }
 
 type ActionUiEvent =
   | { kind: "begin" }
-  | { kind: "receipt"; status: "confirmed" | "local-only" | "unsupported" | "failed"; detail?: string }
+  | {
+      kind: "receipt";
+      status: "confirmed" | "local-only" | "unsupported" | "failed";
+      detail?: string;
+      externalId?: string;
+    }
   | { kind: "error"; message: string };
 
-const IDLE: ActionUiState = { settled: "idle", optimistic: false, failure: null, pending: false };
+const IDLE: ActionUiState = {
+  settled: "idle",
+  optimistic: false,
+  failure: null,
+  failureKind: null,
+  pendingDetail: null,
+  externalId: null,
+  pending: false,
+};
 
 function reducer(state: ActionUiState, event: ActionUiEvent): ActionUiState {
   switch (event.kind) {
     case "begin":
-      return { ...state, optimistic: true, failure: null, pending: true };
+      return {
+        ...state,
+        optimistic: true,
+        failure: null,
+        failureKind: null,
+        pendingDetail: null,
+        pending: true,
+      };
     case "receipt":
-      if (event.status === "confirmed" || event.status === "local-only") {
-        return { settled: event.status, optimistic: false, failure: null, pending: false };
+      if (event.status === "confirmed") {
+        return {
+          settled: "confirmed",
+          optimistic: false,
+          failure: null,
+          failureKind: null,
+          pendingDetail: null,
+          externalId: event.externalId ?? null,
+          pending: false,
+        };
+      }
+      if (event.status === "local-only") {
+        // WebFlix-confirmed: the action IS recorded locally; external sync
+        // pends (the receipt detail carries the failed-with-retry reason
+        // when the provider attempt failed and a retry is scheduled).
+        return {
+          settled: "local-only",
+          optimistic: false,
+          failure: null,
+          failureKind: null,
+          pendingDetail: event.detail ?? null,
+          externalId: null,
+          pending: false,
+        };
       }
       // unsupported / failed ⇒ ROLLBACK (never fake success).
       return {
         ...state,
         optimistic: false,
         pending: false,
+        pendingDetail: null,
+        failureKind: event.status,
         failure:
           event.status === "unsupported"
             ? "This source does not support that action."
@@ -108,6 +169,7 @@ export function ActionButtons({
         }
         const status = (body as { status?: unknown }).status;
         const detail = (body as { detail?: unknown }).detail;
+        const externalId = (body as { externalId?: unknown }).externalId;
         if (typeof status !== "string") {
           dispatch({ kind: "error", message: "The host answered without a receipt — not applied." });
           return;
@@ -116,6 +178,7 @@ export function ActionButtons({
           kind: "receipt",
           status: status as "confirmed" | "local-only" | "unsupported" | "failed",
           ...(typeof detail === "string" ? { detail } : {}),
+          ...(typeof externalId === "string" ? { externalId } : {}),
         });
       } catch {
         dispatch({
@@ -126,6 +189,40 @@ export function ActionButtons({
     },
     [],
   );
+
+  /** The J10 settled-state marker for one control. */
+  const settledMarker = (
+    state: ActionUiState,
+    kind: "like" | "save",
+  ): JSX.Element | null => {
+    if (state.optimistic || state.pending) return null;
+    if (state.settled === "confirmed") {
+      return (
+        <span
+          className="wfx-actionbar__status wfx-actionbar__status--synced"
+          data-wfx-action-state="confirmed-by-provider"
+          data-wfx-action-kind={kind}
+        >
+          Synced with the source (provider-confirmed).
+        </span>
+      );
+    }
+    if (state.settled === "local-only") {
+      return (
+        <span
+          className="wfx-actionbar__status wfx-actionbar__status--pending"
+          data-wfx-action-state="confirmed-locally"
+          data-wfx-action-kind={kind}
+        >
+          Recorded in WebFlix — external sync pending
+          {state.pendingDetail !== null && state.pendingDetail.length > 0
+            ? ` (${state.pendingDetail})`
+            : " (the source has not confirmed yet)."}
+        </span>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="wfx-actionbar" data-wfx-actions>
@@ -145,7 +242,13 @@ export function ActionButtons({
           data-wfx-action="like"
         >
           <Icon name="like" size={18} />
-          {likeState.optimistic ? "Liked…" : likeState.settled === "confirmed" ? "Liked" : "Like"}
+          {likeState.optimistic
+            ? "Liked…"
+            : likeState.settled === "confirmed"
+              ? "Liked"
+              : likeState.settled === "local-only"
+                ? "Liked in WebFlix"
+                : "Like"}
         </button>
       )}
       {save === null ? (
@@ -164,24 +267,37 @@ export function ActionButtons({
           data-wfx-action="save"
         >
           <Icon name="save" size={18} />
-          {saveState.optimistic ? "Saving…" : saveState.settled === "confirmed" ? "Saved" : "Save"}
+          {saveState.optimistic
+            ? "Saving…"
+            : saveState.settled === "confirmed"
+              ? "Saved"
+              : saveState.settled === "local-only"
+                ? "Saved in WebFlix"
+                : "Save"}
         </button>
       )}
       {likeState.failure !== null ? (
-        <span className="wfx-actionbar__status wfx-actionbar__status--error" role="alert" data-wfx-action-failure="like">
+        <span
+          className="wfx-actionbar__status wfx-actionbar__status--error"
+          role="alert"
+          data-wfx-action-failure="like"
+          data-wfx-action-state={likeState.failureKind ?? "failed"}
+        >
           {likeState.failure}
         </span>
       ) : null}
       {saveState.failure !== null ? (
-        <span className="wfx-actionbar__status wfx-actionbar__status--error" role="alert" data-wfx-action-failure="save">
+        <span
+          className="wfx-actionbar__status wfx-actionbar__status--error"
+          role="alert"
+          data-wfx-action-failure="save"
+          data-wfx-action-state={saveState.failureKind ?? "failed"}
+        >
           {saveState.failure}
         </span>
       ) : null}
-      {likeState.settled === "local-only" || saveState.settled === "local-only" ? (
-        <span className="wfx-actionbar__status wfx-actionbar__status--pending">
-          Recorded in WebFlix — external sync pending (the source has not confirmed yet).
-        </span>
-      ) : null}
+      {settledMarker(likeState, "like")}
+      {settledMarker(saveState, "save")}
     </div>
   );
 }

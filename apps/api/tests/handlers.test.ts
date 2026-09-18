@@ -261,19 +261,37 @@ describe("POST /experience/actions — happy paths", () => {
     expect(rows).toHaveLength(1);
   });
 
-  it("a well-formed but UNROUTABLE action is an honest failed receipt (200, never a crash)", async () => {
+  it("a well-formed but UNROUTABLE action is RECORDED (WebFlix-confirmed) with an honest local-only receipt — never a crash (R15)", async () => {
+    // R15 law: local-first action truth. The action is recorded in the
+    // durable outbox (with its audit row) BEFORE any sync attempt; the
+    // unroutable connector id is a typed wiring gap (retryable, bounded by
+    // the attempts cap) — the receipt honestly answers `local-only`
+    // (recorded in WebFlix — external sync pending), NEVER a fabricated
+    // success, and the state is visible in /experience/actions/sync-state.
     const response = await actionsPOST(
       postRequest(
         "/experience/actions",
-        { type: "like", connectorId: "someone-else", externalRef: ZOO_REF },
+        { type: "like", connectorId: "someone-else", externalRef: "ext:unroutable-r15" },
         identityHeaders(),
       ),
     );
     expect(response.status).toBe(200);
     const receipt = (await json(response)) as ActionReceipt;
-    expect(receipt.status).toBe("failed");
+    expect(receipt.status).toBe("local-only");
     expect(receipt.detail).toContain("someone-else");
     expect(isUsableReceipt(receipt)).toBe(true);
+    // The recording is durable: the outbox row + its local audit row exist.
+    const outboxRow = await harness.testDb.db.query<{ id: string; status: string }>(
+      `SELECT id, status FROM action_outbox WHERE user_id = $1 AND connector_id = 'someone-else'`,
+      ["wfx-api-test-user"],
+    );
+    expect(outboxRow).toHaveLength(1);
+    expect(outboxRow[0]!.status).toBe("pending");
+    const auditRow = await harness.testDb.db.query<{ id: string }>(
+      `SELECT a.id FROM action_audit a WHERE a.outbox_record_id = $1`,
+      [outboxRow[0]!.id],
+    );
+    expect(auditRow).toHaveLength(1);
   });
 });
 
@@ -602,6 +620,11 @@ describe("degradation mappings — the DB is killed (reads []/null, receipts fai
   });
 
   it("write receipts degrade to failed (200, the client's own transport shape)", async () => {
+    // R15: the actions route records FIRST — with the DB down the RECORDING
+    // itself fails (the degradation family), so the action is NOT recorded
+    // and the honest answer is the failed receipt naming the failure (never
+    // a fabricated success, never a crash). The library write keeps its own
+    // failed-receipt degradation (it has no outbox recording step).
     const actions = await actionsPOST(
       postRequest(
         "/experience/actions",
@@ -612,7 +635,7 @@ describe("degradation mappings — the DB is killed (reads []/null, receipts fai
     expect(actions.status).toBe(200);
     const receipt = (await json(actions)) as ActionReceipt;
     expect(receipt.status).toBe("failed");
-    expect(receipt.detail).toContain("webflix-catalog");
+    expect(receipt.detail).toContain("could not be recorded");
     expect(isUsableReceipt(receipt)).toBe(true);
 
     const library = await libraryPOST(

@@ -37,8 +37,9 @@
  *    (attempts = the count AFTER the increment), capped at `maxDelayMs`.
  *    At the attempts cap (default 5) the record settles `failed` with an
  *    `exhausted` cause that preserves the last underlying error.
- * 5. AUDIT: every transition appends a `SyncLog` entry — timestamped at the
- *    tick's effective time, old-state → new-state, cause, attempt count.
+ * 5. AUDIT: every transition appends a `SyncAuditLog` entry — timestamped at the
+ *    tick's effective time, old-state → new-state, cause, attempt count
+ *    (the durable implementation persists every append; see SyncAuditLog).
  *
  * Routing gaps (connector not registered, no driver wired) are typed
  * retryable `wiring` failures bounded by the attempts cap — never silent
@@ -60,9 +61,9 @@ import { isIso8601, isRecord, previewValue } from "@wfx/domain";
 import type { ConnectorError, ConnectorRegistry, ConnectorResult } from "@wfx/connectors";
 import { describeConnectorError } from "@wfx/connectors";
 
-import { ActionSyncError } from "./outbox";
+import { ActionSyncError, OutboxStateError } from "./outbox";
 import type {
-  ActionOutbox,
+  ActionOutboxStore,
   Clock,
   OutboxFailureCause,
   OutboxRecord,
@@ -122,14 +123,32 @@ export interface SyncLogEntry {
 }
 
 /**
- * The append-only audit trail of every dispatcher transition. Entries are
- * frozen on append; `entries()` returns the chronological sequence.
+ * The audit-trail contract (R15): the append-only log of every dispatcher
+ * transition. Async because the DURABLE implementation persists every
+ * append (`@wfx/persistence`'s `PostgresSyncLog`); the in-memory `SyncLog`
+ * below implements the same interface for tests and edge runtimes.
  */
-export class SyncLog {
+export interface SyncAuditLog {
+  /** Append one audited transition (durable implementations persist it). */
+  append(entry: SyncLogEntry): Promise<void>;
+  /** Every entry, in append order. */
+  entries(): Promise<readonly SyncLogEntry[]>;
+  /** The entries of one record, in append order. */
+  forRecord(recordId: string): Promise<readonly SyncLogEntry[]>;
+  /** Number of entries. */
+  size(): Promise<number>;
+}
+
+/**
+ * The in-memory `SyncAuditLog` implementation: entries are frozen on
+ * append; `entries()` returns the chronological sequence. The dispatcher
+ * treats it exactly like the durable log (the one-interface law).
+ */
+export class SyncLog implements SyncAuditLog {
   private readonly entries_: SyncLogEntry[] = [];
 
   /** Append one audited transition (frozen snapshot). */
-  append(entry: SyncLogEntry): void {
+  async append(entry: SyncLogEntry): Promise<void> {
     this.entries_.push(
       Object.freeze({
         ...entry,
@@ -138,17 +157,17 @@ export class SyncLog {
   }
 
   /** Every entry, in append order. */
-  entries(): readonly SyncLogEntry[] {
+  async entries(): Promise<readonly SyncLogEntry[]> {
     return [...this.entries_];
   }
 
   /** The entries of one record, in append order. */
-  forRecord(recordId: string): SyncLogEntry[] {
+  async forRecord(recordId: string): Promise<readonly SyncLogEntry[]> {
     return this.entries_.filter((entry) => entry.recordId === recordId);
   }
 
   /** Number of entries. */
-  size(): number {
+  async size(): Promise<number> {
     return this.entries_.length;
   }
 }
@@ -255,8 +274,8 @@ function contextFor(record: OutboxRecord): ConnectorContext {
 
 /** Constructor options for {@link SyncDispatcher}. */
 export interface SyncDispatcherOptions {
-  /** The outbox being drained (the transactional record store). */
-  readonly outbox: ActionOutbox;
+  /** The outbox being drained (the transactional record store — in-memory or durable). */
+  readonly outbox: ActionOutboxStore;
   /** The WFX-012 connector registry — the capability truth for routing. */
   readonly registry: ConnectorRegistry;
   /**
@@ -269,7 +288,7 @@ export interface SyncDispatcherOptions {
   /** Partial overrides of the default retry policy. */
   readonly retry?: Partial<RetryPolicy>;
   /** An externally owned audit log (defaults to a fresh `SyncLog`). */
-  readonly log?: SyncLog;
+  readonly log?: SyncAuditLog;
 }
 
 /**
@@ -278,10 +297,10 @@ export interface SyncDispatcherOptions {
  * with deterministic exponential backoff, and audits every transition.
  */
 export class SyncDispatcher {
-  readonly log: SyncLog;
+  readonly log: SyncAuditLog;
   readonly retryPolicy: RetryPolicy;
 
-  private readonly outbox: ActionOutbox;
+  private readonly outbox: ActionOutboxStore;
   private readonly registry: ConnectorRegistry;
   private readonly resolveDriver: (connectorId: string) => SyncDriver | undefined;
   private readonly clock: Clock;
@@ -292,7 +311,7 @@ export class SyncDispatcher {
     }
     const problems: string[] = [];
     if (!isRecord(options.outbox)) {
-      problems.push("options.outbox: expected an ActionOutbox instance");
+      problems.push("options.outbox: expected an ActionOutboxStore instance");
     }
     if (!isRecord(options.registry)) {
       problems.push("options.registry: expected a ConnectorRegistry instance");
@@ -322,7 +341,7 @@ export class SyncDispatcher {
       );
     }
     if (options.log !== undefined && !isRecord(options.log)) {
-      problems.push("options.log: expected a SyncLog instance when provided");
+      problems.push("options.log: expected a SyncAuditLog instance when provided");
     }
     if (problems.length > 0) throw new ActionSyncError(problems);
 
@@ -338,8 +357,12 @@ export class SyncDispatcher {
    * Drain every due record once. `now` — the tick's effective time for due
    * selection, backoff base, and audit timestamps — defaults to the
    * injected clock. Returns the per-record outcomes; a driver-side failure
-   * never aborts the loop (outbox invariant violations do — they are
-   * programmer errors and stay loud).
+   * never aborts the loop. A SUPERSEDED-CLAIM race (a concurrent worker
+   * claimed/settled the record between this tick's `due()` read and its
+   * transition — possible only against the durable store) is caught,
+   * audited, and reported as a superseded outcome: the other worker's
+   * settlement is the truth (at-least-once). Any OTHER outbox invariant
+   * violation stays loud (programmer errors).
    */
   async tick(now: number = this.clock.now()): Promise<TickReport> {
     if (!Number.isFinite(now)) {
@@ -347,7 +370,7 @@ export class SyncDispatcher {
         `now: expected a finite epoch-milliseconds number, got ${previewValue(now)}`,
       );
     }
-    const dueRecords = this.outbox.due(now);
+    const dueRecords = await this.outbox.due(now);
     const outcomes: TickRecordOutcome[] = [];
     for (const record of dueRecords) {
       outcomes.push(await this.dispatchRecord(record, now));
@@ -358,6 +381,47 @@ export class SyncDispatcher {
   // --- one record ------------------------------------------------------------
 
   private async dispatchRecord(
+    record: OutboxRecord,
+    now: number,
+  ): Promise<TickRecordOutcome> {
+    const from = record.status;
+    try {
+      return await this.dispatchClaimedRecord(record, now);
+    } catch (thrown) {
+      if (thrown instanceof OutboxStateError) {
+        // A concurrent worker claimed or settled this record between this
+        // tick's `due()` read and the transition — the durable store's
+        // guarded update affected zero rows. The other worker's settlement
+        // is the truth; audit the supersession honestly and move on
+        // (at-least-once, exactly the event-outbox relay's documented
+        // semantics). Never faked as success, never a crash.
+        const current = await this.outbox.get(record.id);
+        const to = current?.status ?? from;
+        const attempt = current?.attempts ?? record.attempts;
+        const cause = `superseded by a concurrent dispatch: ${thrown.message}`;
+        await this.log.append({
+          timestamp: isoOf(now),
+          recordId: record.id,
+          idempotencyKey: record.idempotencyKey,
+          from,
+          to,
+          attempt,
+          cause,
+        });
+        return {
+          recordId: record.id,
+          idempotencyKey: record.idempotencyKey,
+          from,
+          to,
+          attempt,
+          cause,
+        };
+      }
+      throw thrown;
+    }
+  }
+
+  private async dispatchClaimedRecord(
     record: OutboxRecord,
     now: number,
   ): Promise<TickRecordOutcome> {
@@ -374,18 +438,18 @@ export class SyncDispatcher {
         capability: record.action.type,
         detail: `connector '${record.connectorId}' does not declare '${record.action.type}'`,
       };
-      const updated = this.outbox.markUnsupported(record.id, cause);
+      const updated = await this.outbox.markUnsupported(record.id, cause);
       const text = describeSyncCause(cause);
-      this.logTransition(now, from, updated, `capability gate: ${text}`);
+      await this.logTransition(now, from, updated, `capability gate: ${text}`);
       return this.finish(from, updated, `unsupported: ${text}`);
     }
 
     // Claim the record for this dispatch attempt.
-    const inFlight = this.outbox.beginAttempt(record.id);
-    this.logTransition(now, from, inFlight, `dispatch attempt ${inFlight.attempts}`);
+    const inFlight = await this.outbox.beginAttempt(record.id);
+    await this.logTransition(now, from, inFlight, `dispatch attempt ${inFlight.attempts}`);
 
     if (connector === undefined) {
-      return this.retryOrExhaust(from, inFlight, {
+      return await this.retryOrExhaust(from, inFlight, {
         kind: "wiring",
         detail: `connector '${record.connectorId}' is not registered (no live instance)`,
       }, now);
@@ -393,7 +457,7 @@ export class SyncDispatcher {
 
     const driver = this.resolveDriver(record.connectorId);
     if (driver === undefined) {
-      return this.retryOrExhaust(from, inFlight, {
+      return await this.retryOrExhaust(from, inFlight, {
         kind: "wiring",
         detail: `no sync driver wired for connector '${record.connectorId}'`,
       }, now);
@@ -406,27 +470,28 @@ export class SyncDispatcher {
       attempt: inFlight.attempts,
       ctx: contextFor(inFlight),
       action: inFlight.action,
+      ...(inFlight.profileId !== undefined ? { profileId: inFlight.profileId } : {}),
     };
 
     let result: ConnectorResult<ActionReceipt>;
     try {
       result = await driver.execute(request);
     } catch (thrown) {
-      return this.retryOrExhaust(from, inFlight, {
+      return await this.retryOrExhaust(from, inFlight, {
         kind: "driver",
         detail: `driver threw: ${describeThrownValue(thrown)}`,
       }, now);
     }
-    return this.applyResult(from, inFlight, result, now);
+    return await this.applyResult(from, inFlight, result, now);
   }
 
   /** Map a driver result (the SDK convention) onto the outbox state machine. */
-  private applyResult(
+  private async applyResult(
     from: OutboxStatus,
     inFlight: OutboxRecord,
     result: ConnectorResult<ActionReceipt>,
     now: number,
-  ): TickRecordOutcome {
+  ): Promise<TickRecordOutcome> {
     if (result.ok) {
       const receipt = result.value;
       if (!isUsableReceipt(receipt)) {
@@ -434,37 +499,37 @@ export class SyncDispatcher {
           kind: "driver",
           detail: `driver returned a malformed ActionReceipt: ${previewValue(receipt)}`,
         };
-        const updated = this.outbox.markFailed(inFlight.id, cause);
+        const updated = await this.outbox.markFailed(inFlight.id, cause);
         const text = describeSyncCause(cause);
-        this.logTransition(now, "in-flight", updated, text);
+        await this.logTransition(now, "in-flight", updated, text);
         return this.finish(from, updated, text);
       }
       switch (receipt.status) {
         case "confirmed": {
-          const updated = this.outbox.markDelivered(inFlight.id, receipt, now);
+          const updated = await this.outbox.markDelivered(inFlight.id, receipt, now);
           const text =
             receipt.externalId === undefined
               ? "receipt confirmed"
               : `receipt confirmed (externalId '${receipt.externalId}')`;
-          this.logTransition(now, "in-flight", updated, text);
+          await this.logTransition(now, "in-flight", updated, text);
           return this.finish(from, updated, text);
         }
         case "local-only": {
           const cause: OutboxFailureCause = { kind: "receipt", receipt };
-          const updated = this.outbox.markConflict(inFlight.id, cause);
+          const updated = await this.outbox.markConflict(inFlight.id, cause);
           const text = describeSyncCause(cause);
-          this.logTransition(now, "in-flight", updated, text);
+          await this.logTransition(now, "in-flight", updated, text);
           return this.finish(from, updated, text);
         }
         case "unsupported": {
           const cause: OutboxFailureCause = { kind: "receipt", receipt };
-          const updated = this.outbox.markUnsupported(inFlight.id, cause);
+          const updated = await this.outbox.markUnsupported(inFlight.id, cause);
           const text = describeSyncCause(cause);
-          this.logTransition(now, "in-flight", updated, text);
+          await this.logTransition(now, "in-flight", updated, text);
           return this.finish(from, updated, text);
         }
         case "failed": {
-          return this.retryOrExhaust(from, inFlight, { kind: "receipt", receipt }, now);
+          return await this.retryOrExhaust(from, inFlight, { kind: "receipt", receipt }, now);
         }
       }
     }
@@ -472,29 +537,29 @@ export class SyncDispatcher {
     const error: ConnectorError = result.error;
     if (error.kind === "unsupported") {
       const cause: OutboxFailureCause = { kind: "connector-error", error };
-      const updated = this.outbox.markUnsupported(inFlight.id, cause);
+      const updated = await this.outbox.markUnsupported(inFlight.id, cause);
       const text = describeConnectorError(error);
-      this.logTransition(now, "in-flight", updated, text);
+      await this.logTransition(now, "in-flight", updated, text);
       return this.finish(from, updated, text);
     }
     if (error.kind === "transport" || error.kind === "unauthorized") {
-      return this.retryOrExhaust(from, inFlight, { kind: "connector-error", error }, now);
+      return await this.retryOrExhaust(from, inFlight, { kind: "connector-error", error }, now);
     }
     // invalid-input: retrying identical bytes can never succeed.
     const cause: OutboxFailureCause = { kind: "connector-error", error };
-    const updated = this.outbox.markFailed(inFlight.id, cause);
+    const updated = await this.outbox.markFailed(inFlight.id, cause);
     const text = describeConnectorError(error);
-    this.logTransition(now, "in-flight", updated, text);
+    await this.logTransition(now, "in-flight", updated, text);
     return this.finish(from, updated, text);
   }
 
   /** Schedule the deterministic backoff retry, or settle exhausted at the cap. */
-  private retryOrExhaust(
+  private async retryOrExhaust(
     from: OutboxStatus,
     inFlight: OutboxRecord,
     cause: OutboxFailureCause,
     now: number,
-  ): TickRecordOutcome {
+  ): Promise<TickRecordOutcome> {
     const causeText = describeSyncCause(cause);
     if (inFlight.attempts >= this.retryPolicy.maxAttempts) {
       const exhausted: OutboxFailureCause = {
@@ -502,27 +567,27 @@ export class SyncDispatcher {
         attempts: inFlight.attempts,
         lastCause: causeText,
       };
-      const updated = this.outbox.markFailed(inFlight.id, exhausted);
+      const updated = await this.outbox.markFailed(inFlight.id, exhausted);
       const text = describeSyncCause(exhausted);
-      this.logTransition(now, "in-flight", updated, text);
+      await this.logTransition(now, "in-flight", updated, text);
       return this.finish(from, updated, text);
     }
     const delayMs = backoffDelayMs(this.retryPolicy, inFlight.attempts);
-    const updated = this.outbox.scheduleRetry(inFlight.id, cause, delayMs, now);
+    const updated = await this.outbox.scheduleRetry(inFlight.id, cause, delayMs, now);
     const text = `retryable failure (${causeText}); retry scheduled in ${delayMs}ms`;
-    this.logTransition(now, "in-flight", updated, text);
+    await this.logTransition(now, "in-flight", updated, text);
     return this.finish(from, updated, text);
   }
 
   // --- plumbing ----------------------------------------------------------------
 
-  private logTransition(
+  private async logTransition(
     now: number,
     from: OutboxStatus,
     after: OutboxRecord,
     cause: string,
-  ): void {
-    this.log.append({
+  ): Promise<void> {
+    await this.log.append({
       timestamp: isoOf(now),
       recordId: after.id,
       idempotencyKey: after.idempotencyKey,
@@ -533,7 +598,11 @@ export class SyncDispatcher {
     });
   }
 
-  private finish(from: OutboxStatus, updated: OutboxRecord, cause: string): TickRecordOutcome {
+  private finish(
+    from: OutboxStatus,
+    updated: OutboxRecord,
+    cause: string,
+  ): TickRecordOutcome {
     return {
       recordId: updated.id,
       idempotencyKey: updated.idempotencyKey,
