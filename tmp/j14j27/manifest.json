@@ -1,0 +1,178 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "9fd479d422bad29aad3271ff286c09b939d7d7af",
+  "branch": "main",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-18T19:21:00.089Z",
+    "finishedAt": "2026-09-18T19:21:14.569Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789759264197)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 2,
+    "encoded": 2,
+    "passed": 2,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J14",
+      "title": "Source connect / reauthorize / disconnect",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source card renders (the runtime's own sources read)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its authorization truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "the chip label (case-insensitive)",
+          "observed": "CONNECTED",
+          "pass": true
+        },
+        {
+          "description": "the source card states its connection truth",
+          "expected": "text of [data-wfx-source-recovery-detail] contains \"This source is connected\"",
+          "observed": "\"This source is connected.\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source offers its typed disconnect action",
+          "expected": "[data-wfx-source-action='disconnect'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no fabricated authorization states render beyond the scripted truth",
+          "expected": "no expired/failed chips while signed in",
+          "observed": "no expired chip",
+          "pass": true
+        },
+        {
+          "description": "no expired source row renders while signed in (never a fabricated state)",
+          "expected": "[data-wfx-source-auth-state='expired'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the sources section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=sources'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=model'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the general section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=general'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "/tmp/j14j27/j14-source-management.png",
+        "/tmp/j14j27/j14-source-connect-reauthorize-disconnect.snapshot.txt",
+        "/tmp/j14j27/j14-source-connect-reauthorize-disconnect.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2975
+    },
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings capability table declares the native media area (the truth table is complete)",
+          "expected": "the native media & torrent acquisition row",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the web adapter declares native media NOT available on Web (capability honesty, never a fake native path)",
+          "expected": "the native row renders the Not-available-on-Web chip",
+          "observed": "declared not available",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers an unscripted item (no acquisition session)",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_2RKD01SGFTXS25FBTVC7CHACNA&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy panel renders its no-session state",
+          "expected": "[data-wfx-acquisition-none] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy note states where native acquisition runs (the honest desktop truth)",
+          "expected": "text of [data-wfx-acquisition-elsewhere] contains \"WebFlix desktop app\"",
+          "observed": "\"You can make this title available offline in the WebFlix desktop app — it downloads and verifies a copy you can watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "no acquisition lifecycle state is fabricated for the web (the constrained truth)",
+          "expected": "[data-wfx-acquisition-state] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "/tmp/j14j27/j27-native-playback.png",
+        "/tmp/j14j27/j27-native-local-media-playback-web-constrained-truth.snapshot.txt",
+        "/tmp/j14j27/j27-native-local-media-playback-web-constrained-truth.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5900
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J14",
+      "kind": "local-only",
+      "note": "The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state."
+    },
+    {
+      "journeyId": "J27",
+      "kind": "desktop-procedure",
+      "note": "Native local media playback (the local range gateway + verified asset replay) is the Desktop path. The web encodes the constrained capability truth (settings table + the desktop-elsewhere note).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): play a verified offline asset from the Library through the native media engine, capture the playback + replay states."
+    }
+  ]
+}

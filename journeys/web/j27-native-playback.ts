@@ -44,7 +44,11 @@ export const j27NativePlayback: Journey = {
     );
 
     // An unscripted item's offline-copy note states the desktop truth.
-    const unscriptedHref = await itemHrefFromSearch(context, "Midnight", "Midnight Scoop");
+    // R17 fix (lead integration): "Midnight Scoop" became a SCRIPTED
+    // acquisition item (the metadata-failure journey) — the honest
+    // no-session note now renders on any UNSCRIPTED item; "Neon Rain"
+    // (fake:short-1, native-capable, unscripted) carries it.
+    const unscriptedHref = await itemHrefFromSearch(context, "Neon", "Neon Rain");
     assert.that("the search surface offers an unscripted item (no acquisition session)", "an item link", unscriptedHref ?? "<absent>", unscriptedHref !== null);
     await goto(context, unscriptedHref ?? "/");
     await assert.visible("[data-wfx-acquisition-none]", "the offline-copy panel renders its no-session state");

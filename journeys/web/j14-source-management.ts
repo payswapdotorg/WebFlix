@@ -42,10 +42,14 @@ export const j14SourceManagement: Journey = {
       "signedIn",
       "the source states its authorization truth (never a fabricated state)",
     );
-    await assert.textContains(
-      "[data-wfx-source-auth-chip='signedIn']",
-      "Connected",
+    // R17 fix (lead integration): the chips render CSS-uppercased — assert
+    // case-insensitively (the J28 law).
+    const j14ChipText = await browser.tryText("[data-wfx-source-auth-chip='signedIn']");
+    assert.that(
       "the signed-in source renders its Connected chip",
+      "the chip label (case-insensitive)",
+      j14ChipText ?? "<element absent>",
+      j14ChipText !== null && j14ChipText.toLowerCase().includes("connected"),
     );
     await assert.textContains(
       "[data-wfx-source-recovery-detail]",
