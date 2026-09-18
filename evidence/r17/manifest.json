@@ -1,0 +1,254 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "60a8e9a270a73d1d3d2b1dad8264ea1c356a9974",
+  "branch": "wfx/r17/recovery-hardening",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-18T18:14:42.135Z",
+    "finishedAt": "2026-09-18T18:15:41.216Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789755285509)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 3,
+    "encoded": 3,
+    "passed": 1,
+    "failed": 2,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the signed-in source renders its Connected chip\n  expected: text of [data-wfx-source-auth-chip='signedIn'] contains \"Connected\"\n  observed: \"CONNECTED\"",
+      "assertions": [
+        {
+          "description": "the search surface offers the item while the source is signed in",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4RR2FZMPD5FDE4YQ9NDCGQK2JN&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the item page offers its play decision while the source is signed in",
+          "expected": "a player link",
+          "observed": "/player?id=wfxitm_4RR2FZMPD5FDE4YQ9NDCGQK2JN&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the scripted source's card renders (the fixtures' own source truth)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its signed-in truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "text of [data-wfx-source-auth-chip='signedIn'] contains \"Connected\"",
+          "observed": "\"CONNECTED\"",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r17/j28-failure.png",
+        "evidence/r17/j28-failure.snapshot.txt",
+        "evidence/r17/j28-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 7787
+    },
+    {
+      "id": "J29",
+      "title": "Network loss / playback recovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM.",
+      "assertions": [
+        {
+          "description": "the offline route renders its self-contained state",
+          "expected": "[data-wfx-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state is announced (role=status)",
+          "expected": "[data-wfx-offline-state] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state says you're offline and the watch progress is safe (specific, honest)",
+          "expected": "the offline + safe-progress truth",
+          "observed": "You're offline\n\nWebFlix needs a connection to load your feeds. Your watch progress is safe — everything you watched while online is already recorded.\n\nTry again",
+          "pass": true
+        },
+        {
+          "description": "the offline state offers its retry action (recoverable)",
+          "expected": "[data-wfx-offline-retry] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline retry control is wired to a real handler",
+          "expected": "a retry handler present",
+          "observed": "wired",
+          "pass": true
+        },
+        {
+          "description": "an unresolvable playback renders its typed failure (never a silent success)",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure is specific (names what failed)",
+          "expected": "text of [data-wfx-error] contains \"Playback could not start\"",
+          "observed": "\"Playback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure offers its recovery path back to the item",
+          "expected": "[data-wfx-surface='player'] a[href*='/item?'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no provider frame renders for a failed session (never a fake stage)",
+          "expected": "[data-wfx-player-frame] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the network-loss item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_497CVN0HMBWM6MSFP02KQ16YD3&connector=fake-source&ref=fake%3Avideo-2&title=Static+Bloom&type=video&duration=600000",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r17/j29-failure.png",
+        "evidence/r17/j29-failure.snapshot.txt",
+        "evidence/r17/j29-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 8362
+    },
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the capability truth table renders every platform area",
+          "expected": "[data-wfx-settings-capabilities] li[data-wfx-capability] matches >= 5",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'storage' capability area",
+          "expected": "a row for 'storage'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'contained browser' capability area",
+          "expected": "a row for 'contained browser'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'native media & torrent acquisition' capability area",
+          "expected": "a row for 'native media & torrent acquisition'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'background work' capability area",
+          "expected": "a row for 'background work'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'sharing' capability area",
+          "expected": "a row for 'sharing'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'notifications' capability area",
+          "expected": "a row for 'notifications'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the native-media area declares itself NOT available on Web (the honest unsupported state — never silent, never faked)",
+          "expected": "the native row carries the unsupported chip",
+          "observed": "unsupported chip present",
+          "pass": true
+        },
+        {
+          "description": "the adapter's own descriptor is stated (the truth the runtime booted on)",
+          "expected": "text of [data-wfx-capability-descriptor] contains \"wfx-web-adapter\"",
+          "observed": "\"Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).\"",
+          "pass": true
+        },
+        {
+          "description": "the descriptor states the platform truth and that a lying bundle cannot boot",
+          "expected": "the re-check law stated",
+          "observed": "Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).",
+          "pass": true
+        },
+        {
+          "description": "the playback surface's like/save render their typed absent notes (unsupported never looks like success)",
+          "expected": "absent like + save notes",
+          "observed": "like, save",
+          "pass": true
+        },
+        {
+          "description": "no settled action state masquerades as provider-confirmed on the playback surface",
+          "expected": "zero settled action states",
+          "observed": "zero",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r17/j30-capability-honesty.png",
+        "evidence/r17/j30-unsupported-capability-honesty.snapshot.txt",
+        "evidence/r17/j30-unsupported-capability-honesty.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 38127
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J28",
+      "kind": "local-only",
+      "note": "The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    }
+  ]
+}
