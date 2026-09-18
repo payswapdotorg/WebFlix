@@ -145,3 +145,88 @@ Workers must not mark a journey complete from unit tests alone.
 ## Release threshold
 
 Release acceptance requires J01–J20, J26, J28–J32 to pass on the Web adapter and the corresponding applicable Desktop journeys to pass. J21–J25 and J27 must pass on the production Desktop native-media path before the torrent/native-media milestone is accepted.
+
+## Journey automation and evidence procedure (R16, appended 2026-09-18)
+
+The journey definitions above are FROZEN. This section appends the
+automation/evidence procedure that executes them — it never modifies a
+journey's definition.
+
+### The harness (`journeys/`)
+
+The reusable agent-browser harness lives in `journeys/` (self-contained;
+it imports nothing from any `@wfx` package — journeys consume the running
+product as a user, per the layering law):
+
+- `bun run journeys:web` — boot the product (its documented deterministic
+  fixtures mode: `WFX_DEV_FIXTURES=1`, `next dev -p 3101`) and run every
+  encoded journey; exit code 1 on ANY journey failure (these are checks,
+  not theater — every assertion binds to this document's expected states).
+- `bun run journeys:ci` — the CI configuration (the same encoded set).
+- `bun run journeys:list` — the catalog.
+- `bun journeys/runner.ts --filter J01,J21` — a subset (the scripted
+  acquisition chain J21→J24+J26 is order-dependent: a filter must include
+  the full chain or none of it — the runner enforces this loudly).
+
+Every run: resets the scripted-acquisition drive state (J21–J26 assert the
+lifecycle from step 0), launches one isolated browser session with a fixed
+1280×800 viewport, network-blocks the fixture provider URLs
+(`fixture.invalid` — deterministic instant failure, never DNS flakiness),
+executes the browser-validation protocol per navigation (`open → wait
+--load networkidle → snapshot -i`), and captures per-journey screenshots,
+snapshots, narrations, failure evidence, and uncaught page errors.
+
+### Encoded vs. not-run (the honesty law)
+
+The Web journey set is encoded in `journeys/web/` (J01–J27, J29–J32 — the
+journeys the deterministic web-fixture boot can exercise, including the
+J21–J26 limited-status surfaces and the J27 constrained truth). A journey
+this configuration cannot execute — or cannot fully exercise — is
+EXPLICITLY LISTED in the run manifest (`journeys/web/index.ts`'s
+limitations) with its reason and its exact local/Desktop procedure.
+Never a silent skip. As of R16's delivery:
+
+- J28 (credential expiry/recovery) is not-run on the web fixtures boot —
+  the auth flows are the service-side source-management lane; the manifest
+  carries the service-mode procedure.
+- J09's external-rung WIN, J12's cross-device fold, J14's connect round
+  trips, J15–J18's service-side policy surfaces, J19/J20's model/transform
+  operations are configuration-limited or local-only: the reachable truths
+  are encoded; the rest carry procedures.
+- J21/J23/J24/J25/J27's native protocol paths carry the Desktop equivalent
+  evidence procedure (`journeys/desktop/README.md`).
+- J31's desktop-side comparison is the lead's parity procedure; the
+  web-side parity anchors are encoded.
+
+### Evidence
+
+Each run writes, under `evidence/rNN/` (the rNN convention):
+`manifest.json` (schema `wfx-journey-manifest/1` — commit, environment,
+determinism notes, per-journey id/status/assertions/artifacts/page-errors,
+and the explicit limitations listing) plus `summary.md` and the
+screenshots/snapshots/narrations per journey. The evidence is committed
+with the delivery (`evidence/r16/` is R16's run); the CI job uploads the
+same tree as an artifact.
+
+### CI
+
+The `journeys` job in `.github/workflows/ci.yml` runs after `verify`:
+installs agent-browser (+ browser), runs `bun run journeys:ci`, and fails
+on any journey regression. The CI-feasible set is the full encoded set
+(zero external network: the deterministic fixtures boot only; the
+service-mode journeys are local-only and listed as such in every
+manifest).
+
+### Desktop native-only equivalent evidence
+
+`journeys/desktop/README.md` is the binding procedure for the
+native-only journeys (and the native halves of the "Limited status UX"
+web journeys): run the Desktop product with the native-media engine
+(production path — no `stubEngine()`), attach automation where the
+webview allows (`agent-browser connect` on a CDP-capable webview, or the
+platform's instrumentation), drive the real lifecycle, and capture the
+same state grammar (`data-wfx-acquisition-*` / the
+`AcquisitionStatusView` vocabulary) with per-state screenshots and the
+same manifest format. J21–J25 and J27 must pass there before the
+torrent/native-media milestone is accepted (the release threshold
+above).

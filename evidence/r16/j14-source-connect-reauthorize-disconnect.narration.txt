@@ -1,0 +1,1 @@
+- the settings sources section rendered the typed no-sources state with the never-pretend note (the connect/reauthorize/disconnect round trips are the service-mode local-only procedure — listed)

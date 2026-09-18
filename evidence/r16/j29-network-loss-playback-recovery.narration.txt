@@ -1,0 +1,1 @@
+- the offline route rendered its honest state with a wired retry; the unresolvable playback rendered a specific typed failure with a recovery path

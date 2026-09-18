@@ -9,11 +9,14 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p journeys/tsconfig.json",
     "test": "bun test --parallel=2",
     "contract-check": "node scripts/check-contracts.mjs",
     "lane-check": "node scripts/check-lanes.mjs",
     "scaffold": "node scripts/scaffold.mjs",
+    "journeys:web": "bun journeys/runner.ts",
+    "journeys:ci": "bun journeys/runner.ts --ci",
+    "journeys:list": "bun journeys/runner.ts --list",
     "ci": "bun run lint && bun run typecheck && bun run test && bun run contract-check && bun run lane-check"
   },
   "devDependencies": {
