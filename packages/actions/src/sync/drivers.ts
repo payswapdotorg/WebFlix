@@ -59,6 +59,14 @@ export interface SyncActionRequest {
   readonly ctx: ConnectorContext;
   /** The frozen `UserAction` to execute. */
   readonly action: UserAction;
+  /**
+   * R15: the record's profile attribution (the recording session's active
+   * profile) — present when the action was recorded by a profile-scoped
+   * session. Drivers whose executor exposes the profile-aware surface
+   * route through it (R02 semantics: a save lands in THAT profile's
+   * library); plain drivers ignore it.
+   */
+  readonly profileId?: string;
 }
 
 /**
@@ -81,11 +89,24 @@ export interface SyncDriver {
  * Satisfied by every `BaseConnector` (the compile-time assertion below
  * proves it); a structural seam, so exotic connectors that expose the same
  * typed method also plug in without extending the class.
+ *
+ * R15: the OPTIONAL profile-aware surface. An executor that also exposes
+ * `executeActionResultForProfile` (an app-level adapter over an R02
+ * profile-scoped source, e.g. the service fan-out's
+ * `executeActionForProfile` presented in the typed convention) has it
+ * PREFERRED whenever the dispatch request carries a `profileId` — the
+ * recorded action settles against the same profile that recorded it.
  */
 export interface TypedActionExecutor {
   descriptor(): ConnectorDescriptor;
   executeActionResult(
     ctx: ConnectorContext,
+    action: UserAction,
+  ): Promise<ConnectorResult<ActionReceipt>>;
+  /** Optional R02 profile-scoped surface — preferred when the request carries a profileId. */
+  executeActionResultForProfile?(
+    ctx: ConnectorContext,
+    profileId: string,
     action: UserAction,
   ): Promise<ConnectorResult<ActionReceipt>>;
 }
@@ -100,10 +121,24 @@ type _BaseConnectorIsTypedActionExecutor = AssertSatisfiesTypedActionExecutor<Ba
  * connector). This adapter adds no I/O, no timeouts, and no retries of its
  * own: the outbox owns retry policy. Lifecycle errors thrown by the
  * connector propagate to the dispatcher's typed driver-failure path.
+ *
+ * R15: when the dispatch request carries a `profileId` AND the executor
+ * exposes the profile-aware typed surface, THAT surface is used (R02
+ * profile attribution preserved through the sync lane).
  */
 export function createConnectorDriver(executor: TypedActionExecutor): SyncDriver {
   return {
     async execute(request: SyncActionRequest): Promise<ConnectorResult<ActionReceipt>> {
+      if (
+        request.profileId !== undefined &&
+        executor.executeActionResultForProfile !== undefined
+      ) {
+        return executor.executeActionResultForProfile(
+          request.ctx,
+          request.profileId,
+          request.action,
+        );
+      }
       return executor.executeActionResult(request.ctx, request.action);
     },
   };

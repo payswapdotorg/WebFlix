@@ -139,7 +139,10 @@ export type OutboxFailureCause =
  * A user action to record in the outbox. The identity fields (userId,
  * connectorId, action verb, externalRef, clientRequestToken) feed the
  * idempotency key; `locale`/`region` rebuild the frozen `ConnectorContext`
- * at dispatch time; `payload` is the action's optional argument.
+ * at dispatch time; `payload` is the action's optional argument;
+ * `profileId` (R15) is the R02-style profile attribution — the profile the
+ * action belongs to (a session's active profile); `undefined` = anonymous
+ * (the persistence layer resolves the default-profile fallback per store).
  */
 export interface OutboxEntry {
   readonly userId: string;
@@ -150,6 +153,8 @@ export interface OutboxEntry {
   readonly payload?: Record<string, unknown>;
   readonly locale: string;
   readonly region?: string;
+  /** R15: profile attribution (the recording session's active profile). */
+  readonly profileId?: string;
 }
 
 /** The closed `UserAction.type` vocabulary (runtime mirror of the frozen union). */
@@ -180,6 +185,8 @@ export interface OutboxRecord {
   readonly clientRequestToken: string;
   readonly locale: string;
   readonly region?: string;
+  /** R15: profile attribution (the recording session's active profile). */
+  readonly profileId?: string;
   readonly status: OutboxStatus;
   /** How many dispatch attempts have been burned (driver-level or routing). */
   readonly attempts: number;
@@ -339,6 +346,15 @@ function actionFromEntry(entry: OutboxEntry): UserAction {
   };
 }
 
+/**
+ * Field-level validation of one claimed `OutboxEntry`; throws the typed
+ * `ActionSyncError` naming every problem. R15: shared with the SQL-backed
+ * durable store so both implementations enforce the SAME input contract.
+ */
+export function assertValidOutboxEntry(entry: OutboxEntry): void {
+  assertValidEntry(entry);
+}
+
 /** Field-level validation of one claimed `OutboxEntry`; throws `ActionSyncError`. */
 function assertValidEntry(entry: OutboxEntry): void {
   if (!isRecord(entry)) {
@@ -377,12 +393,30 @@ function assertValidEntry(entry: OutboxEntry): void {
   if (entry.region !== undefined && typeof entry.region !== "string") {
     problems.push(`entry.region: expected a string when present, got ${previewValue(entry.region)}`);
   }
+  if (entry.profileId !== undefined && (typeof entry.profileId !== "string" || entry.profileId.trim().length === 0)) {
+    problems.push(
+      `entry.profileId: expected a non-empty string when present, got ${previewValue(entry.profileId)}`,
+    );
+  }
   if (entry.payload !== undefined && !isRecord(entry.payload)) {
     problems.push(
       `entry.payload: expected an object when present, got ${previewValue(entry.payload)}`,
     );
   }
   if (problems.length > 0) throw new ActionSyncError(problems);
+}
+
+/**
+ * Content differences between a stored record and a re-enqueued entry (the
+ * identity fields are equal by construction — they are the key's input).
+ * R15: shared with the SQL-backed durable store so both implementations
+ * answer the SAME typed duplicate/conflict distinction.
+ */
+export function outboxContentDifferences(
+  record: OutboxRecord,
+  entry: OutboxEntry,
+): readonly string[] {
+  return contentDifferences(record, entry);
 }
 
 /**
@@ -399,6 +433,11 @@ function contentDifferences(record: OutboxRecord, entry: OutboxEntry): string[] 
   if (recordRegion !== entryRegion) {
     differences.push(`region: '${recordRegion}' vs '${entryRegion}'`);
   }
+  const recordProfile = record.profileId ?? "(absent)";
+  const entryProfile = entry.profileId ?? "(absent)";
+  if (recordProfile !== entryProfile) {
+    differences.push(`profileId: '${recordProfile}' vs '${entryProfile}'`);
+  }
   const recordPayload = record.action.payload ?? {};
   const entryPayload = entry.payload ?? {};
   const recordPayloadJson = canonicalJson(recordPayload);
@@ -407,6 +446,80 @@ function contentDifferences(record: OutboxRecord, entry: OutboxEntry): string[] 
     differences.push(`payload: ${recordPayloadJson} vs ${entryPayloadJson}`);
   }
   return differences;
+}
+
+// ---------------------------------------------------------------------------
+// ActionOutboxStore — the durable-store contract (R15)
+// ---------------------------------------------------------------------------
+
+/**
+ * THE STORE CONTRACT (R15): the exact surface the in-memory `ActionOutbox`
+ * and the SQL-backed durable store (`@wfx/persistence`'s
+ * `PostgresActionOutbox`) both implement — one interface, two
+ * interchangeable implementations, the same seam discipline as
+ * `@wfx/persistence`'s `DbClient`.
+ *
+ * Every method is ASYNC: the durable store's answers cross SQL I/O, and a
+ * synchronous interface could not be implemented honestly against it. The
+ * in-memory store keeps its exact semantics under `async` signatures.
+ *
+ * State-machine laws (both implementations enforce them):
+ * - `enqueue` is the transaction boundary: same idempotency key + identical
+ *   content ⇒ typed `duplicate`; same key + different content ⇒ typed
+ *   `conflict` (differences listed). The stored record is never modified,
+ *   never duplicated. The DURABLE store additionally writes the action's
+ *   local audit row INSIDE the same enqueue transaction — the local-first
+ *   recording law (a durable outbox row never exists without its audit
+ *   row).
+ * - `due(now)` is the worker's claim query: `pending` records whose
+ *   `nextAttemptAt` is past `now`, plus `in-flight` records past their
+ *   claim-staleness window (crash recovery). The in-memory store treats
+ *   every past-due `in-flight` record as due (single-process); the durable
+ *   store uses its configured staleness window so a LIVE worker's claim is
+ *   never stolen (multi-worker safety), only a crashed one's.
+ * - transitions enforce the closed status graph; an illegal transition (or
+ *   unknown record id) throws the typed `OutboxStateError` — the
+ *   programmer-error channel, kept loud rather than faked. The durable
+ *   store throws the SAME error when a guarded UPDATE affects zero rows
+ *   (the record was superseded by a concurrent worker — the dispatcher
+ *   catches this one race and audits it, see dispatch.ts).
+ */
+export interface ActionOutboxStore {
+  /** Record one user action (the transaction boundary — see the interface docs). */
+  enqueue(entry: OutboxEntry): Promise<EnqueueResult>;
+  /**
+   * The dispatch-window claim query: records a worker may attempt now.
+   * Pure in `now`; ordered by `(nextAttemptAt, id)`; the durable store
+   * bounds the result by its configured `dueLimit`.
+   */
+  due(now: number): Promise<readonly OutboxRecord[]>;
+  /** The record stored under `id`, if any (a frozen snapshot). */
+  get(id: string): Promise<OutboxRecord | undefined>;
+  /** The record stored under the idempotency key, if any. */
+  getByIdempotencyKey(key: string): Promise<OutboxRecord | undefined>;
+  /**
+   * All records, in enqueue order. The durable store bounds this by its
+   * configured `allLimit` (newest first is NOT the order — enqueue order
+   * is, matching the in-memory store).
+   */
+  all(): Promise<readonly OutboxRecord[]>;
+  /** Claim a record for a dispatch attempt: pending/stale-in-flight → in-flight, attempts++. */
+  beginAttempt(id: string): Promise<OutboxRecord>;
+  /** Release a failed attempt back to pending with the deterministic backoff window. */
+  scheduleRetry(
+    id: string,
+    cause: OutboxFailureCause,
+    delayMs: number,
+    now: number,
+  ): Promise<OutboxRecord>;
+  /** Settle as `delivered` (terminal) — requires a `confirmed` receipt. */
+  markDelivered(id: string, receipt: ActionReceipt, now: number): Promise<OutboxRecord>;
+  /** Settle as `unsupported` (terminal) — never a fabricated receipt. */
+  markUnsupported(id: string, cause: OutboxFailureCause): Promise<OutboxRecord>;
+  /** Settle as `conflict` (terminal) — a `local-only` receipt answer. */
+  markConflict(id: string, cause: OutboxFailureCause): Promise<OutboxRecord>;
+  /** Settle as `failed` (terminal) — the typed cause is stored. */
+  markFailed(id: string, cause: OutboxFailureCause): Promise<OutboxRecord>;
 }
 
 // ---------------------------------------------------------------------------
@@ -428,8 +541,14 @@ export interface ActionOutboxOptions {
  * accepts only `confirmed` receipts, `markConflict` only receipt-caused
  * conflicts carrying a `local-only` receipt, and `markUnsupported` never
  * stores a receipt whose status contradicts the terminal answer.
+ *
+ * R15: this class implements {@link ActionOutboxStore} — the SAME contract
+ * the SQL-backed durable store implements; the dispatcher drives either
+ * through the one interface. In-memory, `enqueue` is the transaction
+ * boundary by construction; the durable store makes it a real SQL
+ * transaction (outbox row + local audit row commit together).
  */
-export class ActionOutbox {
+export class ActionOutbox implements ActionOutboxStore {
   private readonly clock: Clock;
   private readonly records = new Map<string, OutboxRecord>();
   private readonly idsByKey = new Map<IdempotencyKey, string>();
@@ -456,7 +575,7 @@ export class ActionOutbox {
    * or the typed `conflict` marker (different content, differences listed).
    * The stored record is never modified or duplicated.
    */
-  enqueue(entry: OutboxEntry): EnqueueResult {
+  async enqueue(entry: OutboxEntry): Promise<EnqueueResult> {
     assertValidEntry(entry);
     const key = idempotencyKeyFor(entry);
     const existingId = this.idsByKey.get(key);
@@ -483,6 +602,7 @@ export class ActionOutbox {
       clientRequestToken: entry.clientRequestToken,
       locale: entry.locale,
       ...(entry.region !== undefined ? { region: entry.region } : {}),
+      ...(entry.profileId !== undefined ? { profileId: entry.profileId } : {}),
       status: "pending" as const,
       attempts: 0,
       nextAttemptAt: nowIso,
@@ -497,7 +617,7 @@ export class ActionOutbox {
    * Records claiming a dispatch window: `pending`/`in-flight` records whose
    * `nextAttemptAt` is past `now`. Pure in `now`; insertion-ordered.
    */
-  due(now: number): OutboxRecord[] {
+  async due(now: number): Promise<readonly OutboxRecord[]> {
     if (!Number.isFinite(now)) {
       throw new ActionSyncError(
         `now: expected a finite epoch-milliseconds number, got ${previewValue(now)}`,
@@ -517,18 +637,18 @@ export class ActionOutbox {
   }
 
   /** The record stored under `id`, if any. */
-  get(id: string): OutboxRecord | undefined {
+  async get(id: string): Promise<OutboxRecord | undefined> {
     return this.records.get(id);
   }
 
   /** The record stored under the idempotency key, if any. */
-  getByIdempotencyKey(key: string): OutboxRecord | undefined {
+  async getByIdempotencyKey(key: string): Promise<OutboxRecord | undefined> {
     const id = this.idsByKey.get(key as IdempotencyKey);
     return id === undefined ? undefined : this.records.get(id);
   }
 
   /** All records, in enqueue order. */
-  all(): OutboxRecord[] {
+  async all(): Promise<readonly OutboxRecord[]> {
     return [...this.records.values()];
   }
 
@@ -540,7 +660,7 @@ export class ActionOutbox {
    * records left `in-flight` by a dead worker. `nextAttemptAt` is left
    * untouched — the retry scheduler is the only writer of dispatch windows.
    */
-  beginAttempt(id: string): OutboxRecord {
+  async beginAttempt(id: string): Promise<OutboxRecord> {
     return this.replace(id, "beginAttempt", (current) => {
       this.assertTransition(current, "beginAttempt", ["pending", "in-flight"]);
       return { ...current, status: "in-flight", attempts: current.attempts + 1 };
@@ -552,7 +672,12 @@ export class ActionOutbox {
    * `now + delayMs` (the dispatcher's deterministic backoff) and the typed
    * cause is recorded.
    */
-  scheduleRetry(id: string, cause: OutboxFailureCause, delayMs: number, now: number): OutboxRecord {
+  async scheduleRetry(
+    id: string,
+    cause: OutboxFailureCause,
+    delayMs: number,
+    now: number,
+  ): Promise<OutboxRecord> {
     if (!Number.isFinite(delayMs) || delayMs < 0) {
       throw new ActionSyncError(
         `delayMs: expected a finite non-negative number of milliseconds, got ${previewValue(delayMs)}`,
@@ -574,7 +699,7 @@ export class ActionOutbox {
    * receipt — the only honest evidence of external synchronization — and
    * stores it together with `deliveredAt`.
    */
-  markDelivered(id: string, receipt: ActionReceipt, now: number): OutboxRecord {
+  async markDelivered(id: string, receipt: ActionReceipt, now: number): Promise<OutboxRecord> {
     if (receipt.status !== "confirmed") {
       throw new OutboxStateError(
         `markDelivered requires a 'confirmed' receipt, got '${receipt.status}'`,
@@ -598,7 +723,7 @@ export class ActionOutbox {
    * The settlement TIME is audited by the dispatcher's `SyncLog` entry, not
    * duplicated on the record.
    */
-  markUnsupported(id: string, cause: OutboxFailureCause): OutboxRecord {
+  async markUnsupported(id: string, cause: OutboxFailureCause): Promise<OutboxRecord> {
     if (cause.kind === "receipt" && cause.receipt.status !== "unsupported") {
       throw new OutboxStateError(
         `markUnsupported receipt cause must carry an 'unsupported' receipt, got '${cause.receipt.status}'`,
@@ -616,7 +741,7 @@ export class ActionOutbox {
    * Resolution is caller policy — see reconcile.ts. The settlement time is
    * audited by the dispatcher's `SyncLog` entry.
    */
-  markConflict(id: string, cause: OutboxFailureCause): OutboxRecord {
+  async markConflict(id: string, cause: OutboxFailureCause): Promise<OutboxRecord> {
     if (cause.kind === "receipt" && cause.receipt.status !== "local-only") {
       throw new OutboxStateError(
         `markConflict receipt cause must carry a 'local-only' receipt, got '${cause.receipt.status}'`,
@@ -634,7 +759,7 @@ export class ActionOutbox {
    * outcome. The settlement time is audited by the dispatcher's `SyncLog`
    * entry, not duplicated on the record.
    */
-  markFailed(id: string, cause: OutboxFailureCause): OutboxRecord {
+  async markFailed(id: string, cause: OutboxFailureCause): Promise<OutboxRecord> {
     return this.replace(id, "markFailed", (current) => {
       this.assertTransition(current, "markFailed", ["pending", "in-flight"]);
       return { ...current, status: "failed", lastCause: cause };

@@ -10,6 +10,8 @@
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.2.17",
+    "@wfx/actions": "workspace:*",
+    "@wfx/connectors": "workspace:*",
     "@wfx/experience": "workspace:*"
   }
 }

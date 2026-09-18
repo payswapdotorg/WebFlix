@@ -25,6 +25,12 @@
  *                         revocation, typed outcomes)
  * - `outbox.ts`         — the transactional event outbox (write side +
  *                         relay, AT-LEAST-ONCE — see README)
+ * - `action-outbox.ts`  — R15: the durable action outbox (the
+ *                         `@wfx/actions` store contract over migration
+ *                         0011 — transactional enqueue with the local
+ *                         audit row, crash-safe claims, honest states)
+ * - `action-sync-log.ts` — R15: the persisted sync audit trail (the
+ *                         `SyncAuditLog` contract's SQL implementation)
  * - `graph.ts`          — Entertainment Graph tables (items + realizations)
  * - `catalog-connector.ts` — the WebFlix catalog `ConnectorPort` (the
  *                         feed/candidate source seam)
@@ -64,6 +70,11 @@ export * from "./profiles";
 
 // The transactional outbox (domain events).
 export * from "./outbox";
+
+// R15 — the durable action outbox + the persisted sync audit log (the
+// @wfx/actions store contracts' SQL implementations).
+export * from "./action-outbox";
+export * from "./action-sync-log";
 
 // Content: graph + catalog connector + library.
 export * from "./graph";

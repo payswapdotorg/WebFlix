@@ -17,12 +17,14 @@ import {
   REFERENCE_CONNECTOR_ID,
   createReferenceConnector,
   makeStubConnector,
+  okResult,
 } from "@wfx/connectors";
 
 import {
   ActionOutbox,
   ActionSyncError,
   DEFAULT_RETRY_POLICY,
+  OutboxStateError,
   SyncDispatcher,
   SyncLog,
   backoffDelayMs,
@@ -30,12 +32,14 @@ import {
   createFixtureDriver,
   idempotencyKeyFor,
   reconcile,
+  type ActionOutboxStore,
   type EnqueueResult,
   type FixtureScript,
   type OutboxEntry,
   type OutboxRecord,
   type RetryPolicy,
   type SyncDriver,
+  type TypedActionExecutor,
 } from "../src/index";
 
 // ---------------------------------------------------------------------------
@@ -186,8 +190,11 @@ function makeHarness(options: {
 }
 
 /** Enqueue an entry (the outbox clock is at T0), returning the record. */
-function enqueue(outbox: ActionOutbox, input?: Parameters<typeof entry>[0]): OutboxRecord {
-  const result: EnqueueResult = outbox.enqueue(entry(input));
+async function enqueue(
+  outbox: ActionOutbox,
+  input?: Parameters<typeof entry>[0],
+): Promise<OutboxRecord> {
+  const result: EnqueueResult = await outbox.enqueue(entry(input));
   expect(result.outcome).toBe("enqueued");
   return result.record;
 }
@@ -197,10 +204,10 @@ function enqueue(outbox: ActionOutbox, input?: Parameters<typeof entry>[0]): Out
 // ---------------------------------------------------------------------------
 
 describe("ActionOutbox — enqueue and idempotency", () => {
-  it("stamps a deterministic id, idempotency key, pending status, zero attempts, and nextAttemptAt = now", () => {
+  it("stamps a deterministic id, idempotency key, pending status, zero attempts, and nextAttemptAt = now", async () => {
     const clock = new ManualClock(T0);
     const outbox = new ActionOutbox({ clock });
-    const result = outbox.enqueue(entry());
+    const result = await outbox.enqueue(entry());
 
     expect(result.outcome).toBe("enqueued");
     const record = result.record;
@@ -215,18 +222,18 @@ describe("ActionOutbox — enqueue and idempotency", () => {
       connectorId: "sync-src",
       externalRef: "ext:1",
     });
-    expect(outbox.due(T0)).toEqual([record]);
+    expect(await outbox.due(T0)).toEqual([record]);
   });
 
-  it("re-enqueuing the SAME entry returns the SAME record with a typed duplicate marker", () => {
+  it("re-enqueuing the SAME entry returns the SAME record with a typed duplicate marker", async () => {
     const outbox = new ActionOutbox({ clock: new ManualClock(T0) });
-    const first = outbox.enqueue(entry());
-    const second = outbox.enqueue(entry());
+    const first = await outbox.enqueue(entry());
+    const second = await outbox.enqueue(entry());
 
     expect(second.outcome).toBe("duplicate");
     expect(second.record.id).toBe(first.record.id);
     expect(second.record).toBe(first.record);
-    expect(outbox.all()).toHaveLength(1);
+    expect(await outbox.all()).toHaveLength(1);
   });
 
   it("duplicate enqueue never double-delivers: one driver call for two enqueues", async () => {
@@ -237,24 +244,24 @@ describe("ActionOutbox — enqueue and idempotency", () => {
       script: { [key]: { outcome: "ok" } },
     });
 
-    const first = outbox.enqueue(entry());
-    const second = outbox.enqueue(entry());
+    const first = await outbox.enqueue(entry());
+    const second = await outbox.enqueue(entry());
     expect(second.outcome).toBe("duplicate");
 
     const report = await dispatcher.tick(T0);
     expect(report.dueCount).toBe(1);
     expect(driver.calls).toHaveLength(1);
 
-    const record = outbox.get(first.record.id);
+    const record = await outbox.get(first.record.id);
     expect(record?.status).toBe("delivered");
     expect(record?.receipt?.status).toBe("confirmed");
-    expect(outbox.all()).toHaveLength(1);
+    expect(await outbox.all()).toHaveLength(1);
   });
 
-  it("re-enqueue with DIFFERENT content returns a typed conflict marker with differences, record untouched", () => {
+  it("re-enqueue with DIFFERENT content returns a typed conflict marker with differences, record untouched", async () => {
     const outbox = new ActionOutbox({ clock: new ManualClock(T0) });
-    const first = outbox.enqueue(entry());
-    const conflicting = outbox.enqueue(
+    const first = await outbox.enqueue(entry());
+    const conflicting = await outbox.enqueue(
       entry({ payload: { note: "different" }, locale: "de" }),
     );
 
@@ -267,28 +274,30 @@ describe("ActionOutbox — enqueue and idempotency", () => {
       true,
     );
     // The stored record is untouched.
-    expect(outbox.get(first.record.id)?.locale).toBe("en");
-    expect(outbox.all()).toHaveLength(1);
+    expect((await outbox.get(first.record.id))?.locale).toBe("en");
+    expect(await outbox.all()).toHaveLength(1);
   });
 
-  it("idempotency keys separate client request tokens (same action, two requests)", () => {
+  it("idempotency keys separate client request tokens (same action, two requests)", async () => {
     const keyA = idempotencyKeyFor(entry({ clientRequestToken: "req-1" }));
     const keyB = idempotencyKeyFor(entry({ clientRequestToken: "req-2" }));
     expect(keyA).not.toBe(keyB);
 
     const outbox = new ActionOutbox({ clock: new ManualClock(T0) });
-    outbox.enqueue(entry({ clientRequestToken: "req-1" }));
-    outbox.enqueue(entry({ clientRequestToken: "req-2" }));
-    expect(outbox.all()).toHaveLength(2);
+    await outbox.enqueue(entry({ clientRequestToken: "req-1" }));
+    await outbox.enqueue(entry({ clientRequestToken: "req-2" }));
+    expect(await outbox.all()).toHaveLength(2);
   });
 
-  it("rejects malformed entries with the typed invalid-input error", () => {
+  it("rejects malformed entries with the typed invalid-input error", async () => {
     const outbox = new ActionOutbox({ clock: new ManualClock(T0) });
-    expect(() =>
+    await expect(
       outbox.enqueue(entry({ action: "bookmark" as UserAction["type"] })),
-    ).toThrow(ActionSyncError);
-    expect(() => outbox.enqueue(entry({ userId: "  " }))).toThrow(ActionSyncError);
-    expect(() => outbox.enqueue(entry({ clientRequestToken: "" }))).toThrow(ActionSyncError);
+    ).rejects.toThrow(ActionSyncError);
+    await expect(outbox.enqueue(entry({ userId: "  " }))).rejects.toThrow(ActionSyncError);
+    await expect(outbox.enqueue(entry({ clientRequestToken: "" }))).rejects.toThrow(
+      ActionSyncError,
+    );
   });
 });
 
@@ -311,7 +320,7 @@ describe("SyncDispatcher — capability honesty", () => {
 
     const verbs: UserAction["type"][] = ["like", "save", "follow", "comment", "download", "transform"];
     for (const verb of verbs) {
-      const result = outbox.enqueue(entry({ action: verb, connectorId: REFERENCE_CONNECTOR_ID }));
+      const result = await outbox.enqueue(entry({ action: verb, connectorId: REFERENCE_CONNECTOR_ID }));
       expect(result.outcome).toBe("enqueued");
     }
 
@@ -319,7 +328,7 @@ describe("SyncDispatcher — capability honesty", () => {
     expect(report.dueCount).toBe(6);
     expect(report.outcomes.every((outcome) => outcome.to === "unsupported")).toBe(true);
 
-    for (const record of outbox.all()) {
+    for (const record of await outbox.all()) {
       expect(record.status).toBe("unsupported");
       expect(record.attempts).toBe(0);
       expect(record.lastCause?.kind).toBe("unsupported-capability");
@@ -348,7 +357,7 @@ describe("SyncDispatcher — capability honesty", () => {
 
     const verbs: UserAction["type"][] = ["like", "save", "follow", "comment", "download", "transform"];
     for (const verb of verbs) {
-      const result = outbox.enqueue(entry({ action: verb, connectorId: "stub-test" }));
+      const result = await outbox.enqueue(entry({ action: verb, connectorId: "stub-test" }));
       expect(result.outcome).toBe("enqueued");
     }
 
@@ -356,7 +365,7 @@ describe("SyncDispatcher — capability honesty", () => {
     expect(report.dueCount).toBe(6);
     expect(report.outcomes.every((outcome) => outcome.to === "unsupported")).toBe(true);
 
-    for (const record of outbox.all()) {
+    for (const record of await outbox.all()) {
       expect(record.status).toBe("unsupported");
       expect(record.attempts).toBe(0);
       expect(record.lastCause?.kind).toBe("unsupported-capability");
@@ -411,11 +420,11 @@ describe("SyncDispatcher — retries and backoff", () => {
       script: { [key]: { outcome: "retryable-error", reason: "flaky transport" } },
       retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     // Attempt 1 fails at T0 → next attempt at T0 + 100×2^1 = T0+200.
     await dispatcher.tick(T0);
-    let current = outbox.get(record.id);
+    let current = await outbox.get(record.id);
     expect(current?.status).toBe("pending");
     expect(current?.attempts).toBe(1);
     expect(current?.nextAttemptAt).toBe(iso(T0 + 200));
@@ -423,25 +432,25 @@ describe("SyncDispatcher — retries and backoff", () => {
 
     // Attempt 2 fails at T0+200 → next at T0+200 + 100×2^2 = T0+600.
     await dispatcher.tick(T0 + 200);
-    current = outbox.get(record.id);
+    current = await outbox.get(record.id);
     expect(current?.attempts).toBe(2);
     expect(current?.nextAttemptAt).toBe(iso(T0 + 600));
 
     // Attempt 3 fails at T0+600 → next at T0+600 + 100×2^3 = T0+1400.
     await dispatcher.tick(T0 + 600);
-    current = outbox.get(record.id);
+    current = await outbox.get(record.id);
     expect(current?.attempts).toBe(3);
     expect(current?.nextAttemptAt).toBe(iso(T0 + 1400));
 
     // Attempt 4 fails at T0+1400 → next at T0+1400 + 100×2^4 = T0+3000.
     await dispatcher.tick(T0 + 1400);
-    current = outbox.get(record.id);
+    current = await outbox.get(record.id);
     expect(current?.attempts).toBe(4);
     expect(current?.nextAttemptAt).toBe(iso(T0 + 3000));
 
     // Attempt 5 fails at T0+3000 → attempts cap reached → failed-exhausted.
     const finalReport = await dispatcher.tick(T0 + 3000);
-    current = outbox.get(record.id);
+    current = await outbox.get(record.id);
     expect(current?.status).toBe("failed");
     expect(current?.attempts).toBe(5);
     expect(current?.lastCause?.kind).toBe("exhausted");
@@ -464,16 +473,16 @@ describe("SyncDispatcher — retries and backoff", () => {
       script: { [key]: { outcome: "retryable-error" } },
       retry: { maxAttempts: 4, baseDelayMs: 100, maxDelayMs: 300 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0); // delay 100×2^1 = 200 (< cap)
-    expect(outbox.get(record.id)?.nextAttemptAt).toBe(iso(T0 + 200));
+    expect((await outbox.get(record.id))?.nextAttemptAt).toBe(iso(T0 + 200));
 
     await dispatcher.tick(T0 + 200); // delay 100×2^2 = 400 → capped at 300
-    expect(outbox.get(record.id)?.nextAttemptAt).toBe(iso(T0 + 200 + 300));
+    expect((await outbox.get(record.id))?.nextAttemptAt).toBe(iso(T0 + 200 + 300));
 
     await dispatcher.tick(T0 + 500); // delay 100×2^3 = 800 → capped at 300
-    expect(outbox.get(record.id)?.nextAttemptAt).toBe(iso(T0 + 500 + 300));
+    expect((await outbox.get(record.id))?.nextAttemptAt).toBe(iso(T0 + 500 + 300));
 
     // And the pure function agrees.
     const policy: RetryPolicy = { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 300 };
@@ -490,16 +499,16 @@ describe("SyncDispatcher — retries and backoff", () => {
       script: { [key]: { outcome: "retryable-error" } },
       retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0); // fails; next attempt at T0+200
-    expect(outbox.get(record.id)?.attempts).toBe(1);
+    expect((await outbox.get(record.id))?.attempts).toBe(1);
 
     const early = await dispatcher.tick(T0 + 199); // NOT due yet
     expect(early.dueCount).toBe(0);
     expect(early.outcomes).toHaveLength(0);
     expect(driver.calls).toHaveLength(1);
-    expect(dispatcher.log.size()).toBe(2); // pending→in-flight, in-flight→pending only
+    expect(await dispatcher.log.size()).toBe(2); // pending→in-flight, in-flight→pending only
 
     const onTime = await dispatcher.tick(T0 + 200); // exactly due
     expect(onTime.dueCount).toBe(1);
@@ -513,10 +522,10 @@ describe("SyncDispatcher — retries and backoff", () => {
       connector,
       script: { [key]: { outcome: "non-retryable-error", reason: "bad action shape" } },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     const report = await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("failed");
     expect(current?.attempts).toBe(1);
     if (current?.lastCause?.kind === "connector-error") {
@@ -545,10 +554,10 @@ describe("SyncDispatcher — retries and backoff", () => {
       script: { [key]: { outcome: "timeout" } },
       retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("pending");
     expect(current?.attempts).toBe(1);
     expect(current?.nextAttemptAt).toBe(iso(T0 + 200));
@@ -571,17 +580,17 @@ describe("SyncDispatcher — retries and backoff", () => {
       retry: { maxAttempts: 2, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
     // Enqueued against a connector id that is NOT registered anywhere.
-    const record = enqueue(outbox, { connectorId: "ghost-src" });
+    const record = await enqueue(outbox, { connectorId: "ghost-src" });
 
     await dispatcher.tick(T0);
-    let current = outbox.get(record.id);
+    let current = await outbox.get(record.id);
     expect(current?.status).toBe("pending");
     expect(current?.attempts).toBe(1);
     expect(current?.lastCause?.kind).toBe("wiring");
     expect(driver.calls).toHaveLength(0);
 
     await dispatcher.tick(T0 + 200);
-    current = outbox.get(record.id);
+    current = await outbox.get(record.id);
     expect(current?.status).toBe("failed");
     expect(current?.lastCause?.kind).toBe("exhausted");
   });
@@ -599,10 +608,10 @@ describe("SyncDispatcher — retries and backoff", () => {
       resolveDriver: () => undefined, // NOTHING wired for anyone
       retry: { maxAttempts: 2, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("pending");
     expect(current?.attempts).toBe(1);
     if (current?.lastCause?.kind === "wiring") {
@@ -612,7 +621,7 @@ describe("SyncDispatcher — retries and backoff", () => {
     }
 
     await dispatcher.tick(T0 + 200);
-    const settled = outbox.get(record.id);
+    const settled = await outbox.get(record.id);
     expect(settled?.status).toBe("failed");
     expect(settled?.lastCause?.kind).toBe("exhausted");
   });
@@ -632,10 +641,10 @@ describe("SyncDispatcher — receipt mapping", () => {
         [key]: { outcome: "ok", receipt: { externalId: "src-42", detail: "saved at source" } },
       },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("delivered");
     expect(current?.deliveredAt).toBe(iso(T0));
     expect(current?.receipt?.status).toBe("confirmed");
@@ -652,10 +661,10 @@ describe("SyncDispatcher — receipt mapping", () => {
         [key]: { outcome: "ok", receipt: { status: "local-only", detail: "cached only" } },
       },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("conflict");
     expect(current?.receipt).toBeUndefined(); // receipts are stored on DELIVERY only
     if (current?.lastCause?.kind === "receipt") {
@@ -675,10 +684,10 @@ describe("SyncDispatcher — receipt mapping", () => {
         [key]: { outcome: "ok", receipt: { status: "unsupported", detail: "target gone" } },
       },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("unsupported");
     expect(current?.attempts).toBe(1);
     if (current?.lastCause?.kind === "receipt") {
@@ -696,10 +705,10 @@ describe("SyncDispatcher — receipt mapping", () => {
       script: { [key]: { outcome: "ok", receipt: { status: "failed" } } },
       retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("pending");
     expect(current?.attempts).toBe(1);
     expect(current?.nextAttemptAt).toBe(iso(T0 + 200));
@@ -713,10 +722,10 @@ describe("SyncDispatcher — receipt mapping", () => {
       connector,
       script: { [key]: { outcome: "unsupported", reason: "this item is locked" } },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("unsupported");
     if (current?.lastCause?.kind === "connector-error") {
       const error = current.lastCause.error;
@@ -740,10 +749,10 @@ describe("SyncDispatcher — receipt mapping", () => {
       }),
     };
     const { outbox, dispatcher } = makeHarness({ connector, driver: badDriver });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("failed");
     expect(current?.attempts).toBe(1);
     if (current?.lastCause?.kind === "driver") {
@@ -765,10 +774,10 @@ describe("SyncDispatcher — receipt mapping", () => {
       driver: throwingDriver,
       retry: { maxAttempts: 2, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
-    let current = outbox.get(record.id);
+    let current = await outbox.get(record.id);
     expect(current?.status).toBe("pending");
     if (current?.lastCause?.kind === "driver") {
       expect(current.lastCause.detail).toContain("adapter crashed");
@@ -777,7 +786,7 @@ describe("SyncDispatcher — receipt mapping", () => {
     }
 
     await dispatcher.tick(T0 + 200);
-    current = outbox.get(record.id);
+    current = await outbox.get(record.id);
     expect(current?.status).toBe("failed");
     expect(current?.lastCause?.kind).toBe("exhausted");
   });
@@ -804,13 +813,13 @@ describe("SyncDispatcher — audit log", () => {
       },
       retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     await dispatcher.tick(T0);
     await dispatcher.tick(T0 + 200);
     await dispatcher.tick(T0 + 600);
 
-    const entries = dispatcher.log.forRecord(record.id);
+    const entries = await dispatcher.log.forRecord(record.id);
     expect(entries).toHaveLength(6);
     // pending → in-flight (attempt 1)
     expect(entries[0]?.from).toBe("pending");
@@ -851,10 +860,10 @@ describe("SyncDispatcher — audit log", () => {
   it("capability-gate rejection logs pending → unsupported directly (no attempt burned)", async () => {
     const stub = makeStubConnector();
     const { outbox, dispatcher } = makeHarness({ connector: stub });
-    const record = enqueue(outbox, { action: "like", connectorId: "stub-test" });
+    const record = await enqueue(outbox, { action: "like", connectorId: "stub-test" });
 
     await dispatcher.tick(T0);
-    const entries = dispatcher.log.forRecord(record.id);
+    const entries = await dispatcher.log.forRecord(record.id);
     expect(entries).toHaveLength(1);
     expect(entries[0]?.from).toBe("pending");
     expect(entries[0]?.to).toBe("unsupported");
@@ -878,12 +887,12 @@ describe("SyncDispatcher — audit log", () => {
       resolveDriver: () => createFixtureDriver({ [key]: { outcome: "ok" } }, clock),
       log,
     });
-    outbox.enqueue(entry());
+    await outbox.enqueue(entry());
 
     await dispatcher.tick(T0);
     expect(dispatcher.log).toBe(log);
-    expect(log.size()).toBe(2);
-    expect(log.entries()[1]?.to).toBe("delivered");
+    expect(await log.size()).toBe(2);
+    expect((await log.entries())[1]?.to).toBe("delivered");
   });
 });
 
@@ -908,7 +917,7 @@ describe("SyncDispatcher — golden flow", () => {
       },
       retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
     });
-    const record = enqueue(outbox);
+    const record = await enqueue(outbox);
 
     const first = await dispatcher.tick(T0);
     expect(first.outcomes[0]?.to).toBe("pending");
@@ -918,7 +927,7 @@ describe("SyncDispatcher — golden flow", () => {
     const third = await dispatcher.tick(T0 + 600);
     expect(third.outcomes[0]?.to).toBe("delivered");
 
-    const current = outbox.get(record.id);
+    const current = await outbox.get(record.id);
     expect(current?.status).toBe("delivered");
     expect(current?.attempts).toBe(3);
     expect(current?.receipt?.externalId).toBe("src-999");
@@ -952,13 +961,13 @@ describe("SyncDispatcher — golden flow", () => {
         connectorId === "sdk-src" ? createConnectorDriver(connector) : undefined,
     });
 
-    const result = outbox.enqueue(entry({ connectorId: "sdk-src" }));
+    const result = await outbox.enqueue(entry({ connectorId: "sdk-src" }));
     expect(result.outcome).toBe("enqueued");
 
     const report = await dispatcher.tick(T0);
     expect(report.outcomes[0]?.to).toBe("delivered");
 
-    const record = outbox.get(result.record.id);
+    const record = await outbox.get(result.record.id);
     expect(record?.status).toBe("delivered");
     expect(record?.receipt?.externalId).toBe("exec-save-ext:1");
     expect(record?.receipt?.status).toBe("confirmed");
@@ -1009,12 +1018,12 @@ describe("reconcile — drift detection", () => {
       clock,
       resolveDriver: () => createFixtureDriver({ [key]: { outcome: "ok" } }, clock),
     });
-    outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:absent" }));
+    await outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:absent" }));
     await dispatcher.tick(T0);
 
-    const before = JSON.stringify(outbox.all());
+    const before = JSON.stringify(await outbox.all());
     const report = await reconcile(outbox, connector, "user-1");
-    const after = JSON.stringify(outbox.all());
+    const after = JSON.stringify(await outbox.all());
 
     expect(report.ok).toBe(true);
     if (report.ok) {
@@ -1052,13 +1061,13 @@ describe("reconcile — drift detection", () => {
       resolveDriver: () =>
         createFixtureDriver({ [key]: { outcome: "non-retryable-error" } }, clock),
     });
-    outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:present" }));
+    await outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:present" }));
     await dispatcher.tick(T0);
-    expect(outbox.all()[0]?.status).toBe("failed");
+    expect((await outbox.all())[0]?.status).toBe("failed");
 
-    const before = JSON.stringify(outbox.all());
+    const before = JSON.stringify(await outbox.all());
     const report = await reconcile(outbox, connector, "user-1");
-    const after = JSON.stringify(outbox.all());
+    const after = JSON.stringify(await outbox.all());
 
     expect(report.ok).toBe(true);
     if (report.ok) {
@@ -1091,7 +1100,7 @@ describe("reconcile — drift detection", () => {
       clock,
       resolveDriver: () => createFixtureDriver({ [key]: { outcome: "ok" } }, clock),
     });
-    outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:present" }));
+    await outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:present" }));
     await dispatcher.tick(T0);
 
     const report = await reconcile(outbox, connector, "user-1");
@@ -1121,15 +1130,15 @@ describe("reconcile — drift detection", () => {
       clock,
       resolveDriver: () => undefined, // read-only source: no driver ever wires up
     });
-    outbox.enqueue(
+    await outbox.enqueue(
       entry({ connectorId: REFERENCE_CONNECTOR_ID, externalRef: "ref:movie-aurora" }),
     );
     await dispatcher.tick(T0);
-    expect(outbox.all()[0]?.status).toBe("unsupported");
+    expect((await outbox.all())[0]?.status).toBe("unsupported");
 
-    const before = JSON.stringify(outbox.all());
+    const before = JSON.stringify(await outbox.all());
     const report = await reconcile(outbox, reference, "user-1");
-    const after = JSON.stringify(outbox.all());
+    const after = JSON.stringify(await outbox.all());
 
     expect(report.ok).toBe(true);
     if (report.ok) {
@@ -1172,7 +1181,7 @@ describe("reconcile — drift detection", () => {
       clock,
       resolveDriver: () => createFixtureDriver({ [key]: { outcome: "ok" } }, clock),
     });
-    outbox.enqueue(entry({ connectorId: "recon-src", action: "like", externalRef: "ext:absent" }));
+    await outbox.enqueue(entry({ connectorId: "recon-src", action: "like", externalRef: "ext:absent" }));
     await dispatcher.tick(T0);
 
     // Default verbs (["save"]) do not compare likes at all.
@@ -1206,7 +1215,7 @@ describe("reconcile — drift detection", () => {
     await connector.initialize();
     const outbox = new ActionOutbox({ clock: new ManualClock(T0) });
     // Never dispatched: still pending, still being worked.
-    outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:absent" }));
+    await outbox.enqueue(entry({ connectorId: "recon-src", externalRef: "ext:absent" }));
 
     const report = await reconcile(outbox, connector, "user-1");
     expect(report.ok).toBe(true);
@@ -1235,7 +1244,7 @@ describe("reconcile — drift detection", () => {
       clock,
       resolveDriver: () => createFixtureDriver({ [key]: { outcome: "ok" } }, clock),
     });
-    outbox.enqueue(entry({ connectorId: "plain-src", externalRef: "ext:absent" }));
+    await outbox.enqueue(entry({ connectorId: "plain-src", externalRef: "ext:absent" }));
     await dispatcher.tick(T0);
 
     const report = await reconcile(outbox, plain, "user-1");
@@ -1298,12 +1307,12 @@ describe("determinism — no randomness, no hidden clock", () => {
         },
         retry: { maxAttempts: 5, baseDelayMs: 100, maxDelayMs: 10_000 },
       });
-      outbox.enqueue(entry());
+      await outbox.enqueue(entry());
       await dispatcher.tick(T0);
       await dispatcher.tick(T0 + 200);
       return {
-        records: JSON.stringify(outbox.all()),
-        log: JSON.stringify(dispatcher.log.entries()),
+        records: JSON.stringify(await outbox.all()),
+        log: JSON.stringify(await dispatcher.log.entries()),
       };
     };
 
@@ -1313,9 +1322,144 @@ describe("determinism — no randomness, no hidden clock", () => {
     expect(second.log).toBe(first.log);
   });
 
-  it("the default retry policy matches the task packet defaults", () => {
+  it("the default retry policy matches the task packet defaults", async () => {
     expect(DEFAULT_RETRY_POLICY.maxAttempts).toBe(5);
     expect(DEFAULT_RETRY_POLICY.baseDelayMs).toBe(1_000);
     expect(DEFAULT_RETRY_POLICY.maxDelayMs).toBe(60_000);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R15 — profile attribution + the durable-store contract
+// ---------------------------------------------------------------------------
+
+describe("R15 — profile attribution through the sync lane", () => {
+  it("enqueue stores the profileId; a DIFFERENT profileId on the same identity is a typed conflict", async () => {
+    const outbox = new ActionOutbox({ clock: new ManualClock(T0) });
+    const first = await outbox.enqueue({ ...entry(), profileId: "prof-1" });
+    expect(first.outcome).toBe("enqueued");
+    expect(first.record.profileId).toBe("prof-1");
+
+    const same = await outbox.enqueue({ ...entry(), profileId: "prof-1" });
+    expect(same.outcome).toBe("duplicate");
+
+    const other = await outbox.enqueue({ ...entry(), profileId: "prof-2" });
+    expect(other.outcome).toBe("conflict");
+    if (other.outcome === "conflict") {
+      expect(other.differences.join(" ")).toContain("profileId");
+    }
+    // The stored record is untouched.
+    expect((await outbox.get(first.record.id))?.profileId).toBe("prof-1");
+  });
+
+  it("the dispatch request carries the record's profileId; a profileId-less record omits the field", async () => {
+    const connector = new SyncTestConnector({ id: "sync-src", capabilities: ["save"] });
+    const requests: (string | undefined)[] = [];
+    const { outbox, dispatcher } = makeHarness({
+      connector,
+      driver: {
+        async execute(request) {
+          requests.push(request.profileId);
+          return okResult({
+            status: "confirmed",
+            occurredAt: "2024-06-01T00:00:00.000Z",
+          });
+        },
+      },
+    });
+    await outbox.enqueue({ ...entry(), profileId: "prof-9" });
+    await outbox.enqueue({ ...entry(), clientRequestToken: "req-noprofile" });
+
+    await dispatcher.tick(T0);
+    expect(requests).toEqual(["prof-9", undefined]);
+    expect((await outbox.all()).every((record) => record.status === "delivered")).toBe(true);
+  });
+
+  it("createConnectorDriver prefers the profile-aware typed surface when the request carries a profileId", async () => {
+    const calls: string[] = [];
+    const confirmed: ActionReceipt = { status: "confirmed", occurredAt: "2024-06-01T00:00:00.000Z" };
+    const executor: TypedActionExecutor = {
+      descriptor: () => ({
+        id: "profiled-src",
+        version: "0.1.0",
+        displayName: "Profiled Source",
+        capabilities: ["save"],
+        auth: "none",
+      }),
+      executeActionResult: async () => {
+        calls.push("plain");
+        return okResult(confirmed);
+      },
+      executeActionResultForProfile: async (_ctx, profileId, _action) => {
+        calls.push(`profile:${profileId}`);
+        return okResult(confirmed);
+      },
+    };
+    const driver = createConnectorDriver(executor);
+    const ctx: ConnectorContext = { userId: "user-1", locale: "en" };
+    const action: UserAction = { type: "save", connectorId: "profiled-src", externalRef: "ext:1" };
+
+    await driver.execute({
+      idempotencyKey: "k1",
+      recordId: "r1",
+      userId: "user-1",
+      attempt: 1,
+      ctx,
+      action,
+      profileId: "prof-7",
+    });
+    await driver.execute({
+      idempotencyKey: "k2",
+      recordId: "r2",
+      userId: "user-1",
+      attempt: 1,
+      ctx,
+      action,
+    });
+    expect(calls).toEqual(["profile:prof-7", "plain"]);
+  });
+
+  it("a store transition superseded by a concurrent worker (OutboxStateError) is audited, never a crash, never fake success", async () => {
+    const connector = new SyncTestConnector({ id: "sync-src", capabilities: ["save"] });
+    const key = idempotencyKeyFor(entry());
+    const clock = new ManualClock(T0);
+    const base = new ActionOutbox({ clock });
+
+    /** A store whose beginAttempt always loses the claim to a concurrent worker. */
+    const racingStore: ActionOutboxStore = {
+      enqueue: (e) => base.enqueue(e),
+      due: (now) => base.due(now),
+      get: (id) => base.get(id),
+      getByIdempotencyKey: (k) => base.getByIdempotencyKey(k),
+      all: () => base.all(),
+      beginAttempt: async () => {
+        throw new OutboxStateError(
+          "beginAttempt: cannot transition a record in status 'delivered' (allowed from: pending | in-flight)",
+        );
+      },
+      scheduleRetry: (id, cause, delayMs, now) => base.scheduleRetry(id, cause, delayMs, now),
+      markDelivered: (id, receipt, now) => base.markDelivered(id, receipt, now),
+      markUnsupported: (id, cause) => base.markUnsupported(id, cause),
+      markConflict: (id, cause) => base.markConflict(id, cause),
+      markFailed: (id, cause) => base.markFailed(id, cause),
+    };
+
+    const registry = new ConnectorRegistry();
+    registry.register(connector);
+    const dispatcher = new SyncDispatcher({
+      outbox: racingStore,
+      registry,
+      clock,
+      resolveDriver: () => createFixtureDriver({ [key]: { outcome: "ok" } }, clock),
+    });
+    await base.enqueue(entry());
+
+    const report = await dispatcher.tick(T0);
+    expect(report.outcomes).toHaveLength(1);
+    const outcome = report.outcomes[0];
+    expect(outcome?.cause).toContain("superseded by a concurrent dispatch");
+    expect(outcome?.to).toBe("pending"); // the record's real state — no fake success
+    const entries = await dispatcher.log.forRecord((await base.all())[0]!.id);
+    expect(entries[entries.length - 1]?.cause).toContain("superseded");
   });
 });

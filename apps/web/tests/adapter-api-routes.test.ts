@@ -160,6 +160,74 @@ describe("R07 POST /api/actions — receipts are the truth", () => {
     expect(state.capabilityGate).toBe("native-acquisition");
     expect(state.detail).toContain("nativeMedia");
   });
+
+  it("R15/J10: a `local-only` receipt (recorded in WebFlix, sync pending) flows through the web seam VERBATIM — the differentiated state, never conflated with confirmed", async () => {
+    // The R15 boundary: the Experience API answers `local-only` when the
+    // action is recorded in WebFlix but external sync pends (or failed
+    // with a retry scheduled). The web route maps the runtime's
+    // `confirmed-locally` settlement back to the receipt vocabulary with
+    // the retry detail — the J10 differentiation at the adapter seam
+    // (provider-confirmed `confirmed` is a DIFFERENT state).
+    await withEnv({ WFX_API_BASE: "https://api.example" }, async () => {
+      await withFetchStub(
+        (_call) =>
+          new Response(
+            JSON.stringify({
+              status: "local-only",
+              detail:
+                "recorded in WebFlix — external sync pending (retry 1/5 scheduled; last failure: the source is briefly unavailable)",
+              occurredAt: "2026-09-16T10:00:00.000Z",
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          ),
+        async () => {
+          await getWebRuntimeHost();
+          const response = await postAction(
+            actionRequest({ type: "save", connectorId: "fake-source", externalRef: "fake:short-1", itemId: ITEM_ID }),
+          );
+          expect(response.status).toBe(200);
+          const body = (await response.json()) as {
+            status: string;
+            detail?: string;
+            externalId?: string;
+          };
+          expect(body.status).toBe("local-only"); // WebFlix-confirmed, NOT provider-confirmed
+          expect(body.detail).toContain("recorded in WebFlix");
+          expect(body.detail).toContain("retry 1/5");
+          expect(body.externalId).toBeUndefined(); // no provider confirmation exists
+        },
+      );
+    });
+  });
+
+  it("R15/J10: a provider-confirmed receipt carries the provider's externalId through the web seam", async () => {
+    await withEnv({ WFX_API_BASE: "https://api.example" }, async () => {
+      await withFetchStub(
+        (_call) =>
+          new Response(
+            JSON.stringify({
+              status: "confirmed",
+              externalId: "src-777",
+              occurredAt: "2026-09-16T10:00:00.000Z",
+            }),
+            { status: 200, headers: { "content-type": "application/json" } },
+          ),
+        async () => {
+          await getWebRuntimeHost();
+          const response = await postAction(
+            actionRequest({ type: "like", connectorId: "fake-source", externalRef: "fake:short-1", itemId: ITEM_ID }),
+          );
+          expect(response.status).toBe(200);
+          const body = (await response.json()) as {
+            status: string;
+            externalId?: string;
+          };
+          expect(body.status).toBe("confirmed");
+          expect(body.externalId).toBe("src-777"); // provider confirmation evidence rides along
+        },
+      );
+    });
+  });
 });
 
 describe("R07 GET /api/shorts — the fresh page", () => {

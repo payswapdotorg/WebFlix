@@ -10,10 +10,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@wfx/actions": "workspace:*",
+    "@wfx/connectors": "workspace:*",
     "@wfx/domain": "workspace:*",
     "@wfx/experience": "workspace:*",
     "@wfx/persistence": "workspace:*",
-    "@wfx/connectors": "workspace:*",
     "@wfx/recommendation": "workspace:*",
     "next": "^16.3.5",
     "react": "^19.3.0",

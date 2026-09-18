@@ -82,10 +82,15 @@ export async function POST(request: Request): Promise<NextResponse> {
       await host.runtime.libraryOps.save({ itemId: action.itemId });
     }
     // The settled state, mapped to the receipt vocabulary — verbatim truth.
+    // R15/J10: the externalId (provider confirmation evidence) and the
+    // settled detail (the failed-with-retry / pending-sync reason) ride
+    // along so the client seam can differentiate provider-confirmed from
+    // WebFlix-confirmed sync states.
     return NextResponse.json(
       {
         status: receiptStatusOf(state.status),
         ...(state.detail !== undefined ? { detail: state.detail } : {}),
+        ...(state.externalId !== undefined ? { externalId: state.externalId } : {}),
         occurredAt: state.settledAt ?? state.requestedAt,
       },
       { status: 200 },

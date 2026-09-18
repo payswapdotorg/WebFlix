@@ -42,7 +42,7 @@ import type { ConnectorError, ConnectorResult } from "@wfx/connectors";
 import { invalidInput, transport } from "@wfx/connectors";
 
 import { ActionSyncError, SYNC_ACTION_VERBS } from "./outbox";
-import type { ActionOutbox } from "./outbox";
+import type { ActionOutboxStore } from "./outbox";
 
 // ---------------------------------------------------------------------------
 // Drift vocabulary
@@ -212,13 +212,13 @@ function validateLibraryEntries(
  * plain `readLibrary` (surface marker "plain").
  */
 export async function reconcile(
-  outbox: ActionOutbox,
+  outbox: ActionOutboxStore,
   connector: SourceConnector,
   userId: string,
   options: ReconcileOptions = {},
 ): Promise<ReconciliationReport> {
   if (!isRecord(outbox)) {
-    throw new ActionSyncError("outbox: expected an ActionOutbox instance");
+    throw new ActionSyncError("outbox: expected an ActionOutboxStore instance");
   }
   if (!isRecord(connector)) {
     throw new ActionSyncError("connector: expected a SourceConnector instance");
@@ -322,7 +322,7 @@ export async function reconcile(
   const drift: ReconciliationDrift[] = [];
   let compared = 0;
 
-  for (const record of outbox.all()) {
+  for (const record of await outbox.all()) {
     if (record.userId !== userId || record.connectorId !== connectorId) continue;
     if (!verbFilter.has(record.action.type)) continue;
     compared += 1;

@@ -955,6 +955,10 @@ body {
   color: var(--wfx-ok);
 }
 
+.wfx-actionbar__status--synced {
+  color: var(--wfx-ok);
+}
+
 .wfx-actionbar__status--error {
   color: var(--wfx-accent);
 }
