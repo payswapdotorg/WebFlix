@@ -125,7 +125,7 @@ describe("catalog seed — convergence + idempotency (boot-if-empty, never overw
     // The re-verify law is unchanged: nothing new applies, no drift.
     const again = await runMigrations(first.db);
     expect(again.applied).toEqual([]);
-    expect(again.total).toBe(11);
+    expect(again.total).toBe(12);
   });
 
   it("a second seedCatalogIfEmpty pass seeds NOTHING (the never-overwrite law)", async () => {
