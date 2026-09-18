@@ -24,6 +24,31 @@
  *   point; the session stays RECOVERABLE — restart restores it paused).
  * - `engine-evidence`  — engine-level facts (startup, recovery verdicts).
  *
+ * R13 EXTENSIONS (the persistence/recovery item — same crash-safety law):
+ * - `scheduler-checkpoint` — the R12 playback scheduler's PERSISTED control
+ *   point: the scheduler state + the inputs that deterministically
+ *   reproduce its plan (playhead, velocity, seek target, the playable file,
+ *   the tracked range requests) + the piece-priority projection last
+ *   applied (the "persisted priorities" the resume path re-arms). Written
+ *   on every scheduler-input-changing operation (commands, range demand,
+ *   fact-driven transitions) — control points, not telemetry; the
+ *   mid-tick playhead drift between checkpoints is recovered from the last
+ *   checkpoint (the R10 discipline, deepened as R13's charter names).
+ * - `asset-exposed`   — ONE library-exposure batch: the verified assets of
+ *   a completed session handed to the Library as offline-ready entries,
+ *   with the provenance read from the JOURNALED session record (never
+ *   caller-supplied — authorization survives restarts as a fact) and the
+ *   optional R04 canonical identity composition.
+ * - `compact()`       — the journal ROTATION (the R13 "append/rotate"
+ *   law): an ATOMIC REWRITE (full temporary file + rename — a crash leaves
+ *   either the original or the complete compacted journal, never a torn
+ *   hybrid) that keeps every recovery-relevant record (terminal facts,
+ *   exposure audit trail, session bases) and the LATEST of each per-session
+ *   mutable record (checkpoints, states, metadata, selection), dropping
+ *   superseded history + engine evidence. Fold-equivalence is a tested
+ *   property: `extractJournalSessions(compact(x)) === extractJournalSessions(x)`
+ *   and the same for the R13 exposure fold.
+ *
  * DESIGN DECISIONS (documented for lead review — the R10 precedent):
  *
  * 1. CONTROL-POINT JOURNAL, NOT A TELEMETRY LOG: recovery replays the last
@@ -45,13 +70,14 @@
  *    zero pretending continuity — the only legal outcome.
  */
 
-import { appendFileSync, closeSync, mkdirSync, openSync, readFileSync, readSync, statSync } from "node:fs";
+import { appendFileSync, closeSync, mkdirSync, openSync, readFileSync, readSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { TorrentEngineError } from "./errors";
 import type { AuthorizedProvenanceBasis } from "./provenance";
 import type { TorrentFileEntry } from "./metadata";
 import type { TorrentSessionState, TorrentFailureReason } from "./session";
+import { isPlaybackSchedulerState, type PlaybackSchedulerState } from "./scheduler/state-machine";
 
 // ---------------------------------------------------------------------------
 // Record shapes
@@ -172,6 +198,104 @@ export interface JournalEvidenceRecord {
   readonly data?: Readonly<Record<string, unknown>>;
 }
 
+/** One tracked range request as the journal persists it (R13). */
+export interface JournalSchedulerRangeRequest {
+  /** File-relative byte offset of the requested range. */
+  readonly offsetBytes: number;
+  /** Length in bytes of the requested range (>= 1). */
+  readonly lengthBytes: number;
+  /** The request's deadline (finite number; the windows module's law). */
+  readonly deadlineMs: number;
+  /** Wall-clock epoch ms when the gateway reported the request. */
+  readonly receivedAtMs: number;
+}
+
+/** One persisted piece-priority hint (the plan projection — R13). */
+export interface JournalSchedulerPriority {
+  /** First piece of the inclusive range (absolute index). */
+  readonly fromPiece: number;
+  /** Last piece of the inclusive range (absolute index). */
+  readonly toPiece: number;
+  /** The urgency ladder value (0..5). */
+  readonly urgency: number;
+}
+
+/**
+ * The `scheduler-checkpoint` record (R13): the playback scheduler's
+ * persisted control point — everything the resume path needs to re-arm the
+ * R12 scheduler deterministically (the plan is RECOMPUTED from these inputs
+ * by the same pure functions; the `priorities` projection is the journaled
+ * EVIDENCE of what was last applied to the library).
+ */
+export interface JournalSchedulerCheckpointRecord {
+  readonly seq: number;
+  readonly at: number;
+  readonly type: "scheduler-checkpoint";
+  readonly sessionId: string;
+  /** The scheduler FSM state at the checkpoint. `idle` = intent cleared. */
+  readonly schedulerState: PlaybackSchedulerState;
+  /** The playable file the plan was bound to (index into the file list). */
+  readonly fileIndex?: number;
+  /** The playhead, in file-relative bytes. */
+  readonly positionBytes?: number;
+  /** The playback consumption velocity (bytes/sec). */
+  readonly bytesPerSecond?: number;
+  /** The pending seek target, in file-relative bytes (seeking state). */
+  readonly seekTargetBytes?: number;
+  /** The tracked range requests (the gateway's observed demand). */
+  readonly rangeRequests?: readonly JournalSchedulerRangeRequest[];
+  /** The piece-priority plan last applied (evidence; recomputed on re-arm). */
+  readonly priorities?: readonly JournalSchedulerPriority[];
+  /** Why the checkpoint landed (command kind / fact / stop). */
+  readonly reason: string;
+}
+
+/** One landed asset file in an `asset-exposed` batch (R13). */
+export interface JournalExposedAssetFile {
+  /** The R10 store's asset identity (path-derived, deterministic). */
+  readonly assetId: string;
+  /** The torrent-relative source path that was landed. */
+  readonly sourcePath: string;
+  /** Where the store owns the bytes (absolute content path). */
+  readonly contentPath: string;
+  /** Size in bytes as recorded at exposure. */
+  readonly sizeBytes: number;
+  /** SHA-256 hex digest (matches the session's completed-digest record). */
+  readonly sha256: string;
+  /** The recorded content type, when one was given. */
+  readonly contentType?: string;
+}
+
+/**
+ * The `asset-exposed` record (R13): ONE library-exposure batch — the
+ * verified assets of a completed session presented to the Library as
+ * offline-ready entries. The provenance + infohash are the JOURNALED
+ * session's own (recorded at `session-started` — authorization is a
+ * durable fact, never re-supplied by the caller). The optional `library`
+ * identity composes with R04's canonical-key discipline: one offline-ready
+ * entry per (effective profile, canonical item).
+ */
+export interface JournalAssetExposedRecord {
+  readonly seq: number;
+  readonly at: number;
+  readonly type: "asset-exposed";
+  readonly sessionId: string;
+  /** v1 infohash (lowercase hex) — from the journaled session. */
+  readonly infoHash: string;
+  /** The authorization provenance — from the journaled session. */
+  readonly provenance: {
+    readonly sourceId: string;
+    readonly basis: AuthorizedProvenanceBasis;
+  };
+  /** The R04 canonical-identity composition, when the caller supplied it. */
+  readonly library?: {
+    readonly profileKey: string;
+    readonly canonicalItemId: string;
+  };
+  /** The exposure batch: every landed file of this exposure (atomic). */
+  readonly assets: readonly JournalExposedAssetFile[];
+}
+
 /** The union of every journal record. */
 export type TorrentJournalRecord =
   | JournalSessionStartedRecord
@@ -182,7 +306,9 @@ export type TorrentJournalRecord =
   | JournalCompletedRecord
   | JournalFailedRecord
   | JournalStoppedRecord
-  | JournalEvidenceRecord;
+  | JournalEvidenceRecord
+  | JournalSchedulerCheckpointRecord
+  | JournalAssetExposedRecord;
 
 // ---------------------------------------------------------------------------
 // Pure recovery extraction
@@ -210,6 +336,8 @@ export interface JournalSessionView {
   };
   /** Whether the live session was stopped (still recoverable). */
   readonly stopped: boolean;
+  /** The LAST scheduler checkpoint (R13 — the re-arm control point). */
+  readonly schedulerCheckpoint?: JournalSchedulerCheckpointRecord;
 }
 
 /**
@@ -296,6 +424,15 @@ export function extractJournalSessions(
         }
         break;
       }
+      case "scheduler-checkpoint": {
+        const view = tracked.get(record.sessionId);
+        if (view !== undefined) {
+          // The LATEST checkpoint wins (fold order = journal order).
+          tracked.set(record.sessionId, { ...view, schedulerCheckpoint: record });
+        }
+        break;
+      }
+      case "asset-exposed":
       case "engine-evidence":
         break; // engine-level, not session state
     }
@@ -381,10 +518,44 @@ export interface TorrentSessionJournal {
     message: string,
     data?: Readonly<Record<string, unknown>>,
   ): JournalEvidenceRecord;
+  /**
+   * R13: append the playback scheduler's persisted control point (state +
+   * re-arm inputs + the piece-priority projection last applied).
+   */
+  appendSchedulerCheckpoint(input: {
+    sessionId: string;
+    schedulerState: PlaybackSchedulerState;
+    fileIndex?: number;
+    positionBytes?: number;
+    bytesPerSecond?: number;
+    seekTargetBytes?: number;
+    rangeRequests?: readonly JournalSchedulerRangeRequest[];
+    priorities?: readonly JournalSchedulerPriority[];
+    reason: string;
+  }): JournalSchedulerCheckpointRecord;
+  /**
+   * R13: append ONE library-exposure batch (the adapter's verified-asset
+   * handoff — every landed file of the exposure, atomically).
+   */
+  appendAssetExposure(input: {
+    sessionId: string;
+    infoHash: string;
+    provenance: { sourceId: string; basis: AuthorizedProvenanceBasis };
+    library?: { profileKey: string; canonicalItemId: string };
+    assets: readonly JournalExposedAssetFile[];
+  }): JournalAssetExposedRecord;
   /** Every record that provably landed (torn tail + malformed lines dropped). */
   readAll(): TorrentJournalRecord[];
   /** The per-session views (pure extraction over `readAll`). */
   sessions(): JournalSessionView[];
+  /**
+   * R13: rotate the journal — an ATOMIC rewrite (temp file + rename; a
+   * crash leaves either the original or the complete compacted journal,
+   * never a torn hybrid) that drops superseded per-session history and
+   * engine evidence while keeping every recovery-relevant fact. Fold
+   * equivalence is a tested property (see `selectCompactionKeepers`).
+   */
+  compact(): { readonly kept: number; readonly dropped: number };
 }
 
 // ---------------------------------------------------------------------------
@@ -623,6 +794,155 @@ class TorrentSessionJournalImpl implements TorrentSessionJournal {
     return record;
   }
 
+  appendSchedulerCheckpoint(input: {
+    sessionId: string;
+    schedulerState: PlaybackSchedulerState;
+    fileIndex?: number;
+    positionBytes?: number;
+    bytesPerSecond?: number;
+    seekTargetBytes?: number;
+    rangeRequests?: readonly JournalSchedulerRangeRequest[];
+    priorities?: readonly JournalSchedulerPriority[];
+    reason: string;
+  }): JournalSchedulerCheckpointRecord {
+    if (!isPlaybackSchedulerState(input.schedulerState)) {
+      throw invalidInput(
+        `torrent-journal: schedulerState must be a playback scheduler state (got ${String(input.schedulerState)})`,
+      );
+    }
+    if (input.fileIndex !== undefined) {
+      requireSafeNonNegative(input.fileIndex, "fileIndex");
+    }
+    if (input.positionBytes !== undefined) {
+      requireSafeNonNegative(input.positionBytes, "positionBytes");
+    }
+    if (input.bytesPerSecond !== undefined) {
+      if (
+        typeof input.bytesPerSecond !== "number" ||
+        !Number.isFinite(input.bytesPerSecond) ||
+        input.bytesPerSecond <= 0
+      ) {
+        throw invalidInput(
+          `torrent-journal: bytesPerSecond must be a finite number > 0 (got ${String(input.bytesPerSecond)})`,
+        );
+      }
+    }
+    if (input.seekTargetBytes !== undefined) {
+      requireSafeNonNegative(input.seekTargetBytes, "seekTargetBytes");
+    }
+    if (input.rangeRequests !== undefined) {
+      if (!Array.isArray(input.rangeRequests)) {
+        throw invalidInput("torrent-journal: rangeRequests must be an array");
+      }
+      for (const request of input.rangeRequests) {
+        if (!isSchedulerRangeRequest(request)) {
+          throw invalidInput(
+            "torrent-journal: each range request must be { offsetBytes >= 0, lengthBytes >= 1, deadlineMs finite, receivedAtMs finite }",
+          );
+        }
+      }
+    }
+    if (input.priorities !== undefined) {
+      if (!Array.isArray(input.priorities)) {
+        throw invalidInput("torrent-journal: priorities must be an array");
+      }
+      for (const priority of input.priorities) {
+        if (
+          typeof priority !== "object" || priority === null ||
+          !Number.isSafeInteger(priority.fromPiece) || priority.fromPiece < 0 ||
+          !Number.isSafeInteger(priority.toPiece) || priority.toPiece < priority.fromPiece ||
+          !Number.isSafeInteger(priority.urgency) || priority.urgency < 0 || priority.urgency > 5
+        ) {
+          throw invalidInput(
+            "torrent-journal: each priority must be { fromPiece >= 0, toPiece >= fromPiece, urgency in [0, 5] }",
+          );
+        }
+      }
+    }
+    const record: JournalSchedulerCheckpointRecord = {
+      seq: this.takeSeq(),
+      at: this.clock(),
+      type: "scheduler-checkpoint",
+      sessionId: requireNonEmpty(input.sessionId, "sessionId"),
+      schedulerState: input.schedulerState,
+      ...(input.fileIndex !== undefined ? { fileIndex: input.fileIndex } : {}),
+      ...(input.positionBytes !== undefined ? { positionBytes: input.positionBytes } : {}),
+      ...(input.bytesPerSecond !== undefined
+        ? { bytesPerSecond: input.bytesPerSecond }
+        : {}),
+      ...(input.seekTargetBytes !== undefined
+        ? { seekTargetBytes: input.seekTargetBytes }
+        : {}),
+      ...(input.rangeRequests !== undefined
+        ? { rangeRequests: input.rangeRequests.slice() }
+        : {}),
+      ...(input.priorities !== undefined ? { priorities: input.priorities.slice() } : {}),
+      reason: requireNonEmpty(input.reason, "reason"),
+    };
+    this.write(record);
+    return record;
+  }
+
+  appendAssetExposure(input: {
+    sessionId: string;
+    infoHash: string;
+    provenance: { sourceId: string; basis: AuthorizedProvenanceBasis };
+    library?: { profileKey: string; canonicalItemId: string };
+    assets: readonly JournalExposedAssetFile[];
+  }): JournalAssetExposedRecord {
+    if (!Array.isArray(input.assets) || input.assets.length === 0) {
+      throw invalidInput(
+        "torrent-journal: assets must be a non-empty array (an exposure batch with no assets is not an exposure)",
+      );
+    }
+    for (const asset of input.assets) {
+      if (
+        typeof asset !== "object" || asset === null ||
+        typeof asset.assetId !== "string" || asset.assetId.trim().length === 0 ||
+        typeof asset.sourcePath !== "string" || asset.sourcePath.trim().length === 0 ||
+        typeof asset.contentPath !== "string" || asset.contentPath.trim().length === 0 ||
+        typeof asset.sizeBytes !== "number" || !Number.isSafeInteger(asset.sizeBytes) ||
+        asset.sizeBytes <= 0 ||
+        typeof asset.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(asset.sha256)
+      ) {
+        throw invalidInput(
+          "torrent-journal: each exposed asset must be { assetId, sourcePath, contentPath non-empty; sizeBytes a positive safe integer; sha256 64 lowercase hex }",
+        );
+      }
+      if (asset.contentType !== undefined && typeof asset.contentType !== "string") {
+        throw invalidInput("torrent-journal: contentType must be a string when present");
+      }
+    }
+    if (input.library !== undefined) {
+      if (
+        typeof input.library !== "object" || input.library === null ||
+        typeof input.library.profileKey !== "string" ||
+        input.library.profileKey.trim().length === 0 ||
+        typeof input.library.canonicalItemId !== "string" ||
+        input.library.canonicalItemId.trim().length === 0
+      ) {
+        throw invalidInput(
+          "torrent-journal: library identity must be { profileKey, canonicalItemId } non-empty strings",
+        );
+      }
+    }
+    const record: JournalAssetExposedRecord = {
+      seq: this.takeSeq(),
+      at: this.clock(),
+      type: "asset-exposed",
+      sessionId: requireNonEmpty(input.sessionId, "sessionId"),
+      infoHash: requireNonEmpty(input.infoHash, "infoHash"),
+      provenance: {
+        sourceId: requireNonEmpty(input.provenance.sourceId, "provenance.sourceId"),
+        basis: input.provenance.basis,
+      },
+      ...(input.library !== undefined ? { library: input.library } : {}),
+      assets: input.assets.slice(),
+    };
+    this.write(record);
+    return record;
+  }
+
   readAll(): TorrentJournalRecord[] {
     let text: string;
     try {
@@ -641,6 +961,22 @@ class TorrentSessionJournalImpl implements TorrentSessionJournal {
 
   sessions(): JournalSessionView[] {
     return extractJournalSessions(this.readAll());
+  }
+
+  compact(): { readonly kept: number; readonly dropped: number } {
+    const records = this.readAll();
+    const keepers = selectCompactionKeepers(records);
+    if (keepers.length === records.length) {
+      return { kept: keepers.length, dropped: 0 }; // nothing superseded — no rewrite
+    }
+    // THE ATOMIC REWRITE: the compacted journal lands COMPLETE in a temp
+    // file first; `rename` is atomic on POSIX — a crash mid-compact leaves
+    // either the ORIGINAL journal (tmp discarded on the next attempt) or
+    // the COMPLETE compacted journal. A torn hybrid is impossible.
+    const tmp = `${this.path}.compact.tmp`;
+    writeFileSync(tmp, keepers.map((record) => JSON.stringify(record)).join("\n") + "\n");
+    renameSync(tmp, this.path);
+    return { kept: keepers.length, dropped: records.length - keepers.length };
   }
 
   // --- internals -------------------------------------------------------------
@@ -919,6 +1255,91 @@ function parseRecord(line: string): TorrentJournalRecord | undefined {
         ...(isPlainObject(r.data) ? { data: r.data } : {}),
       };
     }
+    case "scheduler-checkpoint": {
+      if (
+        typeof r.sessionId !== "string" ||
+        !isPlaybackSchedulerState(r.schedulerState) ||
+        typeof r.reason !== "string" ||
+        r.reason.length === 0
+      ) {
+        return undefined;
+      }
+      if (
+        (r.fileIndex !== undefined && typeof r.fileIndex !== "number") ||
+        (r.positionBytes !== undefined && typeof r.positionBytes !== "number") ||
+        (r.bytesPerSecond !== undefined && typeof r.bytesPerSecond !== "number") ||
+        (r.seekTargetBytes !== undefined && typeof r.seekTargetBytes !== "number")
+      ) {
+        return undefined;
+      }
+      if (r.rangeRequests !== undefined && !isSchedulerRangeRequestArray(r.rangeRequests)) {
+        return undefined;
+      }
+      if (r.priorities !== undefined && !isSchedulerPriorityArray(r.priorities)) {
+        return undefined;
+      }
+      return {
+        seq,
+        at,
+        type: "scheduler-checkpoint",
+        sessionId: r.sessionId,
+        schedulerState: r.schedulerState,
+        ...(typeof r.fileIndex === "number" ? { fileIndex: r.fileIndex } : {}),
+        ...(typeof r.positionBytes === "number" ? { positionBytes: r.positionBytes } : {}),
+        ...(typeof r.bytesPerSecond === "number"
+          ? { bytesPerSecond: r.bytesPerSecond }
+          : {}),
+        ...(typeof r.seekTargetBytes === "number"
+          ? { seekTargetBytes: r.seekTargetBytes }
+          : {}),
+        ...(isSchedulerRangeRequestArray(r.rangeRequests)
+          ? { rangeRequests: r.rangeRequests }
+          : {}),
+        ...(isSchedulerPriorityArray(r.priorities) ? { priorities: r.priorities } : {}),
+        reason: r.reason,
+      };
+    }
+    case "asset-exposed": {
+      if (
+        typeof r.sessionId !== "string" ||
+        typeof r.infoHash !== "string" ||
+        typeof r.provenance !== "object" ||
+        r.provenance === null ||
+        typeof (r.provenance as Record<string, unknown>).sourceId !== "string" ||
+        !isProvenanceBasis((r.provenance as Record<string, unknown>).basis) ||
+        !isExposedAssetFileArray(r.assets)
+      ) {
+        return undefined;
+      }
+      const library = r.library as Record<string, unknown> | undefined;
+      if (
+        library !== undefined &&
+        (typeof library !== "object" ||
+          library === null ||
+          typeof library.profileKey !== "string" ||
+          typeof library.canonicalItemId !== "string")
+      ) {
+        return undefined;
+      }
+      const provenance = r.provenance as { sourceId: string; basis: AuthorizedProvenanceBasis };
+      return {
+        seq,
+        at,
+        type: "asset-exposed",
+        sessionId: r.sessionId,
+        infoHash: r.infoHash,
+        provenance: { sourceId: provenance.sourceId, basis: provenance.basis },
+        ...(library !== undefined
+          ? {
+              library: {
+                profileKey: (library as { profileKey: string }).profileKey,
+                canonicalItemId: (library as { canonicalItemId: string }).canonicalItemId,
+              },
+            }
+          : {}),
+        assets: r.assets as JournalExposedAssetFile[],
+      };
+    }
     default:
       return undefined;
   }
@@ -926,6 +1347,113 @@ function parseRecord(line: string): TorrentJournalRecord | undefined {
 
 function isPlainObject(x: unknown): x is Readonly<Record<string, unknown>> {
   return typeof x === "object" && x !== null && !Array.isArray(x);
+}
+
+function isSchedulerRangeRequest(x: unknown): x is JournalSchedulerRangeRequest {
+  if (typeof x !== "object" || x === null) return false;
+  const r = x as Record<string, unknown>;
+  return (
+    typeof r.offsetBytes === "number" && Number.isSafeInteger(r.offsetBytes) && r.offsetBytes >= 0 &&
+    typeof r.lengthBytes === "number" && Number.isSafeInteger(r.lengthBytes) && r.lengthBytes >= 1 &&
+    typeof r.deadlineMs === "number" && Number.isFinite(r.deadlineMs) &&
+    typeof r.receivedAtMs === "number" && Number.isFinite(r.receivedAtMs)
+  );
+}
+
+function isSchedulerRangeRequestArray(x: unknown): x is readonly JournalSchedulerRangeRequest[] {
+  return Array.isArray(x) && x.every(isSchedulerRangeRequest);
+}
+
+function isSchedulerPriority(x: unknown): x is JournalSchedulerPriority {
+  if (typeof x !== "object" || x === null) return false;
+  const p = x as Record<string, unknown>;
+  return (
+    typeof p.fromPiece === "number" && Number.isSafeInteger(p.fromPiece) && p.fromPiece >= 0 &&
+    typeof p.toPiece === "number" && Number.isSafeInteger(p.toPiece) &&
+    (p.toPiece as number) >= (p.fromPiece as number) &&
+    typeof p.urgency === "number" && Number.isSafeInteger(p.urgency) &&
+    (p.urgency as number) >= 0 && (p.urgency as number) <= 5
+  );
+}
+
+function isSchedulerPriorityArray(x: unknown): x is readonly JournalSchedulerPriority[] {
+  return Array.isArray(x) && x.every(isSchedulerPriority);
+}
+
+function isExposedAssetFile(x: unknown): x is JournalExposedAssetFile {
+  if (typeof x !== "object" || x === null) return false;
+  const a = x as Record<string, unknown>;
+  return (
+    typeof a.assetId === "string" && a.assetId.length > 0 &&
+    typeof a.sourcePath === "string" && a.sourcePath.length > 0 &&
+    typeof a.contentPath === "string" && a.contentPath.length > 0 &&
+    typeof a.sizeBytes === "number" && Number.isSafeInteger(a.sizeBytes) && a.sizeBytes > 0 &&
+    typeof a.sha256 === "string" && /^[0-9a-f]{64}$/.test(a.sha256) &&
+    (a.contentType === undefined || typeof a.contentType === "string")
+  );
+}
+
+function isExposedAssetFileArray(x: unknown): x is readonly JournalExposedAssetFile[] {
+  return Array.isArray(x) && x.length > 0 && x.every(isExposedAssetFile);
+}
+
+// ---------------------------------------------------------------------------
+// Compaction (the R13 rotation — PURE selection)
+// ---------------------------------------------------------------------------
+
+/**
+ * PURE: select the records a compaction keeps. The fold-equivalence law
+ * (tested): `extractJournalSessions(selectCompactionKeepers(x))` and
+ * `extractExposedAssets(selectCompactionKeepers(x))` produce the same views
+ * as over `x` itself.
+ *
+ * - KEEP ALL: `session-started` (the recovery basis), `session-completed` /
+ *   `session-failed` / `session-stopped` (terminal + stop facts), and
+ *   `asset-exposed` (the library-exposure audit trail — provenance facts
+ *   stay inspectable forever).
+ * - KEEP THE LATEST PER (session, type): `metadata-resolved`,
+ *   `selection-applied`, `state-changed`, `progress-checkpoint`,
+ *   `scheduler-checkpoint` (the folds' latest-wins semantics make the
+ *   superseded copies dead weight).
+ * - DROP: `engine-evidence` (diagnostics, never recovery state).
+ */
+export function selectCompactionKeepers(
+  records: readonly TorrentJournalRecord[],
+): TorrentJournalRecord[] {
+  const latestPerSessionType = new Map<string, number>(); // `${sessionId}:${type}` -> index
+  for (let i = 0; i < records.length; i += 1) {
+    const record = records[i]!;
+    switch (record.type) {
+      case "metadata-resolved":
+      case "selection-applied":
+      case "state-changed":
+      case "progress-checkpoint":
+      case "scheduler-checkpoint":
+        latestPerSessionType.set(`${record.sessionId}:${record.type}`, i);
+        break;
+      default:
+        break; // keep-all / drop kinds decided below
+    }
+  }
+  const keep = new Set<number>(latestPerSessionType.values());
+  const out: TorrentJournalRecord[] = [];
+  for (let i = 0; i < records.length; i += 1) {
+    const record = records[i]!;
+    switch (record.type) {
+      case "engine-evidence":
+        continue; // diagnostics — never recovery state
+      case "metadata-resolved":
+      case "selection-applied":
+      case "state-changed":
+      case "progress-checkpoint":
+      case "scheduler-checkpoint":
+        if (keep.has(i)) out.push(record);
+        continue;
+      default:
+        out.push(record); // session-started / terminal / stopped / asset-exposed
+    }
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------

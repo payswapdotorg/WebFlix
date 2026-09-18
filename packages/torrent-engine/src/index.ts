@@ -20,9 +20,19 @@
  * - selection.ts         — J22's "choose file": `validateSelection`,
  *                         `planSelection` (file -> piece ranges)
  * - journal.ts           — the append-only session journal + the PURE
- *                         recovery extraction (`extractJournalSessions`)
+ *                         recovery extraction (`extractJournalSessions`);
+ *                         R13: the `scheduler-checkpoint` + `asset-exposed`
+ *                         records, the ATOMIC compaction rotation
+ *                         (`selectCompactionKeepers` — fold-equivalence
+ *                         is a tested property), torn-tail tolerance
  * - integrity.ts         — `torrentSha256Hex` (the R10-compatible digest
  *                         primitive), `digestFileAtPath`
+ * - persistence.ts       — R13's persistence/recovery core (pure): the
+ *                         library-exposure fold `extractExposedAssets`
+ *                         (one exposure per identity key — the R04
+ *                         canonical composition, duplicates latest-wins),
+ *                         `schedulerRearmInputsFromRecord` (the validated
+ *                         re-arm inputs), `offlineReadyIdentityKey`
  * - session.ts           — the honest state machine (the seven states),
  *                         `TorrentSessionStatus` (stall law included)
  * - scheduler/**         — R12's playback-aware scheduler: the config
@@ -63,6 +73,7 @@ export * from "./provenance";
 export * from "./metadata";
 export * from "./selection";
 export * from "./journal";
+export * from "./persistence";
 export * from "./integrity";
 export * from "./session";
 export * from "./engine";
@@ -113,4 +124,8 @@ export {
   type TorrentEngineAdapter,
   type TorrentEngineAdapterOptions,
   type LandedTorrentAsset,
+  type LibraryIdentityInput,
+  type OfflineReadyTorrentAsset,
+  type OfflineReadyAsset,
+  type OfflineReadyEntry,
 } from "./adapter/native-media-adapter";

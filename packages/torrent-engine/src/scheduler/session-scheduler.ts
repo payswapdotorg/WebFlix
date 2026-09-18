@@ -27,6 +27,14 @@
  *   of the session's selection (its pieces are being acquired); commands
  *   naming other files are typed refusals. Before metadata resolves
  *   there is no piece map — commands are refused honestly.
+ * - R13 — PERSISTED CONTROL POINTS: every scheduler-input-changing
+ *   operation (a command, a range-demand batch, a fact-driven transition)
+ *   emits a CHECKPOINT through the injected `persist` hook — the journal
+ *   record that makes the scheduler's state survive restarts. The
+ *   `rearm()` path reconstructs the scheduler from a journaled checkpoint
+ *   through the FSM's own LEGAL transitions (idle→startup→steady, …), so
+ *   a resumed session continues the SAME plan — honestly resuming, never
+ *   fresh. No hidden timers; no telemetry (only input/state changes land).
  */
 
 import { torrentError, type TorrentResult } from "../errors";
@@ -106,6 +114,42 @@ export interface PlaybackSchedulerStatus {
     | undefined;
   /** The window plan currently applied to the library (empty = completion order). */
   readonly windows: readonly PlaybackWindow[];
+  /** R13: present when this scheduler was re-armed from a persisted checkpoint. */
+  readonly resumed?: { readonly fromSchedulerState: PlaybackSchedulerState };
+}
+
+// ---------------------------------------------------------------------------
+// R13 — the persisted control point (the hook's payload)
+// ---------------------------------------------------------------------------
+
+/**
+ * The scheduler's checkpoint payload (R13): everything the resume path
+ * needs to re-arm this scheduler deterministically. The PLAN itself is
+ * recomputed from these inputs by the same pure functions — the
+ * `priorities` projection is the journaled EVIDENCE of what was applied.
+ */
+export interface SchedulerCheckpointPayload {
+  readonly schedulerState: PlaybackSchedulerState;
+  readonly fileIndex?: number;
+  readonly positionBytes?: number;
+  readonly bytesPerSecond?: number;
+  readonly seekTargetBytes?: number;
+  readonly rangeRequests: readonly TrackedRangeRequest[];
+  readonly priorities: readonly {
+    readonly fromPiece: number;
+    readonly toPiece: number;
+    readonly urgency: number;
+  }[];
+  readonly reason: string;
+}
+
+/** The host-injected persistence hook (the engine wires it to the journal). */
+export type SchedulerPersistHook = (payload: SchedulerCheckpointPayload) => void;
+
+/** Constructor options for {@link PlaybackSessionScheduler} (R13). */
+export interface PlaybackSchedulerOptions {
+  /** The R13 persistence hook — every input/state change lands in the journal. */
+  readonly persist?: SchedulerPersistHook;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +161,7 @@ export class PlaybackSessionScheduler {
   private readonly fsm = new PlaybackSchedulerFsm();
   private readonly config: PlaybackSchedulerConfig;
   private readonly clock: () => number;
+  private readonly persist: SchedulerPersistHook | undefined;
 
   private positionBytes: number | undefined;
   private bytesPerSecond: number | undefined;
@@ -125,10 +170,16 @@ export class PlaybackSessionScheduler {
   private geometry: PlayableFileGeometry | undefined;
   private rangeRequests: TrackedRangeRequest[] = [];
   private currentWindows: readonly PlaybackWindow[] = [];
+  private reArmed = false;
 
-  constructor(config: PlaybackSchedulerConfig, clock: () => number) {
+  constructor(
+    config: PlaybackSchedulerConfig,
+    clock: () => number,
+    options: PlaybackSchedulerOptions = {},
+  ) {
     this.config = config;
     this.clock = clock;
+    this.persist = options.persist;
   }
 
   /** The current scheduler state (diagnostics). */
@@ -199,7 +250,7 @@ export class PlaybackSessionScheduler {
       this.bytesPerSecond = bytesPerSecond;
       this.seekTargetBytes = undefined;
       this.rangeRequests = [];
-      return this.replanAndAnswer(view);
+      return this.replanAndAnswer(view, "command:start");
     }
     if (command.kind === "progress") {
       const state = this.fsm.state();
@@ -213,7 +264,7 @@ export class PlaybackSessionScheduler {
       if (!bound.ok) return bound;
       this.positionBytes = positionBytes;
       this.bytesPerSecond = bytesPerSecond;
-      return this.replanAndAnswer(view);
+      return this.replanAndAnswer(view, "command:progress");
     }
     // seek: legal from ANY live scheduler state — the seek target is now
     // the most-needed range (rapid scrubbing re-anchors, honestly).
@@ -223,7 +274,7 @@ export class PlaybackSessionScheduler {
     this.positionBytes = positionBytes;
     this.bytesPerSecond = bytesPerSecond;
     this.seekTargetBytes = positionBytes;
-    return this.replanAndAnswer(view);
+    return this.replanAndAnswer(view, "command:seek");
   }
 
   /**
@@ -287,7 +338,7 @@ export class PlaybackSessionScheduler {
       tracked.push({ offsetBytes, lengthBytes, deadlineMs, receivedAtMs: nowMs });
     }
     this.rangeRequests = tracked;
-    return this.replanAndAnswer(view);
+    return this.replanAndAnswer(view, "range-demand");
   }
 
   /** The tracked range requests (diagnostics). */
@@ -413,6 +464,78 @@ export class PlaybackSessionScheduler {
     this.currentWindows = [];
   }
 
+  // --- R13: the persisted-control-point path ---------------------------------
+
+  /**
+   * Whether this scheduler was re-armed from a journaled checkpoint
+   * (diagnostics — the honest "resuming, not fresh" marker).
+   */
+  isReArmed(): boolean {
+    return this.reArmed;
+  }
+
+  /**
+   * R13 — RE-ARM the scheduler from a journaled checkpoint: reconstruct
+   * the persisted state through the FSM's OWN legal transition graph
+   * (idle→startup→steady, idle→seeking, idle→startup→background-completion
+   * — every persisted state is reachable through legal hops, so re-arm
+   * never fabricates a transition the machine could not have made), bind
+   * the playable file, restore the playhead/velocity/seek target/demand,
+   * then REPLAN from the same inputs (the plan is a pure function of
+   * them — deterministic continuity, honestly recomputed rather than
+   * replayed from a stale cache).
+   *
+   * Typed refusals: `INVALID_STATE` on a non-fresh (non-idle) scheduler;
+   * the bindPlayableFile refusals (no metadata yet, file outside the
+   * selection); `INVALID_INPUT` for an idle checkpoint (no intent to
+   * re-arm — the engine skips those before calling).
+   */
+  rearm(
+    view: SchedulerSessionView,
+    persisted: {
+      readonly schedulerState: Exclude<PlaybackSchedulerState, "idle">;
+      readonly fileIndex?: number;
+      readonly positionBytes?: number;
+      readonly bytesPerSecond?: number;
+      readonly seekTargetBytes?: number;
+      readonly rangeRequests: readonly TrackedRangeRequest[];
+    },
+  ): TorrentResult<PlaybackSchedulerStatus> {
+    if (this.fsm.state() !== "idle") {
+      return torrentError("INVALID_STATE", {
+        sessionId: view.sessionId,
+        detail: `rearm: the scheduler is ${this.fsm.state()} — re-arm applies to a FRESH scheduler (never one with live state)`,
+      });
+    }
+    // Bind the playable file FIRST (the geometry validates the persisted
+    // file against the session's CURRENT selection — honest continuity).
+    const bound = this.bindPlayableFile(view, persisted.fileIndex);
+    if (!bound.ok) return bound as TorrentResult<PlaybackSchedulerStatus>;
+    // Drive the FSM to the persisted state through its own legal hops.
+    switch (persisted.schedulerState) {
+      case "startup":
+        this.fsm.transitionTo("startup");
+        break;
+      case "steady":
+        this.fsm.transitionTo("startup");
+        this.fsm.transitionTo("steady");
+        break;
+      case "seeking":
+        this.fsm.transitionTo("seeking");
+        break;
+      case "background-completion":
+        this.fsm.transitionTo("startup");
+        this.fsm.transitionTo("background-completion");
+        break;
+    }
+    this.positionBytes = persisted.positionBytes;
+    this.bytesPerSecond = persisted.bytesPerSecond;
+    this.seekTargetBytes = persisted.seekTargetBytes;
+    this.rangeRequests = persisted.rangeRequests.slice();
+    this.reArmed = true;
+    return this.replanAndAnswer(view, "rearm");
+  }
+
   // --- internals -------------------------------------------------------------------
 
   private stop(view: SchedulerSessionView): TorrentResult<PlaybackSchedulerStatus> {
@@ -425,7 +548,7 @@ export class PlaybackSessionScheduler {
     }
     this.fsm.transitionTo("background-completion");
     this.rangeRequests = [];
-    return this.replanAndAnswer(view);
+    return this.replanAndAnswer(view, "command:stop");
   }
 
   /** Bind the playable file (sticky; explicit index or the first selected file). */
@@ -481,7 +604,7 @@ export class PlaybackSessionScheduler {
     );
   }
 
-  /** Fact-driven transitions: startup→steady, seeking→steady. */
+  /** Fact-driven transitions: startup→steady, seeking→steady (journaled — R13). */
   private evaluateFacts(view: SchedulerSessionView): void {
     const state = this.fsm.state();
     const bitfield = view.snapshot()?.bitfield;
@@ -496,6 +619,7 @@ export class PlaybackSessionScheduler {
       );
       if (startup !== null && windowSatisfied(startup, bitfield)) {
         this.fsm.transitionTo("steady");
+        this.emitCheckpoint("fact:startup-window-satisfied");
       }
       return;
     }
@@ -504,6 +628,7 @@ export class PlaybackSessionScheduler {
       const burst = computeSeekWindows(this.geometry, this.seekTargetBytes, 1, this.config).burst;
       if (burst !== null && windowSatisfied(burst, bitfield)) {
         this.fsm.transitionTo("steady");
+        this.emitCheckpoint("fact:seek-burst-satisfied");
       }
     }
   }
@@ -534,9 +659,13 @@ export class PlaybackSessionScheduler {
     return plan.ok ? plan.value : [];
   }
 
-  private replanAndAnswer(view: SchedulerSessionView): TorrentResult<PlaybackSchedulerStatus> {
+  private replanAndAnswer(
+    view: SchedulerSessionView,
+    reason: string,
+  ): TorrentResult<PlaybackSchedulerStatus> {
     const replanned = this.replan(view);
     if (!replanned.ok) return replanned;
+    this.emitCheckpoint(reason);
     return {
       ok: true,
       value: {
@@ -554,7 +683,27 @@ export class PlaybackSessionScheduler {
             }
           : {}),
         windows: this.currentWindows,
+        ...(this.reArmed ? { resumed: { fromSchedulerState: this.fsm.state() } } : {}),
       },
     };
+  }
+
+  /** Emit the persisted control point (R13 — the journal hook, when bound). */
+  private emitCheckpoint(reason: string): void {
+    if (this.persist === undefined) return;
+    this.persist({
+      schedulerState: this.fsm.state(),
+      ...(this.fileIndex !== undefined ? { fileIndex: this.fileIndex } : {}),
+      ...(this.positionBytes !== undefined ? { positionBytes: this.positionBytes } : {}),
+      ...(this.bytesPerSecond !== undefined ? { bytesPerSecond: this.bytesPerSecond } : {}),
+      ...(this.seekTargetBytes !== undefined ? { seekTargetBytes: this.seekTargetBytes } : {}),
+      rangeRequests: this.rangeRequests.slice(),
+      priorities: this.currentWindows.map((window) => ({
+        fromPiece: window.fromPiece,
+        toPiece: window.toPiece,
+        urgency: window.urgency,
+      })),
+      reason,
+    });
   }
 }
