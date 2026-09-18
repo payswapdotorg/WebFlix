@@ -37,6 +37,7 @@ import { createRuntime, type ClientRuntime, type RuntimeSession } from "@wfx/cli
 import type { EngineConfig, NativeEngineProcess } from "@wfx/native-media";
 import type { ServerPort } from "@wfx/client-runtime";
 import type { PlatformCapabilities } from "@wfx/platform-contracts";
+import type { TorrentEngine, TorrentEngineAdapter } from "@wfx/torrent-engine";
 
 import type { ShellIpc } from "./platform/shell-ipc";
 import {
@@ -54,6 +55,12 @@ import {
 import { createShellEngineProcess } from "./platform/shell-engine-process";
 import type { ShellLifecyclePort } from "./platform/lifecycle";
 import { createDesktopSurface, type DesktopSurface } from "./surface/desktop-surface";
+import {
+  createDesktopAcquisitionSurface,
+  createUnboundAcquisitionSurface,
+  type DesktopAcquisitionSurface,
+} from "./surface/acquisition-surface";
+import { createDesktopAcquisitionSource } from "./platform/acquisition-source";
 
 // ---------------------------------------------------------------------------
 // Options
@@ -94,6 +101,20 @@ export interface DesktopAppOptions {
   readonly session: RuntimeSession;
   /** The engine binding block (the R10 seam). */
   readonly engine: DesktopEngineOptions;
+  /**
+   * R14 — the torrent-engine acquisition block (OPTIONAL today, the R10
+   * seam precedent): when bound, the app derives the acquisition facts
+   * from the R11-R13 public surfaces and the surface projects the honest
+   * lifecycle views + the gated diagnostics. Absent ⇒ the honest UNBOUND
+   * capability truth (never a fixture fallback). The production spawn
+   * wiring (engine + adapter over the shell's app-data + the authorized
+   * source registry) is the lead's integration step — the same way R10
+   * bound the range gateway after the seam landed.
+   */
+  readonly acquisition?: {
+    readonly engine: TorrentEngine;
+    readonly adapter: TorrentEngineAdapter;
+  };
 }
 
 /** A booted Desktop application: the runtime over the native adapter. */
@@ -112,6 +133,8 @@ export interface DesktopApp {
   readonly engine: NativeMediaBinding;
   /** The thin UI projection the webview frontend renders against. */
   readonly surface: DesktopSurface;
+  /** R14: the acquisition surface (lifecycle views + gated diagnostics). */
+  readonly acquisition: DesktopAcquisitionSurface;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -178,6 +201,22 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
 
   const surface = createDesktopSurface(runtime, capabilities);
 
+  // R14 — the acquisition facts source + surface projection. The block is
+  // OPTIONAL (the R10 seam precedent): absent ⇒ the honest UNBOUND surface
+  // (capability truth, never a fixture fallback); present ⇒ the real
+  // derivation over the engine's public surfaces.
+  const acquisition: DesktopAcquisitionSurface =
+    options.acquisition !== undefined
+      ? createDesktopAcquisitionSurface(
+          runtime,
+          createDesktopAcquisitionSource({
+            engine: options.acquisition.engine,
+            adapter: options.acquisition.adapter,
+            runtime,
+          }),
+        )
+      : createUnboundAcquisitionSurface(runtime);
+
   let disposed = false;
   return {
     platform: "desktop",
@@ -187,6 +226,7 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     lifecycle: capabilities.ports.lifecycle,
     engine,
     surface,
+    acquisition,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -200,3 +240,18 @@ export { checkCapabilityTruth } from "@wfx/platform-contracts";
 export { createDesktopSurface } from "./surface/desktop-surface";
 export type { DesktopCapabilitySummary } from "./surface/desktop-surface";
 export type { DesktopCapabilityPorts } from "./platform/capabilities";
+export {
+  createDesktopAcquisitionSurface,
+  createUnboundAcquisitionSurface,
+} from "./surface/acquisition-surface";
+export type { DesktopAcquisitionSurface } from "./surface/acquisition-surface";
+export {
+  createDesktopAcquisitionSource,
+  ACQUISITION_CAUSE_FOR_FAILURE_REASON,
+  ACQUISITION_FAILURE_DETAILS,
+} from "./platform/acquisition-source";
+export type {
+  AcquisitionIdentity,
+  DesktopAcquisitionSource,
+  DesktopAcquisitionSourceOptions,
+} from "./platform/acquisition-source";

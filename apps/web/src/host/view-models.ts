@@ -22,6 +22,8 @@
  */
 
 import type {
+  AcquisitionDiagnosticsView,
+  AcquisitionStatusView,
   ContinueWatchingEntry,
   ModelSectionStatus,
   PlaybackState,
@@ -35,6 +37,7 @@ import { WebClock } from "@/platform/lifecycle";
 
 import type { WebRuntimeHost } from "./web-host";
 import { canonicalIdFor } from "./web-host";
+import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
 
 // ---------------------------------------------------------------------------
 // The per-process item join (canonical id ⇄ source identity + display)
@@ -350,6 +353,37 @@ export interface DetailView {
   readonly watch: { readonly positionMs: number; readonly status: string; readonly completionRatio: number | null } | null;
   /** Related cards ("more to explore" — the trending pool, minus this item). */
   readonly related: readonly CardView[];
+  /**
+   * R14 — the native acquisition truth: the runtime's honest lifecycle
+   * view (null when nothing is known — the panel renders the capability
+   * truth) + the GATED advanced-diagnostics payload (protocol vocabulary;
+   * fixtures mode provides the dev feed, service mode none yet).
+   */
+  readonly acquisition: {
+    readonly view: AcquisitionStatusView | null;
+    readonly diagnostics: AcquisitionDiagnosticsView | null;
+  };
+}
+
+/**
+ * R14 — the acquisition block of the detail view: the runtime's honest
+ * lifecycle view for the item + the gated diagnostics payload (the
+ * fixtures-mode dev feed in fixtures mode; none in service mode — the
+ * honest absence, never a fabricated feed).
+ */
+function acquisitionBlockOf(
+  host: WebRuntimeHost,
+  itemId: string,
+): { view: AcquisitionStatusView | null; diagnostics: AcquisitionDiagnosticsView | null } {
+  // The per-render refresh (fixtures mode): re-read the shared drive state
+  // and report the current facts into THIS runtime's store before reading
+  // (the dev-server route modules carry their own runtime instances).
+  if (host.mode === "fixtures") reportAcquisitionFixtures(host);
+  return {
+    view: host.runtime.acquisition.view(itemId),
+    diagnostics:
+      host.mode === "fixtures" ? fixtureAcquisitionDiagnostics(itemId) : null,
+  };
 }
 
 /** Load the detail view: the adapter's transport metadata read + runtime watch state. */
@@ -388,6 +422,7 @@ export async function loadDetailView(
             completionRatio: watchState.completionRatio,
           },
     related: cardsFromModel(trending).filter((card) => card.itemId !== itemId),
+    acquisition: acquisitionBlockOf(host, itemId),
   };
 }
 
@@ -616,7 +651,25 @@ export interface HistoryEntryView {
   readonly joined: JoinedItem | null;
 }
 
-/** The library view model (both sections, statuses verbatim). */
+/**
+ * R14 — one OFFLINE library entry view: a verified offline copy (the
+ * runtime's `ready-offline` acquisition view — the R13 exposure composed
+ * with the R04 canonical key; the fold guarantees ONE entry per canonical
+ * identity, so this list can never duplicate rows).
+ */
+export interface OfflineReadyEntryView {
+  readonly itemId: string;
+  readonly title: string;
+  /** `Ready offline` (the earned verdict — always this label here). */
+  readonly label: string;
+  /** Total verified size in bytes. */
+  readonly sizeBytes: number;
+  /** How many verified assets the exposure landed. */
+  readonly assetCount: number;
+  readonly joined: JoinedItem | null;
+}
+
+/** The library view model (all sections, statuses verbatim). */
 export interface LibraryView {
   readonly mode: "fixtures" | "service";
   readonly watchlist: {
@@ -627,11 +680,32 @@ export interface LibraryView {
     readonly status: { readonly state: "ready" | "error"; readonly errorDetail?: string };
     readonly entries: readonly HistoryEntryView[];
   };
+  /** R14 — the verified offline copies (J26's Library section). */
+  readonly offline: {
+    readonly entries: readonly OfflineReadyEntryView[];
+  };
 }
 
 /** Load the library view from the runtime's library read model. */
 export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView> {
   const model = await host.runtime.library();
+  // R14 — the verified offline copies: the runtime's ready-offline
+  // acquisition views (the R13 exposure composed with the R04 canonical
+  // keys — one entry per canonical identity by construction). Joined to
+  // the item identity this process knows; the acquisition view's own
+  // title is the honest fallback (never fabricated).
+  if (host.mode === "fixtures") reportAcquisitionFixtures(host);
+  const offlineEntries: OfflineReadyEntryView[] = host.runtime.acquisition
+    .views()
+    .filter((view) => view.state === "ready-offline")
+    .map((view) => ({
+      itemId: view.itemId,
+      title: view.title ?? joinedItemOf(view.itemId)?.title ?? view.itemId,
+      label: view.label,
+      sizeBytes: view.offline?.sizeBytes ?? 0,
+      assetCount: view.offline?.assetCount ?? 0,
+      joined: joinedItemOf(view.itemId),
+    }));
   return {
     mode: host.mode,
     watchlist: {
@@ -664,6 +738,7 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
         joined: joinedItemOf(entry.itemId),
       })),
     },
+    offline: { entries: offlineEntries },
   };
 }
 

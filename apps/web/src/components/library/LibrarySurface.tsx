@@ -13,7 +13,12 @@
 
 import type { JSX } from "react";
 
-import type { HistoryEntryView, LibraryView, WatchlistEntryView } from "@/host/view-models";
+import type {
+  HistoryEntryView,
+  LibraryView,
+  OfflineReadyEntryView,
+  WatchlistEntryView,
+} from "@/host/view-models";
 import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
 import { formatDuration, percentWatched } from "@/components/ui/format";
@@ -100,6 +105,47 @@ function HistoryRow({ entry }: { readonly entry: HistoryEntryView }): JSX.Elemen
   );
 }
 
+/** One verified-offline library row (J26 — `Ready offline`). */
+function OfflineRow({ entry }: { readonly entry: OfflineReadyEntryView }): JSX.Element {
+  const card =
+    entry.joined === null
+      ? null
+      : {
+          itemId: entry.itemId,
+          title: entry.title,
+          canonicalType: entry.joined.canonicalType,
+          ...(entry.joined.durationMs !== undefined ? { durationMs: entry.joined.durationMs } : {}),
+          connectorId: entry.joined.connectorId,
+          externalRef: entry.joined.externalRef,
+        };
+  return (
+    <li className="wfx-queue__item" data-wfx-offline-entry={entry.itemId}>
+      {card !== null ? (
+        <ItemCard card={card} />
+      ) : (
+        <span className="wfx-card" data-wfx-card={entry.itemId}>
+          <span>
+            <p className="wfx-card__title">{entry.title}</p>
+            <p className="wfx-card__meta">Offline copy — verified</p>
+          </span>
+        </span>
+      )}
+      <p className="wfx-card__meta" data-wfx-offline-status={entry.itemId}>
+        {entry.label} · {formatBytes(entry.sizeBytes)}
+        {entry.assetCount > 1 ? ` · ${entry.assetCount} files` : ""} · watchable without a connection
+      </p>
+    </li>
+  );
+}
+
+/** An honest human byte size. */
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} kB`;
+  return `${bytes} B`;
+}
+
 /** The library surface. */
 export function LibrarySurface({ view }: { readonly view: LibraryView }): JSX.Element {
   return (
@@ -163,6 +209,21 @@ export function LibrarySurface({ view }: { readonly view: LibraryView }): JSX.El
           <ul className="wfx-queue__list" style={{ listStyle: "none", padding: 0 }}>
             {view.history.entries.map((entry) => (
               <HistoryRow key={entry.itemId} entry={entry} />
+            ))}
+          </ul>
+        )}
+      </section>
+      <section className="wfx-detail__section" aria-label="Offline and verified" data-wfx-library-offline>
+        <h2>Offline and verified</h2>
+        {view.offline.entries.length === 0 ? (
+          <EmptyState
+            title="No offline copies yet"
+            detail="Titles made available offline are verified before they land here — you can watch them without a connection."
+          />
+        ) : (
+          <ul className="wfx-queue__list" style={{ listStyle: "none", padding: 0 }}>
+            {view.offline.entries.map((entry) => (
+              <OfflineRow key={entry.itemId} entry={entry} />
             ))}
           </ul>
         )}

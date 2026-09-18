@@ -32,6 +32,7 @@ import {
   type ActionOperations,
   type ActionState,
 } from "./actions";
+import { createAcquisitionStore, type AcquisitionOperations } from "./acquisition";
 import { RuntimeError } from "./errors";
 import { IntentStore, type IntentOperations } from "./intent";
 import {
@@ -147,6 +148,14 @@ export interface ClientRuntime {
    * themselves run through the adapter's platform UX).
    */
   readonly sources: SourceStateOperations;
+  /**
+   * R14: the native acquisition UX operations — the platform adapter's
+   * protocol-free fact intake and the honest lifecycle views (Available /
+   * Preparing / Buffering / Playing / Completing / Ready offline / Failed)
+   * the default surfaces render. Torrent-protocol detail lives ONLY in the
+   * gated advanced-diagnostics surface (never here).
+   */
+  readonly acquisition: AcquisitionOperations;
 }
 
 // ---------------------------------------------------------------------------
@@ -234,6 +243,10 @@ export function createRuntime(
   // local R01 laws are unchanged; see intent.ts).
   const intents = new IntentStore(session.clock, session.ids, server);
   const sources = createSourceStateStore(server);
+  // R14: the acquisition store — the runtime's UX-state seam over the
+  // adapters' protocol-free facts (no clock, no timers: the host owns the
+  // reporting cadence — the R10 no-hidden-timers law).
+  const acquisitionStore = createAcquisitionStore();
 
   // — the at-least-once flush hook (adapters await async shutdown hooks) —
   platform.ports.lifecycle.hook("shutdown", async () => {
@@ -368,6 +381,10 @@ export function createRuntime(
     libraryOps: libraryEngine.operations(),
     intents: intents.operations(),
     sources,
+    // R14: the native acquisition UX surface — the adapter intake (facts)
+    // and the honest lifecycle views the default surfaces render (see
+    // src/acquisition.ts; protocol-free BY TYPE).
+    acquisition: acquisitionStore,
 
     retryPendingWatchEvents: () => watch.retryPendingWatchEvents(),
   };

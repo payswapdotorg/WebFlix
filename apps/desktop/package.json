@@ -9,6 +9,7 @@
     "@wfx/domain": "workspace:*",
     "@wfx/experience": "workspace:*",
     "@wfx/native-media": "workspace:*",
-    "@wfx/platform-contracts": "workspace:*"
+    "@wfx/platform-contracts": "workspace:*",
+    "@wfx/torrent-engine": "workspace:*"
   }
 }
