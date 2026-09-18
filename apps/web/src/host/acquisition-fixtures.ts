@@ -375,8 +375,14 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
     itemId: null,
   },
   {
-    externalRef: "fake:video-2",
-    searchQuery: "Static Bloom",
+    // R17 fix (lead integration): re-keyed from fake:video-2 (whose
+    // no-metadata catalog entry is a frozen law — the item page can never
+    // mount the acquisition panel for it) to the metadata-bearing
+    // fake:video-4 "Signal Fade" catalog item (query-collision-free — the
+    // "bloom" feed-fallback test keeps its single-card truth). The script
+    // facts keep the "Static Bloom" view title (tests assert it by title).
+    externalRef: "fake:video-4",
+    searchQuery: "Signal Fade",
     script: staticBloomScript,
     protocol: {
       infoHash: "5555555555555555555555555555555555555555",

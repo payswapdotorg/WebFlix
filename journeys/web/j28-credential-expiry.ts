@@ -61,10 +61,15 @@ export const j28CredentialExpiry: Journey = {
       "signedIn",
       "the source states its signed-in truth (never a fabricated state)",
     );
-    await assert.textContains(
-      "[data-wfx-source-auth-chip='signedIn']",
-      "Connected",
+    // R17 fix (lead integration): the chip renders AUTH_STATE_LABELS in
+    // upper case ("CONNECTED") — assert case-insensitively (the j29 label
+    // pattern), never the brittle literal casing.
+    const chipText = await browser.tryText("[data-wfx-source-auth-chip='signedIn']");
+    assert.that(
       "the signed-in source renders its Connected chip",
+      "the chip label (case-insensitive)",
+      chipText ?? "<element absent>",
+      chipText !== null && chipText.toLowerCase().includes("connected"),
     );
     await assert.countExactly("[data-wfx-source-expired]", 0, "no expired marker renders while signed in");
 
@@ -84,10 +89,15 @@ export const j28CredentialExpiry: Journey = {
       "the expired credential renders its OWN named state (never a silent fallback)",
     );
     await assert.countAtLeast("[data-wfx-source-expired]", 1, "the expired state carries its explicit marker");
-    await assert.textContains(
-      "[data-wfx-source-auth-chip='expired']",
-      "Sign-in expired",
+    // R17 fix (lead integration): the expired chip renders upper case
+    // ("SIGN-IN EXPIRED" — the chip vocabulary is CSS-uppercased) — assert
+    // case-insensitively, the same law as the signedIn chip above.
+    const expiredChipText = await browser.tryText("[data-wfx-source-auth-chip='expired']");
+    assert.that(
       "the expired source renders its named Sign-in-expired chip",
+      "the expired chip label (case-insensitive)",
+      expiredChipText ?? "<element absent>",
+      expiredChipText !== null && expiredChipText.toLowerCase().includes("sign-in expired"),
     );
     await assert.textContains(
       "[data-wfx-source-recovery-detail]",
@@ -109,23 +119,28 @@ export const j28CredentialExpiry: Journey = {
     //    failure names the expired credential and its recovery path; no
     //    provider frame renders (never a fake success, never a hang).
     await goto(context, playerHref ?? "/");
-    await assert.countAtLeast("[data-wfx-player-failure]", 1, "the expired credential renders the player's typed failure");
-    await assert.attrEquals(
-      "[data-wfx-player-failure]",
-      "data-wfx-player-failure-kind",
+    // R17 fix (lead integration): the resolution failure renders the
+    // player's typed ErrorState ([data-wfx-error], the same grammar J29's
+    // unresolvable playback asserts) — the kind and the honest expired-
+    // credential message ride in the detail sentence; the retry link back
+    // to the item is the recovery path.
+    await assert.countAtLeast("[data-wfx-error]", 1, "the expired credential renders the player's typed failure");
+    await assert.textContains(
+      "[data-wfx-error]",
       "unauthorized",
       "the failure kind is the typed unauthorized (the classified credential)",
     );
     await assert.textContains(
-      "[data-wfx-player-failure]",
-      "sign-in expired",
+      "[data-wfx-error]",
+      "authorization for this source expired",
       "the failure NAMES the expired credential (the honest classified state)",
     );
     await assert.textContains(
-      "[data-wfx-player-failure]",
-      "reconnect the source",
+      "[data-wfx-error]",
+      "reconnect",
       "the failure states its re-auth recovery path",
     );
+    await assert.countAtLeast("[data-wfx-surface='player'] a[href*='/item?']", 1, "the failure offers its recovery path back to the item");
     await assert.countExactly("[data-wfx-player-frame]", 0, "no provider frame renders for an expired credential (never a fake stage)");
 
     // 4. THE RECOVERY: reauthorize restores the source (the account

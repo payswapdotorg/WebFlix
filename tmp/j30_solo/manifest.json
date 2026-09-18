@@ -1,0 +1,119 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "e12bafe4ea628f0e7da601a29d0044d9013131be",
+  "branch": "main",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-18T18:37:08.370Z",
+    "finishedAt": "2026-09-18T18:37:29.574Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789756636648)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the capability truth table renders every platform area",
+          "expected": "[data-wfx-settings-capabilities] li[data-wfx-capability] matches >= 5",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'storage' capability area",
+          "expected": "a row for 'storage'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'contained browser' capability area",
+          "expected": "a row for 'contained browser'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'native media & torrent acquisition' capability area",
+          "expected": "a row for 'native media & torrent acquisition'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'background work' capability area",
+          "expected": "a row for 'background work'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'sharing' capability area",
+          "expected": "a row for 'sharing'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'notifications' capability area",
+          "expected": "a row for 'notifications'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the native-media area declares itself NOT available on Web (the honest unsupported state — never silent, never faked)",
+          "expected": "the native row carries the unsupported chip",
+          "observed": "unsupported chip present",
+          "pass": true
+        },
+        {
+          "description": "the adapter's own descriptor is stated (the truth the runtime booted on)",
+          "expected": "text of [data-wfx-capability-descriptor] contains \"wfx-web-adapter\"",
+          "observed": "\"Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).\"",
+          "pass": true
+        },
+        {
+          "description": "the descriptor states the platform truth and that a lying bundle cannot boot",
+          "expected": "the re-check law stated",
+          "observed": "Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).",
+          "pass": true
+        },
+        {
+          "description": "the playback surface's like/save render their typed absent notes (unsupported never looks like success)",
+          "expected": "absent like + save notes",
+          "observed": "like, save",
+          "pass": true
+        },
+        {
+          "description": "no settled action state masquerades as provider-confirmed on the playback surface",
+          "expected": "zero settled action states",
+          "observed": "zero",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "/tmp/j30_solo/j30-capability-honesty.png",
+        "/tmp/j30_solo/j30-unsupported-capability-honesty.snapshot.txt",
+        "/tmp/j30_solo/j30-unsupported-capability-honesty.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 10219
+    }
+  ],
+  "limitations": []
+}

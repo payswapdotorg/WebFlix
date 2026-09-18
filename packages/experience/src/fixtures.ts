@@ -281,6 +281,36 @@ export const FIXTURE_CATALOG: readonly FakeCatalogItem[] = [
       },
     ],
   },
+  {
+    // R17 network-loss scripted item (Static Bloom's drive): metadata-
+    // bearing + acquisition-capable (browser + native realizations) so the
+    // ITEM PAGE mounts the acquisition panel. The no-metadata law stays
+    // with fake:video-2 ("Static Bloom") — the frozen fixture entry other
+    // tests rely on (incl. the single-card "bloom" feed fallback); this
+    // distinct, query-collision-free title keeps both searches honest.
+    externalRef: "fake:video-4",
+    title: "Signal Fade",
+    canonicalType: "video",
+    durationMs: 600_000,
+    orientation: "horizontal",
+    availability: "available",
+    itemCapabilities: ["playNative", "playBrowser"],
+    realizations: [
+      {
+        mode: "browser",
+        connectorId: FIXTURE_CONNECTOR_ID,
+        externalRef: "fake:video-4",
+        url: "https://fixture.invalid/watch/fake:video-4",
+        capabilities: ["playBrowser"],
+      },
+      {
+        mode: "native",
+        connectorId: FIXTURE_CONNECTOR_ID,
+        externalRef: "fake:video-4",
+        capabilities: ["playNative"],
+      },
+    ],
+  },
 ];
 
 /** The default seeded connector-side library. */

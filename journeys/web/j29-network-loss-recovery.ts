@@ -71,7 +71,11 @@ export const j29NetworkLossRecovery: Journey = {
     // R17 — the SESSION network-loss surface (Static Bloom's scripted
     // outage): the measured starvation truth, then the explicit
     // resume-or-clean-restart choice.
-    const itemHref = await itemHrefFromSearch(context, "Static Bloom", "Static Bloom");
+    // R17 fix (lead integration): the network-loss item is the metadata-
+    // bearing "Signal Fade" (fake:video-4) — the drive's scripted host.
+    // (The no-metadata "Static Bloom" fake:video-2 stays a frozen fixture
+    // law; its item page can never mount the acquisition panel.)
+    const itemHref = await itemHrefFromSearch(context, "Signal Fade", "Signal Fade");
     assert.that(
       "the search surface offers the network-loss item",
       "an item link",
@@ -80,8 +84,10 @@ export const j29NetworkLossRecovery: Journey = {
     );
     await goto(context, itemHref ?? "/");
 
-    // The healthy transfer first (the truthful starting point).
-    await driveAcquisition(context, "advance", "Finding the details for this title.");
+    // The healthy transfer first (the truthful starting point). The drive
+    // STARTS with acquire (PENDING → preparing/locating — the J21 law),
+    // then advances into the transfer.
+    await driveAcquisition(context, "acquire", "Finding the details for this title.");
     await driveAcquisition(context, "advance", "Finishing the offline copy in the background.");
 
     // THE CONNECTION LOST state: the MEASURED starvation truth — the
