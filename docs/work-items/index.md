@@ -1,6 +1,8 @@
 # WebFlix Work Item Registry — Remediation Freeze
 
-**Active execution registry:** R00-R19 in `docs/plans/2026-09-16-webflix-remediation-plan.md`.
+**Historical release registry:** R00-R19 in `docs/plans/2026-09-16-webflix-remediation-plan.md` — COMPLETE and release-accepted.
+
+**Active execution registry:** R20 in `docs/plans/2026-09-19-webflix-byof-plan.md`.
 
 The earlier WFX-001–043 registry remains historical context only. No worker should treat a legacy WFX item as sufficient proof that the corresponding product capability is complete.
 
@@ -26,6 +28,7 @@ The earlier WFX-001–043 registry remains historical context only. No worker sh
 | R17 | Failure/recovery hardening | Lead + workers | R13,R15,R16 |
 | R18 | Security/privacy/authorization audit | Lead | R17 |
 | R19 | Production deployment + release acceptance | Lead | R18 |
+| R20 | Bring Your Own Feed | Worker 1 + Worker 2 + Worker 3; Lead integration | R19 |
 
 ## Worker assignment rules
 
@@ -36,3 +39,8 @@ Every UI item must run affected golden journeys from `docs/validation/webflix-go
 ## Completion truth
 
 A work item is green only when its code, tests, contracts, documentation, real production wiring, and affected journey evidence agree. Worker summaries are not completion evidence.
+
+
+## R20 completion truth
+
+R20 is not complete because connected-source management or generic feed search exists. It requires a real authorized import/feed route, persisted provenance, explicit snapshot/live truth, idempotent synchronization, Web/Desktop shared semantics, and J33 journey evidence.
