@@ -288,3 +288,7 @@ At minimum verify R02 identity, R03 source read/connect, R05 recommendation/inte
 ## Discoverability law
 
 Existing journeys remain acceptance contracts. J34/J35 are meta-journeys: they verify that the user can actually reach the capabilities those journeys validate. UI work that passes component tests but fails J34 is incomplete.
+
+## ShareNet-inspired visual acceptance
+
+Affected R21 UI journeys must also verify the visual language in `docs/architecture/webflix-design-language.md`: calm warm-light application surfaces where appropriate, clear typography hierarchy, restrained semantic state color, single primary actions, comfortable whitespace, progressive disclosure of diagnostics, mobile touch-target quality, and reduced-motion behavior. Visual review must not treat source/protocol diagnostics as the primary product experience.
