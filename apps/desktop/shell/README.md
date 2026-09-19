@@ -40,6 +40,7 @@ shell/
       background.rs        the truthful task registry (full background work)
       sharing.rs           the OS share sheet (macOS picker; honest unsupported elsewhere)
       engine.rs            the engine process host (stdio JSON-lines relay)
+      file_import.rs       the BYOF import file picker + read-root law (R20-F)
 ```
 
 ## The IPC surface (command-for-command)
@@ -53,6 +54,8 @@ shell/
 | `surfaceOpen`/`surfaceNavigate`/`surfaceClose` | `wfx_surface_*` | `browser_host.rs` |
 | `notificationPermission`/`notificationRequestPermission`/`notificationShow` | `wfx_notify_*` | `notifications.rs` |
 | `taskSchedule`/`taskCancel`/`taskStatus`/`taskList` | `wfx_task_*` | `background.rs` |
+| `taskReport` | `wfx_task_report` | `background.rs` (the executor report seam, R20-F) |
+| `filePickAvailable`/`filePickOpen`/`fileRead` | `wfx_file_pick_available`/`wfx_file_pick_open`/`wfx_file_read` | `file_import.rs` (R20-F) |
 | `shareCanPresent`/`sharePresent` | `wfx_share_*`          | `sharing.rs`       |
 | `engineSpawn`/`engineSend`/`onEngineEvent`/`engineTerminate` | `wfx_engine_*` + `wfx://engine/<id>` events | `engine.rs` |
 
@@ -60,6 +63,15 @@ Event channels: `wfx://lifecycle`, `wfx://surface`, `wfx://task`,
 `wfx://engine/<id>`. Every fallible command answers the typed
 `ShellError` (`{ name: "ShellIpcError", code, detail }`) that the
 adapter's ports re-map onto the frozen platform-contracts taxonomies.
+
+WIRE LAW (R20-W3): every TypeScript BOOLEAN-discriminant union crossing
+the seam (`ShellFilePickOutcome`, `ShellNotifyOutcome`) is serialized by
+a MANUAL `Serialize` impl in `ipc.rs` that emits the boolean tag exactly
+(`{"picked": true, …}`) — serde's derived tagged enums emit the variant
+NAME as a string tag, which the TS truthiness folds would mis-read (a
+dismissed pick as a pick; a denied notification as delivered). The whole
+ipc.rs carries NO derived tagged enum; the law is pinned by
+`apps/desktop/tests/shell-wire-contract.test.ts`.
 
 ## Build procedure
 

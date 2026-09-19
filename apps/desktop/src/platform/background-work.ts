@@ -18,8 +18,10 @@
  * events, honest states `scheduled|running|suspended|completed|failed|
  * cancelled`). The EXECUTORS that drive `acquisition` tasks are the
  * native-media engine sessions themselves (R10's service process keeps
- * downloading; R14 wires the acquisition UX to it), and `sync`/`
- * maintenance` executors land with R15's connector sync — the shell
+ * downloading; R14 wires the acquisition UX to it); the BYOF feed `sync`
+ * executor is the R20-F feed-sync driver (`platform/feed-sync.ts` — it
+ * drives the registry through the executor `taskReport` seam); other
+ * `sync`/`maintenance` executors land with their lanes. The shell
  * reports their state as the executors move it, never inventing progress.
  *
  * Scheduling honesty (the port contract): `schedule` answers a typed

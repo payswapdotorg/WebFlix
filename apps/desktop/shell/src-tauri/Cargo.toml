@@ -20,6 +20,10 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 fs2 = "0.4"
 uuid = { version = "1", features = ["v4"] }
+# R20-F — the BYOF import file picker: the platform's native open-file
+# dialog (macOS/Windows native; GTK on Linux desktops). A platform with
+# no dialog service answers the honest typed `unsupported` verdict.
+rfd = "0.15"
 
 # macOS share sheet backend (NSSharingServicePicker). Other platforms
 # answer the honest `unsupported` outcome through the same seam (the

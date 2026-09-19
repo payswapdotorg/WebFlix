@@ -63,7 +63,10 @@ const app = createDesktopApp({
 | storage           | `storage.ts`               | Async kv + blobs under `{appData}/wfx-desktop/storage/{kv,blobs}` (percent-encoded filenames, atomic writes). QUOTA IS DISK-TRUTH (usage = summed file sizes; the bound = the volume's real free space; ENOSPC → typed `quota-exceeded`). The adapter NEVER evicts (the frozen law); media cache eviction is `@wfx/native-media`'s policy over its own dir. |
 | browser-host      | `browser-host.ts`          | Contained webview surfaces with MANDATORY cookie/storage isolation (own data dir per session; non-isolate requests refused before the shell). Navigation observed, never steered; no script injection, no credential capture, no content inspection — by design. |
 | notifications     | `notifications.ts`         | OS notifications, permission-gated; delivery is never fabricated (permission-denied / unavailable / invalid-request are typed outcomes). |
-| background-work   | `background-work.ts`       | The truthful task registry (full background work: tasks run while unfocused; idempotent taskIds; typed rejections; honest states + `-1` unknown progress). Executors: acquisition → the engine sessions (R10/R14); sync/maintenance → R15. |
+| background-work   | `background-work.ts`       | The truthful task registry (full background work: tasks run while unfocused; idempotent taskIds; typed rejections; honest states + `-1` unknown progress). Executors: acquisition → the engine sessions (R10/R14); BYOF feed sync → the R20-F `feed-sync.ts` driver through the `taskReport` seam; other sync/maintenance executors land with their lanes. |
+| feed-import       | `feed-import.ts`          | R20-F — the BYOF native file-import binding: pick → read → `FeedPort.previewImport` (the artifact crosses VERBATIM); typed verdicts for every platform outcome (dismissed / unsupported / failed / invalid-input); method-honest offers (a connector that does not declare the file method never reaches the port). |
+| feed-sync         | `feed-sync.ts`            | R20-F — the `sync`-kind background executor: `scheduleSync` (idempotent `wfx-feed-sync/<importId>` task), `runSync` (scheduled → running → completed/failed through the report seam; `FeedPort.syncImport` does the work; NO deletion path — the survival law is structural), `cancelSync` (disconnect truth: stop the task, retain every record). |
+| feed-cache        | `feed-cache.ts`           | R20-G — the richer Desktop feed cache: a PRESENTATION cache over the shell filesystem KV with honest `savedAt`/`capturedAt` age labels (never live); the port stays canonical; explicit eviction; a malformed cache is an honest miss. |
 | sharing           | `sharing.ts`               | OS share sheet (macOS picker) with `canShare` truthful per request and platform; dismissal ≠ failure; Linux-like platforms answer honest unsupported (never a fake share). |
 | server-port       | `server-port.ts`           | The frozen `WFX_API_BASE` HTTP transport with the R01 typed failures (`ServerResult`/`ServerFailure`; the event-sink law preserved verbatim; identity rides as `x-wfx-*` headers, never URLs). |
 | native-media-binding | `native-media-binding.ts` | **THE R10 SEAM** — see below. |
@@ -74,7 +77,15 @@ const app = createDesktopApp({
 The UI projection (`src/surface/desktop-surface.ts`) is deliberately thin:
 runtime state → view models, no duplicated product logic. The full product
 UI surfaces are R09's lane (rendering against this projection) and R16's
-golden journeys.
+golden journeys. Two optional composition blocks project their own
+surfaces the same way — R14's acquisition block
+(`surface/acquisition-surface.ts`) and R20-G's BYOF feed block
+(`surface/feed-surface.ts` over the frozen shared `FeedPort`: native file
+import + background sync + the presentation cache, with the SAME
+semantics as the Web lane — mode truth, freshness, provenance survival,
+idempotent import). An absent optional block answers the honest UNBOUND
+surface (typed verdicts — never a silent empty feed, never a fixture
+fallback).
 
 ## THE R10 SEAM (`native-media-binding.ts`)
 

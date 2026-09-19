@@ -8,7 +8,8 @@
 //! fallible command returns — the adapter's port wrappers re-map it onto
 //! the platform-contracts error taxonomies (same vocabulary, verbatim).
 
-use serde::{Deserialize, Serialize};
+use serde::ser::SerializeMap;
+use serde::{Deserialize, Serialize, Serializer};
 
 /// The shell's identity + shutdown budget (the `info` command's answer).
 #[derive(Serialize)]
@@ -92,15 +93,45 @@ pub struct ShellNotification {
 }
 
 /// The OS handoff outcome (never a fabricated delivery).
-#[derive(Serialize)]
-#[serde(tag = "delivered", rename_all = "camelCase")]
+///
+/// WIRE LAW (R20-W3 fix-forward): the frozen TS `ShellNotifyOutcome`
+/// union discriminates on a BOOLEAN (`delivered: true | false`). serde's
+/// derived internally-tagged enum would emit the VARIANT NAME as the
+/// tag's value (a `notDelivered` string tag is TRUTHY, so the TS fold
+/// `if (outcome.delivered)` would mis-read a permission-denied handoff
+/// as a DELIVERED — a fabricated delivery on the real shell), so this
+/// type serializes by hand to the contract EXACTLY:
+/// `{ delivered: true }` / `{ delivered: false, reason, detail }`.
+/// Pinned by `apps/desktop/tests/shell-wire-contract.test.ts`.
+#[derive(Clone)]
 pub enum ShellNotifyOutcome {
     Delivered,
-    #[serde(rename_all = "camelCase")]
     NotDelivered {
         reason: &'static str, // "permission-denied" | "unavailable" | "invalid-request"
         detail: String,
     },
+}
+
+impl Serialize for ShellNotifyOutcome {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ShellNotifyOutcome::Delivered => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("delivered", &true)?;
+                map.end()
+            }
+            ShellNotifyOutcome::NotDelivered { reason, detail } => {
+                let mut map = serializer.serialize_map(Some(3))?;
+                map.serialize_entry("delivered", &false)?;
+                map.serialize_entry("reason", reason)?;
+                map.serialize_entry("detail", detail)?;
+                map.end()
+            }
+        }
+    }
 }
 
 // — background work ———————————————————————————————————————————————————————
@@ -135,6 +166,99 @@ pub struct ShellTaskOutcome {
     pub task_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<&'static str>, // "unsupported-kind" | "at-capacity" | "invalid-task"
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+/// One executor-reported task transition (the ShellTaskReport shape, R20-F).
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellTaskReport {
+    pub task_id: String,
+    pub state: String, // the task-state vocabulary above, enforced by the registry
+    pub progress: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+// — native file import (R20-F) ————————————————————————————————————————————
+/// One file-type filter row of a pick request (the ShellFilePickFilter shape).
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellFilePickFilter {
+    pub name: String,
+    pub extensions: Vec<String>,
+}
+
+/// A native open-file dialog request (the ShellFilePickRequest shape).
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellFilePickRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filters: Option<Vec<ShellFilePickFilter>>,
+}
+
+/// One picked file (the ShellPickedFile shape — shell-truth metadata).
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellPickedFile {
+    pub path: String,
+    pub file_name: String,
+    pub size_bytes: u64,
+}
+
+/// The typed pick outcome: picked, dismissed, or the honest unsupported
+/// verdict of a platform with no dialog service (never a silent no-op).
+///
+/// WIRE LAW (R20-W3 fix-forward): the frozen TS `ShellFilePickOutcome`
+/// union discriminates on a BOOLEAN (`picked: true | false`). serde's
+/// derived internally-tagged enum would emit the VARIANT NAME as the
+/// tag's value (a `notPicked` string tag is TRUTHY, so the TS fold
+/// `if (!pick.picked)` would mis-read a DISMISSED dialog as a pick and
+/// dereference a missing `file` — the typed non-event would surface as
+/// a spurious failed verdict on the real shell), so this type serializes
+/// by hand to the contract EXACTLY: `{ picked: true, file }` /
+/// `{ picked: false, reason, detail }`. Pinned by
+/// `apps/desktop/tests/shell-wire-contract.test.ts`.
+#[derive(Clone)]
+pub enum ShellFilePickOutcome {
+    Picked { file: ShellPickedFile },
+    NotPicked {
+        reason: &'static str, // "dismissed" | "unsupported"
+        detail: String,
+    },
+}
+
+impl Serialize for ShellFilePickOutcome {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ShellFilePickOutcome::Picked { file } => {
+                let mut map = serializer.serialize_map(Some(2))?;
+                map.serialize_entry("picked", &true)?;
+                map.serialize_entry("file", file)?;
+                map.end()
+            }
+            ShellFilePickOutcome::NotPicked { reason, detail } => {
+                let mut map = serializer.serialize_map(Some(3))?;
+                map.serialize_entry("picked", &false)?;
+                map.serialize_entry("reason", reason)?;
+                map.serialize_entry("detail", detail)?;
+                map.end()
+            }
+        }
+    }
+}
+
+/// The file-dialog capability answer (the ShellFilePickSupport shape).
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellFilePickSupport {
+    pub available: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub detail: Option<String>,
 }
