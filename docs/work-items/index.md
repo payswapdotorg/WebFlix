@@ -29,6 +29,7 @@ The earlier WFX-001–043 registry remains historical context only. No worker sh
 | R18 | Security/privacy/authorization audit | Lead | R17 |
 | R19 | Production deployment + release acceptance | Lead | R18 |
 | R20 | Bring Your Own Feed | Worker 1 + Worker 2 + Worker 3; Lead integration | R19 |
+| R21 | Journey-driven product discoverability + capability surface integration | Worker 1 + Worker 2 + Worker 3; Lead integration | R20 |
 
 ## Worker assignment rules
 
@@ -44,3 +45,8 @@ A work item is green only when its code, tests, contracts, documentation, real p
 ## R20 completion truth
 
 R20 is not complete because connected-source management or generic feed search exists. It requires a real authorized import/feed route, persisted provenance, explicit snapshot/live truth, idempotent synchronization, Web/Desktop shared semantics, and J33 journey evidence.
+
+
+## R21 completion truth
+
+R21 is not complete because architecture contracts, routes, or tests exist. It requires a fresh-user path to discover the corresponding capability from a normal product surface, a useful next action for important failures, production transport parity, removal of stale completion copy, and fresh J34/J35 journey evidence.
