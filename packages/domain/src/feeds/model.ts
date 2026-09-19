@@ -57,6 +57,17 @@ export const FEED_SYNC_STATES: readonly FeedSyncState[] = [
 ] as const;
 
 /** Every valid `FeedRelationship` (frozen union order). */
+/**
+ * The user-initiated disconnect marker (R20-H integration hoist, lead-
+ * ratified fold): when the user disconnects an import, the shared store's
+ * honest state-marking path records `reauthorization-required` with an
+ * error detail carrying THIS prefix — records and provenance are RETAINED
+ * (never a destructive deletion). Both adapters (web `BYOF_DISCONNECTED_-
+ * MARKER`, api `FEED_DISCONNECTED_MARKER`) re-export this single source;
+ * the derivation `isByofUserDisconnect` (web) tests the prefix.
+ */
+export const FEED_USER_DISCONNECT_MARKER = "Import disconnected by the user";
+
 export const FEED_RELATIONSHIPS: readonly FeedRelationship[] = [
   "follow",
   "subscription",

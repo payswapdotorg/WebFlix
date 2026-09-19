@@ -42,6 +42,7 @@
 
 import type { FeedRelationship, FeedSyncState } from "@wfx/domain";
 import type { PersistedFeedImport, PersistedFeedRecord } from "@wfx/persistence";
+import { FEED_USER_DISCONNECT_MARKER } from "@wfx/domain";
 
 // ---------------------------------------------------------------------------
 // The typed failure channel (the BYOF port's error grammar)
@@ -90,7 +91,9 @@ export type ByofResult<T> =
  * `FeedSyncState` vocabulary has no "disconnected" state — this marker is
  * the Web lane's documented fold, flagged for lead ratification.
  */
-export const BYOF_DISCONNECTED_MARKER = "Import disconnected by the user";
+// R20-H integration: the string contract lives in @wfx/domain now
+// (FEED_USER_DISCONNECT_MARKER); this alias preserves the lane-local name.
+export const BYOF_DISCONNECTED_MARKER = FEED_USER_DISCONNECT_MARKER;
 
 /** Whether an import's error detail marks a USER-initiated disconnect. */
 export function isByofUserDisconnect(errorDetail: string | undefined): boolean {

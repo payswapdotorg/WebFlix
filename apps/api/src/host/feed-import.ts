@@ -67,6 +67,7 @@ import {
 } from "@wfx/persistence";
 
 import { deriveAuthState } from "./source-management";
+import { FEED_USER_DISCONNECT_MARKER } from "@wfx/domain";
 
 // ---------------------------------------------------------------------------
 // The connector wiring (the registry law the fixtures host documented)
@@ -171,7 +172,9 @@ export interface FeedSourceOption {
  * ratified fold; the cross-adapter string contract is flagged for lead
  * ratification).
  */
-export const FEED_DISCONNECTED_MARKER = "Import disconnected by the user";
+// R20-H integration: the string contract lives in @wfx/domain now
+// (FEED_USER_DISCONNECT_MARKER); this alias preserves the lane-local name.
+export const FEED_DISCONNECTED_MARKER = FEED_USER_DISCONNECT_MARKER;
 
 /** The typed outcome of the host's own operations (the honest channel). */
 export type FeedImportHostResult<T> =
