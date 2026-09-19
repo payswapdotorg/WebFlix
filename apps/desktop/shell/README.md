@@ -40,6 +40,7 @@ shell/
       background.rs        the truthful task registry (full background work)
       sharing.rs           the OS share sheet (macOS picker; honest unsupported elsewhere)
       engine.rs            the engine process host (stdio JSON-lines relay)
+      file_import.rs       the BYOF import file picker + read-root law (R20-F)
 ```
 
 ## The IPC surface (command-for-command)
@@ -53,6 +54,8 @@ shell/
 | `surfaceOpen`/`surfaceNavigate`/`surfaceClose` | `wfx_surface_*` | `browser_host.rs` |
 | `notificationPermission`/`notificationRequestPermission`/`notificationShow` | `wfx_notify_*` | `notifications.rs` |
 | `taskSchedule`/`taskCancel`/`taskStatus`/`taskList` | `wfx_task_*` | `background.rs` |
+| `taskReport` | `wfx_task_report` | `background.rs` (the executor report seam, R20-F) |
+| `filePickAvailable`/`filePickOpen`/`fileRead` | `wfx_file_pick_available`/`wfx_file_pick_open`/`wfx_file_read` | `file_import.rs` (R20-F) |
 | `shareCanPresent`/`sharePresent` | `wfx_share_*`          | `sharing.rs`       |
 | `engineSpawn`/`engineSend`/`onEngineEvent`/`engineTerminate` | `wfx_engine_*` + `wfx://engine/<id>` events | `engine.rs` |
 

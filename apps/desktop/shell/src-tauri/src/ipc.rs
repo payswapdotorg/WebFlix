@@ -139,6 +139,66 @@ pub struct ShellTaskOutcome {
     pub detail: Option<String>,
 }
 
+/// One executor-reported task transition (the ShellTaskReport shape, R20-F).
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellTaskReport {
+    pub task_id: String,
+    pub state: String, // the task-state vocabulary above, enforced by the registry
+    pub progress: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+// — native file import (R20-F) ————————————————————————————————————————————
+/// One file-type filter row of a pick request (the ShellFilePickFilter shape).
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellFilePickFilter {
+    pub name: String,
+    pub extensions: Vec<String>,
+}
+
+/// A native open-file dialog request (the ShellFilePickRequest shape).
+#[derive(Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellFilePickRequest {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub filters: Option<Vec<ShellFilePickFilter>>,
+}
+
+/// One picked file (the ShellPickedFile shape — shell-truth metadata).
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellPickedFile {
+    pub path: String,
+    pub file_name: String,
+    pub size_bytes: u64,
+}
+
+/// The typed pick outcome: picked, dismissed, or the honest unsupported
+/// verdict of a platform with no dialog service (never a silent no-op).
+#[derive(Serialize, Clone)]
+#[serde(tag = "picked", rename_all = "camelCase")]
+pub enum ShellFilePickOutcome {
+    Picked { file: ShellPickedFile },
+    NotPicked {
+        reason: &'static str, // "dismissed" | "unsupported"
+        detail: String,
+    },
+}
+
+/// The file-dialog capability answer (the ShellFilePickSupport shape).
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellFilePickSupport {
+    pub available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
 // — sharing ———————————————————————————————————————————————————————————————
 /// One share request (the ShareRequest shape).
 #[derive(Deserialize, Clone)]

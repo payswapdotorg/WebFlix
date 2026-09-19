@@ -33,6 +33,9 @@ import type { Unsubscribe } from "@wfx/platform-contracts";
 import { ShellIpcError } from "../src/platform/shell-ipc";
 import type {
   ShellEngineConfig,
+  ShellFilePickOutcome,
+  ShellFilePickRequest,
+  ShellFilePickSupport,
   ShellIpc,
   ShellLifecycleEvent,
   ShellNotification,
@@ -43,6 +46,7 @@ import type {
   ShellStorageQuota,
   ShellSurfaceEvent,
   ShellSurfaceOpenRequest,
+  ShellTaskReport,
   ShellTaskOutcome,
   ShellTaskSpec,
   ShellTaskStatus,
@@ -299,6 +303,12 @@ export interface SimShellOptions {
   readonly shareSheetPresent?: boolean;
   /** Whether notification permission can still be requested (default true). */
   readonly notificationCanRequest?: boolean;
+  /**
+   * Whether the platform can show a native file dialog (default `true`).
+   * `false` simulates the honest `unsupported` pick verdict — a
+   * headless/dialog-less platform (the R20-F typed truth).
+   */
+  readonly fileDialogPresent?: boolean;
 }
 
 /** One tracked surface session (isolation observable through cookie jars). */
@@ -367,6 +377,24 @@ export class SimShell implements ShellIpc {
   /** Every share request the sheet saw (assertion surface). */
   readonly shareRequests: ShellShareRequest[] = [];
 
+  // — native file import (R20-F) —
+  private readonly fileDialogPresent: boolean;
+  /** The scripted filesystem (path → bytes) the pick/read commands serve. */
+  private readonly files = new Map<string, Uint8Array>();
+  /**
+   * The next pick's scripted answer (default: the user dismissed the
+   * dialog — the deterministic no-op user path). A picked file must exist
+   * in the scripted filesystem.
+   */
+  nextFilePickOutcome: { readonly picked: true; readonly path: string } | { readonly picked: false; readonly reason: "dismissed" } = {
+    picked: false,
+    reason: "dismissed",
+  };
+  /** Paths `fileRead` refuses with the honest `io` failure (test hook). */
+  readonly unreadablePaths = new Set<string>();
+  /** Every pick request the dialog saw (assertion surface). */
+  readonly pickRequests: ShellFilePickRequest[] = [];
+
   // — engine hosting —
   private engineCounter = 0;
   private readonly engines = new Map<string, { handle: SimEngineHandle; handlers: Set<EngineEventHandler> }>();
@@ -379,6 +407,7 @@ export class SimShell implements ShellIpc {
     this.shutdownTimeoutMs = options.shutdownTimeoutMs ?? 5_000;
     this.shareSheetPresent = options.shareSheetPresent ?? true;
     this.canRequestPermission = options.notificationCanRequest ?? true;
+    this.fileDialogPresent = options.fileDialogPresent ?? true;
   }
 
   // -----------------------------------------------------------------------
@@ -744,6 +773,84 @@ export class SimShell implements ShellIpc {
     return () => {
       this.taskHandlers.delete(handler);
     };
+  }
+
+  /** The executor report seam: move a KNOWN task (an unknown id answers false, never a fake transition). */
+  async taskReport(report: ShellTaskReport): Promise<boolean> {
+    const task = this.tasks.get(report.taskId);
+    if (task === undefined) return false;
+    this.pumpTask(report.taskId, {
+      state: report.state,
+      progress: report.progress,
+      ...(report.detail !== undefined ? { detail: report.detail } : {}),
+    });
+    return true;
+  }
+
+  // -----------------------------------------------------------------------
+  // ShellIpc — native file import (R20-F)
+  // -----------------------------------------------------------------------
+
+  /** Test hook: place one file in the scripted filesystem. */
+  scriptFile(path: string, bytes: Uint8Array): void {
+    this.files.set(path, bytes);
+  }
+
+  /** The scripted filesystem's file (assertion surface). */
+  file(path: string): Uint8Array | undefined {
+    return this.files.get(path);
+  }
+
+  async filePickAvailable(): Promise<ShellFilePickSupport> {
+    if (!this.fileDialogPresent) {
+      return {
+        available: false,
+        detail: "the simulated platform has no native file-dialog service (headless-like truth)",
+      };
+    }
+    return { available: true };
+  }
+
+  async filePickOpen(request: ShellFilePickRequest): Promise<ShellFilePickOutcome> {
+    this.pickRequests.push(request);
+    if (!this.fileDialogPresent) {
+      return {
+        picked: false,
+        reason: "unsupported",
+        detail: "the simulated platform has no native file-dialog service (headless-like truth)",
+      };
+    }
+    if (this.nextFilePickOutcome.picked) {
+      const path = this.nextFilePickOutcome.path;
+      const bytes = this.files.get(path);
+      if (bytes === undefined) {
+        throw new Error(
+          `SimShell: filePickOpen scripted path '${path}' has no scripted file — call scriptFile(path, bytes) first`,
+        );
+      }
+      const separator = path.lastIndexOf("/");
+      const fileName = separator >= 0 ? path.slice(separator + 1) : path;
+      return {
+        picked: true,
+        file: { path, fileName, sizeBytes: bytes.byteLength },
+      };
+    }
+    return {
+      picked: false,
+      reason: this.nextFilePickOutcome.reason,
+      detail: "the user closed the file dialog without choosing a file",
+    };
+  }
+
+  async fileRead(path: string): Promise<Uint8Array> {
+    if (this.unreadablePaths.has(path)) {
+      throw new ShellIpcError("io", `fileRead('${path}'): the file could not be read (scripted failure)`);
+    }
+    const bytes = this.files.get(path);
+    if (bytes === undefined) {
+      throw new ShellIpcError("io", `fileRead('${path}'): the file does not exist on this platform`);
+    }
+    return bytes;
   }
 
   // -----------------------------------------------------------------------

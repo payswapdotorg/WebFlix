@@ -19,6 +19,8 @@
  * | `surfaceOpen`/…             | `wfx_surface_open`/…          |
  * | `notificationShow`/…        | `wfx_notify_show`/…           |
  * | `taskSchedule`/…            | `wfx_task_schedule`/…         |
+ * | `taskReport`                | `wfx_task_report`             |
+ * | `filePickAvailable`/`filePickOpen`/`fileRead` | `wfx_file_pick_available`/`wfx_file_pick_open`/`wfx_file_read` |
  * | `sharePresent`/…            | `wfx_share_present`/…         |
  * | `engineSpawn`/…             | `wfx_engine_spawn`/…          |
  *
@@ -178,8 +180,22 @@ export function createTauriShellIpc(options: TauriShellIpcOptions = {}): ShellIp
     taskCancel: (taskId) => call("wfx_task_cancel", { taskId }),
     taskStatus: (taskId) => call("wfx_task_status", { taskId }),
     taskList: () => call("wfx_task_list"),
+    taskReport: (report) => call("wfx_task_report", { report }),
     onTaskEvent(handler) {
       return listen("wfx://task", (payload) => handler(payload as never));
+    },
+
+    filePickAvailable: () => call("wfx_file_pick_available"),
+    filePickOpen: (request) => call("wfx_file_pick_open", { request }),
+    fileRead: async (path) => {
+      // Vec<u8> crosses the invoke boundary as a JSON number array; the
+      // honest conversion guarantees a REAL Uint8Array (byteLength truth).
+      const answer = await call<readonly number[] | Uint8Array>("wfx_file_read", { path });
+      if (answer instanceof Uint8Array) return answer;
+      if (answer === null || answer === undefined) {
+        throw new ShellIpcError("io", `fileRead('${path}'): the shell answered no bytes`);
+      }
+      return Uint8Array.from(answer);
     },
 
     shareCanPresent: (request) => call("wfx_share_can_present", { request }),
