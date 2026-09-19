@@ -157,3 +157,20 @@ export interface AcquisitionStatus { id:string; itemId:string; state:Acquisition
 ```
 
 All clients consume the same Experience API, client-runtime contracts, and event schemas. Contract changes require synchronized updates to this document, tests, affected work items, and the tech-lead handoff.
+
+## Bring Your Own Feed
+
+BYOF is a distinct feed/import capability. It is not inferred from generic catalog search.
+
+```ts
+export type FeedImportMethod='api'|'official-export'|'user-file'|'snapshot';
+export type FeedSyncState='live'|'syncing'|'snapshot'|'stale'|'reauthorization-required'|'unsupported'|'degraded';
+export interface FeedImportCapability { method:FeedImportMethod; supportsContinuousSync:boolean; supportsFollowing:boolean; supportsPlaylists:boolean; supportsLikesOrSaves:boolean; }
+export interface FeedProvenance { connectorId:string; importMethod:FeedImportMethod; sourceRef?:string; capturedAt:string; syncState:FeedSyncState; sourceOrder:number; relationship:'follow'|'subscription'|'playlist'|'watchlist'|'like'|'save'|'ranked-feed'|'history'|'unknown'; }
+export interface FeedRecord { id:string; userId:string; profileId:string; entertainmentItemId:string; provenance:FeedProvenance; importedAt:string; sourceUpdatedAt?:string; }
+export interface FeedImport { id:string; connectorId:string; method:FeedImportMethod; status:'preview'|'confirmed'|'running'|'complete'|'failed'|'reauthorization-required'; startedAt:string; completedAt?:string; error?:string; }
+export interface FeedImportPreview { importId:string; connectorId:string; method:FeedImportMethod; itemCount:number; relationshipCounts:Record<string,number>; freshness:FeedSyncState; sample:FeedRecord[]; }
+export interface FeedPort { previewImport(input:{connectorId:string;method?:FeedImportMethod;artifact?:Uint8Array}):Promise<FeedImportPreview>; confirmImport(importId:string):Promise<FeedImport>; readFeed(input:{profileId:string;mode:'webflix'|'following'|'byof'|'hybrid'}):Promise<FeedRecord[]>; syncImport(importId:string):Promise<FeedImport>; }
+```
+
+Source-native ordering is data with provenance. It must never be represented as a WebFlix recommendation score merely because it appears in a BYOF surface.
