@@ -292,3 +292,14 @@ WebFlix differentiates by combining that native-media capability with universal 
 ## Completion standard
 
 The product is not accepted when the architecture merely exists. It is accepted when the golden journeys, cross-platform parity, torrent lifecycle, recovery flows, and capability truth are demonstrated against real wired implementations.
+
+
+## Post-release extension — Bring Your Own Feed (R20)
+
+The R00-R19 remediation release remains frozen and accepted. R20 adds BYOF as a first-class post-release capability without rewriting completed release semantics.
+
+Canonical specification: `docs/architecture/byof-architecture.md`.
+
+BYOF distinguishes source connection from feed import/mirroring. It supports authorized API/export/user-file inputs, persists feed provenance/freshness, preserves source-native ordering separately from WebFlix ranking, and keeps Web/Desktop/Mobile semantics in the shared runtime.
+
+BYOF does not permit scraping, access-control bypass, hidden private endpoints, or provider credential exposure to models.
