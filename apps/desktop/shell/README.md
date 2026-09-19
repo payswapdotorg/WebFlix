@@ -64,6 +64,15 @@ Event channels: `wfx://lifecycle`, `wfx://surface`, `wfx://task`,
 `ShellError` (`{ name: "ShellIpcError", code, detail }`) that the
 adapter's ports re-map onto the frozen platform-contracts taxonomies.
 
+WIRE LAW (R20-W3): every TypeScript BOOLEAN-discriminant union crossing
+the seam (`ShellFilePickOutcome`, `ShellNotifyOutcome`) is serialized by
+a MANUAL `Serialize` impl in `ipc.rs` that emits the boolean tag exactly
+(`{"picked": true, …}`) — serde's derived tagged enums emit the variant
+NAME as a string tag, which the TS truthiness folds would mis-read (a
+dismissed pick as a pick; a denied notification as delivered). The whole
+ipc.rs carries NO derived tagged enum; the law is pinned by
+`apps/desktop/tests/shell-wire-contract.test.ts`.
+
 ## Build procedure
 
 Prerequisites: Rust 1.77+ (`rustup`), the platform webview dependencies

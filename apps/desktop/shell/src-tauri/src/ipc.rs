@@ -8,7 +8,8 @@
 //! fallible command returns — the adapter's port wrappers re-map it onto
 //! the platform-contracts error taxonomies (same vocabulary, verbatim).
 
-use serde::{Deserialize, Serialize};
+use serde::ser::SerializeMap;
+use serde::{Deserialize, Serialize, Serializer};
 
 /// The shell's identity + shutdown budget (the `info` command's answer).
 #[derive(Serialize)]
@@ -92,15 +93,45 @@ pub struct ShellNotification {
 }
 
 /// The OS handoff outcome (never a fabricated delivery).
-#[derive(Serialize)]
-#[serde(tag = "delivered", rename_all = "camelCase")]
+///
+/// WIRE LAW (R20-W3 fix-forward): the frozen TS `ShellNotifyOutcome`
+/// union discriminates on a BOOLEAN (`delivered: true | false`). serde's
+/// derived internally-tagged enum would emit the VARIANT NAME as the
+/// tag's value (a `notDelivered` string tag is TRUTHY, so the TS fold
+/// `if (outcome.delivered)` would mis-read a permission-denied handoff
+/// as a DELIVERED — a fabricated delivery on the real shell), so this
+/// type serializes by hand to the contract EXACTLY:
+/// `{ delivered: true }` / `{ delivered: false, reason, detail }`.
+/// Pinned by `apps/desktop/tests/shell-wire-contract.test.ts`.
+#[derive(Clone)]
 pub enum ShellNotifyOutcome {
     Delivered,
-    #[serde(rename_all = "camelCase")]
     NotDelivered {
         reason: &'static str, // "permission-denied" | "unavailable" | "invalid-request"
         detail: String,
     },
+}
+
+impl Serialize for ShellNotifyOutcome {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ShellNotifyOutcome::Delivered => {
+                let mut map = serializer.serialize_map(Some(1))?;
+                map.serialize_entry("delivered", &true)?;
+                map.end()
+            }
+            ShellNotifyOutcome::NotDelivered { reason, detail } => {
+                let mut map = serializer.serialize_map(Some(3))?;
+                map.serialize_entry("delivered", &false)?;
+                map.serialize_entry("reason", reason)?;
+                map.serialize_entry("detail", detail)?;
+                map.end()
+            }
+        }
+    }
 }
 
 // — background work ———————————————————————————————————————————————————————
@@ -180,14 +211,47 @@ pub struct ShellPickedFile {
 
 /// The typed pick outcome: picked, dismissed, or the honest unsupported
 /// verdict of a platform with no dialog service (never a silent no-op).
-#[derive(Serialize, Clone)]
-#[serde(tag = "picked", rename_all = "camelCase")]
+///
+/// WIRE LAW (R20-W3 fix-forward): the frozen TS `ShellFilePickOutcome`
+/// union discriminates on a BOOLEAN (`picked: true | false`). serde's
+/// derived internally-tagged enum would emit the VARIANT NAME as the
+/// tag's value (a `notPicked` string tag is TRUTHY, so the TS fold
+/// `if (!pick.picked)` would mis-read a DISMISSED dialog as a pick and
+/// dereference a missing `file` — the typed non-event would surface as
+/// a spurious failed verdict on the real shell), so this type serializes
+/// by hand to the contract EXACTLY: `{ picked: true, file }` /
+/// `{ picked: false, reason, detail }`. Pinned by
+/// `apps/desktop/tests/shell-wire-contract.test.ts`.
+#[derive(Clone)]
 pub enum ShellFilePickOutcome {
     Picked { file: ShellPickedFile },
     NotPicked {
         reason: &'static str, // "dismissed" | "unsupported"
         detail: String,
     },
+}
+
+impl Serialize for ShellFilePickOutcome {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            ShellFilePickOutcome::Picked { file } => {
+                let mut map = serializer.serialize_map(Some(2))?;
+                map.serialize_entry("picked", &true)?;
+                map.serialize_entry("file", file)?;
+                map.end()
+            }
+            ShellFilePickOutcome::NotPicked { reason, detail } => {
+                let mut map = serializer.serialize_map(Some(3))?;
+                map.serialize_entry("picked", &false)?;
+                map.serialize_entry("reason", reason)?;
+                map.serialize_entry("detail", detail)?;
+                map.end()
+            }
+        }
+    }
 }
 
 /// The file-dialog capability answer (the ShellFilePickSupport shape).
