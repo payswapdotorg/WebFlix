@@ -13,3 +13,5 @@ export * from "./host/version";
 export * from "./host/fan-out";
 export * from "./host/boot";
 export * from "./host/relay";
+// R20-H — the BYOF feed-import host composition (the /feeds routes' backing).
+export * from "./host/feed-import";

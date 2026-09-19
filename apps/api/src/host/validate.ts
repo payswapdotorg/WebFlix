@@ -15,11 +15,22 @@
  * NOT this module's concern: they flow to the connector, which answers
  * the honest failed/unsupported receipt.
  *
+ * R20-H: `parseFeedPreviewBody` parses the `POST /feeds/preview` capture
+ * request (connectorId + optional method/relationships/sourceRef filter +
+ * an optional base64 export artifact — the user-supplied bytes the
+ * export/file import methods require).
+ *
  * Determinism: pure parsing, no clock, no randomness, no environment.
  */
 
-import type { LibraryCommand, UserAction } from "@wfx/domain";
-import { isRecord } from "@wfx/domain";
+import type { FeedImportMethod, FeedRelationship, LibraryCommand, UserAction } from "@wfx/domain";
+import {
+  FEED_IMPORT_METHODS,
+  FEED_RELATIONSHIPS,
+  isFeedImportMethod,
+  isFeedRelationship,
+  isRecord,
+} from "@wfx/domain";
 
 /** The closed `UserAction.type` vocabulary (runtime mirror of the frozen union). */
 const USER_ACTION_TYPES: readonly string[] = [
@@ -326,4 +337,121 @@ export function parseSourceConnectBody(input: unknown): ParseResult<SourceConnec
     ok: true,
     value: credential !== undefined ? { credential } : {},
   };
+}
+
+// ---------------------------------------------------------------------------
+// R20-H — the feed-import preview body (`POST /feeds/preview`)
+// ---------------------------------------------------------------------------
+
+/** The parsed `POST /feeds/preview` body (the capture request). */
+export interface FeedPreviewBody {
+  readonly connectorId: string;
+  readonly method?: FeedImportMethod;
+  readonly relationships?: readonly FeedRelationship[];
+  readonly sourceRef?: string;
+  /** The user-supplied export artifact, base64-encoded (export/file methods). */
+  readonly artifact?: Uint8Array;
+}
+
+/** Bounds that keep garbage bounded (generous for a real export artifact). */
+const MAX_FEED_SOURCE_REF = 512;
+const MAX_FEED_ARTIFACT_BASE64 = 14_680_064; // ~11 MiB decoded (Takeout-scale, bounded)
+
+/** Parse and validate one `POST /feeds/preview` body. */
+export function parseFeedPreviewBody(input: unknown): ParseResult<FeedPreviewBody> {
+  if (!isRecord(input)) {
+    return { ok: false, problems: ["body: expected a feed-import request JSON object"] };
+  }
+  const problems: string[] = [];
+
+  const connectorId = input.connectorId;
+  if (typeof connectorId !== "string" || connectorId.trim().length === 0) {
+    problems.push("connectorId: expected a non-empty string (the source to import from)");
+  } else if (connectorId.length > MAX_CONNECTOR_ID) {
+    problems.push(`connectorId: longer than ${MAX_CONNECTOR_ID} characters`);
+  }
+
+  let method: FeedImportMethod | undefined;
+  if (input.method !== undefined && input.method !== null) {
+    if (!isFeedImportMethod(input.method)) {
+      problems.push(`method: expected one of ${FEED_IMPORT_METHODS.join(" | ")}`);
+    } else {
+      method = input.method;
+    }
+  }
+
+  let relationships: readonly FeedRelationship[] | undefined;
+  if (input.relationships !== undefined && input.relationships !== null) {
+    if (!Array.isArray(input.relationships) || input.relationships.length === 0) {
+      problems.push("relationships: when present, expected a non-empty array of relationship kinds");
+    } else {
+      const parsed: FeedRelationship[] = [];
+      for (const entry of input.relationships) {
+        if (!isFeedRelationship(entry)) {
+          problems.push(
+            `relationships: expected members of ${FEED_RELATIONSHIPS.join(" | ")}, got '${String(entry)}'`,
+          );
+          break;
+        }
+        parsed.push(entry);
+      }
+      if (problems.length === 0) relationships = parsed;
+    }
+  }
+
+  let sourceRef: string | undefined;
+  if (input.sourceRef !== undefined && input.sourceRef !== null) {
+    if (typeof input.sourceRef !== "string" || input.sourceRef.trim().length === 0) {
+      problems.push("sourceRef: when present, expected a non-empty string (the container to scope to)");
+    } else if (input.sourceRef.length > MAX_FEED_SOURCE_REF) {
+      problems.push(`sourceRef: longer than ${MAX_FEED_SOURCE_REF} characters`);
+    } else {
+      sourceRef = input.sourceRef;
+    }
+  }
+
+  let artifact: Uint8Array | undefined;
+  if (input.artifact !== undefined && input.artifact !== null) {
+    if (typeof input.artifact !== "string" || input.artifact.length === 0) {
+      problems.push("artifact: when present, expected a non-empty base64 string (the export/file bytes)");
+    } else if (input.artifact.length > MAX_FEED_ARTIFACT_BASE64) {
+      problems.push(`artifact: larger than ${MAX_FEED_ARTIFACT_BASE64} base64 characters`);
+    } else {
+      try {
+        artifact = decodeBase64ToBytes(input.artifact);
+      } catch {
+        problems.push("artifact: not valid base64 (the export/file bytes could not be decoded)");
+      }
+    }
+  }
+
+  for (const key of Object.keys(input)) {
+    if (key !== "connectorId" && key !== "method" && key !== "relationships" && key !== "sourceRef" && key !== "artifact") {
+      problems.push(`body: unknown field '${key}' (allowed: connectorId, method, relationships, sourceRef, artifact)`);
+    }
+  }
+
+  if (problems.length > 0) return { ok: false, problems };
+  return {
+    ok: true,
+    value: {
+      connectorId: connectorId as string,
+      ...(method !== undefined ? { method } : {}),
+      ...(relationships !== undefined ? { relationships } : {}),
+      ...(sourceRef !== undefined ? { sourceRef } : {}),
+      ...(artifact !== undefined ? { artifact } : {}),
+    },
+  };
+}
+
+/** Decode one base64 string to bytes (the artifact transport). */
+function decodeBase64ToBytes(value: string): Uint8Array {
+  // Accept both standard and URL-safe alphabets; Node's atob handles the
+  // standard form — normalize first so an export artifact either decodes
+  // or fails typed, never silently truncates.
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const binary = atob(normalized);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes;
 }

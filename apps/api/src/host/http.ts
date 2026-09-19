@@ -163,6 +163,85 @@ export function sourceFailureResponse(
 }
 
 /**
+ * R20-H: map a feed-import service failure (`FeedServiceFailure` — the
+ * closed vocabulary of @wfx/persistence's `FeedImportService`) to its
+ * typed HTTP answer. The status-code law (mirrors the R03
+ * `sourceFailureResponse` precedent + the web adapter's own mapping):
+ * - 400 `invalid-input` — malformed caller input (typed; never a throw);
+ * - 401 `unauthorized` — the user's grant is missing (the reauthorization
+ *   recovery path — the body always names it);
+ * - 404 `not-found` / `unknown-connector` — the addressed import (or the
+ *   named connector) does not exist here;
+ * - 409 `unsupported` — the route honestly cannot serve the request
+ *   (capability truth — never a fake refresh, never a silent partial);
+ * - 502 `transport` / `provider` — the source side failed or answered a
+ *   contract-violating payload.
+ * The honest extras (`importId`, `syncState` — the failure's fold truth)
+ * ride along in the body so the adapter can render the retained-state
+ * sentences (the failure channel is typed end to end).
+ */
+export function feedFailureResponse(
+  failure: import("@wfx/persistence").FeedServiceFailure,
+): Response {
+  switch (failure.kind) {
+    case "invalid-input":
+      return Response.json(
+        { error: "invalid-input", detail: failure.detail },
+        { status: 400 },
+      );
+    case "unauthorized":
+      return Response.json(
+        {
+          error: "unauthorized",
+          detail: failure.detail,
+          ...(failure.importId !== undefined ? { importId: failure.importId } : {}),
+          ...(failure.syncState !== undefined ? { syncState: failure.syncState } : {}),
+        },
+        { status: 401 },
+      );
+    case "not-found":
+      return Response.json(
+        {
+          error: "not-found",
+          detail: failure.detail,
+          ...(failure.importId !== undefined ? { importId: failure.importId } : {}),
+        },
+        { status: 404 },
+      );
+    case "unknown-connector":
+      return Response.json(
+        {
+          error: "unknown-connector",
+          detail: failure.detail,
+          ...(failure.importId !== undefined ? { importId: failure.importId } : {}),
+        },
+        { status: 404 },
+      );
+    case "unsupported":
+      return Response.json(
+        {
+          error: "unsupported",
+          detail: failure.detail,
+          ...(failure.importId !== undefined ? { importId: failure.importId } : {}),
+          ...(failure.syncState !== undefined ? { syncState: failure.syncState } : {}),
+        },
+        { status: 409 },
+      );
+    case "transport":
+    case "provider":
+      return Response.json(
+        {
+          error: failure.kind,
+          detail: failure.detail,
+          ...(failure.importId !== undefined ? { importId: failure.importId } : {}),
+          ...(failure.syncState !== undefined ? { syncState: failure.syncState } : {}),
+        },
+        { status: 502 },
+      );
+  }
+}
+
+/**
  * Is this thrown failure a LOUD one (config crime / bad deploy / bug —
  * 500 territory), as opposed to the 052 degradation family the WFX-003
  * law maps to honest degraded answers?

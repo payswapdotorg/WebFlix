@@ -27,6 +27,13 @@
  *                                        single Ports.connector seam)
  *     → Ports { connector, events, clock, ids }
  *
+ * R20-H — the BYOF feed-import composition rides the same boot (step 7):
+ * the REAL `FeedImportService` (@wfx/persistence, R20-C) over the SAME
+ * DbClient + migrations, wired to the REAL YouTube connector when the
+ * operator provisioned YOUTUBE_* (the structural `FeedConnectorPort` +
+ * the documented feed truth — the wiring law the web fixtures host
+ * established). The `/feeds/**` routes answer against `boot.feedImports`.
+ *
  * - events sink = `PostgresEventSink` — the 052 transactional outbox write
  *   side: one atomic single-statement insert per event, so an event is
  *   DURABLE the very moment the endpoint answers 2xx (the answering
@@ -60,6 +67,9 @@ import {
   createFetchYouTubeTransport,
   createYouTubeConnector,
   PersistenceYouTubeCredentialSource,
+  YOUTUBE_CONNECTOR_ID,
+  YOUTUBE_FEED_RELATIONSHIPS,
+  type YouTubeConnector,
 } from "@wfx/connectors";
 import type { ConnectorPort, Ports } from "@wfx/experience";
 import {
@@ -77,6 +87,7 @@ import {
 
 import { resolveApiConfig, type ApiConfig, type ApiEnv } from "./config";
 import { RecommendationControlsHost } from "./controls";
+import { createFeedImportHost, type FeedConnectorWiring, type FeedImportHost } from "./feed-import";
 import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
 import { HistoryHost } from "./history";
 import { ModelControlsHost } from "./model-controls";
@@ -165,6 +176,18 @@ export interface ApiBoot {
    * answer against it.
    */
   readonly modelControls: ModelControlsHost;
+  /**
+   * R20-H — the BYOF feed-import host: the REAL `FeedImportService`
+   * (R20-C, consumed AS-IS) over the SAME persistence boot (the feed_*
+   * migrations are part of the real migration set `bootPersistence`
+   * applied) + the REAL YouTube connector wired as the structural
+   * `FeedConnectorPort` with its documented feed truth (the wiring law the
+   * web fixtures host established). The `/feeds/**` routes answer against
+   * it. An unprovisioned deployment (no YOUTUBE_* env) wires an EMPTY
+   * registry — the honest `unknown-connector` verdict and an empty
+   * importable-source list, never a fixture fallback.
+   */
+  readonly feedImports: FeedImportHost;
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -223,22 +246,24 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
   //      source is the connector's PERSISTENCE-backed adapter over the
   //      durable account store — connections made through /sources flow
   //      straight into the connector's auth resolution (the in-memory
-  //      per-instance stopgap is retired).
+  //      per-instance stopgap is retired). R20-H: the instance handle is
+  //      kept for the feed-import wiring below (the SAME initialized
+  //      connector serves both the fan-out seam and the feed-import port).
+  let youtubeConnector: YouTubeConnector | null = null;
   if (config.youtube !== null) {
     const youtube = config.youtube;
     const hasOAuthPair =
       youtube.clientId !== undefined && youtube.clientSecret !== undefined;
-    sources.push(
-      createYouTubeConnector({
-        transport: createFetchYouTubeTransport(),
-        credentialSource: new PersistenceYouTubeCredentialSource(connectorAccounts),
-        clock,
-        ...(youtube.apiKey !== undefined ? { apiKey: youtube.apiKey } : {}),
-        ...(hasOAuthPair
-          ? { oauth: { clientId: youtube.clientId as string, clientSecret: youtube.clientSecret as string } }
-          : {}),
-      }),
-    );
+    youtubeConnector = createYouTubeConnector({
+      transport: createFetchYouTubeTransport(),
+      credentialSource: new PersistenceYouTubeCredentialSource(connectorAccounts),
+      clock,
+      ...(youtube.apiKey !== undefined ? { apiKey: youtube.apiKey } : {}),
+      ...(hasOAuthPair
+        ? { oauth: { clientId: youtube.clientId as string, clientSecret: youtube.clientSecret as string } }
+        : {}),
+    });
+    sources.push(youtubeConnector);
   }
 
   // 4.5. R03 — the per-connector auth-flow wirings (documented provider
@@ -355,6 +380,42 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     key: decodeEncryptionKey(config.encryptionKey),
   });
 
+  // R20-H — the BYOF feed-import host: the REAL FeedImportService over the
+  // SAME persistence boot (the feed_* migrations are part of the real
+  // migration set bootPersistence applied) + the REAL YouTube connector
+  // wired with its documented feed truth (the wiring law the web fixtures
+  // host established — the projection truth and the relationship truth
+  // ride on the WIRING, not the frozen descriptor; initialize() is
+  // awaited by the host's boot, the lifecycle law). An unprovisioned
+  // deployment wires the honest EMPTY registry.
+  const feedWirings = new Map<string, FeedConnectorWiring>();
+  if (youtubeConnector !== null) {
+    feedWirings.set(YOUTUBE_CONNECTOR_ID, {
+      connector: youtubeConnector,
+      importable: [...YOUTUBE_FEED_RELATIONSHIPS],
+      unavailable: [
+        {
+          relationship: "history",
+          reason:
+            "YouTube's watch history is only available in your Google Takeout export; the Data API does not serve it.",
+        },
+        {
+          relationship: "ranked-feed",
+          reason: "YouTube's personalized home feed has no exportable API.",
+        },
+      ],
+      continuousSync: true,
+      feedItemCanonicalType: "video",
+    });
+  }
+  const feedImports = await createFeedImportHost({
+    db: persistence.db,
+    clock,
+    ids,
+    accounts: connectorAccounts,
+    wirings: feedWirings,
+  });
+
   // 6. The service Ports bundle: the fan-out + the 052 transactional
   //    outbox event sink (PostgresEventSink from the persistence boot)
   //    + the shared seams.
@@ -380,6 +441,7 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     history,
     controls,
     modelControls,
+    feedImports,
   };
 }
 
