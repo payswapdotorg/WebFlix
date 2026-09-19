@@ -95,3 +95,36 @@ Owns R20-H, shared contract changes, provider-authorization review, integration,
 5. R20-E depends on the Web contract but may use deterministic connector fixtures.
 6. R20-G consumes the same shared runtime semantics as Web.
 7. R20-H is the integration gate and does not become a feature-worker lane.
+
+## R21 — Journey-driven product discoverability
+
+R20 -> R21-A
+
+R21-A -> R21-B -> R21-C
+R21-A -> R21-D
+R21-C -> R21-E
+R21-D -> R21-F
+R21-A -> R21-G -> R21-H
+R21-E + R21-F + R21-H -> R21-I
+R21-B -> R21-I
+R21-I -> J34 + J35
+
+### Worker allocation
+
+Worker 1 owns R21-A/B/C shared capability/view-model and production transport wiring.
+Worker 2 owns R21-D/E/F Web product surfaces and browser evidence.
+Worker 3 owns R21-G/H Desktop/native product surfaces.
+Lead owns R21-I integration, production parity, and final journey acceptance.
+
+### Parallelization
+
+After R21-A is ratified, R21-B, R21-D, and R21-G can proceed concurrently.
+R21-C follows R21-B.
+R21-E follows R21-C and consumes the Web surface work from R21-D.
+R21-F follows R21-D/E as browser-evidence stabilization.
+R21-H follows R21-G.
+R21-I waits for B/E/F/H and must independently rerun the affected journeys.
+
+### R21 operating law
+
+A capability is not product-complete when it is merely present in a contract or hidden in diagnostics. Every accepted capability must have a contextual discovery affordance and a recovery/next-action path.
