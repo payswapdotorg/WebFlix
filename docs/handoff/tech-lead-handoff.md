@@ -158,3 +158,25 @@ R20 dispatch sequence:
 R20-A shared feed contract -> parallel R20-B provider feed capability + R20-D Web UX + R20-F Desktop import;
 then R20-C reconciliation -> R20-G Desktop feed -> R20-E Web evidence;
 then R20-H lead integration/J33.
+
+
+## Post-release R21 — Journey-driven product discoverability
+
+R21 is the implementation response to a fresh production user-journey simulation. The simulation found that several accepted architecture capabilities were not sufficiently discoverable from normal product surfaces and that some live UI copy/transport still described completed lanes as unavailable.
+
+Worker 1 owns R21-A/B/C shared capability-to-surface contracts, view models, and actual production transport wiring.
+Worker 2 owns R21-D/E/F Web information architecture, contextual controls, item/player surfaces, and browser evidence.
+Worker 3 owns R21-G/H Desktop/native discoverability and acquisition/feed/AI surfacing.
+Lead owns R21-I integration, production parity, stale-copy elimination, and J34/J35 acceptance.
+
+R21 frozen UX law:
+- keep Home / Watch / Shorts / Search / Library / Settings as the primary navigation;
+- surface important capabilities contextually instead of creating an architecture dashboard;
+- Settings is the detailed management center, not the only discovery path;
+- diagnostics are progressive disclosure, not the main entertainment UX;
+- every accepted capability needs a normal entry point and recovery path;
+- unsupported capabilities remain discoverable and explain the platform limitation;
+- production must not render stale “arrives later” copy for accepted lanes.
+
+R21 sequence:
+R21-A -> parallel B/D/G -> C -> E -> F and H -> R21-I -> J34/J35.
