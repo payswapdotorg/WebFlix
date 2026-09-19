@@ -134,6 +134,12 @@ agent-browser snapshot -i
 
 After navigation or DOM changes, take a fresh snapshot before using refs. Capture final screenshots and failure evidence. Workers report the exact journey IDs exercised; the Lead reruns affected journeys after integration.
 
+## Historical release status
+
+R00-R19 are release-accepted. Further product work is tracked as post-release work items in dedicated plans so the completed release gate is not rewritten retroactively.
+
+See `docs/plans/2026-09-19-webflix-byof-plan.md` for R20 Bring Your Own Feed.
+
 ## Definition of done
 
 Implementation exists; tests cover it; unsupported/error behavior is explicit; no forbidden cross-lane private imports; docs/contracts match code; production paths are real; and affected golden journeys have direct execution evidence.
