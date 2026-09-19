@@ -303,3 +303,23 @@ Canonical specification: `docs/architecture/byof-architecture.md`.
 BYOF distinguishes source connection from feed import/mirroring. It supports authorized API/export/user-file inputs, persists feed provenance/freshness, preserves source-native ordering separately from WebFlix ranking, and keeps Web/Desktop/Mobile semantics in the shared runtime.
 
 BYOF does not permit scraping, access-control bypass, hidden private endpoints, or provider credential exposure to models.
+
+
+## Post-release extension — Journey-driven product discoverability (R21)
+
+A production user-journey simulation demonstrated that architecture-complete does not automatically mean user-discoverable. R21 therefore adds a product-surface acceptance layer without changing the frozen primary surface vocabulary.
+
+R21 rules:
+- keep Home / Watch / Shorts / Search / Library / Settings as the primary navigation;
+- put everyday intent, attention, recommendation, source/feed, playback, AI, and acquisition decisions in contextual product surfaces;
+- keep Settings as the detailed management center;
+- make important empty/error states actionable;
+- make native-only capabilities discoverable on Web with a truthful next step rather than a dead unsupported message;
+- make Desktop-native acquisition/offline capability visible from content and player contexts;
+- present source-neutral canonical identity first and realization/source choice second;
+- keep raw capability/precedence diagnostics as progressive disclosure;
+- prohibit stale completion copy after a lane is accepted;
+- block release when production transport is behind the accepted runtime surface;
+- require J34 capability-discoverability and J35 production-parity evidence in addition to feature-specific journeys.
+
+The implementation plan is docs/plans/2026-09-19-webflix-journey-discoverability-plan.md.
