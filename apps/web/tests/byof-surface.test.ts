@@ -325,6 +325,12 @@ describe("R20-D BYOF — the freshness surface", () => {
     const markup = await renderFeed();
     expect(markup).toContain("Authorization needed");
     expect(markup).toContain("nothing is deleted by a failing sync");
+    // The recovery path stays available: the sync action is offered (after
+    // the user reconnects the source, THIS sync recovers the import — the
+    // journey-found deadlock law: a reauthorization gap never hides its
+    // own recovery action; while the grant is missing the sync answers
+    // the typed unauthorized failure honestly).
+    expect(markup).toContain("data-wfx-byof-action=\"sync\"");
   });
 
   it("the honest sync report: the changed source reconciles with the engine's own counts", async () => {

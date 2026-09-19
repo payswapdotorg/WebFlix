@@ -89,11 +89,14 @@ function ImportedFeed({ entry }: { readonly entry: ByofImportFeedView }): JSX.El
     ...(view.lastSyncedAt !== undefined ? { lastSyncedAt: view.lastSyncedAt } : {}),
     ...(view.errorDetail !== undefined ? { errorDetail: view.errorDetail } : {}),
   });
-  const canSync =
-    view.continuousSync &&
-    !view.disconnectedByUser &&
-    view.syncState !== "reauthorization-required" &&
-    view.syncState !== "unsupported";
+  // The sync action's honest truth: offered on every continuously
+  // re-readable route EXCEPT a user-disconnected import (the user ended
+  // it — recovery is a fresh import, never a quiet resurrection). A
+  // reauthorization GAP keeps the button: after the user reconnects the
+  // source, THIS sync is the import's recovery path (while the grant is
+  // missing, the sync honestly answers the typed unauthorized failure
+  // with its connect recovery — never a fake success).
+  const canSync = view.continuousSync && !view.disconnectedByUser && view.syncState !== "unsupported";
   return (
     <section
       className="wfx-byof__feed-entry"

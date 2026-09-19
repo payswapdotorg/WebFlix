@@ -94,12 +94,16 @@ function SourceCard({
   readonly mode: "fixtures" | "service";
 }): JSX.Element {
   return (
-    <li className="wfx-byof__card" data-wfx-byof-source={source.connectorId}>
+    <li
+      className="wfx-byof__card"
+      data-wfx-byof-source={source.connectorId}
+      data-wfx-byof-source-auth-state={source.connected ? "connected" : "not-connected"}
+    >
       <div className="wfx-byof__card-head">
         <span className="wfx-byof__card-title">{source.displayName}</span>
         <span
           className={`wfx-byof-chip wfx-byof-chip--${source.connected ? "ok" : "neutral"}`}
-          data-wfx-byof-source-auth-state={source.connected ? "connected" : "not-connected"}
+          data-wfx-byof-source-auth-chip={source.connected ? "connected" : "not-connected"}
         >
           {source.connected ? "Connected" : "Not connected"}
         </span>
@@ -134,7 +138,12 @@ function SourceCard({
 /** The staged preview panel (the "preview before you confirm" step). */
 function PreviewPanel({ preview }: { readonly preview: ByofPreviewView }): JSX.Element {
   return (
-    <section className="wfx-byof__preview" aria-label="Preview your import" data-wfx-byof-preview>
+    <section
+      className="wfx-byof__preview"
+      aria-label="Preview your import"
+      data-wfx-byof-preview
+      data-wfx-byof-order-semantics="source-native"
+    >
       <h3 className="wfx-byof__heading">Preview your import from {preview.displayName}</h3>
       <p className="wfx-byof__card-detail" data-wfx-byof-preview-count>
         Ready to bring in {preview.itemCount} item{preview.itemCount === 1 ? "" : "s"} — captured{" "}
