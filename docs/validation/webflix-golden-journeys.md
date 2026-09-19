@@ -57,6 +57,8 @@ Each run records:
 | J31 | Cross-platform Web/Desktop parity | Yes | Yes | Future | Lead |
 | J32 | Source-neutral identity: same item, multiple realizations | Yes | Yes | Yes | Worker 1 |
 | J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | Yes | Yes | Future | Worker 1 + 2/3 |
+| J34 | Capability discoverability from normal product surfaces | Yes | Yes | Yes | Lead + 2/3 |
+| J35 | Production capability parity / no stale completion states | Yes | Yes | Future | Lead |
 
 ## Core acceptance details
 
@@ -255,3 +257,34 @@ above).
 
 J33 uses the same evidence contract as the existing golden journeys: commit SHA, environment, import method, preconditions, actions, observed/expected state, screenshot/snapshot evidence, errors, and final status.
 If a provider capability is unavailable in deterministic CI, the limitation must be explicit and the real local/service procedure documented; never silently skip J33.
+
+## J34 — Capability discoverability
+
+Starting from a fresh Home state, the user must be able to discover without documentation:
+
+1. identity/profile entry;
+2. source connection;
+3. Bring Your Own Feed;
+4. WebFlix / Following / BYOF feed-mode choice;
+5. temporary intent;
+6. attention mode;
+7. recommendation feedback;
+8. Model/BYOM/local-model controls;
+9. AI media actions from content/player;
+10. current playback realization / Where to watch;
+11. Desktop/offline path;
+12. Watchlist, History, and Offline Library.
+
+Acceptance is based on the actual visible product path, not a direct URL, test-only control, or documentation link.
+
+## J35 — Production capability parity
+
+Run the same discoverability sweep against the live production deployment.
+
+The production surface must not show stale “arrives later” copy or expose an accepted capability only through an unavailable transport.
+
+At minimum verify R02 identity, R03 source read/connect, R05 recommendation/intent, R06 model/AI, R09 realization choice, R14 native/offline discovery, and R20 BYOF/feed-mode truth.
+
+## Discoverability law
+
+Existing journeys remain acceptance contracts. J34/J35 are meta-journeys: they verify that the user can actually reach the capabilities those journeys validate. UI work that passes component tests but fails J34 is incomplete.
