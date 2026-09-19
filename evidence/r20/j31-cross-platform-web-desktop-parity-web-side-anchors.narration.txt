@@ -1,0 +1,1 @@
+- the web-side parity anchors rendered: one canonical item identity across search/detail/player, the typed library sections, the intent composition, and the honest session state (the desktop-side comparison is the lead's parity procedure — listed)
