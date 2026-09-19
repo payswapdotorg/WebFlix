@@ -56,6 +56,7 @@ Each run records:
 | J30 | Unsupported capability honesty | Yes | Yes | Yes | Worker 1 + 2/3 |
 | J31 | Cross-platform Web/Desktop parity | Yes | Yes | Future | Lead |
 | J32 | Source-neutral identity: same item, multiple realizations | Yes | Yes | Yes | Worker 1 |
+| J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | Yes | Yes | Future | Worker 1 + 2/3 |
 
 ## Core acceptance details
 
@@ -124,6 +125,23 @@ Interruption must preserve sufficient persistent state to recover the session wi
 
 Expected: failures are specific, recoverable where possible, and honest. A missing credential, unavailable provider, unsupported playback mode, interrupted torrent, or network failure must never look like a silent success.
 
+### J33 — Bring Your Own Feed
+
+Expected:
+
+choose Bring Your Feed
+-> choose supported source or official export
+-> authorize/import
+-> preview imported relationships/items
+-> confirm
+-> persist normalized feed records + provenance
+-> show source-native order distinctly from WebFlix-ranked discovery
+-> show live/snapshot/stale truth
+-> refresh/sync when supported
+-> disconnect/re-authorize without deleting WebFlix-local library/history
+
+The journey must prove that imported feed data does not silently become permanent recommendation identity. At least one authorized connector/import method must be real, not a fixture-only production claim.
+
 ### J31 — Cross-platform parity
 
 The same server-side profile state, library state, intent, and Entertainment Item identity must produce semantically equivalent Web and Desktop outcomes while allowing platform-specific capability differences.
@@ -145,6 +163,8 @@ Workers must not mark a journey complete from unit tests alone.
 ## Release threshold
 
 Release acceptance requires J01–J20, J26, J28–J32 to pass on the Web adapter and the corresponding applicable Desktop journeys to pass. J21–J25 and J27 must pass on the production Desktop native-media path before the torrent/native-media milestone is accepted.
+
+R20 release acceptance additionally requires J33 to pass on Web and the corresponding Desktop procedure.
 
 ## Journey automation and evidence procedure (R16, appended 2026-09-18)
 
@@ -230,3 +250,8 @@ same state grammar (`data-wfx-acquisition-*` / the
 same manifest format. J21–J25 and J27 must pass there before the
 torrent/native-media milestone is accepted (the release threshold
 above).
+
+## R20 Journey automation note
+
+J33 uses the same evidence contract as the existing golden journeys: commit SHA, environment, import method, preconditions, actions, observed/expected state, screenshot/snapshot evidence, errors, and final status.
+If a provider capability is unavailable in deterministic CI, the limitation must be explicit and the real local/service procedure documented; never silently skip J33.
