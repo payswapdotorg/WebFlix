@@ -323,3 +323,7 @@ R21 rules:
 - require J34 capability-discoverability and J35 production-parity evidence in addition to feature-specific journeys.
 
 The implementation plan is docs/plans/2026-09-19-webflix-journey-discoverability-plan.md.
+
+## Visual design authority
+
+The implementation visual language is frozen in `docs/architecture/webflix-design-language.md`, inspired by the ShareNet Conformance consumer experience and the `pectoraux/ShareNet` source. It governs application chrome, management/discovery surfaces, state styling, whitespace, navigation, loading/error states, density, and motion. It does not replace WebFlix content or playback semantics.
