@@ -19,6 +19,8 @@ import type {
   OfflineReadyEntryView,
   WatchlistEntryView,
 } from "@/host/view-models";
+import type { ByofFeedView } from "@/host/byof/byof-view";
+import { ByofFeedRegion } from "@/components/byof/ByofFeedRegion";
 import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
 import { formatDuration, percentWatched } from "@/components/ui/format";
@@ -147,7 +149,18 @@ function formatBytes(bytes: number): string {
 }
 
 /** The library surface. */
-export function LibrarySurface({ view }: { readonly view: LibraryView }): JSX.Element {
+export function LibrarySurface({
+  view,
+  byof,
+  justImported,
+}: {
+  /** The runtime's library read model (watchlist + history + offline). */
+  readonly view: LibraryView;
+  /** The BYOF feed view (R20-D — the imported feeds region's data). */
+  readonly byof?: ByofFeedView;
+  /** Whether this render is the post-confirm landing (`?byof=imported`). */
+  readonly justImported?: boolean;
+}): JSX.Element {
   return (
     <div data-wfx-surface="library" data-wfx-library>
       <h1 className="wfx-page-title" data-wfx-library-title>
@@ -156,6 +169,8 @@ export function LibrarySurface({ view }: { readonly view: LibraryView }): JSX.El
       <p className="wfx-page-subtitle">
         Your watchlist and watch history — canonical items, keyed once across every source.
       </p>
+
+      {byof !== undefined ? <ByofFeedRegion view={byof} {...(justImported ? { justImported } : {})} /> : null}
 
       <section className="wfx-detail__section" aria-label="Watchlist" data-wfx-library-watchlist>
         <h2>Watchlist</h2>

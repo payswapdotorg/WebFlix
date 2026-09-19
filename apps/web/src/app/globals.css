@@ -1487,3 +1487,446 @@ body {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   word-break: break-all;
 }
+
+/* ---------------------------------------------------------------------------
+ * R20-D — the BYOF surfaces: the calm ShareNet-inspired light register.
+ *
+ * docs/architecture/webflix-design-language.md (frozen) binds new Web
+ * surfaces to the warm-light register for ordinary management/discovery
+ * surfaces. The BYOF family (the settings panel + the Library feed
+ * region) adopts it through SCOPED tokens (the same approach the
+ * reference implements): everything under `.wfx-byof` renders on the warm
+ * off-white with hairline borders, slightly-brighter cards, and soft
+ * graphite text, while the surrounding app keeps its existing treatment
+ * (R21 migrates the rest). Laws honored here:
+ * - semantic state color is ALWAYS paired with text (the chips carry
+ *   their label — never color alone);
+ * - one clear primary action per step (the pill); destructive actions get
+ *   their own red family and are NEVER styled as the primary;
+ * - generous whitespace, typography-led hierarchy, no gradients/glass;
+ * - every transition has a reduced-motion path;
+ * - touch targets stay >= 44px (the shared .wfx-btn law extends here).
+ * ------------------------------------------------------------------------- */
+
+.wfx-byof {
+  --byof-bg: #f8f6f2;
+  --byof-surface: #fffefb;
+  --byof-surface-2: #f1eee7;
+  --byof-border: #e5e1d8;
+  --byof-border-strong: #d3cec1;
+  --byof-text: #33302a;
+  --byof-text-dim: #6d685d;
+  --byof-text-faint: #8f897b;
+  --byof-ok: #0f766e;
+  --byof-ok-soft: #e4f0ec;
+  --byof-warn: #a05a09;
+  --byof-warn-soft: #f9eeda;
+  --byof-error: #b3261e;
+  --byof-error-soft: #f9e9e7;
+  --byof-neutral: #6d685d;
+  --byof-neutral-soft: #eceada;
+
+  display: block;
+  margin: 2rem 0 0;
+  padding: 1.5rem;
+  background: var(--byof-bg);
+  color: var(--byof-text);
+  border: 1px solid var(--byof-border);
+  border-radius: 1rem;
+}
+
+.wfx-byof__heading {
+  margin: 0 0 0.35rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--byof-text);
+}
+
+.wfx-byof__intro {
+  margin: 0 0 1.25rem;
+  max-width: 62ch;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--byof-text-dim);
+}
+
+.wfx-byof__card,
+.wfx-byof__preview,
+.wfx-byof__feed-entry,
+.wfx-byof__trail-row,
+.wfx-byof__state,
+.wfx-byof__banner {
+  background: var(--byof-surface);
+  border: 1px solid var(--byof-border);
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  margin: 0 0 0.9rem;
+}
+
+.wfx-byof__banner {
+  border-color: var(--byof-ok);
+  background: var(--byof-ok-soft);
+  color: var(--byof-ok);
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.wfx-byof__card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: 0 0 0.4rem;
+}
+
+.wfx-byof__card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--byof-text);
+}
+
+.wfx-byof__card-detail,
+.wfx-byof__freshness,
+.wfx-byof__mode-note,
+.wfx-byof__summary {
+  margin: 0.3rem 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--byof-text-dim);
+  max-width: 70ch;
+}
+
+.wfx-byof__mode-note {
+  color: var(--byof-text);
+  font-weight: 600;
+}
+
+.wfx-byof__freshness {
+  color: var(--byof-text-faint);
+}
+
+.wfx-byof__absences {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--byof-text-faint);
+  max-width: 70ch;
+}
+
+.wfx-byof__absences li {
+  margin: 0.15rem 0;
+}
+
+.wfx-byof__sources,
+.wfx-byof__trail-list {
+  list-style: none;
+  margin: 0 0 0.4rem;
+  padding: 0;
+}
+
+/* Chips: tone + label, never color alone. */
+.wfx-byof-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.14rem 0.6rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.wfx-byof-chip::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: currentColor;
+  flex: none;
+}
+
+.wfx-byof-chip--ok {
+  color: var(--byof-ok);
+  background: var(--byof-ok-soft);
+  border-color: color-mix(in srgb, var(--byof-ok) 28%, transparent);
+}
+
+.wfx-byof-chip--warn {
+  color: var(--byof-warn);
+  background: var(--byof-warn-soft);
+  border-color: color-mix(in srgb, var(--byof-warn) 28%, transparent);
+}
+
+.wfx-byof-chip--error {
+  color: var(--byof-error);
+  background: var(--byof-error-soft);
+  border-color: color-mix(in srgb, var(--byof-error) 28%, transparent);
+}
+
+.wfx-byof-chip--neutral {
+  color: var(--byof-neutral);
+  background: var(--byof-neutral-soft);
+  border-color: color-mix(in srgb, var(--byof-neutral) 26%, transparent);
+}
+
+.wfx-byof__chip {
+  display: inline-block;
+  padding: 0.12rem 0.55rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--byof-text-dim);
+  background: var(--byof-surface-2);
+  border: 1px solid var(--byof-border);
+  border-radius: 999px;
+}
+
+.wfx-byof__summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+/* Buttons: the calm pill family (primary = teal; danger = red outline,
+   armed = solid red — the destructive action is never the primary). */
+.wfx-byof-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  padding: 0 1.15rem;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--byof-border-strong);
+  background: var(--byof-surface);
+  color: var(--byof-text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.wfx-byof-btn:hover {
+  background: var(--byof-surface-2);
+}
+
+.wfx-byof-btn--primary {
+  background: var(--byof-ok);
+  border-color: var(--byof-ok);
+  color: #fff;
+}
+
+.wfx-byof-btn--primary:hover {
+  background: color-mix(in srgb, var(--byof-ok) 88%, #000);
+  border-color: color-mix(in srgb, var(--byof-ok) 88%, #000);
+}
+
+.wfx-byof-btn--danger-outline {
+  color: var(--byof-error);
+  border-color: color-mix(in srgb, var(--byof-error) 38%, transparent);
+  background: var(--byof-surface);
+}
+
+.wfx-byof-btn--danger-outline:hover {
+  background: var(--byof-error-soft);
+}
+
+.wfx-byof-btn--danger {
+  background: var(--byof-error);
+  border-color: var(--byof-error);
+  color: #fff;
+}
+
+.wfx-byof-btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wfx-byof__actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.75rem 0 0.35rem;
+}
+
+.wfx-byof__actions {
+  margin-top: 0.6rem;
+}
+
+.wfx-byof__auth-truth {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--byof-text-faint);
+  max-width: 70ch;
+}
+
+/* The failure block: clear + actionable (never a silent empty state). */
+.wfx-byof__failure {
+  margin: 0.75rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--byof-error) 32%, transparent);
+  background: var(--byof-error-soft);
+  border-radius: 0.6rem;
+}
+
+.wfx-byof__failure-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--byof-error);
+}
+
+.wfx-byof__failure-detail {
+  margin: 0.15rem 0;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--byof-text-dim);
+  max-width: 70ch;
+}
+
+.wfx-byof__failure .wfx-byof-btn {
+  margin-top: 0.5rem;
+}
+
+/* The action-result block (the server's own report, inline). */
+.wfx-byof__result {
+  margin: 0.75rem 0 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--byof-ok) 30%, transparent);
+  background: var(--byof-ok-soft);
+  border-radius: 0.6rem;
+}
+
+.wfx-byof__result-title {
+  margin: 0 0 0.25rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--byof-ok);
+}
+
+.wfx-byof__result-detail {
+  margin: 0.15rem 0 0.4rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--byof-text-dim);
+  max-width: 70ch;
+}
+
+/* The preview sample + record groups (source-native order, readable). */
+.wfx-byof__sample,
+.wfx-byof__records {
+  list-style: none;
+  margin: 0.6rem 0;
+  padding: 0;
+}
+
+.wfx-byof__sample-item,
+.wfx-byof__record {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--byof-border);
+  border-radius: 0.5rem;
+  background: var(--byof-surface);
+  margin: 0 0 0.4rem;
+}
+
+.wfx-byof__sample-title,
+.wfx-byof__record-title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--byof-text);
+}
+
+.wfx-byof__sample-meta,
+.wfx-byof__record-meta {
+  font-size: 0.72rem;
+  color: var(--byof-text-faint);
+}
+
+.wfx-byof__group {
+  margin: 0.75rem 0;
+}
+
+.wfx-byof__group-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--byof-text-dim);
+}
+
+/* Centered calm states (the ShareNet pattern: title → detail → action). */
+.wfx-byof__state {
+  text-align: center;
+  padding: 1.75rem 1.25rem;
+}
+
+.wfx-byof__state-title {
+  margin: 0 0 0.3rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--byof-text);
+}
+
+.wfx-byof__state-detail {
+  margin: 0 auto 0.75rem;
+  max-width: 52ch;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--byof-text-dim);
+}
+
+.wfx-byof__state .wfx-byof-btn--primary {
+  margin-top: 0.25rem;
+}
+
+/* The preview panel sits slightly raised inside the panel. */
+.wfx-byof__preview {
+  border-color: var(--byof-border-strong);
+  background: var(--byof-surface);
+}
+
+.wfx-byof__trail {
+  margin-top: 1.25rem;
+}
+
+/* Reduced motion: transitions collapse (the motion law). */
+@media (prefers-reduced-motion: reduce) {
+  .wfx-byof-btn,
+  .wfx-byof-chip,
+  .wfx-byof__card,
+  .wfx-byof__preview,
+  .wfx-byof__feed-entry,
+  .wfx-byof__state,
+  .wfx-byof__sample-item,
+  .wfx-byof__record {
+    transition: none;
+  }
+}
+
+/* Responsive: comfortable single column everywhere; the panel never
+   crams controls (whitespace law). On narrow screens padding relaxes. */
+@media (max-width: 640px) {
+  .wfx-byof {
+    padding: 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .wfx-byof__actions-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wfx-byof__actions-row .wfx-byof-btn {
+    width: 100%;
+  }
+}
