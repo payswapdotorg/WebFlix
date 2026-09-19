@@ -31,6 +31,11 @@ R01 Shared Client Runtime
 R07 + R08 + R09 + R14 -> R16 Golden Journey Harness
 R13 + R15 + R16 -> R17 Recovery Hardening
 R17 -> R18 Security/Privacy/Authorization Audit -> R19 Production Acceptance
+R19 -> R20 Bring Your Own Feed
+R20-A -> R20-B -> R20-C
+R20-A -> R20-D -> R20-E
+R20-A -> R20-F -> R20-G
+R20-C + R20-E + R20-G -> R20-H
 ```
 
 ## Worker 1 — Shared Experience/Intelligence
@@ -67,3 +72,26 @@ R00, shared contract changes, architecture changes, dependency changes affecting
 8. R16/R17/R18/R19 converge the three lanes.
 
 Workers communicate through versioned contracts and fixtures, not private imports. A contract change pauses affected work until Lead updates the frozen contract document and graph.
+
+## R20 — Bring Your Own Feed
+
+### Worker 1 — Shared feed/import
+Owns R20-A/R20-B/R20-C.
+
+### Worker 2 — Web
+Owns R20-D/R20-E.
+
+### Worker 3 — Desktop/source
+Owns R20-F/R20-G.
+
+### Lead
+Owns R20-H, shared contract changes, provider-authorization review, integration, and J33 acceptance.
+
+### R20 parallelization rules
+1. R20-A freezes the shared feed-import/provenance contract.
+2. R20-B and R20-D can run concurrently once R20-A is ratified.
+3. R20-F can begin from the frozen contract while R20-B is implemented.
+4. R20-C depends on R20-B and owns reconciliation/idempotency.
+5. R20-E depends on the Web contract but may use deterministic connector fixtures.
+6. R20-G consumes the same shared runtime semantics as Web.
+7. R20-H is the integration gate and does not become a feature-worker lane.
