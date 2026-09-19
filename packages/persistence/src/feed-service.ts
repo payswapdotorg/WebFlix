@@ -788,8 +788,28 @@ export class FeedImportService {
     };
 
     if (existing !== undefined) {
+      // The deferred-resolution marker is a FACT about how this record's
+      // canonical anchor was created, not capture-time metadata: it must
+      // SURVIVE re-imports and sync updates. The store's idempotent upsert
+      // refreshes `metadata` to the newest capture wholesale, so a deferred
+      // record (deferred-follow / deferred-untyped) would otherwise lose its
+      // visible marker the next time the same relationship is captured —
+      // breaking the "visible, never silent" law. Carry the prior marker
+      // forward over the fresh capture metadata.
+      const priorDeferred = existing.metadata?.[FEED_DEFERRED_RESOLUTION_MARKER];
       return {
-        stage: { ...base, entertainmentItemId: existing.entertainmentItemId },
+        stage: {
+          ...base,
+          entertainmentItemId: existing.entertainmentItemId,
+          ...(typeof priorDeferred === "string"
+            ? {
+                metadata: {
+                  ...(item.metadata ?? {}),
+                  [FEED_DEFERRED_RESOLUTION_MARKER]: priorDeferred,
+                },
+              }
+            : {}),
+        },
         resolution: "existing-record",
       };
     }

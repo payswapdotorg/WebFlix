@@ -352,6 +352,11 @@ describe("R20-C service — canonical identity resolution", () => {
     expect(after.length).toBe(1);
     expect(after[0]?.id).toBe(records[0]?.id); // stable identity
     expect(after[0]?.entertainmentItemId).toBe(records[0]?.entertainmentItemId); // stable anchor
+    // The deferred marker SURVIVES the re-import: the store's idempotent
+    // upsert refreshes metadata to the newest capture wholesale, so the
+    // composition must carry the resolution fact forward (visible, never
+    // silent — a deferred anchor may never silently become an unmarked one).
+    expect(after[0]?.metadata?.["canonicalResolution"]).toBe("deferred-follow");
   });
 
   it("untyped captures defer honestly when the connector declares no canonical type", async () => {
@@ -481,6 +486,47 @@ describe("R20-C service — incremental sync", () => {
     // The removed record's canonical item SURVIVES in the graph (another
     // relationship may still reference it; the graph never orphans knowledge).
     expect(await countRows("entertainment_items")).toBe(4);
+  });
+
+  it("a sync UPDATE of a deferred follow preserves the deferred marker (visible, never silent)", async () => {
+    let script: ScriptedReply;
+    script = {
+      snapshot: snap([item("UCchan1", "follow", { sourceOrder: 0, title: "Channel One" })]),
+    };
+    await boot(() => script);
+    const preview = await service.previewFeedImport({
+      userId: USER,
+      profileId: PROFILE,
+      ctx: { userId: USER, locale: "en" },
+      connectorId: "fixture-feed",
+    });
+    if (!preview.ok) throw new Error(preview.error.detail);
+    const confirmed = await service.confirmFeedImport(preview.value.importId);
+    if (!confirmed.ok) throw new Error(confirmed.error.detail);
+
+    const before = await service.readFeed(PROFILE, "byof");
+    expect(before[0]?.metadata?.["canonicalResolution"]).toBe("deferred-follow");
+
+    // The source reports the channel retitled + a later subscription
+    // timestamp: the record takes the update path (source-changed), whose
+    // upsert refreshes metadata wholesale — the deferred fact must ride on.
+    script = {
+      snapshot: snap(
+        [item("UCchan1", "follow", { sourceOrder: 0, title: "Channel One (renamed)", sourceUpdatedAt: T1 })],
+        { capturedAt: T1 },
+      ),
+    };
+    const result = await service.syncFeedImport(confirmed.value.id);
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.detail);
+    expect(result.value.report.updated).toBe(1);
+
+    const after = await service.readFeed(PROFILE, "byof");
+    expect(after.length).toBe(1);
+    expect(after[0]?.title).toBe("Channel One (renamed)"); // refreshed provenance
+    expect(after[0]?.entertainmentItemId).toBe(before[0]?.entertainmentItemId); // stable anchor
+    expect(after[0]?.metadata?.["canonicalResolution"]).toBe("deferred-follow"); // the fact survives
+    expect(await countRows("entertainment_items")).toBe(0); // still NOT an EntertainmentItem
   });
 
   it("SCOPE DISCIPLINE: a likes-only sync never removes another import's follows", async () => {
