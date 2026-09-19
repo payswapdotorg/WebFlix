@@ -86,6 +86,12 @@ export * from "./library";
 // application, honest sync-state transitions).
 export * from "./feed-import";
 
+// R20-C — the BYOF feed import SERVICE (the composition: connector capture
+// → canonical identity resolution → preview staging → idempotent confirm →
+// incremental sync with honest state transitions; the structural
+// FeedConnectorPort seam a real connector satisfies).
+export * from "./feed-service";
+
 // Watch state + playback sessions.
 export * from "./watch";
 

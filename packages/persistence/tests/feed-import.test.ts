@@ -587,3 +587,80 @@ describe("WebFlix-local action preservation (the separation law)", () => {
     expect((intentRows[0] as { provenance: string }).provenance).toBe("explicit"); // not overwritten by imported signals
   });
 });
+
+// ---------------------------------------------------------------------------
+// R20-C store additions: the sync-scope column, failed-capture audit rows,
+// and the confirm-refusal guard
+// ---------------------------------------------------------------------------
+
+describe("R20-C store additions", () => {
+  it("startPreview persists the request's relationship filter (migration 0013 — the sync scope)", async () => {
+    const started = await store.startPreview({
+      userId: USER,
+      profileId: PROFILE,
+      connectorId: "youtube",
+      method: "api",
+      continuousSync: true,
+      capturedAt: T0,
+      relationships: ["like", "watchlist"],
+      items: [staged({ externalRef: "Wfx54Docu001", relationship: "like", sourceRef: "LL" })],
+    });
+    expect(started.relationships).toEqual(["like", "watchlist"]);
+    const reread = await store.getImport(started.id);
+    expect(reread?.relationships).toEqual(["like", "watchlist"]);
+    // Unfiltered captures read back ABSENT (the route's full set).
+    const unfiltered = await store.startPreview({
+      userId: USER,
+      profileId: PROFILE,
+      connectorId: "youtube",
+      method: "api",
+      continuousSync: true,
+      capturedAt: T0,
+      items: [staged({ externalRef: "Wfx54Short01" })],
+    });
+    expect(unfiltered.relationships).toBeUndefined();
+  });
+
+  it("recordFailedImport lands the honest audit row: reauthorization vs failed, zero items", async () => {
+    const reauth = await store.recordFailedImport({
+      userId: USER,
+      profileId: PROFILE,
+      connectorId: "youtube",
+      method: "api",
+      relationships: ["like"],
+      syncState: "reauthorization-required",
+      error: "connector 'youtube' has no valid credentials for this feed request",
+    });
+    expect(reauth.status).toBe("reauthorization-required");
+    expect(reauth.syncState).toBe("reauthorization-required");
+    expect(reauth.itemCount).toBe(0);
+    expect(reauth.error).toContain("credentials");
+    expect(reauth.continuousSync).toBe(false);
+
+    const failed = await store.recordFailedImport({
+      userId: USER,
+      profileId: PROFILE,
+      connectorId: "youtube",
+      method: "api",
+      syncState: "degraded",
+      error: "connection reset",
+    });
+    expect(failed.status).toBe("failed");
+    expect(failed.syncState).toBe("degraded");
+    expect(failed.itemCount).toBe(0);
+  });
+
+  it("confirmImport refuses an import that never staged a preview (no fabricated success)", async () => {
+    const failed = await store.recordFailedImport({
+      userId: USER,
+      profileId: PROFILE,
+      connectorId: "youtube",
+      method: "api",
+      syncState: "degraded",
+      error: "provider down",
+    });
+    await expect(store.confirmImport(failed.id)).rejects.toThrow(/never staged a preview/);
+    const reread = await store.getImport(failed.id);
+    expect(reread?.status).toBe("failed"); // unchanged — no fake complete
+  });
+});

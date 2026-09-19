@@ -115,6 +115,28 @@ describe("reconcileFeedSnapshot — the decision table", () => {
     expect(plan.decisions[0]?.reason).toBe("source-changed");
   });
 
+  test("a RE-ENCODED timestamp (persistence round-trip normalization) is NOT a source change", () => {
+    // The store round-trips timestamptz through `toISOString()` —
+    // "2025-03-14T09:00:00Z" comes back "2025-03-14T09:00:00.000Z". The
+    // same instant re-encoded is the SAME knowledge: keep, never a
+    // phantom update (R20-C, found through the service composition).
+    const existing = [record("Wfx54Docu001", { sourceUpdatedAt: "2025-03-14T09:00:00.000Z", sourceOrder: 2 })];
+    const capture = snapshot([
+      { externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 2, sourceUpdatedAt: "2025-03-14T09:00:00Z" },
+    ]);
+    const plan = reconcileFeedSnapshot(existing, capture, scope);
+    expect(plan.counts).toEqual({ added: 0, updated: 0, removed: 0, kept: 1, deduplicated: 0 });
+    expect(plan.decisions[0]?.reason).toBe("unchanged");
+  });
+
+  test("a newly-absent timestamp IS a source change (absence is knowledge)", () => {
+    const existing = [record("Wfx54Docu001", { sourceUpdatedAt: "2025-03-14T09:00:00Z" })];
+    const capture = snapshot([{ externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0 }]);
+    const plan = reconcileFeedSnapshot(existing, capture, scope);
+    expect(plan.counts.updated).toBe(1);
+    expect(plan.decisions[0]?.reason).toBe("source-changed");
+  });
+
   test("a changed title is a source-changed update (provenance refreshes)", () => {
     const existing = [record("Wfx54Docu001", { title: "Old Title" })];
     const capture = snapshot([{ externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0, title: "New Title" }]);

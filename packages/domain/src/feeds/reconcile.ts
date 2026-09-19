@@ -44,6 +44,28 @@ import type {
 import { feedImportKey, feedRecordKeyInput } from "./model";
 
 // ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Whether two optional `sourceUpdatedAt` values are the SAME knowledge.
+ *
+ * Timestamps are compared as INSTANTS, not strings: a persistence round-trip
+ * normalizes encodings (`2026-09-10T08:00:00Z` → `2026-09-10T08:00:00.000Z`),
+ * and the same instant re-encoded is NOT a source change. When either side
+ * is absent, absence must match absence (a newly-reported or newly-absent
+ * timestamp IS a knowledge change). Unparseable strings fall back to exact
+ * string equality (never a fabricated match).
+ */
+function sameSourceInstant(a: string | undefined, b: string | undefined): boolean {
+  if (a === undefined || b === undefined) return a === b;
+  const ta = Date.parse(a);
+  const tb = Date.parse(b);
+  if (Number.isNaN(ta) || Number.isNaN(tb)) return a === b;
+  return ta === tb;
+}
+
+// ---------------------------------------------------------------------------
 // Inputs
 // ---------------------------------------------------------------------------
 
@@ -206,8 +228,9 @@ export function reconcileFeedSnapshot(
     existingByKey.delete(key);
     // Symmetric difference: a newly-reported (or newly-absent) source
     // timestamp/title is a knowledge change — the record's provenance
-    // refreshes. Both absent = unchanged.
-    const sourceChanged = (item.sourceUpdatedAt ?? undefined) !== (prior.sourceUpdatedAt ?? undefined);
+    // refreshes. Both absent = unchanged. Timestamps compare as INSTANTS
+    // (see sameSourceInstant — re-encodings are not changes).
+    const sourceChanged = !sameSourceInstant(item.sourceUpdatedAt, prior.sourceUpdatedAt);
     const titleChanged = (item.title ?? undefined) !== (prior.title ?? undefined);
     if (sourceChanged || titleChanged) {
       decisions.push({

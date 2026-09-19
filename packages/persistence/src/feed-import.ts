@@ -45,6 +45,7 @@ import type {
   FeedSyncState,
 } from "@wfx/domain";
 import {
+  FEED_RELATIONSHIPS,
   FOLLOWING_RELATIONSHIPS,
   feedImportKey,
   isIso8601,
@@ -71,6 +72,8 @@ export interface PersistedFeedImport extends FeedImport {
   readonly userId: string;
   readonly profileId: string;
   readonly sourceRef?: string;
+  /** The request's relationship filter (R20-C migration 0013): the sync scope. `undefined` = the route's full set. */
+  readonly relationships?: readonly FeedRelationship[];
   readonly continuousSync: boolean;
   readonly itemCount: number;
   readonly lastSyncedAt?: string;
@@ -109,6 +112,8 @@ export interface StartPreviewInput {
   readonly method: FeedImportMethod;
   readonly continuousSync: boolean;
   readonly sourceRef?: string;
+  /** The request's relationship filter — the scope a later sync reconciles (R20-C). */
+  readonly relationships?: readonly FeedRelationship[];
   readonly capturedAt: string;
   readonly items: readonly StageFeedItemInput[];
 }
@@ -161,6 +166,7 @@ interface ImportSqlRow {
   sync_state: string;
   continuous_sync: unknown;
   source_ref: string | null;
+  relationships: unknown;
   item_count: number;
   started_at: unknown;
   completed_at: unknown | null;
@@ -205,7 +211,20 @@ interface PreviewItemSqlRow {
   record_id: string;
 }
 
+/** Parse the stored `relationships` jsonb (null / malformed ⇒ absent, the pre-0013 full-set reading). */
+function mapRelationships(value: unknown): readonly FeedRelationship[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  const out: FeedRelationship[] = [];
+  for (const entry of value) {
+    if (typeof entry === "string" && (FEED_RELATIONSHIPS as readonly string[]).includes(entry)) {
+      out.push(entry as FeedRelationship);
+    }
+  }
+  return out;
+}
+
 function mapImport(row: ImportSqlRow): PersistedFeedImport {
+  const relationships = mapRelationships(row.relationships);
   return {
     id: row.id,
     userId: row.user_id,
@@ -216,6 +235,7 @@ function mapImport(row: ImportSqlRow): PersistedFeedImport {
     syncState: row.sync_state as FeedSyncState,
     continuousSync: row.continuous_sync === true,
     ...(row.source_ref !== null ? { sourceRef: row.source_ref } : {}),
+    ...(relationships !== undefined ? { relationships } : {}),
     itemCount: Number(row.item_count),
     startedAt: toIsoTimestamp(row.started_at),
     ...(row.completed_at !== null ? { completedAt: toIsoTimestamp(row.completed_at) } : {}),
@@ -326,8 +346,8 @@ export class PostgresFeedImportStore {
         await tx.query(
           `INSERT INTO feed_imports
              (id, user_id, profile_id, connector_id, method, status, sync_state,
-              continuous_sync, source_ref, item_count, started_at)
-           VALUES ($1, $2, $3, $4, $5, 'preview', 'snapshot', $6, $7, $8, $9)`,
+              continuous_sync, source_ref, relationships, item_count, started_at)
+           VALUES ($1, $2, $3, $4, $5, 'preview', 'snapshot', $6, $7, $8::jsonb, $9, $10)`,
           [
             importId,
             input.userId,
@@ -336,6 +356,7 @@ export class PostgresFeedImportStore {
             input.method,
             input.continuousSync,
             input.sourceRef ?? null,
+            JSON.stringify(input.relationships ?? null),
             input.items.length,
             startedAt,
           ],
@@ -436,6 +457,67 @@ export class PostgresFeedImportStore {
   }
 
   // -------------------------------------------------------------------------
+  // Failed capture audit (R20-C)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Record one FAILED capture attempt as its own import transaction row —
+   * the honest audit trail (R20-C): an import the user attempted that never
+   * reached a preview because the capture itself failed.
+   *
+   * Status truth: `reauthorization-required` when the failure was the
+   * user's missing grant (the surface's recovery path); `failed` for
+   * transport/provider failures. `itemCount` is 0 — nothing was staged, and
+   * NOTHING is deleted (the survival law: this row-creating path only
+   * ever ADDS the attempt record).
+   *
+   * Not for `unsupported`/`invalid-input` verdicts: those are static
+   * request/capability truth the caller could have known before attempting
+   * — recording them as import transactions would be noise, not audit.
+   */
+  async recordFailedImport(input: {
+    readonly userId: string;
+    readonly profileId: string;
+    readonly connectorId: string;
+    readonly method: FeedImportMethod;
+    readonly sourceRef?: string;
+    readonly relationships?: readonly FeedRelationship[];
+    readonly syncState: FeedSyncState;
+    readonly error: string;
+  }): Promise<PersistedFeedImport> {
+    const importId = `${FEED_IMPORT_ID_PREFIX}${this.ids.next()}`;
+    const status: PersistedFeedImport["status"] =
+      input.syncState === "reauthorization-required" ? "reauthorization-required" : "failed";
+    try {
+      const rows = await this.db.query<ImportSqlRow>(
+        `INSERT INTO feed_imports
+           (id, user_id, profile_id, connector_id, method, status, sync_state,
+            continuous_sync, source_ref, relationships, item_count, started_at, completed_at, error)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, false, $8, $9::jsonb, 0, $10, $10, $11)
+         RETURNING *`,
+        [
+          importId,
+          input.userId,
+          input.profileId,
+          input.connectorId,
+          input.method,
+          status,
+          input.syncState,
+          input.sourceRef ?? null,
+          JSON.stringify(input.relationships ?? null),
+          this.nowIso(),
+          input.error,
+        ],
+      );
+      const row = rows[0];
+      if (row === undefined) throw new Error("recordFailedImport: no row returned");
+      return mapImport(row);
+    } catch (thrown) {
+      throw classifyDriverError(thrown, "recordFailedImport");
+    }
+  }
+
+  // -------------------------------------------------------------------------
   // Confirm
   // -------------------------------------------------------------------------
 
@@ -458,6 +540,18 @@ export class PostgresFeedImportStore {
       throw new PersistenceError(
         "invalid-input",
         `confirmImport: feed import '${importId}' is unknown`,
+        { operation: "confirmImport" },
+      );
+    }
+    if (existing.status === "failed" || existing.status === "reauthorization-required") {
+      // These imports never staged a capture: confirming one would promote
+      // NOTHING and stamp a 0-item "complete" — a fabricated success. (A
+      // re-confirm of an already-'complete' import stays allowed: it
+      // re-applies the same staged rows onto the same keys — the R20-A
+      // idempotence law.)
+      throw new PersistenceError(
+        "invalid-input",
+        `confirmImport: feed import '${importId}' is '${existing.status}' — it never staged a preview to confirm`,
         { operation: "confirmImport" },
       );
     }
