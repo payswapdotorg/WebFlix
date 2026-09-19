@@ -99,3 +99,20 @@ WebFlix
 ```
 
 The resulting product must remain compliant with provider authorization boundaries and the native-media policy in `docs/architecture/product-boundaries.md`.
+
+
+## BYOF validation
+
+YouTube exposes authenticated subscription relationships through its official API, including the documented subscriptions.list resource. This demonstrates that a connector can support authorized follow/subscription import without scraping when a provider exposes the necessary capability.
+
+Source:
+- https://developers.google.com/youtube/v3/guides/implementation/subscriptions
+
+Implementation lessons:
+
+- source connection and feed import are different capabilities;
+- WebFlix should preserve source-native following/subscription intent while allowing a separate WebFlix-ranked mode;
+- imported relationships must carry provenance and freshness;
+- provider capability limitations must remain explicit.
+
+This complements the existing YouTube, Netflix, Plex, and Stremio pressure-test lessons; it does not rank competitors.
