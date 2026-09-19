@@ -4,6 +4,14 @@
 >
 > Predecessor: R19 release acceptance and R20 Bring Your Own Feed. R21 does not reopen the frozen product boundaries; it closes the gap between implemented/runtime capability and user-visible product surface.
 
+## Visual direction — ShareNet-inspired
+
+R21 must implement the visual direction frozen in `docs/architecture/webflix-design-language.md`, inspired by the ShareNet Conformance consumer shell and its source implementation.
+
+The required direction is calm, warm-light, typography-led, spacious, and state-driven: warm off-white surfaces, soft graphite text, hairline borders, restrained semantic teal/amber/red/neutral state colors, rounded/pill primary actions, compact navigation with subtle active-state treatment, calm empty/error/loading states, progressive disclosure of engineering diagnostics, and reduced-motion-aware transitions.
+
+The reference informs visual language only. Do not copy ShareNet branding, copy, connection imagery, icons, or information architecture. WebFlix remains content-first: media artwork can be expressive, playback can become immersive, but application chrome and management surfaces stay calm.
+
 ## Why R21 exists
 
 A live production journey simulation exposed a repeatable failure mode: a capability can exist in shared runtime contracts, tests, and architecture documents while the normal user path still cannot discover or use it.
