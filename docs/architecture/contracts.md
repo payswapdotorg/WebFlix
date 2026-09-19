@@ -183,11 +183,11 @@ export type FeedRelationship = 'follow'|'subscription'|'playlist'|'watchlist'|'l
 /** The identity of one imported feed relationship: (profile, source, container, external item). The import-key law: re-importing the same relationship is IDEMPOTENT — it addresses the SAME record, never a duplicate. */
 export interface FeedImportKeyInput { profileId:string; connectorId:string; relationship:FeedRelationship; sourceRef?:string; externalRef:string; }
 
-/** One relationship/item as the authorized source reports it, in source-native order. Source-native order is data with provenance — never a WebFlix rank. */
-export interface ConnectorFeedItem { externalRef:string; relationship:FeedRelationship; sourceOrder:number; title?:string; sourceUpdatedAt?:string; metadata?:Record<string,unknown>; }
+/** One relationship/item as the authorized source reports it, in source-native order. `sourceRef` is the relationship's container (playlist id, 'LL'/'WL', the follow graph itself when absent). Source-native order is data with provenance — never a WebFlix rank. */
+export interface ConnectorFeedItem { externalRef:string; relationship:FeedRelationship; sourceOrder:number; sourceRef?:string; title?:string; sourceUpdatedAt?:string; metadata?:Record<string,unknown>; }
 
-/** One authorized feed capture read from a connector. A capture is a point-in-time snapshot: it is never presented as live; `continuousSync` states whether the route can be re-read later. */
-export interface ConnectorFeedSnapshot { connectorId:string; method:FeedImportMethod; capturedAt:string; continuousSync:boolean; orderSemantics:'source-native'|'unknown'; sourceRef?:string; syncState:FeedSyncState; items:readonly ConnectorFeedItem[]; }
+/** One authorized feed capture read from a connector. A capture is a point-in-time snapshot: it is never presented as live; `continuousSync` states whether the route can be re-read later. `sourceRef` names the capture's container when it is uniform (a scoped playlist sync); a multi-container capture omits it and every item carries its own. `metadata` carries non-credential capture diagnostics (quota cost, page discipline) — provenance truth, never secrets. */
+export interface ConnectorFeedSnapshot { connectorId:string; method:FeedImportMethod; capturedAt:string; continuousSync:boolean; orderSemantics:'source-native'|'unknown'; sourceRef?:string; syncState:FeedSyncState; items:readonly ConnectorFeedItem[]; metadata?:Record<string,unknown>; }
 
 /** A request to import a feed from a connector: the import method, an optional relationship/container filter, or a user-supplied export artifact. */
 export interface FeedImportRequest { method:FeedImportMethod; relationships?:readonly FeedRelationship[]; sourceRef?:string; artifact?:Uint8Array; }

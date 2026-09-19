@@ -23,6 +23,12 @@
  * | playlistItems.insert      | 50           |
  * | playlistItems.delete      | 50           |
  * | videos.rate               | 50           |
+ * | subscriptions.list        | 1            |
+ *
+ * R20-B feed-import consequence: one full BYOF capture costs
+ * 1 (subscriptions) + 1 (likes "LL") + 1 (watch-later "WL") +
+ * 1 (playlists.list) + 1 per imported playlist's first page — a bounded,
+ * documented budget the connector never exceeds silently.
  *
  * Consequences the connector's design honors:
  * - search is the EXPENSIVE primitive (100 units ⇒ ~100 searches/day on the
@@ -44,6 +50,7 @@ export const YOUTUBE_QUOTA_COSTS = {
   "playlistItems.insert": 50,
   "playlistItems.delete": 50,
   "videos.rate": 50,
+  "subscriptions.list": 1,
 } as const;
 
 /** The API call names (the key type of YOUTUBE_QUOTA_COSTS). */

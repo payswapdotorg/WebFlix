@@ -35,6 +35,11 @@
  * - save           — the `save` user action maps to the same
  *                    playlistItems machinery as libraryWrite (the frozen
  *                    UserAction surface for save-to-playlist); 50 units.
+ * - feedImport     — R20-B: the EXPLICIT BYOF capability over the documented
+ *                    user-scoped endpoints (subscriptions.list mine=true,
+ *                    playlists.list mine=true, playlistItems.list on the
+ *                    special playlists "LL"/"WL" and the user's own
+ *                    playlists). Never inferred from catalogSearch.
  *
  * NOT DECLARED (honest absences — each is answered with a typed
  * `unsupported` result that names the capability):
@@ -65,7 +70,7 @@
  * EITHER an OAuth token OR the project API key (YOUTUBE_API_KEY).
  */
 
-import type { Capability, ConnectorDescriptor } from "@wfx/domain";
+import type { Capability, ConnectorDescriptor, FeedImportCapability } from "@wfx/domain";
 
 import { defineAuthFlow, type AuthFlow } from "../auth/flows";
 import { defineDescriptor } from "../descriptor";
@@ -89,6 +94,7 @@ export const YOUTUBE_CONNECTOR_CAPABILITIES: readonly Capability[] = [
   "libraryWrite",
   "like",
   "save",
+  "feedImport",
 ] as const;
 
 /**
@@ -99,11 +105,43 @@ export const YOUTUBE_CONNECTOR_CAPABILITIES: readonly Capability[] = [
  */
 export const YOUTUBE_CONNECTOR_DESCRIPTOR: ConnectorDescriptor = defineDescriptor({
   id: YOUTUBE_CONNECTOR_ID,
-  version: "0.1.0",
+  version: "0.2.0",
   displayName: "YouTube",
   capabilities: [...YOUTUBE_CONNECTOR_CAPABILITIES],
   auth: "oauth",
 });
+
+// ---------------------------------------------------------------------------
+// Feed import capability truth (R20-B)
+// ---------------------------------------------------------------------------
+
+/**
+ * The feed/import capability truth of the YouTube connector (R20-B), as the
+ * frozen `FeedImportCapability` records it for the BYOF surface:
+ *
+ * - the `api` route with CONTINUOUS SYNC (every endpoint is re-readable
+ *   under a valid OAuth grant);
+ * - following = subscriptions.list(mine=true);
+ * - playlists = playlists.list(mine=true) + per-playlist playlistItems;
+ * - likes/saves = playlistItems.list on "LL" (likes) and "WL" (watch
+ *   later).
+ *
+ * The honest absences (watch history, the ranked home feed — not exposed
+ * by the documented Data API; official-export file parsing — not
+ * implemented) are NOT listed: they answer the typed `unsupported`
+ * verdict when requested.
+ */
+export function youtubeFeedImportCapabilities(): FeedImportCapability[] {
+  return [
+    {
+      method: "api",
+      supportsContinuousSync: true,
+      supportsFollowing: true,
+      supportsPlaylists: true,
+      supportsLikesOrSaves: true,
+    },
+  ];
+}
 
 // ---------------------------------------------------------------------------
 // Auth flow details (the WFX-012 ConnectorAuthService wiring shape)

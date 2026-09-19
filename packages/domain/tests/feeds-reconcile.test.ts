@@ -159,9 +159,9 @@ describe("reconcileFeedSnapshot — scope discipline", () => {
       record("Wfx54Docu001", { sourceRef: "PL_A", sourceOrder: 0 }),
       record("Wfx54Docu001", { sourceRef: "PL_B", sourceOrder: 5 }),
     ];
-    const capture = snapshot([{ externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0 }], {
-      sourceRef: "PL_A",
-    });
+    const capture = snapshot([
+      { externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0, sourceRef: "PL_A" },
+    ]);
     const plan = reconcileFeedSnapshot(existing, capture, { ...scope, sourceRef: "PL_A" });
     expect(plan.counts).toEqual({ added: 0, updated: 0, removed: 0, kept: 1, deduplicated: 0 });
   });
@@ -171,9 +171,9 @@ describe("reconcileFeedSnapshot — scope discipline", () => {
       record("Wfx54Docu001", { relationship: "like", sourceRef: "LL", sourceOrder: 0 }),
       record("Wfx54Docu001", { relationship: "playlist", sourceRef: "PL_A", sourceOrder: 0 }),
     ];
-    const capture = snapshot([{ externalRef: "Wfx54Docu001", relationship: "like", sourceOrder: 0 }], {
-      sourceRef: "LL",
-    });
+    const capture = snapshot([
+      { externalRef: "Wfx54Docu001", relationship: "like", sourceOrder: 0, sourceRef: "LL" },
+    ]);
     const plan = reconcileFeedSnapshot(existing, capture, { ...scope, relationships: ["like"] });
     expect(plan.counts.removed).toBe(0);
     expect(plan.counts.kept).toBe(1);
@@ -225,9 +225,9 @@ describe("reconcileFeedSnapshot — intra-capture deduplication", () => {
 
 describe("reconcileFeedSnapshot — import-key integrity", () => {
   test("every decision's key round-trips feedImportKey of its identity", () => {
-    const capture = snapshot([{ externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0 }], {
-      sourceRef: "PL_A",
-    });
+    const capture = snapshot([
+      { externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0, sourceRef: "PL_A" },
+    ]);
     const plan = reconcileFeedSnapshot([], capture, { ...scope, sourceRef: "PL_A" });
     const decision = plan.decisions[0];
     expect(decision).toBeDefined();

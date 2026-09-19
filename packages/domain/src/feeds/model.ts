@@ -323,6 +323,9 @@ export function validateConnectorFeedItem(value: unknown): FeedValidationResult 
   ) {
     errors.push("item.sourceOrder: expected a non-negative integer");
   }
+  if (value.sourceRef !== undefined && !isNonEmptyString(value.sourceRef)) {
+    errors.push("item.sourceRef: expected a non-empty string when present");
+  }
   if (value.title !== undefined && typeof value.title !== "string") {
     errors.push("item.title: expected a string when present");
   }

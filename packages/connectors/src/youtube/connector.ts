@@ -59,6 +59,9 @@
 import type {
   ActionReceipt,
   ConnectorContext,
+  ConnectorFeedSnapshot,
+  FeedImportRequest,
+  FeedRelationship,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
@@ -82,7 +85,9 @@ import {
   youtubePlaylistItemsDelete,
   youtubePlaylistItemsInsert,
   youtubePlaylistItemsList,
+  youtubePlaylistsList,
   youtubeSearchList,
+  youtubeSubscriptionsList,
   youtubeVideosList,
   youtubeVideosRate,
   type YouTubeCallAuth,
@@ -97,6 +102,15 @@ import {
   type YouTubeChannelSummary,
 } from "./projection";
 import {
+  YOUTUBE_FEED_PLAYLISTS_MAX,
+  YOUTUBE_FEED_PLAYLIST_ITEMS_MAX,
+  YOUTUBE_FEED_RELATIONSHIPS,
+  YOUTUBE_FEED_SUBSCRIPTIONS_MAX,
+  projectPlaylistFeedItems,
+  projectSpecialPlaylistItems,
+  projectSubscriptions,
+} from "./feed";
+import {
   isYouTubeTokenExpired,
   refreshYouTubeToken,
   type YouTubeTokenSet,
@@ -105,7 +119,7 @@ import type { YouTubeCredentialSource } from "./credentials";
 import type { YouTubeHttpTransport } from "./http";
 import { toConnectorError, YouTubeApiError } from "./errors";
 import { quotaCostOf } from "./quota";
-import { YOUTUBE_CONNECTOR_DESCRIPTOR } from "./descriptor";
+import { YOUTUBE_CONNECTOR_DESCRIPTOR, YOUTUBE_CONNECTOR_ID } from "./descriptor";
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -633,6 +647,157 @@ export class YouTubeConnector extends BaseConnector {
         detail: `removed from YouTube playlist '${this.savePlaylistId_}' (playlistItems.delete)`,
         occurredAt: this.receiptIso(),
       };
+    })();
+  }
+
+  // --- SDK hook: feed import (R20-B) ------------------------------------------
+
+  /**
+   * The authorized BYOF feed import over the documented user-scoped
+   * endpoints (the FIRST REAL provider path — see ./feed.ts for the
+   * route truth):
+   *
+   * - method: ONLY `api` is implemented. `official-export` / `user-file`
+   *   (Google Takeout artifacts) and `snapshot` answer the typed
+   *   `unsupported` verdict — parsing export files is not implemented, and
+   *   a capability nobody wired is never faked.
+   * - relationships: the documented route exposes follow (subscriptions),
+   *   like ("LL"), watchlist ("WL"), and playlist (mine playlists + their
+   *   items). Anything else — most notably `history` (the watch history is
+   *   NOT served by the Data API; it exists only in the user's Takeout
+   *   export) and `ranked-feed` (the home feed has no exportable API) —
+   *   answers the typed `unsupported` verdict naming exactly what cannot
+   *   be exposed and why. NO SILENT PARTIAL IMPORTS.
+   * - auth: every endpoint is user-scoped (OAuth only) — no grant answers
+   *   typed `unauthorized`, which the composition folds to
+   *   `reauthorization-required`.
+   * - bounded reads: ONE page per list (the SDK page law): subscriptions
+   *   (≤50), "LL" (≤50), "WL" (≤50), mine playlists (≤25) + the FIRST page
+   *   (≤50) of each playlist with itemCount > 0. Quota: 1 unit per call —
+   *   the whole capture is a documented, bounded budget (see ./quota.ts).
+   * - a `sourceRef` filter scopes the playlist route to ONE playlist id.
+   *
+   * The returned snapshot is a point-in-time CAPTURE: `syncState:
+   * "snapshot"` (a capture is never presented as live) with
+   * `continuousSync: true` (the route is re-readable — the import's
+   * live/stale state is the sync state machine's verdict, not the
+   * capture's self-label). `sourceRef` is set only for a single-container
+   * (scoped playlist) capture.
+   */
+  protected override onImportFeed(
+    ctx: ConnectorContext,
+    request: FeedImportRequest,
+  ): AsyncConnectorResultInput<ConnectorFeedSnapshot> {
+    return (async () => {
+      if (request.method !== "api") {
+        return {
+          kind: "unsupported" as const,
+          capability: "feedImport" as const,
+          detail:
+            `the YouTube connector implements the authorized API import route only; ` +
+            `method '${request.method}' (official exports / user files) is not implemented — ` +
+            `no silent fallback, no fixture`,
+        };
+      }
+      const requested = request.relationships ?? [...YOUTUBE_FEED_RELATIONSHIPS];
+      const unsupported = requested.filter(
+        (relationship) => !YOUTUBE_FEED_RELATIONSHIPS.includes(relationship),
+      );
+      if (unsupported.length > 0) {
+        const history = unsupported.includes("history");
+        return {
+          kind: "unsupported" as const,
+          capability: "feedImport" as const,
+          detail:
+            `the documented YouTube Data API v3 cannot expose: ${unsupported.join(", ")}` +
+            (history
+              ? ` (the watch history is available only through the user's Google Takeout export, which this connector does not parse)`
+              : "") +
+            ` — the importable relationships are: ${YOUTUBE_FEED_RELATIONSHIPS.join(", ")}`,
+        };
+      }
+
+      const resolution = await this.resolveUserAuth(ctx);
+      if (!resolution.ok) return resolution.error;
+      const auth = resolution.value.auth;
+
+      const items: ConnectorFeedSnapshot["items"][number][] = [];
+      let quotaUnits = 0;
+      let scopedPlaylist = false;
+      try {
+        if (requested.includes("follow")) {
+          const subscriptions = await youtubeSubscriptionsList(
+            this.options_.transport,
+            auth,
+            { maxResults: YOUTUBE_FEED_SUBSCRIPTIONS_MAX },
+          );
+          quotaUnits += 1;
+          items.push(...projectSubscriptions(subscriptions));
+        }
+        if (requested.includes("like")) {
+          const liked = await youtubePlaylistItemsList(this.options_.transport, auth, {
+            playlistId: YOUTUBE_LIKED_PLAYLIST_ID,
+            maxResults: YOUTUBE_FEED_PLAYLIST_ITEMS_MAX,
+          });
+          quotaUnits += 1;
+          items.push(...projectSpecialPlaylistItems("LL", liked));
+        }
+        if (requested.includes("watchlist")) {
+          const watchLater = await youtubePlaylistItemsList(this.options_.transport, auth, {
+            playlistId: YOUTUBE_WATCH_LATER_PLAYLIST_ID,
+            maxResults: YOUTUBE_FEED_PLAYLIST_ITEMS_MAX,
+          });
+          quotaUnits += 1;
+          items.push(...projectSpecialPlaylistItems("WL", watchLater));
+        }
+        if (requested.includes("playlist")) {
+          if (request.sourceRef !== undefined) {
+            // Scoped playlist capture: exactly one container, first page.
+            const page = await youtubePlaylistItemsList(this.options_.transport, auth, {
+              playlistId: request.sourceRef,
+              maxResults: YOUTUBE_FEED_PLAYLIST_ITEMS_MAX,
+            });
+            quotaUnits += 1;
+            items.push(...projectPlaylistFeedItems(request.sourceRef, page));
+            scopedPlaylist = true;
+          } else {
+            const playlists = await youtubePlaylistsList(this.options_.transport, auth, {
+              maxResults: YOUTUBE_FEED_PLAYLISTS_MAX,
+            });
+            quotaUnits += 1;
+            for (const playlist of playlists.items) {
+              if (playlist.contentDetails.itemCount <= 0) continue;
+              const page = await youtubePlaylistItemsList(this.options_.transport, auth, {
+                playlistId: playlist.id,
+                maxResults: YOUTUBE_FEED_PLAYLIST_ITEMS_MAX,
+              });
+              quotaUnits += 1;
+              items.push(...projectPlaylistFeedItems(playlist.id, page));
+            }
+          }
+        }
+      } catch (thrown) {
+        return this.mapApiFailure(thrown);
+      }
+
+      const snapshot: ConnectorFeedSnapshot = {
+        connectorId: YOUTUBE_CONNECTOR_ID,
+        method: "api",
+        capturedAt: this.receiptIso(),
+        continuousSync: true,
+        orderSemantics: "source-native",
+        syncState: "snapshot", // a capture is a snapshot — never presented as live
+        items,
+        ...(scopedPlaylist && request.sourceRef !== undefined
+          ? { sourceRef: request.sourceRef }
+          : {}),
+        metadata: {
+          quotaUnits,
+          relationships: [...requested] as FeedRelationship[],
+          pageDiscipline: "one page per list (documented bounds: 50 subscriptions, 50 LL, 50 WL, 25 playlists + 50 items per playlist)",
+        },
+      };
+      return snapshot;
     })();
   }
 

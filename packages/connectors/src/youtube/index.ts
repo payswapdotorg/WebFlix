@@ -20,6 +20,8 @@
  *                     channels.list, playlistItems.*, videos.rate)
  * - projection.ts   — pure API-shape → frozen-contract projections
  *                     (durations, counts, thumbnails, PlaybackMode truth)
+ * - feed.ts         — R20-B: the BYOF route truth + API-shape → feed-item
+ *                     projections (source-native order as data, never rank)
  * - fixtures.ts     — recorded-from-documentation test fixtures + the
  *                     scripted transport (deterministic, network-free)
  * - connector.ts    — `YouTubeConnector` (BaseConnector subclass) and
@@ -34,5 +36,6 @@ export * from "./oauth";
 export * from "./credentials";
 export * from "./api";
 export * from "./projection";
+export * from "./feed";
 export * from "./fixtures";
 export * from "./connector";

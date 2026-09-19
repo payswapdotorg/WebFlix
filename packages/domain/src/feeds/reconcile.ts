@@ -123,14 +123,12 @@ function inScope(record: ReconcileFeedRecordInput, scope: ReconcileScope): boole
 /** Whether a captured item is inside the diff scope. */
 function itemInScope(
   item: ConnectorFeedItem,
-  snapshot: ConnectorFeedSnapshot,
   scope: ReconcileScope,
 ): boolean {
-  if (snapshot.connectorId !== scope.connectorId) return false;
   if (scope.relationships !== undefined && !scope.relationships.includes(item.relationship)) {
     return false;
   }
-  if (scope.sourceRef !== undefined && snapshot.sourceRef !== scope.sourceRef) {
+  if (scope.sourceRef !== undefined && item.sourceRef !== scope.sourceRef) {
     return false;
   }
   return true;
@@ -176,12 +174,13 @@ export function reconcileFeedSnapshot(
 
   let deduplicated = 0;
   for (const item of snapshot.items) {
-    if (!itemInScope(item, snapshot, scope)) continue;
+    if (snapshot.connectorId !== scope.connectorId) break; // foreign capture: nothing is in scope
+    if (!itemInScope(item, scope)) continue;
     const key = feedImportKey({
       profileId: scope.profileId,
       connectorId: snapshot.connectorId,
       relationship: item.relationship,
-      sourceRef: snapshot.sourceRef,
+      sourceRef: item.sourceRef,
       externalRef: item.externalRef,
     });
     if (seen.has(key)) {
@@ -197,7 +196,7 @@ export function reconcileFeedSnapshot(
         key,
         externalRef: item.externalRef,
         relationship: item.relationship,
-        ...(snapshot.sourceRef !== undefined ? { sourceRef: snapshot.sourceRef } : {}),
+        ...(item.sourceRef !== undefined ? { sourceRef: item.sourceRef } : {}),
         action: "add",
         reason: "new-item",
       });
@@ -215,7 +214,7 @@ export function reconcileFeedSnapshot(
         key,
         externalRef: item.externalRef,
         relationship: item.relationship,
-        ...(snapshot.sourceRef !== undefined ? { sourceRef: snapshot.sourceRef } : {}),
+        ...(item.sourceRef !== undefined ? { sourceRef: item.sourceRef } : {}),
         action: "update",
         reason: "source-changed",
       });
@@ -227,7 +226,7 @@ export function reconcileFeedSnapshot(
         key,
         externalRef: item.externalRef,
         relationship: item.relationship,
-        ...(snapshot.sourceRef !== undefined ? { sourceRef: snapshot.sourceRef } : {}),
+        ...(item.sourceRef !== undefined ? { sourceRef: item.sourceRef } : {}),
         action: "update",
         reason: "order-changed",
       });
@@ -238,7 +237,7 @@ export function reconcileFeedSnapshot(
       key,
       externalRef: item.externalRef,
       relationship: item.relationship,
-      ...(snapshot.sourceRef !== undefined ? { sourceRef: snapshot.sourceRef } : {}),
+      ...(item.sourceRef !== undefined ? { sourceRef: item.sourceRef } : {}),
       action: "keep",
       reason: "unchanged",
     });
