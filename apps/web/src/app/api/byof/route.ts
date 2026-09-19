@@ -1,39 +1,39 @@
 /**
- * @wfx/app-web — the BYOF API route (R20-D).
+ * @wfx/app-web — the BYOF API route (R20-D + R20-H).
  *
  * `GET /api/byof` → the current BYOF panel state (the importable sources
  * with their authorization truth, the import trail, the staged preview):
  * the honest view loaders' answer for this boot mode — in service mode
- * the typed unavailable truth (see `host/byof/byof-host.ts`), never a
- * fabricated source or import.
+ * the panel composed over the Experience API's feed-import routes (the
+ * R20-H seam swap), in fixtures mode the fixtures runtime's own panel.
  *
  * `POST /api/byof` `{ action, connectorId?, importId? }` — the typed
  * actions of the Bring Your Own Feed flow (the same law the R17 sources
- * route follows):
+ * route follows). ONE client surface, TWO transports: both boot modes
+ * answer the IDENTICAL body shapes (the fixtures runtime and the service
+ * transport implement the same operation surface) — the client
+ * components are untouched:
  * - `preview`           — capture + stage the preview (the connect/import step);
  * - `confirm`           — promote the staged preview the user saw;
  * - `sync`              — incrementally synchronize one confirmed import;
  * - `disconnect`        — NON-destructive disconnect (records retained);
- * - `delete-records`    — the EXPLICIT destructive deletion (separate action);
+ * - `delete-records`    — the EXPLICIT destructive deletion (separate action,
+ *                         armed behind the client's two-step confirmation);
  * - `discard-preview`   — discard a staged preview (presentation lifecycle).
  *
  * Fixtures-mode-only dev drives (the scripted source lifecycle the J33
  * journey and the dev badge consume — the R17/R14 drive precedent,
  * clearly dev-labeled): `dev-reset`, `connect` (the fixture OAuth
- * stand-in), `expire-auth`, `advance-source`.
- *
- * Service mode: every POST answers the honest typed 503 — the BYOF
- * execution runs against the configured service's feed-import routes
- * (the lead's R20-H integration step; escalated), and this web transport
- * serves the read/state surface only, exactly like the R17 sources
- * precedent. Never a fake success, never a silent no-op.
+ * stand-in), `expire-auth`, `advance-source`. In service mode they answer
+ * the typed 400 — the dev drives are the fixtures harness's own controls,
+ * never a service capability.
  *
  * Determinism: reads never advance the scripted source; only the typed
  * POST actions (and the dev drives) move it.
  */
 
 import { getWebRuntimeHost } from "@/host/web-host";
-import { byofServiceModeFailure, getByofFixturesRuntime } from "@/host/byof/byof-host";
+import { byofServiceTransportFor, getByofFixturesRuntime } from "@/host/byof/byof-host";
 import type { ByofFailure, ByofFailureKind } from "@/host/byof/byof-view";
 
 /** The closed action vocabulary the POST accepts. */
@@ -81,14 +81,13 @@ function failureResponse(failure: ByofFailure): Response {
 export async function GET(): Promise<Response> {
   const host = await getWebRuntimeHost();
   if (host.mode !== "fixtures") {
-    return Response.json({
-      mode: host.mode,
-      state: "unavailable",
-      detail: byofServiceModeFailure().detail,
-      sources: [],
-      imports: [],
-      preview: null,
-    });
+    // Service mode: the panel composed over the service's feed-import
+    // routes (the R20-H seam swap — one honest transport, never a
+    // fabricated source or import; a transport failure is the typed
+    // unavailable state).
+    const transport = byofServiceTransportFor(host);
+    const view = await transport.panelView();
+    return Response.json({ mode: host.mode, ...view });
   }
   const runtime = await getByofFixturesRuntime();
   const view = await runtime.panelView();
@@ -117,17 +116,22 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  // The service-mode capability truth: the BYOF execution transport is the
-  // service's feed-import routes (the lead's R20-H integration step —
-  // escalated); this web transport serves reads only.
-  if (host.mode !== "fixtures") {
-    return failureResponse(byofServiceModeFailure());
-  }
-
-  const runtime = await getByofFixturesRuntime();
+  // The transport binding for this boot mode (the fixtures runtime or the
+  // service transport — the SAME operation surface, so the action mapping
+  // below is mode-blind: one client surface, two transports).
+  const runtime = host.mode === "fixtures" ? await getByofFixturesRuntime() : byofServiceTransportFor(host);
 
   if (DEV_DRIVES.has(action)) {
-    const result = await runtime.drive(
+    // The dev drives are the fixtures harness's own controls — a service
+    // boot honestly refuses them (never a fake script step).
+    if (host.mode !== "fixtures") {
+      return failureResponse({
+        kind: "invalid-input",
+        detail: `'${action}' is a fixtures-mode dev drive — the scripted source lifecycle does not exist in a service boot`,
+      });
+    }
+    const fixtures = runtime as Awaited<ReturnType<typeof getByofFixturesRuntime>>;
+    const result = await fixtures.drive(
       action as "dev-reset" | "connect" | "expire-auth" | "advance-source",
     );
     if (!result.ok) return failureResponse(result.failure);

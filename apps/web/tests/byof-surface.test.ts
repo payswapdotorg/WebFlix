@@ -47,7 +47,12 @@ import {
   byofSyncTruth,
   isByofUserDisconnect,
 } from "../src/host/byof/byof-view";
-import { loadByofPanelView, loadByofFeedView } from "../src/host/byof/byof-host";
+import {
+  byofHostBinding,
+  loadByofPanelView,
+  loadByofFeedView,
+  type ByofHostBinding,
+} from "../src/host/byof/byof-host";
 import { ByofPanel } from "../src/components/byof/ByofPanel";
 import { ByofFeedRegion } from "../src/components/byof/ByofFeedRegion";
 import { LibrarySurface } from "../src/components/library/LibrarySurface";
@@ -56,10 +61,13 @@ import { GET as getByof, POST as postByof } from "../src/app/api/byof/route";
 import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost } from "../src/host/web-host";
 import { loadLibraryView } from "../src/host/view-models";
-import { withEnv } from "./fake-web";
+import { withEnv, withFetchStub, type RecordedFetch } from "./fake-web";
 
 /** The ONE fixtures runtime this test file boots (pristine via dev-reset). */
 let runtime: ByofFixturesRuntime;
+
+/** The fixtures-mode view-loader binding (the literal union — see byof-host). */
+const FIXTURES: ByofHostBinding = { mode: "fixtures" };
 
 beforeAll(async () => {
   runtime = await getByofFixturesRuntime();
@@ -88,13 +96,13 @@ async function importFeed(): Promise<string> {
 
 /** Render the settings panel (the tree the settings route serves). */
 async function renderPanel(): Promise<string> {
-  const view = await loadByofPanelView("fixtures");
+  const view = await loadByofPanelView(FIXTURES);
   return renderToStaticMarkup(createElement(ByofPanel, { view, mode: "fixtures" }));
 }
 
 /** Render the Library feed region (the tree the library route serves). */
 async function renderFeed(): Promise<string> {
-  const view = await loadByofFeedView("fixtures");
+  const view = await loadByofFeedView(FIXTURES);
   return renderToStaticMarkup(createElement(ByofFeedRegion, { view }));
 }
 
@@ -114,7 +122,7 @@ describe("R20-D BYOF — authorization failures are clear and actionable", () =>
 
   it("the failed attempt lands its honest audit trail — never a silent empty state", async () => {
     await runtime.startPreview({ connectorId: "youtube" });
-    const view = await loadByofPanelView("fixtures");
+    const view = await loadByofPanelView(FIXTURES);
     const attemptRow = view.imports.find(
       (entry) => entry.status === "reauthorization-required" && entry.itemCount === 0,
     );
@@ -171,7 +179,7 @@ describe("R20-D BYOF — the import flow (preview → confirm → feed appears)"
     await runtime.drive("connect");
     const preview = await runtime.startPreview({ connectorId: "youtube" });
     if (!preview.ok) throw new Error(preview.failure.detail);
-    const view = await loadByofPanelView("fixtures", preview.value.importId);
+    const view = await loadByofPanelView(FIXTURES, preview.value.importId);
     expect(view.preview).not.toBeNull();
     if (view.preview === null) throw new Error("unreachable");
     expect(view.preview.itemCount).toBe(7);
@@ -207,7 +215,7 @@ describe("R20-D BYOF — the import flow (preview → confirm → feed appears)"
 
   it("confirm promotes the preview and the feed APPEARS (the Library region)", async () => {
     const importId = await importFeed();
-    const view = await loadByofFeedView("fixtures");
+    const view = await loadByofFeedView(FIXTURES);
     expect(view.imports.length).toBe(1);
     const entry = view.imports[0]!;
     expect(entry.import.importId).toBe(importId);
@@ -238,7 +246,7 @@ describe("R20-D BYOF — the import flow (preview → confirm → feed appears)"
     if (!preview.ok) throw new Error(preview.failure.detail);
     const confirmed = await runtime.confirm(preview.value.importId);
     if (!confirmed.ok) throw new Error(confirmed.failure.detail);
-    const view = await loadByofFeedView("fixtures");
+    const view = await loadByofFeedView(FIXTURES);
     // Two confirmed imports, but the SAME seven relationships (the unique
     // import key upserts the records — the second import now owns them).
     const records = view.imports.flatMap((entry) => entry.groups.flatMap((group) => group.records));
@@ -316,7 +324,7 @@ describe("R20-D BYOF — the freshness surface", () => {
     if (sync.ok) throw new Error("unreachable");
     expect(sync.failure.kind).toBe("unauthorized");
     expect(sync.failure.syncState).toBe("reauthorization-required");
-    const view = await loadByofFeedView("fixtures");
+    const view = await loadByofFeedView(FIXTURES);
     // The records SURVIVE the failing sync (the retention law).
     expect(view.imports.length).toBe(1);
     expect(view.imports[0]!.import.itemCount).toBe(7);
@@ -348,7 +356,7 @@ describe("R20-D BYOF — the freshness surface", () => {
       kept: 4,
       syncState: "live",
     });
-    const view = await loadByofFeedView("fixtures");
+    const view = await loadByofFeedView(FIXTURES);
     expect(view.imports[0]!.import.itemCount).toBe(7);
     const titles = view.imports[0]!.groups
       .flatMap((group) => group.records)
@@ -368,7 +376,7 @@ describe("R20-D BYOF — undo/disconnect semantics", () => {
     const importId = await importFeed();
     const disconnect = await runtime.disconnect(importId);
     if (!disconnect.ok) throw new Error(disconnect.failure.detail);
-    const view = await loadByofFeedView("fixtures");
+    const view = await loadByofFeedView(FIXTURES);
     expect(view.imports.length).toBe(1);
     const entry = view.imports[0]!;
     // Every record still renders with its provenance.
@@ -388,12 +396,12 @@ describe("R20-D BYOF — undo/disconnect semantics", () => {
     const importId = await importFeed();
     await runtime.drive("expire-auth");
     await runtime.sync(importId);
-    const gapView = await loadByofFeedView("fixtures");
+    const gapView = await loadByofFeedView(FIXTURES);
     expect(gapView.imports[0]!.import.disconnectedByUser).toBe(false);
     await runtime.drive("connect");
     const disconnect = await runtime.disconnect(importId);
     if (!disconnect.ok) throw new Error(disconnect.failure.detail);
-    const disconnectedView = await loadByofFeedView("fixtures");
+    const disconnectedView = await loadByofFeedView(FIXTURES);
     expect(disconnectedView.imports[0]!.import.disconnectedByUser).toBe(true);
     // The two truths render their own labels (never conflated).
     const gapTruth = byofSyncTruth({ syncState: "reauthorization-required", disconnectedByUser: false });
@@ -413,7 +421,7 @@ describe("R20-D BYOF — undo/disconnect semantics", () => {
     await withEnv({ WFX_DEV_FIXTURES: "1" }, async () => {
       const host = await getWebRuntimeHost();
       library = await loadLibraryView(host);
-      byof = await loadByofFeedView(host.mode);
+      byof = await loadByofFeedView(byofHostBinding(host));
     });
     if (library === undefined || byof === undefined) throw new Error("the fixture host did not boot");
     expect(library.watchlist.status.state).toBe("ready");
@@ -433,7 +441,7 @@ describe("R20-D BYOF — undo/disconnect semantics", () => {
     const removed = await runtime.deleteRecords(importId);
     if (!removed.ok) throw new Error(removed.failure.detail);
     expect(removed.value.removed).toBe(7);
-    const view = await loadByofFeedView("fixtures");
+    const view = await loadByofFeedView(FIXTURES);
     // The ended import stops rendering (its rows remain as the store's
     // audit trail); the honest empty state takes over.
     expect(view.imports.length).toBe(0);
@@ -464,50 +472,298 @@ describe("R20-D BYOF — undo/disconnect semantics", () => {
 });
 
 // ---------------------------------------------------------------------------
-// The service-mode transport truth (typed unavailable — never a fake)
+// The service-mode HTTP seam (R20-H: the swap — one client surface, two
+// transports; the service's feed-import routes now exist and the web
+// adapter binds to them)
 // ---------------------------------------------------------------------------
 
-describe("R20-D BYOF — the service-mode transport truth", () => {
-  it("the panel and feed views answer the typed unavailable state", async () => {
-    const panel = await loadByofPanelView("service");
+/** The service-mode view-loader binding (a deterministic stub transport). */
+const SERVICE_BINDING: ByofHostBinding = {
+  mode: "service",
+  apiBase: new URL("https://service.example"),
+  context: { userId: "wfx-anonymous", sessionId: "wfxsess-test-session", locale: "en" },
+};
+
+/** One scripted service answer for the FetchStub (JSON body + status). */
+function serviceAnswer(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" },
+  });
+}
+
+/** The full BYOF panel the stub service serves (the J33-shaped truth). */
+const SERVICE_SOURCES = [
+  {
+    connectorId: "youtube",
+    displayName: "YouTube",
+    connected: true,
+    continuousSync: true,
+    importable: ["follow", "like", "watchlist", "playlist"],
+    unavailable: [
+      {
+        relationship: "history",
+        reason: "YouTube's watch history is only available in your Google Takeout export; the Data API does not serve it.",
+      },
+    ],
+  },
+];
+
+const SERVICE_IMPORTS = [
+  {
+    id: "wfximp_service000000000000000001",
+    userId: "wfx-anonymous",
+    profileId: "user:wfx-anonymous",
+    connectorId: "youtube",
+    method: "api",
+    status: "complete",
+    syncState: "live",
+    continuousSync: true,
+    itemCount: 7,
+    startedAt: "2026-09-19T10:00:00.000Z",
+    completedAt: "2026-09-19T10:01:00.000Z",
+    lastSyncedAt: "2026-09-19T11:00:00.000Z",
+  },
+];
+
+const SERVICE_RECORDS = [
+  {
+    id: "wfxfeed_service000000000000000001",
+    userId: "wfx-anonymous",
+    profileId: "user:wfx-anonymous",
+    importId: "wfximp_service000000000000000001",
+    importKey: "[]",
+    externalRef: "UCWfx54Channel00000000000A",
+    title: "Storm Chasers Lab",
+    entertainmentItemId: "wfxitm_service0000000000000001",
+    provenance: {
+      connectorId: "youtube",
+      importMethod: "api",
+      capturedAt: "2026-09-19T12:00:00.000Z",
+      syncState: "live",
+      sourceOrder: 0,
+      relationship: "follow",
+    },
+    importedAt: "2026-09-19T10:01:00.000Z",
+  },
+];
+
+const SERVICE_PREVIEW = {
+  importId: "wfximp_service000000000000000002",
+  connectorId: "youtube",
+  method: "api",
+  itemCount: 7,
+  relationshipCounts: { follow: 2, like: 2, watchlist: 1, playlist: 2 },
+  freshness: "snapshot",
+  continuousSync: true,
+  items: [
+    {
+      externalRef: "UCWfx54Channel00000000000A",
+      relationship: "follow",
+      sourceOrder: 0,
+      capturedAt: "2026-09-19T12:00:00.000Z",
+      title: "Storm Chasers Lab",
+      entertainmentItemId: "wfxitm_service0000000000000001",
+    },
+  ],
+};
+
+/** Route one stubbed service call by URL + method (the scripted service). */
+function routeServiceCall(call: RecordedFetch): Response {
+  if (call.method === "GET" && call.url.endsWith("/feeds/sources")) {
+    return serviceAnswer(200, { sources: SERVICE_SOURCES });
+  }
+  if (call.method === "GET" && call.url.endsWith("/feeds/imports")) {
+    return serviceAnswer(200, { imports: SERVICE_IMPORTS });
+  }
+  if (call.method === "GET" && call.url.includes("/feeds/records?mode=byof")) {
+    return serviceAnswer(200, { records: SERVICE_RECORDS });
+  }
+  if (call.method === "GET" && call.url.includes("/feeds/records?mode=following")) {
+    return serviceAnswer(200, { records: SERVICE_RECORDS.slice(0, 1) });
+  }
+  if (call.method === "GET" && call.url.includes("/feeds/preview/")) {
+    return serviceAnswer(200, { preview: SERVICE_PREVIEW });
+  }
+  return serviceAnswer(404, { error: "not-found", detail: `no scripted reply for ${call.url}` });
+}
+
+describe("R20-H BYOF — the service-mode HTTP seam (the swap)", () => {
+  it("the panel and feed views compose over the service's feed-import routes", async () => {
+    const { result: panel } = await withFetchStub(routeServiceCall, () =>
+      loadByofPanelView(SERVICE_BINDING),
+    );
+    expect(panel.state).toBe("ready");
+    expect(panel.sources.length).toBe(1);
+    expect(panel.sources[0]!.displayName).toBe("YouTube");
+    expect(panel.sources[0]!.connected).toBe(true);
+    expect(panel.imports.length).toBe(1);
+    expect(panel.imports[0]!.itemCount).toBe(1); // the LIVE count over the fetched records
+    expect(panel.imports[0]!.syncState).toBe("live");
+
+    const { result: feed } = await withFetchStub(routeServiceCall, () =>
+      loadByofFeedView(SERVICE_BINDING),
+    );
+    expect(feed.state).toBe("ready");
+    expect(feed.imports.length).toBe(1);
+    expect(feed.followingCount).toBe(1);
+    expect(feed.relationshipCounts).toEqual({ follow: 1 });
+    expect(feed.imports[0]!.groups[0]!.records[0]!.title).toBe("Storm Chasers Lab");
+  });
+
+  it("the staged preview addresses the service's preview read (the display columns)", async () => {
+    const { result: panel } = await withFetchStub(routeServiceCall, () =>
+      loadByofPanelView(SERVICE_BINDING, "wfximp_service000000000000000002"),
+    );
+    expect(panel.preview).not.toBeNull();
+    if (panel.preview === null) throw new Error("unreachable");
+    expect(panel.preview.importId).toBe("wfximp_service000000000000000002");
+    expect(panel.preview.freshness).toBe("snapshot");
+    expect(panel.preview.itemCount).toBe(7);
+    expect(panel.preview.sample[0]!.title).toBe("Storm Chasers Lab");
+  });
+
+  it("identity rides as HEADERS — never in URLs (the frozen transport law)", async () => {
+    const { calls } = await withFetchStub(routeServiceCall, () =>
+      loadByofPanelView(SERVICE_BINDING),
+    );
+    expect(calls.length).toBeGreaterThan(0);
+    for (const call of calls) {
+      expect(call.url).not.toContain("wfx-anonymous");
+      expect(call.headers["x-wfx-user-id"]).toBe("wfx-anonymous");
+      expect(call.headers["x-wfx-session-id"]).toBe("wfxsess-test-session");
+      expect(call.headers["x-wfx-locale"]).toBe("en");
+      expect(call.headers.accept).toBe("application/json");
+    }
+    // The transport table: the panel composes over the feed-import routes.
+    const urls = calls.map((call) => call.url);
+    expect(urls.some((url) => url.endsWith("/feeds/sources"))).toBe(true);
+    expect(urls.some((url) => url.endsWith("/feeds/imports"))).toBe(true);
+    expect(urls.some((url) => url.includes("/feeds/records?mode=byof"))).toBe(true);
+  });
+
+  it("a transport failure composes the typed unavailable views (never a fabricated panel)", async () => {
+    const { result: panel } = await withFetchStub(
+      () => Promise.reject(new Error("service unreachable")),
+      () => loadByofPanelView(SERVICE_BINDING),
+    );
     expect(panel.state).toBe("unavailable");
-    expect(panel.detail).toContain("feed-import routes");
+    expect(panel.detail).toContain("service unreachable");
     expect(panel.sources.length).toBe(0);
-    const feed = await loadByofFeedView("service");
-    expect(feed.state).toBe("unavailable");
-    expect(feed.imports.length).toBe(0);
-    // The honest state renders as the calm state block — never a fake
-    // source list, never a fabricated import.
+    expect(panel.imports.length).toBe(0);
+    // The honest state renders as the calm state block.
     const panelMarkup = renderToStaticMarkup(
       createElement(ByofPanel, { view: panel, mode: "service" }),
     );
     expect(panelMarkup).toContain("Bring Your Own Feed isn&#x27;t served by this boot");
+
+    const { result: feed } = await withFetchStub(
+      () => Promise.reject(new Error("service unreachable")),
+      () => loadByofFeedView(SERVICE_BINDING),
+    );
+    expect(feed.state).toBe("unavailable");
+    expect(feed.imports.length).toBe(0);
   });
 
-  it("the route serves reads with the typed truth and refuses writes (503)", async () => {
+  it("the typed actions proxy through the web route with the client's frozen body shapes", async () => {
     let host: Awaited<ReturnType<typeof getWebRuntimeHost>> | undefined;
     await withEnv({ WFX_API_BASE: "https://service.example" }, async () => {
       host = await getWebRuntimeHost();
     });
     if (host === undefined) throw new Error("the service host did not boot");
     expect(host.mode).toBe("service");
-    const read = await getByof();
+
+    // A successful preview: the service's staged answer flows as the SAME
+    // body the fixtures mode answers ({ ok: true, importId }).
+    const { result: preview } = await withFetchStub(
+      (call) =>
+        call.method === "POST" && call.url.endsWith("/feeds/preview")
+          ? serviceAnswer(200, { preview: SERVICE_PREVIEW })
+          : routeServiceCall(call),
+      () =>
+        postByof(
+          new Request("http://localhost/api/byof", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action: "preview", connectorId: "youtube" }),
+          }),
+        ),
+    );
+    expect(preview.status).toBe(200);
+    const previewBody = (await preview.json()) as { ok: boolean; importId: string };
+    expect(previewBody.ok).toBe(true);
+    expect(previewBody.importId).toBe("wfximp_service000000000000000002");
+
+    // A typed service failure (401 unauthorized, the honest recovery
+    // path) flows through as the client's typed failure body.
+    const { result: unauthorized } = await withFetchStub(
+      (call) =>
+        call.method === "POST" && call.url.endsWith("/feeds/preview")
+          ? serviceAnswer(401, {
+              error: "unauthorized",
+              detail: "connector 'youtube' has no valid credentials for this feed request",
+              importId: "wfximp_service000000000000000003",
+              syncState: "reauthorization-required",
+            })
+          : routeServiceCall(call),
+      () =>
+        postByof(
+          new Request("http://localhost/api/byof", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action: "preview", connectorId: "youtube" }),
+          }),
+        ),
+    );
+    expect(unauthorized.status).toBe(401);
+    const failureBody = (await unauthorized.json()) as {
+      ok: boolean;
+      failure: { kind: string; detail: string; importId?: string; syncState?: string };
+    };
+    expect(failureBody.ok).toBe(false);
+    expect(failureBody.failure.kind).toBe("unauthorized");
+    expect(failureBody.failure.detail).toContain("no valid credentials");
+    expect(failureBody.failure.importId).toBe("wfximp_service000000000000000003");
+    expect(failureBody.failure.syncState).toBe("reauthorization-required");
+  });
+
+  it("the GET route serves the service-composed panel (the seam's read side)", async () => {
+    let host: Awaited<ReturnType<typeof getWebRuntimeHost>> | undefined;
+    await withEnv({ WFX_API_BASE: "https://service.example" }, async () => {
+      host = await getWebRuntimeHost();
+    });
+    if (host === undefined) throw new Error("the service host did not boot");
+    const { result: read } = await withFetchStub(routeServiceCall, () => getByof());
     expect(read.status).toBe(200);
-    const readBody = (await read.json()) as { mode: string; state: string; detail: string };
+    const readBody = (await read.json()) as {
+      mode: string;
+      state: string;
+      sources: unknown[];
+      imports: unknown[];
+    };
     expect(readBody.mode).toBe("service");
-    expect(readBody.state).toBe("unavailable");
-    expect(readBody.detail).toContain("feed-import routes");
-    const write = await postByof(
+    expect(readBody.state).toBe("ready");
+    expect(readBody.sources.length).toBe(1);
+    expect(readBody.imports.length).toBe(1);
+  });
+
+  it("the dev drives answer the typed 400 in a service boot (fixtures-only controls)", async () => {
+    let host: Awaited<ReturnType<typeof getWebRuntimeHost>> | undefined;
+    await withEnv({ WFX_API_BASE: "https://service.example" }, async () => {
+      host = await getWebRuntimeHost();
+    });
+    if (host === undefined) throw new Error("the service host did not boot");
+    const response = await postByof(
       new Request("http://localhost/api/byof", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ action: "preview", connectorId: "youtube" }),
+        body: JSON.stringify({ action: "dev-reset" }),
       }),
     );
-    expect(write.status).toBe(503);
-    const writeBody = (await write.json()) as { ok: boolean; failure: { kind: string } };
-    expect(writeBody.ok).toBe(false);
-    expect(writeBody.failure.kind).toBe("unavailable");
+    expect(response.status).toBe(400);
+    const body = (await response.json()) as { ok: boolean; failure: { kind: string } };
+    expect(body.ok).toBe(false);
+    expect(body.failure.kind).toBe("invalid-input");
   });
 
   it("the route rejects malformed actions with the typed 400 channel", async () => {

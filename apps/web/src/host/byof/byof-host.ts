@@ -1,5 +1,6 @@
 /**
- * @wfx/app-web — the BYOF host seam (R20-D): one surface, two transports.
+ * @wfx/app-web — the BYOF host seam (R20-D + R20-H): one surface, two
+ * transports.
  *
  * The single module the settings panel, the Library feed region, and the
  * /api/byof route consume. It resolves the boot mode the SAME law the
@@ -11,60 +12,62 @@
  *   loaded through a dynamic import so the fixtures-only closure (PGlite,
  *   the postgres driver, the persistence migrations) NEVER enters the
  *   service-mode path.
- * - SERVICE mode: the honest typed `unavailable` truth. The BYOF feed
- *   routes on the Experience API (apps/api) are the lead's R20-H
- *   integration step — Worker 1's shared lane shipped the persistence +
- *   the connector capability + the reconciliation service, and the
- *   service-side HTTP surface that would serve them to this adapter has
- *   not been wired yet. This adapter renders that typed truth plainly
- *   (the same ratified precedent as the R03 `readSources` optional-member
- *   gap: the runtime answered "the adapter transport has not implemented
- *   the source read yet" until the lead wired the mapping) — never a fake
- *   import, never a fabricated feed, never a silent empty state. The gap
- *   is ESCALATED in the lane report for lead ratification.
+ * - SERVICE mode: the HTTP transport (`byof-service-transport.ts`) against
+ *   the Experience API's feed-import routes (`/feeds/**` — the R20-H
+ *   lane). This is THE seam swap the R20-D report escalated and the
+ *   R20-H dispatch names: the service-side routes now exist, and this
+ *   adapter binds to them over `WFX_API_BASE` with the SAME identity
+ *   headers the R07 ServerPort stamps — the SAME operation surface and
+ *   typed value shapes the fixtures runtime exposes, so the client
+ *   components and view contracts are untouched (one client surface, two
+ *   transports). A transport failure composes the honest typed
+ *   `unavailable` view (state + detail) — never a fabricated import,
+ *   never a silent empty state.
  */
 
-import type { HostMode } from "@/host/config";
+import type { RuntimeContext } from "@wfx/client-runtime";
+import type { WebRuntimeHost } from "@/host/web-host";
 
-import type {
-  ByofFeedView,
-  ByofFailure,
-  ByofPanelView,
-} from "./byof-view";
+import { createByofServiceTransport, type ByofServiceTransport } from "./byof-service-transport";
+import type { ByofFeedView, ByofPanelView } from "./byof-view";
 
 // ---------------------------------------------------------------------------
-// The service-mode transport truth (typed, honest — see module doc)
+// The host binding (what the view loaders need from the booted host)
 // ---------------------------------------------------------------------------
 
 /**
- * The typed `unavailable` failure the service-mode BYOF surfaces render:
- * the web adapter's BYOF UX is complete; the service-side feed routes it
- * would consume are the lead's integration step. This is the R03-style
- * honest transport gap — never stale "arrives later" copy for a capability
- * this lane shipped: the panel states exactly WHAT is wired and WHAT is
- * missing, in plain language, with the fixtures boot named as the working
- * configuration.
+ * What the BYOF view loaders need from the booted web host: the boot mode
+ * plus, in service mode, the validated API base URL and the identity
+ * context every request is stamped with (headers, never URLs). A plain
+ * discriminated union so tests can construct either side literally.
  */
-export function byofServiceModeFailure(): ByofFailure {
-  return {
-    kind: "unavailable",
-    detail:
-      "Bring Your Own Feed needs the feed-import routes on the configured WebFlix service — " +
-      "they are not exposed by this service yet (the R20 lead integration step). " +
-      "The import flow runs in full in this host's deterministic fixtures boot (the dev mode badge).",
-  };
+export type ByofHostBinding =
+  | { readonly mode: "fixtures" }
+  | { readonly mode: "service"; readonly apiBase: URL; readonly context: RuntimeContext };
+
+/**
+ * Derive the BYOF binding from the booted web host (the composition root
+ * resolved the config + session at boot — the ONE resolution law; this
+ * only narrows them).
+ */
+export function byofHostBinding(host: WebRuntimeHost): ByofHostBinding {
+  if (host.config.mode === "service") {
+    return { mode: "service", apiBase: host.config.apiBase, context: host.session.context };
+  }
+  return { mode: "fixtures" };
 }
 
-/** The settings panel view in service mode (the honest typed state). */
-function serviceModePanelView(): ByofPanelView {
-  const failure = byofServiceModeFailure();
-  return { state: "unavailable", detail: failure.detail, sources: [], imports: [], preview: null };
-}
-
-/** The Library feed region view in service mode (the honest typed state). */
-function serviceModeFeedView(): ByofFeedView {
-  const failure = byofServiceModeFailure();
-  return { state: "unavailable", detail: failure.detail, imports: [], followingCount: 0, relationshipCounts: {} };
+/**
+ * The service-mode BYOF transport for the booted host. Constructed per
+ * call (a stateless binding over the resolved apiBase + context; the
+ * fetch seam resolves per request, so a stubbed global fetch is honored).
+ */
+export function byofServiceTransportFor(host: WebRuntimeHost): ByofServiceTransport {
+  const binding = byofHostBinding(host);
+  if (binding.mode !== "service") {
+    throw new Error("byofServiceTransportFor: the host booted in fixtures mode — use the fixtures runtime");
+  }
+  return createByofServiceTransport({ apiBase: binding.apiBase, context: binding.context });
 }
 
 // ---------------------------------------------------------------------------
@@ -94,19 +97,33 @@ export async function getByofFixturesRuntime(): Promise<ByofFixturesRuntimeLike>
  * addresses the staged preview the `?byof=preview&import=` flow renders.
  */
 export async function loadByofPanelView(
-  mode: HostMode,
+  binding: ByofHostBinding,
   previewImportId?: string,
 ): Promise<ByofPanelView> {
-  if (mode !== "fixtures") return serviceModePanelView();
-  const runtime = await getByofFixturesRuntime();
-  return runtime.panelView(
+  if (binding.mode !== "service") {
+    const runtime = await getByofFixturesRuntime();
+    return runtime.panelView(
+      previewImportId !== undefined && previewImportId.length > 0 ? previewImportId : undefined,
+    );
+  }
+  const transport = createByofServiceTransport({
+    apiBase: binding.apiBase,
+    context: binding.context,
+  });
+  return transport.panelView(
     previewImportId !== undefined && previewImportId.length > 0 ? previewImportId : undefined,
   );
 }
 
 /** The Library feed region view for the current boot mode. */
-export async function loadByofFeedView(mode: HostMode): Promise<ByofFeedView> {
-  if (mode !== "fixtures") return serviceModeFeedView();
-  const runtime = await getByofFixturesRuntime();
-  return runtime.feedView();
+export async function loadByofFeedView(binding: ByofHostBinding): Promise<ByofFeedView> {
+  if (binding.mode !== "service") {
+    const runtime = await getByofFixturesRuntime();
+    return runtime.feedView();
+  }
+  const transport = createByofServiceTransport({
+    apiBase: binding.apiBase,
+    context: binding.context,
+  });
+  return transport.feedView();
 }

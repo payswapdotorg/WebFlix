@@ -8,9 +8,11 @@
  * render — plus the PURE derivation laws every BYOF surface obeys.
  *
  * This module is deliberately dependency-light (only `@wfx/domain` types +
- * this app's own constants): the service-mode host, the fixtures host,
- * the API route, and the tests all consume the SAME contracts — one law,
- * two transports (the same pattern as the R07 ServerPort split).
+ * `@wfx/persistence`'s ROW types (TYPE-ONLY — erased at compile time, the
+ * fixtures-only closure law of `byof-host.ts` keeps holding) + this app's
+ * own constants): the service-mode host, the fixtures host, the API route,
+ * and the tests all consume the SAME contracts — one law, two transports
+ * (the same pattern as the R07 ServerPort split).
  *
  * THE UI TRUTH LAWS ENCODED HERE (docs/architecture/byof-architecture.md
  * + the R20 dispatch):
@@ -39,6 +41,7 @@
  */
 
 import type { FeedRelationship, FeedSyncState } from "@wfx/domain";
+import type { PersistedFeedImport, PersistedFeedRecord } from "@wfx/persistence";
 
 // ---------------------------------------------------------------------------
 // The typed failure channel (the BYOF port's error grammar)
@@ -368,4 +371,115 @@ export interface ByofSyncReportView {
   readonly removed: number;
   readonly kept: number;
   readonly syncState: FeedSyncState;
+}
+
+// ---------------------------------------------------------------------------
+// R20-H — the SHARED row→view derivations (one law, two transports)
+// ---------------------------------------------------------------------------
+
+/**
+ * The pure derivations both transports compose their views from (the
+ * R20-H seam-swap law): the fixtures host (over the local store's rows)
+ * and the service-mode transport (over the same row shapes fetched from
+ * the service's feed-import routes) derive IDENTICAL views from
+ * IDENTICAL rows — no transport may re-implement (or re-word) these.
+ *
+ * `PersistedFeedImport`/`PersistedFeedRecord` are the shared store's own
+ * row shapes (plain, serializable) — the service serves them verbatim,
+ * so the derivations are transport-blind. Determinism: pure functions.
+ */
+
+/** Derive one imported record's view row (title fallback: the external ref). */
+export function byofRecordViewOf(record: PersistedFeedRecord): ByofRecordView {
+  return {
+    externalRef: record.externalRef,
+    title: record.title ?? record.externalRef,
+    sourceOrder: record.provenance.sourceOrder,
+    entertainmentItemId: record.entertainmentItemId,
+    capturedAt: record.provenance.capturedAt,
+    relationship: record.provenance.relationship,
+    ...(record.provenance.sourceRef !== undefined ? { sourceRef: record.provenance.sourceRef } : {}),
+  };
+}
+
+/**
+ * Group one import's records into consecutive same-relationship groups
+ * (the store's source-native read order, kept — order is DATA, never a
+ * WebFlix rank).
+ */
+export function byofRecordGroupsOf(
+  records: readonly PersistedFeedRecord[],
+): readonly ByofRecordGroupView[] {
+  const groups: { relationship: FeedRelationship; records: ByofRecordView[] }[] = [];
+  for (const record of records) {
+    const view = byofRecordViewOf(record);
+    const last = groups.at(-1);
+    if (last !== undefined && last.relationship === record.provenance.relationship) {
+      last.records.push(view);
+    } else {
+      groups.push({ relationship: record.provenance.relationship, records: [view] });
+    }
+  }
+  return groups;
+}
+
+/**
+ * Derive one import's card (the durable truth): the LIVE record count for
+ * confirmed imports (never the possibly-stale column — a deleted import
+ * renders its truth: zero items left); the staged count for a preview row
+ * (its own truth); the user-disconnect fold's distinct presentation flag;
+ * the newest capture timestamp across the import's own records.
+ */
+export function byofImportViewOf(
+  row: PersistedFeedImport,
+  ownRecords: readonly PersistedFeedRecord[],
+  displayName: string,
+): ByofImportView {
+  const capturedAt =
+    ownRecords.length > 0
+      ? ownRecords.map((record) => record.provenance.capturedAt).sort().at(-1)
+      : undefined;
+  return {
+    importId: row.id,
+    connectorId: row.connectorId,
+    displayName,
+    method: row.method,
+    status: row.status,
+    syncState: row.syncState,
+    disconnectedByUser: isByofUserDisconnect(row.error),
+    continuousSync: row.continuousSync,
+    itemCount: row.status === "preview" ? row.itemCount : ownRecords.length,
+    ...(capturedAt !== undefined ? { capturedAt } : {}),
+    importedAt: row.startedAt,
+    ...(row.lastSyncedAt !== undefined ? { lastSyncedAt: row.lastSyncedAt } : {}),
+    ...(row.error !== undefined ? { errorDetail: row.error } : {}),
+  };
+}
+
+/** The staged preview's assembly input (the frozen fields + display rows). */
+export interface ByofPreviewAssembly {
+  readonly importId: string;
+  readonly connectorId: string;
+  readonly itemCount: number;
+  readonly relationshipCounts: Readonly<Record<string, number>>;
+  /** The capture's freshness (a capture is a snapshot — never labeled live). */
+  readonly freshness: FeedSyncState;
+  readonly continuousSync: boolean;
+  readonly displayName: string;
+  /** The sample rows the user is confirming, in the staged-read order. */
+  readonly sample: readonly ByofRecordView[];
+}
+
+/** Derive the staged preview's view (the "preview before you confirm" step). */
+export function byofPreviewViewOf(assembly: ByofPreviewAssembly): ByofPreviewView {
+  return {
+    importId: assembly.importId,
+    connectorId: assembly.connectorId,
+    displayName: assembly.displayName,
+    itemCount: assembly.itemCount,
+    relationshipCounts: assembly.relationshipCounts,
+    freshness: assembly.freshness,
+    continuousSync: assembly.continuousSync,
+    sample: assembly.sample,
+  };
 }

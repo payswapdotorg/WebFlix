@@ -52,7 +52,7 @@ import { WebClock } from "@/platform/lifecycle";
 import { createWebSurfaceResolver } from "./media-surface";
 import { createFixtureBackedServerPort } from "./dev-fixture-server-port";
 import { resetAcquisitionFixturesForTests, seedAcquisitionFixtures } from "./acquisition-fixtures";
-import type { HostEnv, HostMode } from "./config";
+import type { HostConfig, HostEnv, HostMode } from "./config";
 import { resolveHostConfig } from "./config";
 import type { WebSession } from "./session";
 import { resolveWebSession } from "./session";
@@ -81,6 +81,9 @@ export class CryptoUlidGen implements RuntimeIdGen {
 export interface WebRuntimeHost {
   /** The boot mode the environment selected (fixtures / service). */
   readonly mode: HostMode;
+  /** The resolved host configuration (R20-H: the service mode's apiBase
+   * binding for the HTTP-seamed hosts — e.g. the BYOF transport). */
+  readonly config: HostConfig;
   /** The shared client runtime (the ONE instance this process serves). */
   readonly runtime: ClientRuntime;
   /** The session the runtime + transport are bound to. */
@@ -191,6 +194,7 @@ export async function bootWebRuntimeHost(
 
   return {
     mode: config.mode,
+    config,
     runtime,
     session,
     capabilities,

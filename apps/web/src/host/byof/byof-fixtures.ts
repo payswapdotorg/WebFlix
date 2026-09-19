@@ -104,7 +104,10 @@ import {
 import { ANONYMOUS_USER_ID } from "@/host/session";
 import {
   BYOF_DISCONNECTED_MARKER,
-  isByofUserDisconnect,
+  byofImportViewOf,
+  byofPreviewViewOf,
+  byofRecordGroupsOf,
+  byofRecordViewOf,
   type ByofFailure,
   type ByofFailureKind,
   type ByofFeedView,
@@ -414,15 +417,7 @@ class ByofFixturesRuntimeImpl implements ByofFixturesRuntime {
   /** Read the imported feed records under a frozen read mode (the mode-truth law). */
   async feedRecords(mode: "webflix" | "following" | "byof" | "hybrid"): Promise<readonly ByofRecordView[]> {
     const records = await this.service.readFeed(BYOF_FIXTURES_PROFILE, mode);
-    return records.map((record) => ({
-      externalRef: record.externalRef,
-      title: record.title ?? record.externalRef,
-      sourceOrder: record.provenance.sourceOrder,
-      entertainmentItemId: record.entertainmentItemId,
-      capturedAt: record.provenance.capturedAt,
-      relationship: record.provenance.relationship,
-      ...(record.provenance.sourceRef !== undefined ? { sourceRef: record.provenance.sourceRef } : {}),
-    }));
+    return records.map((record) => byofRecordViewOf(record));
   }
 
   /** The importable-source options (the choose-source step's truth). */
@@ -456,27 +451,14 @@ class ByofFixturesRuntimeImpl implements ByofFixturesRuntime {
     row: PersistedFeedImport,
     allRecords: readonly PersistedFeedRecord[],
   ): ByofImportView {
-    const own = allRecords.filter((record) => record.importId === row.id);
-    const capturedAt =
-      own.length > 0 ? own.map((record) => record.provenance.capturedAt).sort().at(-1) : undefined;
-    return {
-      importId: row.id,
-      connectorId: row.connectorId,
-      displayName: this.displayNameOf(row.connectorId),
-      method: row.method,
-      status: row.status,
-      syncState: row.syncState,
-      disconnectedByUser: isByofUserDisconnect(row.error),
-      continuousSync: row.continuousSync,
-      // The LIVE record count for confirmed imports (never the possibly
-      // stale column — a deleted import renders its truth: zero items
-      // left); the staged count for a preview row (its own truth).
-      itemCount: row.status === "preview" ? row.itemCount : own.length,
-      ...(capturedAt !== undefined ? { capturedAt } : {}),
-      importedAt: row.startedAt,
-      ...(row.lastSyncedAt !== undefined ? { lastSyncedAt: row.lastSyncedAt } : {}),
-      ...(row.error !== undefined ? { errorDetail: row.error } : {}),
-    };
+    // The SHARED derivation (R20-H): the service-mode transport derives
+    // its views from the SAME row shapes through the SAME functions —
+    // one law, two transports.
+    return byofImportViewOf(
+      row,
+      allRecords.filter((record) => record.importId === row.id),
+      this.displayNameOf(row.connectorId),
+    );
   }
 
   /** The newest staged preview's view (the panel's default preview). */
@@ -512,16 +494,17 @@ class ByofFixturesRuntimeImpl implements ByofFixturesRuntime {
       relationship: stagedRow.relationship as FeedRelationship,
       ...(stagedRow.source_ref !== null ? { sourceRef: stagedRow.source_ref } : {}),
     }));
-    return {
+    // The SHARED assembly (R20-H): one derivation, two transports.
+    return byofPreviewViewOf({
       importId: preview.importId,
       connectorId: preview.connectorId,
-      displayName: this.displayNameOf(preview.connectorId),
       itemCount: preview.itemCount,
       relationshipCounts: preview.relationshipCounts,
       freshness: preview.freshness,
       continuousSync: row.continuousSync,
+      displayName: this.displayNameOf(preview.connectorId),
       sample,
-    };
+    });
   }
 
   /** The plain display name of a wired connector (its descriptor's own). */
@@ -703,27 +686,10 @@ class ByofFixturesRuntimeImpl implements ByofFixturesRuntime {
 // View helpers (pure)
 // ---------------------------------------------------------------------------
 
-/** Group one import's records (the store's source-native read order, kept). */
+/** Group one import's records (the store's source-native read order, kept —
+ * the SHARED derivation, R20-H: one law, two transports). */
 function groupRecords(records: readonly PersistedFeedRecord[]): readonly ByofRecordGroupView[] {
-  const groups: { relationship: FeedRelationship; records: ByofRecordView[] }[] = [];
-  for (const record of records) {
-    const view: ByofRecordView = {
-      externalRef: record.externalRef,
-      title: record.title ?? record.externalRef,
-      sourceOrder: record.provenance.sourceOrder,
-      entertainmentItemId: record.entertainmentItemId,
-      capturedAt: record.provenance.capturedAt,
-      relationship: record.provenance.relationship,
-      ...(record.provenance.sourceRef !== undefined ? { sourceRef: record.provenance.sourceRef } : {}),
-    };
-    const last = groups.at(-1);
-    if (last !== undefined && last.relationship === record.provenance.relationship) {
-      last.records.push(view);
-    } else {
-      groups.push({ relationship: record.provenance.relationship, records: [view] });
-    }
-  }
-  return groups;
+  return byofRecordGroupsOf(records);
 }
 
 /** Map the shared service's failure vocabulary onto the port's grammar. */

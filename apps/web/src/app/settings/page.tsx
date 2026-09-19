@@ -21,7 +21,7 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { SettingsSurface } from "@/components/settings/SettingsSurface";
 import { getWebRuntimeHost } from "@/host/web-host";
-import { loadByofPanelView } from "@/host/byof/byof-host";
+import { byofHostBinding, loadByofPanelView } from "@/host/byof/byof-host";
 import { syncNavigationToRoute } from "@/app/routing";
 import type { SettingsSection } from "@wfx/client-runtime";
 
@@ -41,16 +41,20 @@ export default async function SettingsPage({
   // fixtures' scripted authorization truth in dev; the honest transport
   // answer in service mode — never a fabricated list).
   const sources = section === "sources" ? await host.runtime.sources.refresh() : undefined;
-  // R20-D — the BYOF panel view (the sources section's feed-import flow),
-  // with the staged-preview address (`?byof=preview&import=<id>`) when the
-  // flow's preview step is open. An adapter render hint: the runtime's
-  // navigation state is untouched.
+  // R20-D/R20-H — the BYOF panel view (the sources section's feed-import
+  // flow), with the staged-preview address (`?byof=preview&import=<id>`)
+  // when the flow's preview step is open. An adapter render hint: the
+  // runtime's navigation state is untouched. Service mode binds the HTTP
+  // transport through the host binding (the one-place seam).
   const byofImportParam = params.import;
   const byofPreviewImportId =
     Array.isArray(byofImportParam) ? (byofImportParam[0] ?? "") : (byofImportParam ?? "");
   const byof =
     section === "sources"
-      ? await loadByofPanelView(host.mode, byofPreviewImportId.length > 0 ? byofPreviewImportId : undefined)
+      ? await loadByofPanelView(
+          byofHostBinding(host),
+          byofPreviewImportId.length > 0 ? byofPreviewImportId : undefined,
+        )
       : undefined;
   return (
     <AppShell mode={host.mode} active="settings" session={host.session.state}>
