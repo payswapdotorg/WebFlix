@@ -110,7 +110,7 @@ afterAll(async () => {
 });
 
 describe("catalog seed — convergence + idempotency (boot-if-empty, never overwrite)", () => {
-  it("the schema baseline is untouched: the migration set re-verifies clean (twelve)", async () => {
+  it("the schema baseline is untouched: the migration set re-verifies clean (thirteen)", async () => {
     // R02 added migration 0007 (profiles + profile scoping — SCHEMA, not
     // app-owned data; the seed's never-into-the-migration-dir decision
     // record is about DATA). R03 added migration 0008 (the source-management
@@ -122,10 +122,12 @@ describe("catalog seed — convergence + idempotency (boot-if-empty, never overw
     // operations + append-only state history tables — SCHEMA again). R15
     // added its 0011 (the durable action outbox + local action audit +
     // sync log tables — SCHEMA again; distinct filename/id, sorted order).
+    // R20-A added migration 0012 (the BYOF feed imports/preview staging/
+    // idempotent feed records tables — SCHEMA again).
     // The re-verify law is unchanged: nothing new applies, no drift.
     const again = await runMigrations(first.db);
     expect(again.applied).toEqual([]);
-    expect(again.total).toBe(12);
+    expect(again.total).toBe(13);
   });
 
   it("a second seedCatalogIfEmpty pass seeds NOTHING (the never-overwrite law)", async () => {

@@ -4,7 +4,7 @@
 import type { SearchResult, SourceItem, UserAction, ActionReceipt, LibraryEntry, LibraryCommand, EntertainmentCandidate } from "./extensions";
 
 // ===== section: Connector SDK =====
-export type Capability = 'identity'|'catalogSearch'|'metadata'|'playNative'|'playEmbed'|'playBrowser'|'playExternal'|'availability'|'libraryRead'|'libraryWrite'|'like'|'save'|'follow'|'comment'|'download'|'transform';
+export type Capability = 'identity'|'catalogSearch'|'metadata'|'playNative'|'playEmbed'|'playBrowser'|'playExternal'|'availability'|'libraryRead'|'libraryWrite'|'like'|'save'|'follow'|'comment'|'download'|'transform'|'feedImport';
 export interface ConnectorDescriptor { id:string; version:string; displayName:string; capabilities:Capability[]; auth:'none'|'oauth'|'device'|'local'; }
 export interface ConnectorContext { userId:string; locale:string; region?:string; }
 export interface SourceConnector {
@@ -107,3 +107,39 @@ export interface TorrentEngine {
 // ===== section: Acquisition =====
 export type AcquisitionState='available'|'preparing'|'buffering'|'playing'|'completing'|'ready-offline'|'failed';
 export interface AcquisitionStatus { id:string; itemId:string; state:AcquisitionState; progress:number; bufferedMs:number; assetId?:string; error?:string; }
+
+// ===== section: Bring Your Own Feed =====
+export type FeedImportMethod='api'|'official-export'|'user-file'|'snapshot';
+export type FeedSyncState='live'|'syncing'|'snapshot'|'stale'|'reauthorization-required'|'unsupported'|'degraded';
+export interface FeedImportCapability { method:FeedImportMethod; supportsContinuousSync:boolean; supportsFollowing:boolean; supportsPlaylists:boolean; supportsLikesOrSaves:boolean; }
+export interface FeedProvenance { connectorId:string; importMethod:FeedImportMethod; sourceRef?:string; capturedAt:string; syncState:FeedSyncState; sourceOrder:number; relationship:'follow'|'subscription'|'playlist'|'watchlist'|'like'|'save'|'ranked-feed'|'history'|'unknown'; }
+export interface FeedRecord { id:string; userId:string; profileId:string; entertainmentItemId:string; provenance:FeedProvenance; importedAt:string; sourceUpdatedAt?:string; }
+export interface FeedImport { id:string; connectorId:string; method:FeedImportMethod; status:'preview'|'confirmed'|'running'|'complete'|'failed'|'reauthorization-required'; startedAt:string; completedAt?:string; error?:string; }
+export interface FeedImportPreview { importId:string; connectorId:string; method:FeedImportMethod; itemCount:number; relationshipCounts:Record<string,number>; freshness:FeedSyncState; sample:FeedRecord[]; }
+export interface FeedPort { previewImport(input:{connectorId:string;method?:FeedImportMethod;artifact?:Uint8Array}):Promise<FeedImportPreview>; confirmImport(importId:string):Promise<FeedImport>; readFeed(input:{profileId:string;mode:'webflix'|'following'|'byof'|'hybrid'}):Promise<FeedRecord[]>; syncImport(importId:string):Promise<FeedImport>; }
+
+// --- R20-A lane additions (Worker 1, for lead ratification): the named
+// relationship union, the idempotent import key contract, the connector
+// feed surface, and the reconciliation contracts. The frozen shapes above
+// keep their exact semantics (add-only law). ---
+
+/** The relationship kinds an imported feed record can carry (the FeedProvenance.relationship union, named for reuse). */
+export type FeedRelationship = 'follow'|'subscription'|'playlist'|'watchlist'|'like'|'save'|'ranked-feed'|'history'|'unknown';
+
+/** The identity of one imported feed relationship: (profile, source, container, external item). The import-key law: re-importing the same relationship is IDEMPOTENT — it addresses the SAME record, never a duplicate. */
+export interface FeedImportKeyInput { profileId:string; connectorId:string; relationship:FeedRelationship; sourceRef?:string; externalRef:string; }
+
+/** One relationship/item as the authorized source reports it, in source-native order. Source-native order is data with provenance — never a WebFlix rank. */
+export interface ConnectorFeedItem { externalRef:string; relationship:FeedRelationship; sourceOrder:number; title?:string; sourceUpdatedAt?:string; metadata?:Record<string,unknown>; }
+
+/** One authorized feed capture read from a connector. A capture is a point-in-time snapshot: it is never presented as live; `continuousSync` states whether the route can be re-read later. */
+export interface ConnectorFeedSnapshot { connectorId:string; method:FeedImportMethod; capturedAt:string; continuousSync:boolean; orderSemantics:'source-native'|'unknown'; sourceRef?:string; syncState:FeedSyncState; items:readonly ConnectorFeedItem[]; }
+
+/** A request to import a feed from a connector: the import method, an optional relationship/container filter, or a user-supplied export artifact. */
+export interface FeedImportRequest { method:FeedImportMethod; relationships?:readonly FeedRelationship[]; sourceRef?:string; artifact?:Uint8Array; }
+
+/** One item-level reconciliation decision. `remove` deletes only the imported feed record — never WebFlix-local library/history state. */
+export interface FeedReconciliationItem { key:string; externalRef:string; relationship:FeedRelationship; sourceRef?:string; action:'add'|'update'|'remove'|'keep'; reason:'new-item'|'source-changed'|'order-changed'|'source-removed'|'unchanged'; }
+
+/** The reconciliation report: what one sync changed, what it deduplicated, what it preserved, with honest counts. `preservedLocalActions` is the structural law: feed reconciliation writes ONLY feed records/imports. */
+export interface FeedReconciliationReport { importId:string; connectorId:string; method:FeedImportMethod; capturedAt:string; appliedAt:string; added:number; updated:number; removed:number; kept:number; deduplicated:number; preservedLocalActions:boolean; items:readonly FeedReconciliationItem[]; }

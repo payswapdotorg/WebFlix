@@ -81,6 +81,11 @@ export * from "./graph";
 export * from "./catalog-connector";
 export * from "./library";
 
+// R20 — Bring Your Own Feed: the durable feed import store (preview
+// staging, idempotent feed records with provenance, reconciliation
+// application, honest sync-state transitions).
+export * from "./feed-import";
+
 // Watch state + playback sessions.
 export * from "./watch";
 
