@@ -180,3 +180,5 @@ R21 frozen UX law:
 
 R21 sequence:
 R21-A -> parallel B/D/G -> C -> E -> F and H -> R21-I -> J34/J35.
+
+R21 visual implementation must consume `docs/architecture/webflix-design-language.md`. Workers should reject dark-dashboard/noisy styling when a calmer ShareNet-inspired treatment is appropriate, while preserving content-first media emphasis and platform-specific playback contexts.
