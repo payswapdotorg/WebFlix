@@ -19,6 +19,8 @@ import type {
   OfflineReadyEntryView,
   WatchlistEntryView,
 } from "@/host/view-models";
+import type { ByofImportView } from "@/host/byof/service";
+import { ByofLibrarySection } from "@/components/byof/ByofLibrarySection";
 import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
 import { formatDuration, percentWatched } from "@/components/ui/format";
@@ -147,7 +149,14 @@ function formatBytes(bytes: number): string {
 }
 
 /** The library surface. */
-export function LibrarySurface({ view }: { readonly view: LibraryView }): JSX.Element {
+export function LibrarySurface({
+  view,
+  byofImports = [],
+}: {
+  readonly view: LibraryView;
+  /** R20-D — the import rows of the Library's imported-feeds section. */
+  readonly byofImports?: readonly ByofImportView[];
+}): JSX.Element {
   return (
     <div data-wfx-surface="library" data-wfx-library>
       <h1 className="wfx-page-title" data-wfx-library-title>
@@ -156,6 +165,8 @@ export function LibrarySurface({ view }: { readonly view: LibraryView }): JSX.El
       <p className="wfx-page-subtitle">
         Your watchlist and watch history — canonical items, keyed once across every source.
       </p>
+
+      <ByofLibrarySection imports={byofImports} />
 
       <section className="wfx-detail__section" aria-label="Watchlist" data-wfx-library-watchlist>
         <h2>Watchlist</h2>

@@ -57,6 +57,13 @@ export const SURFACE_ROUTES: Readonly<Record<SurfaceId, string>> = {
   settings: "/settings",
 };
 
+/**
+ * R20-D — the BYOF presentation route (the Library context of the existing
+ * IA — the frozen UX law: no new navigation system). Like /player and
+ * /offline it is a presentation surface, not a navigation state.
+ */
+export const BRING_YOUR_FEED_ROUTE = "/library/bring-feed";
+
 /** The reverse lookup: route path → surface id. */
 const ROUTE_SURFACES: Readonly<Record<string, SurfaceId>> = {
   "/": "home",
@@ -188,9 +195,11 @@ export function deriveNavigationState(pathname: string, params: RouteParams): Ro
   const surface = ROUTE_SURFACES[pathname];
   if (surface === undefined) {
     // Not a product-surface route (the player route is the adapter's
-    // playback surface — a presentation route, not a navigation state;
-    // the runtime's playback session owns it).
-    if (pathname === "/player" || pathname === "/offline") {
+    // playback surface, the offline route its offline state, and the
+    // bring-feed route the adapter's BYOF presentation surface (R20-D,
+    // the Library context) — presentation routes, not navigation states;
+    // the runtime's playback/navigation session owns them).
+    if (pathname === "/player" || pathname === "/offline" || pathname === "/library/bring-feed") {
       return { ok: false, reason: "presentation-route" };
     }
     return { ok: false, reason: `unknown route '${pathname}'` };

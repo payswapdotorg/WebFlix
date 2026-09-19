@@ -181,6 +181,16 @@ export function SettingsSurface({
       {section === "sources" ? (
         <section className="wfx-detail__section" aria-label="Sources" data-wfx-settings-sources>
           <h2>Sources</h2>
+          {/* R20-D — the BYOF entry (the Settings context of the frozen IA:
+              importing your feed starts from the connected sources). */}
+          <p className="wfx-row__reason" data-wfx-settings-byof-entry>
+            <a className="wfx-btn wfx-btn--sm" href="/library/bring-feed" data-wfx-byof-entry-link>
+              Bring your feed
+            </a>{" "}
+            — import the follows, playlists, and likes you already have on a
+            connected source. Your feed keeps its own order and its history —
+            WebFlix never ranks it, and disconnecting never deletes it.
+          </p>
           {sources !== undefined && sources.status.state === "ready" && sources.sources.length > 0 ? (
             <>
               <p className="wfx-detail__meta">

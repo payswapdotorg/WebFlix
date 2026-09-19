@@ -12,6 +12,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { LibrarySurface } from "@/components/library/LibrarySurface";
 import { getWebRuntimeHost } from "@/host/web-host";
 import { loadLibraryView } from "@/host/view-models";
+import { ByofFeedService } from "@/host/byof/service";
 import { syncNavigationToRoute } from "@/app/routing";
 
 export const dynamic = "force-dynamic";
@@ -25,9 +26,12 @@ export default async function LibraryPage({
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/library", params);
   const view = await loadLibraryView(host);
+  // R20-D — the imported-feeds section's data (the BYOF host service's
+  // honest summaries; the Library is the entry context of the frozen IA).
+  const byofImports = await new ByofFeedService(host.mode).listImports();
   return (
     <AppShell mode={host.mode} active="library" session={host.session.state}>
-      <LibrarySurface view={view} />
+      <LibrarySurface view={view} byofImports={byofImports} />
     </AppShell>
   );
 }
