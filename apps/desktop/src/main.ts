@@ -54,12 +54,18 @@ import {
 } from "./platform/native-media-binding";
 import { createShellEngineProcess } from "./platform/shell-engine-process";
 import type { ShellLifecyclePort } from "./platform/lifecycle";
+import type { FeedPort } from "@wfx/domain";
 import { createDesktopSurface, type DesktopSurface } from "./surface/desktop-surface";
 import {
   createDesktopAcquisitionSurface,
   createUnboundAcquisitionSurface,
   type DesktopAcquisitionSurface,
 } from "./surface/acquisition-surface";
+import {
+  createDesktopFeedSurface,
+  createUnboundFeedSurface,
+  type DesktopFeedSurface,
+} from "./surface/feed-surface";
 import { createDesktopAcquisitionSource } from "./platform/acquisition-source";
 
 // ---------------------------------------------------------------------------
@@ -115,6 +121,20 @@ export interface DesktopAppOptions {
     readonly engine: TorrentEngine;
     readonly adapter: TorrentEngineAdapter;
   };
+  /**
+   * R20-G — the BYOF feed block (OPTIONAL, the R14 seam precedent): the
+   * frozen shared `FeedPort` seam (contracts.md "Bring Your Own Feed" —
+   * Worker 1's R20-A contract, ratified). When bound, the app composes
+   * the Desktop BYOF surface (native file import + background sync +
+   * the filesystem cache) over it; absent ⇒ the honest UNBOUND surface
+   * (typed verdicts, never a silent empty feed). PRODUCTION WIRING: the
+   * server-transport FeedPort arrives with the R20 API lane; the frozen
+   * contract is this lane's binding (the plan's "R20-F/G start against
+   * frozen contract stubs" doctrine).
+   */
+  readonly feed?: {
+    readonly port: FeedPort;
+  };
 }
 
 /** A booted Desktop application: the runtime over the native adapter. */
@@ -135,6 +155,8 @@ export interface DesktopApp {
   readonly surface: DesktopSurface;
   /** R14: the acquisition surface (lifecycle views + gated diagnostics). */
   readonly acquisition: DesktopAcquisitionSurface;
+  /** R20-G: the BYOF feed surface (import + sync + cache over the frozen FeedPort). */
+  readonly feed: DesktopFeedSurface;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -217,6 +239,21 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
         )
       : createUnboundAcquisitionSurface(runtime);
 
+  // R20-G — the BYOF feed surface over the frozen shared FeedPort. The
+  // block is OPTIONAL (the R14 seam precedent): absent ⇒ the honest
+  // UNBOUND surface (typed verdicts — never a fake feed); present ⇒ the
+  // Desktop envelope binding (native file import, background sync
+  // executor, filesystem cache) with the SHARED semantics.
+  const feed: DesktopFeedSurface =
+    options.feed !== undefined
+      ? createDesktopFeedSurface({
+          shell: options.shell,
+          feedPort: options.feed.port,
+          storage: capabilities.ports.storage,
+          now: () => new Date(options.session.clock.now()).toISOString(),
+        })
+      : createUnboundFeedSurface();
+
   let disposed = false;
   return {
     platform: "desktop",
@@ -227,6 +264,7 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     engine,
     surface,
     acquisition,
+    feed,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -245,6 +283,37 @@ export {
   createUnboundAcquisitionSurface,
 } from "./surface/acquisition-surface";
 export type { DesktopAcquisitionSurface } from "./surface/acquisition-surface";
+export {
+  createDesktopFeedSurface,
+  createUnboundFeedSurface,
+} from "./surface/feed-surface";
+export type {
+  DesktopFeedSurface,
+  DesktopFeedView,
+  DesktopFeedViewResult,
+  DesktopFeedMode,
+  DesktopFeedOrderSemantics,
+} from "./surface/feed-surface";
+export {
+  createDesktopFeedImportBinding,
+  FILE_FEED_IMPORT_METHODS,
+} from "./platform/feed-import";
+export type {
+  DesktopFeedImportBinding,
+  DesktopFeedImportInput,
+  DesktopFeedImportResult,
+  DesktopFileImportCapability,
+} from "./platform/feed-import";
+export {
+  createDesktopFeedSyncDriver,
+  feedSyncTaskId,
+} from "./platform/feed-sync";
+export type {
+  DesktopFeedSyncDriver,
+  DesktopFeedSyncOutcome,
+} from "./platform/feed-sync";
+export { createDesktopFeedCache, DESKTOP_FEED_MODES } from "./platform/feed-cache";
+export type { DesktopFeedCache, DesktopFeedCacheEntry } from "./platform/feed-cache";
 export {
   createDesktopAcquisitionSource,
   ACQUISITION_CAUSE_FOR_FAILURE_REASON,

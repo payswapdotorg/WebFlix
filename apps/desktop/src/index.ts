@@ -30,7 +30,15 @@
 //                                  the frozen resolver wired to the truthful
 //                                  Desktop device derivation (the seam the
 //                                  runtime's playback resolution consumes)
+// - `platform/feed-import.ts`    — R20-F: the BYOF native file-import
+//                                  binding (dialog → read → shared FeedPort)
+// - `platform/feed-sync.ts`      — R20-F: the BYOF background feed-sync
+//                                  executor over the task registry
+// - `platform/feed-cache.ts`     — R20-G: the BYOF feed presentation cache
+//                                  over the filesystem KV area
 // - `surface/desktop-surface.ts` — the thin runtime-state UI projection
+// - `surface/feed-surface.ts`    — R20-G: the Desktop BYOF feed surface
+//                                  (mode truth, freshness, provenance)
 
 export * from "./main";
 export * from "./platform/shell-ipc";
@@ -46,4 +54,8 @@ export * from "./platform/server-port";
 export * from "./platform/native-media-binding";
 export * from "./platform/shell-engine-process";
 export * from "./platform/media-surface";
+export * from "./platform/feed-import";
+export * from "./platform/feed-sync";
+export * from "./platform/feed-cache";
 export * from "./surface/desktop-surface";
+export * from "./surface/feed-surface";
