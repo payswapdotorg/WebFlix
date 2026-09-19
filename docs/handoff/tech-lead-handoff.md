@@ -5,15 +5,16 @@ WebFlix is the **Universal Entertainment OS**. The repository is the source of t
 ## Canonical read order
 
 1. `docs/architecture/webflix-remediation-architecture.md`
-2. `docs/architecture/webflix-frozen-architecture.md`
-3. `docs/architecture/contracts.md`
-4. `docs/architecture/product-boundaries.md`
-5. `docs/architecture/dependency-graph.md`
-6. `docs/work-items/index.md`
-7. `docs/plans/2026-09-16-webflix-remediation-plan.md`
-8. `docs/validation/webflix-golden-journeys.md`
-9. `docs/validation/competitor-validation.md`
-10. Actual source/tests/imports/configuration in the assigned worktree
+2. `docs/architecture/byof-architecture.md`
+3. `docs/architecture/webflix-frozen-architecture.md`
+4. `docs/architecture/contracts.md`
+5. `docs/architecture/product-boundaries.md`
+6. `docs/architecture/dependency-graph.md`
+7. `docs/work-items/index.md`
+8. `docs/plans/2026-09-16-webflix-remediation-plan.md`
+9. `docs/validation/webflix-golden-journeys.md`
+10. `docs/validation/competitor-validation.md`
+11. Actual source/tests/imports/configuration in the assigned worktree
 
 The 2026-09-16 remediation documents supersede the legacy client/native-media sequencing. Do not infer completion from legacy WFX issues or summaries.
 
@@ -36,7 +37,8 @@ Deliver a working product, not merely architecture scaffolding:
 - full authorized torrent engine;
 - playback-aware torrent scheduling;
 - background completion and recovery;
-- one shared runtime that makes future Mobile an adapter rather than a rewrite.
+- one shared runtime that makes future Mobile an adapter rather than a rewrite;
+- Bring Your Own Feed, with authorized import/sync of existing external feed relationships.
 
 ## Three-worker dispatch
 
@@ -142,3 +144,17 @@ Reject:
 ## Final verification
 
 Before declaring any item or phase complete, inspect the actual repository state, tests, imports, persistence, schemas, runtime wiring, platform packaging, and browser/native behavior directly. Worker summaries are evidence of intent, not evidence of completion.
+
+## Post-release R20 — Bring Your Own Feed
+
+Worker 1 owns the shared feed/import contract, provider feed capability, and reconciliation.
+Worker 2 owns Web BYOF onboarding/feed UX and J33 Web evidence.
+Worker 3 owns Desktop import/file-picker/background-sync adapter work and J33 Desktop evidence.
+Lead owns contract ratification, provider authorization review, integration, and final J33 acceptance.
+
+BYOF must distinguish WebFlix ranking from source-native ordering and must never present a snapshot as live.
+
+R20 dispatch sequence:
+R20-A shared feed contract -> parallel R20-B provider feed capability + R20-D Web UX + R20-F Desktop import;
+then R20-C reconciliation -> R20-G Desktop feed -> R20-E Web evidence;
+then R20-H lead integration/J33.
