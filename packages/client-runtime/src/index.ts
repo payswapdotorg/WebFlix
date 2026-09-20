@@ -82,6 +82,20 @@
  *                               authorization folds, and the session-scoped
  *                               progress law (anonymous progress is never
  *                               durable identity until authentication)
+ * - `torrent-realization.ts` — R23-C: the first-class torrent
+ *                               realization contract — the transport-kind
+ *                               declaration (torrent as a realization
+ *                               SOURCE KIND, never a PlaybackMode —
+ *                               compile-time-guarded), the rung-satisfaction
+ *                               model preserving the Media Surface
+ *                               precedence (Desktop native rung / Web
+ *                               browser rung where truly supported / the
+ *                               honest Desktop next step / the
+ *                               authorization gate), the frozen user
+ *                               vocabulary ("Where to watch -> Authorized
+ *                               peer copy", never merely "Offline copy" —
+ *                               machine-checked), and the nine-dimension
+ *                               first-class parity contract
  * - `account-creation.ts`    — R22-B: the account-creation journey —
  *                               the typed register command + shared
  *                               validation (the service's own rules), the
@@ -127,6 +141,7 @@ export * from "./control-views";
 export * from "./source-catalog";
 export * from "./anonymous-viewing";
 export * from "./anonymous-playback-boundary";
+export * from "./torrent-realization";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
