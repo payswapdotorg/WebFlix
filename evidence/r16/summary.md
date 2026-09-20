@@ -1,9 +1,9 @@
 # WebFlix Golden Journey Run — Evidence Summary
 
-- commit: `0b009394a4bdc1036854b0fb2bf8c876152796d4`
+- commit: `1d9a7290b75b32b0f721461fcb08e9b64d266e56`
 - branch: `wfx/r22/web`
 - environment: web-fixtures @ http://localhost:3101
-- window: 2026-09-20T16:55:15.042Z → 2026-09-20T17:00:16.648Z
+- window: 2026-09-20T18:36:03.728Z → 2026-09-20T18:41:07.525Z
 
 **35 passed · 0 failed · 0 not-run (listed with procedures) · 35 total**
 
@@ -43,7 +43,7 @@
 | J32 | Source-neutral identity: same item, multiple realizations | PASS | 9 | 3 |
 | J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | PASS | 62 | 9 |
 | J34 | Capability discoverability from normal product surfaces | PASS | 42 | 3 |
-| J36 | Major user journey completion / no dead-end discovery | PASS | 68 | 15 |
+| J36 | Major user journey completion / no dead-end discovery | PASS | 70 | 15 |
 
 ## Explicit limitations (never silent skips)
 

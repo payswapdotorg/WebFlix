@@ -502,11 +502,34 @@ export const j36MajorJourneyCompletion: Journey = {
     // the F7 law: actions render where the source ADVERTISES them.
     await assert.countExactly("[data-wfx-shorts-action='like']", 0, "like renders only where the source declares the capability (typed absence — the fixture source does not)");
     await assert.countExactly("[data-wfx-shorts-action='save']", 0, "save renders only where the source declares the capability (typed absence — the fixture source does not)");
-    // USE the Share control: the click must not fail (the event emits; no
-    // error surface, no page error — the harness's page-error gate).
+    // USE the Share control — the REAL usable bar (R22-G fix-forward): the
+    // click lands the external/social share lane (the platform share or
+    // the honest clipboard fallback), the control settles to its Shared
+    // state with its visible outcome note, and the REAL error banner
+    // (`data-wfx-shorts-emit-error` — the watch-state lane's honest
+    // failure surface) NEVER fires. (The earlier assertion keyed
+    // `data-wfx-shorts-action-error` — a selector that exists nowhere in
+    // the app, a vacuous pass that hid the real defect: the share event
+    // was POSTed to /api/events, whose frozen watch-state law refuses it
+    // with the 400 the banner rendered. Fixed in ShortsFeed: share is the
+    // external/social lane — never a watch-state claim.)
     await browser.clickInteractive("[data-wfx-shorts-action='share']");
-    await browser.settle();
-    await assert.countExactly("[data-wfx-shorts-action-error]", 0, "using Share answers no action error (the honest event-only emission)");
+    await browser.waitSelector("[data-wfx-shorts-share-note]", 10_000);
+    const shareNote = (await browser.tryText("[data-wfx-shorts-share-note]")) ?? "";
+    assert.that(
+      "the Share click completes with its honest outcome note (the link lands in the user's hand — F7's usable bar)",
+      "a share outcome note",
+      shareNote.slice(0, 100),
+      shareNote.trim().length > 0,
+    );
+    await assert.countExactly("[data-wfx-shorts-emit-error']", 0, "using Share surfaces NO watch-state error banner (the external/social lane never claims a watch-state write)");
+    const shareControlText = (await browser.tryText("[data-wfx-shorts-action='share']")) ?? "";
+    assert.that(
+      "the Share control settles to its Shared state (the visible confirmation)",
+      "the Shared label",
+      shareControlText.slice(0, 60),
+      shareControlText.includes("Shared"),
+    );
     await context.screenshot("j36-shorts-hydrated");
 
     // -----------------------------------------------------------------

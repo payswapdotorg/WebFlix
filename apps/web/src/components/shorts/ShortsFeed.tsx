@@ -68,6 +68,42 @@ import { placeholderArt, placeholderMonogram } from "@/components/ui/format";
 // The session reducer (pure, exported for the composition tests)
 // ---------------------------------------------------------------------------
 
+/**
+ * The external share outcome (the F7 usable-share fix): the platform share
+ * sheet when the browser provides one, else the honest clipboard fallback
+ * (the item's link copied — share it anywhere). Never a fabricated success:
+ * when neither channel works, the note names the fallback honestly.
+ */
+async function shareExternally(
+  title: string,
+  url: string | null,
+): Promise<{ readonly ok: boolean; readonly note: string }> {
+  const nav = navigator as Navigator & {
+    share?: (data: { readonly title?: string; readonly url?: string }) => Promise<void>;
+  };
+  if (url !== null && typeof nav.share === "function") {
+    try {
+      await nav.share({ title, url });
+      return { ok: true, note: "Shared — the link is in the share you chose." };
+    } catch {
+      // The user dismissed the sheet (or the platform refused): fall
+      // through to the clipboard — the share intent still gets its link.
+    }
+  }
+  if (url !== null && typeof navigator.clipboard?.writeText === "function") {
+    try {
+      await navigator.clipboard.writeText(url);
+      return { ok: true, note: "Link copied — share it anywhere." };
+    } catch {
+      // fall through to the honest note
+    }
+  }
+  return {
+    ok: false,
+    note: "The link could not be copied here — open this short's page and copy its address.",
+  };
+}
+
 /** One like/save control state (optimistic + receipt-truth + rollback). */
 interface CardActionState {
   readonly optimistic: boolean;
@@ -105,6 +141,8 @@ export interface ShortsSession {
   readonly actionStates: Readonly<Record<string, CardActionState>>;
   /** The last emission failure (visible; null when the last emit succeeded). */
   readonly emitError: string | null;
+  /** The last share outcome note (the visible confirmation — the F7 usable-share fix). */
+  readonly shareNote: string | null;
 }
 
 type ShortsAction =
@@ -128,7 +166,8 @@ type ShortsAction =
     }
   | { kind: "action-error"; key: string; message: string }
   | { kind: "emit-error"; message: string }
-  | { kind: "emit-ok" };
+  | { kind: "emit-ok" }
+  | { kind: "share-note"; note: string | null };
 
 /** The session-state projection `shouldRerank`/`planReplacement` consume. */
 function sessionStateOf(session: ShortsSession, nowMs: number): ShortSessionState {
@@ -275,6 +314,8 @@ export function shortsSessionReducer(session: ShortsSession, action: ShortsActio
       return { ...session, emitError: action.message };
     case "emit-ok":
       return { ...session, emitError: null };
+    case "share-note":
+      return { ...session, shareNote: action.note };
   }
 }
 
@@ -328,7 +369,11 @@ function renderElements(elements: readonly ShortFeedElement[], ctx: RenderContex
                 : state.settled === "confirmed"
                   ? "Saved"
                   : "Save"
-              : "Share";
+              : state.optimistic
+                ? "Sharing…"
+                : state.settled === "confirmed"
+                  ? "Shared"
+                  : "Share";
         return (
           <button
             key={element.key}
@@ -452,6 +497,7 @@ export function ShortsFeed({
     rerankBusy: false,
     actionStates: {},
     emitError: null,
+    shareNote: null,
   }));
 
   /** Emit one composed frozen event to the sink route (honest failures). */
@@ -552,7 +598,14 @@ export function ShortsFeed({
       if (current === null) return;
       const nowMs = realNow();
       if (action === "share") {
-        // Share is EVENT-ONLY (no frozen UserAction type — typed absence).
+        // Share is EVENT-ONLY (no frozen UserAction type — typed absence)
+        // and EXTERNAL (the social lane — never the watch-state lane:
+        // /api/events refuses `share` by its own frozen law, so the click
+        // must NOT claim a watch-state write — the F7 fix). The composed
+        // frozen `share` EntertainmentEvent rides the session's local
+        // trail; the USER outcome is the platform's share
+        // (`navigator.share`) with the honest clipboard fallback: the
+        // item's link lands in the user's hand — share it anywhere.
         const stack = session.view.stack;
         if (stack === null) return;
         const [shareEvent] = shortFeedEvents(stack, {
@@ -563,7 +616,45 @@ export function ShortsFeed({
           },
           action: { kind: "share", itemId: current.item.id },
         });
-        if (shareEvent !== undefined) await emitEvent(shareEvent);
+        const key = `action:share:${current.item.id}`;
+        dispatch({ kind: "action-begin", key });
+        dispatch({ kind: "share-note", note: null });
+        const candidate = payload.page.cards[current.osPosition]?.candidate;
+        // The share link: the item route's own query grammar (the same
+        // `id/connector/ref/title/type` params every item link carries —
+        // inlined here because the routing module is a server-side import
+        // the client chunk must not pull).
+        const shareUrl =
+          typeof window !== "undefined" && candidate !== undefined
+            ? `${window.location.origin}/item?${new URLSearchParams({
+                id: current.item.id,
+                connector: candidate.realization.connectorId,
+                ref: candidate.realization.externalRef ?? current.item.id,
+                title: current.overlay.title,
+                type: current.item.canonicalType,
+              }).toString()}`
+            : null;
+        const outcome = await shareExternally(current.overlay.title, shareUrl);
+        if (outcome.ok) {
+          dispatch({
+            kind: "action-receipt",
+            key,
+            status: "confirmed",
+            event: shareEvent ?? null,
+          });
+          dispatch({ kind: "share-note", note: outcome.note });
+        } else {
+          // The link could not be handed over (no share sheet, no
+          // clipboard): the engagement still records (local-only), and the
+          // honest note names the fallback — never a silent failure.
+          dispatch({
+            kind: "action-receipt",
+            key,
+            status: "local-only",
+            event: shareEvent ?? null,
+          });
+          dispatch({ kind: "share-note", note: outcome.note });
+        }
         return;
       }
       const affordance = action === "like" ? current.affordances.like : current.affordances.save;
@@ -632,7 +723,7 @@ export function ShortsFeed({
         });
       }
     },
-    [emitEvent, maybeRerank, realNow, session],
+    [emitEvent, maybeRerank, payload, realNow, session],
   );
 
   /** Touch swipe capture (the UI layer owns gestures — the model never does). */
@@ -749,6 +840,11 @@ export function ShortsFeed({
           data-wfx-shorts-emit-error
         >
           {session.emitError}
+        </p>
+      ) : null}
+      {session.shareNote !== null ? (
+        <p className="wfx-actionbar__status" data-wfx-shorts-share-note>
+          {session.shareNote}
         </p>
       ) : null}
       {likeState !== undefined && likeState.failure !== null ? (

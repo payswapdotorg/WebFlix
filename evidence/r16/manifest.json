@@ -1,18 +1,18 @@
 {
   "schema": "wfx-journey-manifest/1",
-  "commit": "0b009394a4bdc1036854b0fb2bf8c876152796d4",
+  "commit": "1d9a7290b75b32b0f721461fcb08e9b64d266e56",
   "branch": "wfx/r22/web",
   "environment": {
     "mode": "web-fixtures",
     "webUrl": "http://localhost:3101",
     "ci": false,
-    "startedAt": "2026-09-20T16:55:15.042Z",
-    "finishedAt": "2026-09-20T17:00:16.648Z",
+    "startedAt": "2026-09-20T18:36:03.728Z",
+    "finishedAt": "2026-09-20T18:41:07.525Z",
     "determinism": [
       "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
       "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
       "the scripted identity persona was reset before the run (J36 drives register → authenticated → sign-out from the signed-out start)",
-      "one isolated agent-browser session per run (wfx-journeys-1789923320042)",
+      "one isolated agent-browser session per run (wfx-journeys-1789929368444)",
       "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
       "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
       "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
@@ -149,7 +149,7 @@
         "evidence/r16/j01-first-launch-profile-selection-onboarding.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5474
+      "durationMs": 5149
     },
     {
       "id": "J02",
@@ -243,7 +243,7 @@
         "evidence/r16/j02-home-discovery-hero-rows-intent-entry.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2692
+      "durationMs": 2586
     },
     {
       "id": "J03",
@@ -295,7 +295,7 @@
         "evidence/r16/j03-long-form-watch-browsing.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2416
+      "durationMs": 2327
     },
     {
       "id": "J04",
@@ -389,7 +389,7 @@
         "evidence/r16/j04-shorts-vertical-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4073
+      "durationMs": 4078
     },
     {
       "id": "J05",
@@ -441,7 +441,7 @@
         "evidence/r16/j05-unified-search.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3950
+      "durationMs": 3867
     },
     {
       "id": "J06",
@@ -523,7 +523,7 @@
         "evidence/r16/j06-item-detail-availability-realization-choice.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4139
+      "durationMs": 3885
     },
     {
       "id": "J07",
@@ -535,13 +535,13 @@
         {
           "description": "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_132F5VTPYDYABEANHYSC5ZDZ3A&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_6MNSZX581QH9EARSZEN49B9GZ9&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_132F5VTPYDYABEANHYSC5ZDZ3A&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_6MNSZX581QH9EARSZEN49B9GZ9&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -583,7 +583,7 @@
         {
           "description": "the embed note states the attestation truth",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"no provider official-embed attestation\"",
-          "observed": "<9836 chars of html>",
+          "observed": "<9835 chars of html>",
           "pass": true
         },
         {
@@ -617,7 +617,7 @@
         "evidence/r16/j07-official-embed-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5549
+      "durationMs": 5934
     },
     {
       "id": "J08",
@@ -629,13 +629,13 @@
         {
           "description": "the search surface offers the browser-realized item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_38BQBDCA9NKMPFQV8GHZRKP5PK&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_20CC0H83B82FCR7TR0KXKW80DX&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_38BQBDCA9NKMPFQV8GHZRKP5PK&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_20CC0H83B82FCR7TR0KXKW80DX&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -693,7 +693,7 @@
         "evidence/r16/j08-contained-browser-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6067
+      "durationMs": 5915
     },
     {
       "id": "J09",
@@ -705,7 +705,7 @@
         {
           "description": "the search surface offers the multi-realization item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_38BQBDCA9NKMPFQV8GHZRKP5PK&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_20CC0H83B82FCR7TR0KXKW80DX&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -787,7 +787,7 @@
         "evidence/r16/j09-external-playback-fallback-return-context.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9277
+      "durationMs": 9539
     },
     {
       "id": "J10",
@@ -799,7 +799,7 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -829,7 +829,7 @@
         {
           "description": "the item page offers playback (the report surface)",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -857,7 +857,7 @@
         "evidence/r16/j10-like-save-action-synchronization-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5027
+      "durationMs": 5653
     },
     {
       "id": "J11",
@@ -939,7 +939,7 @@
         "evidence/r16/j11-library-watchlist-history.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 1713
+      "durationMs": 2346
     },
     {
       "id": "J12",
@@ -951,13 +951,13 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_38BQBDCA9NKMPFQV8GHZRKP5PK&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_20CC0H83B82FCR7TR0KXKW80DX&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_38BQBDCA9NKMPFQV8GHZRKP5PK&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_20CC0H83B82FCR7TR0KXKW80DX&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -991,7 +991,7 @@
         "evidence/r16/j12-cross-device-resume.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6584
+      "durationMs": 7267
     },
     {
       "id": "J13",
@@ -1037,7 +1037,7 @@
         "evidence/r16/j13-account-profile-identity-lifecycle.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2176
+      "durationMs": 2364
     },
     {
       "id": "J14",
@@ -1119,7 +1119,7 @@
         "evidence/r16/j14-source-connect-reauthorize-disconnect.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2442
+      "durationMs": 2328
     },
     {
       "id": "J15",
@@ -1171,7 +1171,7 @@
         "evidence/r16/j15-recommendation-feedback-controls.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4406
+      "durationMs": 4379
     },
     {
       "id": "J16",
@@ -1211,7 +1211,7 @@
         "evidence/r16/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4584
+      "durationMs": 4488
     },
     {
       "id": "J17",
@@ -1263,7 +1263,7 @@
         "evidence/r16/j17-explicit-intent-learn-happier-surprise-tonight-friend-taste.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5782
+      "durationMs": 6402
     },
     {
       "id": "J18",
@@ -1303,7 +1303,7 @@
         "evidence/r16/j18-attention-modes-mindful-balanced-immersive-custom.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4057
+      "durationMs": 4484
     },
     {
       "id": "J19",
@@ -1373,7 +1373,7 @@
         "evidence/r16/j19-webflix-model-byom-local-model-policy.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2257
+      "durationMs": 2603
     },
     {
       "id": "J20",
@@ -1497,7 +1497,7 @@
         "evidence/r16/j20-ai-subtitles-translation-transcription-dubbing-commentary.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9626
+      "durationMs": 10473
     },
     {
       "id": "J21",
@@ -1509,7 +1509,7 @@
         {
           "description": "the search surface offers the scripted authorized acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -1597,7 +1597,7 @@
         "evidence/r16/j21-authorized-torrent-acquisition-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6514
+      "durationMs": 5921
     },
     {
       "id": "J22",
@@ -1655,7 +1655,7 @@
         "evidence/r16/j22-torrent-metadata-and-file-selection-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5589
+      "durationMs": 5602
     },
     {
       "id": "J23",
@@ -1761,7 +1761,7 @@
         "evidence/r16/j23-torrent-playback-before-full-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 12185
+      "durationMs": 12220
     },
     {
       "id": "J24",
@@ -1885,7 +1885,7 @@
         "evidence/r16/j24-torrent-background-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 12945
+      "durationMs": 12232
     },
     {
       "id": "J25",
@@ -1897,7 +1897,7 @@
         {
           "description": "the search surface offers the interrupted-acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_4S1BKVHQR280M7YZP8ZP0R36BJ&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "observed": "/item?id=wfxitm_1GRXE27X5RWBYN5EGFC6NZFPD9&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
           "pass": true
         },
         {
@@ -1969,7 +1969,7 @@
         {
           "description": "the search surface offers the resumed-session item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_38BQBDCA9NKMPFQV8GHZRKP5PK&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_20CC0H83B82FCR7TR0KXKW80DX&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -2015,7 +2015,7 @@
         "evidence/r16/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9397
+      "durationMs": 9286
     },
     {
       "id": "J26",
@@ -2079,7 +2079,7 @@
         "evidence/r16/j26-verified-local-asset-appears-in-library-web-status-read-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5257
+      "durationMs": 5233
     },
     {
       "id": "J27",
@@ -2103,7 +2103,7 @@
         {
           "description": "the search surface offers an unscripted item (no acquisition session)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_3RHJSF9MDWZRM6QGCQ0WFDJXPZ&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "observed": "/item?id=wfxitm_6KZ8FA9P9WGR9W6S7BN5SVV0B3&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
           "pass": true
         },
         {
@@ -2131,7 +2131,7 @@
         "evidence/r16/j27-native-local-media-playback-web-constrained-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5244
+      "durationMs": 5276
     },
     {
       "id": "J28",
@@ -2143,13 +2143,13 @@
         {
           "description": "the search surface offers the item while the source is signed in",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_132F5VTPYDYABEANHYSC5ZDZ3A&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_6MNSZX581QH9EARSZEN49B9GZ9&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the item page offers its play decision while the source is signed in",
           "expected": "a player link",
-          "observed": "/player?id=wfxitm_132F5VTPYDYABEANHYSC5ZDZ3A&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_6MNSZX581QH9EARSZEN49B9GZ9&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -2279,7 +2279,7 @@
         "evidence/r16/j28-provider-credential-expiry-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 15324
+      "durationMs": 15710
     },
     {
       "id": "J29",
@@ -2345,7 +2345,7 @@
         {
           "description": "the search surface offers the network-loss item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_7969NQ2AQ1WKK8YM3XDP2S8R70&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
+          "observed": "/item?id=wfxitm_0MKBWBKFW1NN45QFX5FMMREBRG&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
           "pass": true
         },
         {
@@ -2409,7 +2409,7 @@
         "evidence/r16/j29-network-loss-playback-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 18145
+      "durationMs": 18695
     },
     {
       "id": "J30",
@@ -2497,7 +2497,7 @@
         "evidence/r16/j30-unsupported-capability-honesty.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7645
+      "durationMs": 7317
     },
     {
       "id": "J31",
@@ -2509,19 +2509,19 @@
         {
           "description": "the search surface anchors the canonical item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
           "description": "the item detail surface carries the SAME canonical identity the search card linked",
-          "expected": "the detail carries wfxitm_0X5E47QF4E4F86BSSNYKTMERY3",
-          "observed": "wfxitm_0X5E47QF4E4F86BSSNYKTMERY3",
+          "expected": "the detail carries wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95",
+          "observed": "wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95",
           "pass": true
         },
         {
           "description": "the player entry carries the SAME canonical identity (one item identity across all three surfaces)",
-          "expected": "the play link carries wfxitm_0X5E47QF4E4F86BSSNYKTMERY3",
-          "observed": "wfxitm_0X5E47QF4E4F86BSSNYKTMERY3",
+          "expected": "the play link carries wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95",
+          "observed": "wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95",
           "pass": true
         },
         {
@@ -2567,7 +2567,7 @@
         "evidence/r16/j31-cross-platform-web-desktop-parity-web-side-anchors.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9209
+      "durationMs": 9013
     },
     {
       "id": "J32",
@@ -2579,7 +2579,7 @@
         {
           "description": "the search card links the CANONICAL identity (id-first, not source-first)",
           "expected": "an /item?id=wfxitm_… link",
-          "observed": "/item?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -2627,7 +2627,7 @@
         {
           "description": "every search card carries a distinct canonical identity (the join is identity-keyed, not source-keyed)",
           "expected": "3 distinct canonical ids",
-          "observed": "wfxitm_3RHJSF9MDWZRM6QGCQ0WFDJXPZ, wfxitm_5SG613HB21AJQB6NJYTW84F0GF, wfxitm_4S1BKVHQR280M7YZP8ZP0R36BJ",
+          "observed": "wfxitm_6KZ8FA9P9WGR9W6S7BN5SVV0B3, wfxitm_3CVQ2WG997JHAS8YHPERZ111XP, wfxitm_1GRXE27X5RWBYN5EGFC6NZFPD9",
           "pass": true
         }
       ],
@@ -2637,7 +2637,7 @@
         "evidence/r16/j32-source-neutral-identity-same-item-multiple-realizations.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6663
+      "durationMs": 7474
     },
     {
       "id": "J33",
@@ -3031,7 +3031,7 @@
         "evidence/r16/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 24408
+      "durationMs": 24021
     },
     {
       "id": "J34",
@@ -3133,7 +3133,7 @@
         {
           "description": "the home feed offers a content card (the item path starts from Home)",
           "expected": "an aria-labeled card link",
-          "observed": "/item?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3223,7 +3223,7 @@
         {
           "description": "the item hub offers the play decision (the player path starts from the item)",
           "expected": "a play link",
-          "observed": "/player?id=wfxitm_0X5E47QF4E4F86BSSNYKTMERY3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_0RTF4Y2HDX4Y4KVQX0T7NN7Q95&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3299,7 +3299,7 @@
         "evidence/r16/j34-capability-discoverability-from-normal-product-surfaces.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 14102
+      "durationMs": 13843
     },
     {
       "id": "J36",
@@ -3533,7 +3533,7 @@
         {
           "description": "the home feed offers the walk's item card (the item path starts from Home)",
           "expected": "an aria-labeled card link",
-          "observed": "/item?id=wfxitm_37WZV4G074HA8VRF8DPM4NM47C&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_40EB1YTDK1GG6YFSPBQHGCET5R&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3575,7 +3575,7 @@
         {
           "description": "the item hub offers the play decision (the player path starts from the item)",
           "expected": "a play link",
-          "observed": "/player?id=wfxitm_37WZV4G074HA8VRF8DPM4NM47C&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_40EB1YTDK1GG6YFSPBQHGCET5R&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3621,9 +3621,21 @@
           "pass": true
         },
         {
-          "description": "using Share answers no action error (the honest event-only emission)",
-          "expected": "[data-wfx-shorts-action-error] matches exactly 0",
+          "description": "the Share click completes with its honest outcome note (the link lands in the user's hand — F7's usable bar)",
+          "expected": "a share outcome note",
+          "observed": "Link copied — share it anywhere.",
+          "pass": true
+        },
+        {
+          "description": "using Share surfaces NO watch-state error banner (the external/social lane never claims a watch-state write)",
+          "expected": "[data-wfx-shorts-emit-error'] matches exactly 0",
           "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Share control settles to its Shared state (the visible confirmation)",
+          "expected": "the Shared label",
+          "observed": "Shared",
           "pass": true
         },
         {
@@ -3735,7 +3747,7 @@
         "evidence/r16/j36-major-user-journey-completion-no-dead-end-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 49281
+      "durationMs": 48590
     }
   ],
   "limitations": [
