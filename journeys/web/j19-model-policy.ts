@@ -4,17 +4,20 @@
  *
  * Doc expectation (matrix J19): the model policy controls on Web.
  *
- * Web-fixture-boot encoding: the HONEST-ABSENCE law — the web adapter's
- * Model & AI section renders the typed absent state for the model
- * controls (they are the R06 service-side surface), and NEVER renders
- * placeholder model controls that would imply capability the web
- * fixtures boot does not have (invariant 10: a fixture is never
- * silently presented as production capability).
+ * Web-fixture-boot encoding (R21-B/R21-C update): the transport is
+ * COMPLETE — the Model & AI section renders the REAL model-controls
+ * read models (the provider registry: first-party + BYOM + local with
+ * per-task capability truth; every frozen ModelTask's policy state with
+ * the honest unset) over the fixtures persona's service-shaped answers.
+ * The stale "arrives with the model lane" honest-absent state is gone
+ * (the R21 stale-completion-copy law); no placeholder controls render
+ * (the detailed management controls are the R21-D settings hub).
  *
- * HONEST LIMIT (listed): the WebFlix-model / BYOM / local-model policy
- * with privacy/cost/fallback constraints is R06's service surface
- * (apps/api /experience/model-policy, /model-providers, BYOM routes);
- * the manifest limitation names the local procedure.
+ * HONEST LIMIT (updated): the REAL service-backed policy writes (your
+ * account's BYOM bindings, persisted policies) run against the
+ * configured service — the fixtures persona answers the same shapes
+ * deterministically; the manifest limitation names the service-mode
+ * procedure.
  */
 
 import { describe } from "./journey-description";
@@ -31,18 +34,43 @@ export const j19ModelPolicy: Journey = {
     await goto(context, "/settings?section=model");
 
     await assert.visible("[data-wfx-settings-model]", "the Model & AI section renders");
-    await assert.visible("[data-wfx-model-empty]", "the model section renders its typed honest-absent state (the controls are the service-side lane)");
 
-    // The honest-absent state explains what arrives and where.
-    const text = await browser.tryText("[data-wfx-settings-model]");
-    assert.that(
-      "the model section names the model lane's scope (selection, BYOM, local policy, privacy/cost)",
-      "the scope named in the absent state",
-      text ?? "<none>",
-      text !== null && text.includes("BYOM"),
+    // R21-B/R21-C: the transport is COMPLETE — the section renders the REAL
+    // model-controls read models (the provider registry + every task's
+    // policy truth) over the fixtures persona's service-shaped answers.
+    // The stale "arrives with the model lane" honest-absent state is gone.
+    await assert.visible(
+      "[data-wfx-model-providers-list]",
+      "the provider registry renders over the completed transport (first-party + BYOM + local truth)",
+    );
+    await assert.countAtLeast(
+      "[data-wfx-model-providers-list] [data-wfx-model-provider]",
+      1,
+      "the registry carries at least the first-party provider row",
+    );
+    await assert.visible(
+      "[data-wfx-model-policies-list]",
+      "the per-task policy truth renders (the honest unset — never a fabricated default)",
+    );
+    await assert.countAtLeast(
+      "[data-wfx-model-policies-list] [data-wfx-model-policy]",
+      9,
+      "every frozen ModelTask carries its policy chip (the full task set is visible)",
     );
 
-    // No placeholder model controls (never fake capability).
+    // The scope is named (selection, BYOM, local policy, privacy) — the
+    // product vocabulary, never the stale lane wording.
+    const text = await browser.tryText("[data-wfx-settings-model]");
+    assert.that(
+      "the model section names the controls' scope (providers, BYOM, local models, policy truth)",
+      "the scope named in the section",
+      text ?? "<none>",
+      text !== null && text.includes("BYOM") && text.includes("policy"),
+    );
+
+    // No placeholder model controls (never fake capability) — the section
+    // is the real read model; the detailed management controls are the
+    // R21-D settings-hub surface.
     const buttons = await browser.eval<number>(
       `(() => { const section = document.querySelector('[data-wfx-settings-model]'); return section === null ? 0 : section.querySelectorAll('button, select, input').length; })()`,
     );
@@ -53,16 +81,17 @@ export const j19ModelPolicy: Journey = {
       buttons === 0,
     );
 
-    // No fabricated model state (no selected-model lies).
+    // No fabricated model state: the honest unset policies render "Not
+    // configured"; no selected-model lie appears anywhere.
     const html = await browser.tryHtml("[data-wfx-settings-model]");
     assert.that(
-      "no fabricated selected-model or provider state renders",
-      "no model/provider status chips",
-      html !== null && (html.includes("data-wfx-action-state") || /selected model/i.test(html)) ? "model state chips present" : "no model state chips",
-      html === null || (!html.includes("data-wfx-action-state") && !/selected model/i.test(html)),
+      "no fabricated selected-model state renders (the honest unset is named)",
+      "the policy truth is the honest unset",
+      html !== null && /selected model/i.test(html) ? "selected-model lie present" : "no selected-model lie",
+      html === null || !/selected model/i.test(html),
     );
 
     await context.screenshot("j19-model-policy");
-    await describe(context, "the Model & AI section rendered its typed honest-absent state with the lane's scope named and zero placeholder controls (the model policy surface is the service-side local-only procedure — listed)");
+    await describe(context, "the Model & AI section rendered the REAL provider registry and per-task policy truth over the completed R06 transport (the fixtures persona's service-shaped answers) — no placeholder controls, no fabricated state");
   },
 };

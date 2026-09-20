@@ -34,9 +34,27 @@ import type { JSX } from "react";
 import type { PlayerView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { WatchStateReporter } from "@/components/player/WatchStateReporter";
+import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
+import { WhereToWatch } from "@/components/item/WhereToWatch";
+import { AiActionTray } from "@/components/discovery/AiActionTray";
+import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
 import { formatPosition, placeholderArt, placeholderMonogram } from "@/components/ui/format";
+
+/** The mode's user sentence (the R21-C label vocabulary — one source). */
+function modeSentenceOf(mode: PlayerView["surfaceMode"]): string {
+  switch (mode) {
+    case "embed":
+      return "plays inside WebFlix (the provider's contained embed)";
+    case "browser":
+      return "plays in a contained window";
+    case "external":
+      return "opens on the source, with your return context kept";
+    case "native":
+      return "plays natively in the Desktop app";
+  }
+}
 
 /** The resolved stage — one branch per Media Surface mode. */
 function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
@@ -206,6 +224,13 @@ function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
 /** The player surface. */
 export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Element {
   if (view.failure !== null) {
+    // R21-E — the playback RECOVERY path: the typed failure renders with
+    // the NEXT supported way to watch as the primary action (the matrix's
+    // "Try the next way to watch"), and the Where-to-watch row names every
+    // remaining option. Never a dead end.
+    const nextWay = view.whereToWatch.options.find(
+      (option) => option.usable && option.switchHref !== undefined,
+    );
     return (
       <div className="wfx-player" data-wfx-surface="player" data-wfx-player-state="failed">
         <h1 className="wfx-player__title" data-wfx-player-title>
@@ -215,19 +240,32 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
           title="Playback could not start"
           detail={`${view.failure.kind}: ${view.failure.detail}`}
           retry={
-            <a
-              className="wfx-btn"
-              href={`/item?id=${encodeURIComponent(view.itemId)}&connector=${encodeURIComponent(view.connectorId)}&ref=${encodeURIComponent(view.externalRef)}&title=${encodeURIComponent(view.title)}&type=${encodeURIComponent(view.canonicalType)}`}
-            >
-              View details
-            </a>
+            nextWay !== undefined && nextWay.switchHref !== undefined ? (
+              <a
+                className="wfx-btn wfx-btn--primary"
+                href={nextWay.switchHref}
+                data-wfx-player-recovery
+              >
+                <Icon name="play" size={18} />
+                Try the next way to watch ({nextWay.modeLabel.toLowerCase()})
+              </a>
+            ) : (
+              <a
+                className="wfx-btn"
+                href={`/item?id=${encodeURIComponent(view.itemId)}&connector=${encodeURIComponent(view.connectorId)}&ref=${encodeURIComponent(view.externalRef)}&title=${encodeURIComponent(view.title)}&type=${encodeURIComponent(view.canonicalType)}`}
+              >
+                View details
+              </a>
+            )
           }
         />
+        <WhereToWatch view={view.whereToWatch} variant="player" />
         {view.skippedForCapability.map((skipped) => (
           <p key={skipped.mode} className="wfx-player__trace" data-wfx-player-skipped={skipped.mode}>
             Skipped {skipped.mode}: {skipped.reason}
           </p>
         ))}
+        <PlaybackDiagnostics view={view} />
       </div>
     );
   }
@@ -241,7 +279,7 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         <p className="wfx-detail__meta">
           <span className="wfx-badge wfx-badge--type">{view.canonicalType}</span>
           <span data-wfx-player-mode-label>
-            Playing via {view.surfaceMode} — {view.phase}
+            Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)} — {view.phase}
           </span>
           {view.resumePositionMs > 0 ? (
             <span data-wfx-player-resume>Resumed at {formatPosition(view.resumePositionMs)}</span>
@@ -279,18 +317,14 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
           Playback phase: {view.phase} (the runtime reports evidence-backed phases only — no fake
           progress).
         </p>
-        {view.precedenceTrace.length > 0 ? (
-          // R09: the Media Surface precedence trace — one line per rung in
-          // frozen precedence order; the answer NAMES what was chosen and
-          // why (and which rungs were honestly unavailable/skipped).
-          <div className="wfx-player__trace" data-wfx-precedence-trace>
-            {view.precedenceTrace.map((line, index) => (
-              <p key={index} data-wfx-precedence-line={index}>
-                {line}
-              </p>
-            ))}
-          </div>
-        ) : null}
+        {/* R21-E — the player's capability surfaces: the switch row (the
+            active realization understandable + the alternates), the AI
+            action tray, the feedback controls, and the engineering truth
+            behind ONE progressive disclosure. */}
+        <WhereToWatch view={view.whereToWatch} variant="player" />
+        <AiActionTray view={view.aiTray} surface="player" />
+        <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="player" />
+        <PlaybackDiagnostics view={view} />
       </div>
       <div
         className="wfx-queue__thumb"

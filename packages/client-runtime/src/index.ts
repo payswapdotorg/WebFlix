@@ -43,6 +43,15 @@
  * - `runtime-seams.ts`        — the clock/id seams
  * - `surface-resolution.ts`  — R09: the Media Surface resolution seam (the
  *                               injectable wiring of the frozen resolver)
+ * - `discoverability.ts`     — R21-A: the typed capability discovery
+ *                               matrix (capability → contextual entry +
+ *                               recovery path), the frozen primary-nav +
+ *                               feed-mode + J34-task vocabularies, and
+ *                               the stale-completion-copy sweep law
+ * - `feed-mode.ts`           — R21-A: the feed-mode control store (the
+ *                               shared For you / Following / imported /
+ *                               Blend presentation state with honest
+ *                               availability truth + typed recovery hints)
  * - `testing.ts`              — ⚠️ TEST DOUBLES — production code never imports it
  */
 
@@ -61,6 +70,10 @@ export * from "./actions";
 export * from "./intent";
 export * from "./models";
 export * from "./registry";
+export * from "./discoverability";
+export * from "./feed-mode";
+export * from "./model-controls";
+export * from "./control-views";
 export { createRuntime, type ClientRuntime, type RuntimeSession, type RuntimeOptions } from "./runtime";
 
 // Test doubles — clearly marked, testing-only (see testing.ts module doc).

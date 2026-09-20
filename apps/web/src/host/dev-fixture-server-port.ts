@@ -28,6 +28,8 @@ import type {
   IntentRecord,
   LibraryCommand,
   LibraryEntry,
+  ModelPolicy,
+  ModelTask,
   PlaybackRealization,
   RecommendationPolicy,
   SearchResult,
@@ -38,6 +40,10 @@ import type { ConnectorContext } from "@wfx/domain";
 import { makeFixturePorts, type Ports } from "@wfx/experience";
 import { isShortFormCandidate } from "@wfx/experience";
 import type {
+  ByomBindingCommand,
+  ByomBindingHandle,
+  ModelPolicyCommand,
+  ModelProviderInfo,
   ProfileHistoryEntry,
   RecommendationPolicyCommand,
   RuntimeContext,
@@ -45,6 +51,8 @@ import type {
   ServerPort,
   ServerResult,
   SourceInfo,
+  TransformOperation,
+  TransformSubmitCommand,
   UserIntentCommand,
 } from "@wfx/client-runtime";
 
@@ -64,6 +72,46 @@ export interface FixtureServerPortOptions {
 
 /** The service identity of the fixture binding (loudly named a fixture). */
 export const FIXTURE_SERVER_SERVICE_ID = "wfx-dev-fixture-service";
+
+/** The fixture persona's fixed clock instant (deterministic answers). */
+const FIXTURE_NOW = "2026-09-18T12:00:00.000Z";
+
+/** The fixture persona's transform target (the fixture catalog's own ref grammar). */
+const FIXTURE_TRANSFORM_TARGET = "fake-source:fixture-transform-target";
+
+/**
+ * The fixture persona's first-party provider row (the registry truth the
+ * Model & AI surface renders in dev — the same `ModelProviderInfo` shape
+ * the production transport validates).
+ */
+const FIXTURE_FIRST_PARTY_PROVIDER: ModelProviderInfo = {
+  id: "wfx-first-party",
+  privacy: "local",
+  capabilities: ["recommendation", "ranking", "summary", "translation", "transcription"],
+  byomBound: false,
+  costs: {
+    recommendation: 0,
+    ranking: 0,
+    summary: 0,
+    translation: 0,
+    transcription: 0,
+  },
+  availability: "available",
+};
+
+/**
+ * The fixture persona's OWN model-controls state (the same double law as
+ * its library/search data: writes land in the persona's state; reads
+ * answer it — the honest unset policy stays null). Per-PORT-INSTANCE
+ * state: dev boots one port per process, so this is the dev persona's
+ * one truth (documented — the scripted drives need no cross-module file
+ * because the surfaces read through the SAME port instance the host
+ * booted).
+ */
+const modelPolicyState = new Map<ModelTask, ModelPolicy>();
+const byomBindings = new Map<string, string>();
+const transforms = new Map<string, TransformOperation>();
+let transformCounter = 1;
 
 /** Create the DEV-ONLY fixture-backed ServerPort. */
 export function createFixtureBackedServerPort(options: FixtureServerPortOptions): ServerPort {
@@ -229,6 +277,133 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
 
     async writePolicy(_policy: RecommendationPolicyCommand): Promise<ServerResult<void>> {
       return { ok: true, value: undefined };
+    },
+
+    // — the R06 model-controls extension (R21-B): the fixture is a DOUBLE
+    // with its OWN persona state (exactly like its search/library data):
+    // the first-party provider registry's truth, the persona's honest
+    // unset policies, accepted writes into the persona's own state, and
+    // deterministic transform operations. The SAME control paths the
+    // production transport serves run against this double in dev (the
+    // fixtures-boot journey harness consumes them); service mode never
+    // touches this code.
+
+    async readModelPolicy(task: ModelTask): Promise<ServerResult<ModelPolicy | null>> {
+      return { ok: true, value: modelPolicyState.get(task) ?? null };
+    },
+
+    async writeModelPolicy(command: ModelPolicyCommand): Promise<ServerResult<void>> {
+      modelPolicyState.set(command.task, {
+        task: command.task,
+        fallbackProviders: [...command.fallbackProviders],
+        privacy: command.privacy,
+        ...(command.preferredProvider !== undefined ? { preferredProvider: command.preferredProvider } : {}),
+        ...(command.maxCostPerOperation !== undefined ? { maxCostPerOperation: command.maxCostPerOperation } : {}),
+      });
+      return { ok: true, value: undefined };
+    },
+
+    async readModelProviders(): Promise<ServerResult<readonly ModelProviderInfo[]>> {
+      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER] };
+    },
+
+    async bindByomProvider(command: ByomBindingCommand): Promise<ServerResult<ByomBindingHandle>> {
+      const bindingId = `wfxbyom_${command.providerId}`;
+      byomBindings.set(command.providerId, bindingId);
+      return {
+        ok: true,
+        value: {
+          id: bindingId,
+          providerId: command.providerId,
+          endpointUrl: command.endpointUrl,
+          keyId: "wfxkey_fixture",
+          metadata: command.metadata ?? null,
+          createdAt: FIXTURE_NOW,
+          updatedAt: FIXTURE_NOW,
+        },
+      };
+    },
+
+    async unbindByomProvider(providerId: string): Promise<ServerResult<void>> {
+      if (!byomBindings.has(providerId)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "unavailable",
+            detail: `no BYOM binding for provider '${providerId}' (fixture persona)`,
+          },
+        };
+      }
+      byomBindings.delete(providerId);
+      return { ok: true, value: undefined };
+    },
+
+    async submitTransform(command: TransformSubmitCommand): Promise<ServerResult<TransformOperation>> {
+      const id = `wfxtx_${String(transformCounter).padStart(26, "0")}`;
+      transformCounter += 1;
+      const operation: TransformOperation = {
+        id,
+        kind: command.kind,
+        targetRef: FIXTURE_TRANSFORM_TARGET,
+        options: (command.options as Record<string, unknown>) ?? {},
+        state: "queued",
+        progress: null,
+        resultRef: null,
+        errorDetail: null,
+        createdAt: FIXTURE_NOW,
+        updatedAt: FIXTURE_NOW,
+      };
+      transforms.set(id, operation);
+      return { ok: true, value: operation };
+    },
+
+    async readTransform(operationId: string): Promise<ServerResult<TransformOperation>> {
+      const operation = transforms.get(operationId);
+      if (operation === undefined) {
+        return {
+          ok: false,
+          failure: { kind: "unavailable", detail: `transform '${operationId}' not found (fixture persona)` },
+        };
+      }
+      return { ok: true, value: operation };
+    },
+
+    async cancelTransform(operationId: string): Promise<ServerResult<TransformOperation>> {
+      const operation = transforms.get(operationId);
+      if (operation === undefined) {
+        return {
+          ok: false,
+          failure: { kind: "unavailable", detail: `transform '${operationId}' not found (fixture persona)` },
+        };
+      }
+      if (operation.state === "succeeded" || operation.state === "failed" || operation.state === "cancelled") {
+        return {
+          ok: false,
+          failure: { kind: "malformed", detail: `transform '${operationId}' is already terminal (${operation.state})` },
+        };
+      }
+      const cancelled: TransformOperation = { ...operation, state: "cancelled", updatedAt: FIXTURE_NOW };
+      transforms.set(operationId, cancelled);
+      return { ok: true, value: cancelled };
+    },
+
+    async clearTransformResult(operationId: string): Promise<ServerResult<TransformOperation>> {
+      const operation = transforms.get(operationId);
+      if (operation === undefined) {
+        return {
+          ok: false,
+          failure: { kind: "unavailable", detail: `transform '${operationId}' not found (fixture persona)` },
+        };
+      }
+      if (operation.state !== "succeeded") {
+        return {
+          ok: false,
+          failure: { kind: "malformed", detail: `transform '${operationId}' is not in the succeeded state (${operation.state})` },
+        };
+      }
+      const cleared: TransformOperation = { ...operation, resultRef: null, updatedAt: FIXTURE_NOW };
+      transforms.set(operationId, cleared);
+      return { ok: true, value: cleared };
     },
   };
 }

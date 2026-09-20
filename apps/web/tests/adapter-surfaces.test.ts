@@ -528,7 +528,7 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
     expect(markup).toContain("Signed out");
   });
 
-  it("the sources section renders the honest absent state (R03's lane — no fake sources)", () => {
+  it("the sources section renders the honest empty state with its next actions (R21-D + R21-B)", () => {
     void bootHost().then((host) => {
       const markup = renderToStaticMarkup(
         createElement(AppShell, {
@@ -543,12 +543,27 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
         }),
       );
       expect(markup).toContain("No sources connected");
-      expect(markup).toContain("R03");
+      // R21-D: the empty state carries the next useful actions (the connect
+      // CTA into the existing IA) — and NO stale lane promise (R03 is an
+      // accepted lane; naming it as "arrives" was the stale-copy defect).
+      expect(markup).toContain("data-wfx-sources-connect-cta");
+      expect(markup).not.toContain("R03");
+      expect(markup).not.toMatch(/arriv\w+ with/i);
+      expect(markup).toContain("bring your existing feed");
     });
   });
 
-  it("the model section renders the honest absent state (R06's lane)", async () => {
+  it("the model section renders the REAL Model & AI truth over the completed transport (R21-B/R21-C, vocabulary + tray path per R21-D)", async () => {
     const host = await bootHost();
+    // The completed transport: the runtime's model-controls read models
+    // answer the REAL registry + per-task policy truth (the fixture
+    // persona's provider row + the honest unset policies).
+    const providers = await host.runtime.modelControls.refreshProviders();
+    const policies = await host.runtime.modelControls.refreshPolicy("translation");
+    expect(providers.status.state).toBe("ready");
+    expect(providers.providers.length).toBeGreaterThan(0);
+    expect(policies.status.state).toBe("ready");
+    expect(policies.policy).toBeNull(); // the honest unset — never a fabricated default
     const markup = renderToStaticMarkup(
       createElement(AppShell, {
         mode: host.mode,
@@ -558,10 +573,24 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
           session: host.session.state,
           mode: host.mode,
           section: "model",
+          modelProviders: providers,
+          modelPolicies: [policies],
         }),
       }),
     );
-    expect(markup).toContain("R06");
+    // The vocabulary is named (the capability is discovered, never hidden).
+    expect(markup).toContain("BYOM");
+    for (const term of ["transcription", "subtitles", "translation", "dubbing", "commentary"]) {
+      expect(markup).toContain(term);
+    }
+    // The contextual entry path to the AI action tray renders (R21-D).
+    expect(markup).toContain("data-wfx-model-tray-path");
+    // The stale-completion-copy law: the "arrives with R06" copy is GONE;
+    // the section renders the real provider registry + policy truth.
+    expect(markup).not.toContain("R06");
+    expect(markup).not.toMatch(/arriv\w+ with/i);
+    expect(markup).toContain("wfx-first-party");
+    expect(markup).toContain("Not configured");
   });
 });
 
