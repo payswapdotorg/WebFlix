@@ -15,7 +15,9 @@ WebFlix is the **Universal Entertainment OS**. The repository is the source of t
 9. docs/plans/2026-09-20-webflix-major-journey-hardening-plan.md
 10. docs/validation/webflix-golden-journeys.md
 11. docs/validation/competitor-validation.md
-12. Actual source/tests/imports/configuration in the assigned worktree
+12. docs/plans/2026-09-20-webflix-youtube-parity-performance-plan.md
+13. docs/validation/youtube-parity-lab.md
+14. Actual source/tests/imports/configuration in the assigned worktree
 
 The 2026-09-16 remediation documents supersede the legacy client/native-media sequencing. Do not infer completion from legacy WFX issues or summaries.
 
@@ -227,3 +229,34 @@ Torrent is not an offline afterthought. It is a first-class source/realization t
 R23 research direction: R2T2/Confucius4-R2T2 for low-latency live ASR; VideoPrism/Qwen2.5-VL/MOSS-Transcribe-Diarize/Whisper/BGE-M3 through Model Fabric; Hugging Face Inference Endpoints for production open-model hosting; Transformers.js/WebGPU for optional private browser-side inference.
 
 New acceptance journeys: J37 Anonymous Viewing, J38 First-Class Torrent Playback, J39 Multimodal Media Intelligence.
+
+
+## Post-release R24 — YouTube parity + playback performance lab
+
+Canonical plan: docs/plans/2026-09-20-webflix-youtube-parity-performance-plan.md  
+Canonical lab contract: docs/validation/youtube-parity-lab.md
+
+R24 is the approved feature/UX/UI parity layer. It is a viewer-focused YouTube reference lab, not a visual clone.
+
+### Worker 1 — shared
+Own the complete viewer-feature taxonomy, parity classifications, shared placement/terminology seams, playback performance telemetry and startup contracts.
+
+### Worker 2 — Web
+Own the Web YouTube viewer audit, Web parity corrections, player/control/search/Shorts/Library parity, startup benchmark instrumentation and agent-browser evidence.
+
+### Worker 3 — Desktop/native/torrent
+Own Desktop parity, native player affordances, torrent-first playback parity, startup/recovery measurements and Desktop evidence.
+
+### Lead
+Coordinate the live parity lab with all three workers, verify the current YouTube reference behavior, ratify classifications, reject missing viewer features, integrate the lanes, compare startup metrics and accept J40-J42.
+
+### R24 performance law
+"Videos should load just as easily as YouTube" is a measured release requirement. Use the same content/device/browser/network where possible, cold and warm cache, and the R24 thresholds. No nonessential AI/recommendation/indexing work may block first frame.
+
+### R24 UX law
+Every WebFlix-only capability remains first-class but should appear where a user would naturally expect it in a mature video platform: contextual, one obvious primary action, stable terminology, progressive disclosure and platform capability truth. No architecture dashboard may be required to use a product capability.
+
+### R24 torrent law
+Authorized torrent copies are shown alongside other ways to watch, use the same player semantics, and are evaluated on startup/recovery performance. Torrent must not be reduced to a download-only experience when playback is supported.
+
+UI-affecting R24 work requires fresh agent-browser evidence; the Lead independently reruns J40-J42 plus affected J01-J39 after integration.
