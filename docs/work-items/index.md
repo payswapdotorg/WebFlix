@@ -31,6 +31,7 @@ The earlier WFX-001–043 registry remains historical context only. No worker sh
 | R20 | Bring Your Own Feed | Worker 1 + Worker 2 + Worker 3; Lead integration | R19 |
 | R21 | Journey-driven product discoverability + capability surface integration | Worker 1 + Worker 2 + Worker 3; Lead integration | R20 |
 | R22 | Major user-journey completion + dead-end hardening | Worker 1 + Worker 2 + Worker 3; Lead integration | R21 |
+| R24 | YouTube parity + playback performance lab | Worker 1 + Worker 2 + Worker 3; Lead integration | R23 shared contracts |
 
 ## Worker assignment rules
 
@@ -71,3 +72,10 @@ R22 is complete only when a fresh user can COMPLETE the major product journeys a
 R23 is complete only when public playback works without requiring a WebFlix account, provider-auth boundaries remain truthful, torrent is a first-class realization/playback path rather than only an offline utility, browser-capable torrent scenarios are exercised where technically supported, AI media intelligence is production-wired through Model Fabric with license/provenance truth, and J37-J39 pass without regressions to J01-J36.
 
 Canonical plan: docs/plans/2026-09-20-webflix-open-viewing-torrent-ai-plan.md
+
+## R24 completion truth
+
+R24 is complete only when the viewer-facing YouTube parity inventory is complete and source-verified, every row has an explicit WebFlix pairing/classification, Web/Desktop parity evidence is fresh, J40-J42 pass, the playback startup thresholds in the canonical R24 plan pass, and affected J01-J39 journeys are rerun without regression. WebFlix-only capabilities must have contextual placements consistent with the product's familiar video interaction grammar. Torrent must remain a first-class realization and must participate in the playback/performance gate.
+
+Canonical plan: docs/plans/2026-09-20-webflix-youtube-parity-performance-plan.md
+Canonical lab: docs/validation/youtube-parity-lab.md
