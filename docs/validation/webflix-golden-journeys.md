@@ -239,3 +239,58 @@ Authorized torrent realization -> Where to watch -> peer copy -> metadata/file s
 ## J39 — Multimodal Media Intelligence
 
 Natural-language semantic search -> title/moment result -> transcript/chapters -> visual-event query -> timestamp jump -> AI translation/subtitle action -> model/provenance truth.
+
+
+## J40 — YouTube viewer parity
+
+Fresh user, no documentation:
+
+Home -> Search -> open video -> Play -> use player controls -> browse adjacent content -> queue/watchlist/playlist -> Shorts -> feedback -> Library/History.
+
+Expected:
+- every exercised viewer-facing YouTube behavior has a WebFlix pairing in docs/validation/youtube-parity-lab.md;
+- WebFlix-only capabilities encountered during the same journey are contextual and familiar rather than administration-only controls;
+- no dead buttons, stale capability copy or placeholder state;
+- Web/Desktop semantics remain equivalent where the underlying capability exists.
+
+## J41 — YouTube-equivalent playback startup
+
+For benchmark content available on both systems where possible, run the same browser/device/network profile in cold and warm-cache modes.
+
+Measure:
+- navigation-to-player-visible;
+- click-to-first-frame;
+- click-to-audible;
+- time-to-playable;
+- startup failure;
+- first-60-second rebuffer ratio;
+- seek response;
+- control response;
+- transient recovery;
+- realization-switch time.
+
+Acceptance:
+- p50 TTFF <= YouTube + 150 ms;
+- p75 TTFF <= YouTube + 300 ms;
+- p95 TTFF <= YouTube + 750 ms;
+- startup failure <= YouTube + 0.5 percentage points;
+- first-60-second rebuffer ratio <= YouTube + 0.25 percentage points;
+- one obvious play action for supported content;
+- no nonessential AI/recommendation/indexing work blocks first frame;
+- authorized torrent playback starts from verified playable data where supported.
+
+## J42 — WebFlix extension parity
+
+Exercise canonical identity -> Where to watch -> provider/peer/torrent realization -> BYOF context -> recommendation intent/attention -> AI actions -> semantic moment search -> Library/offline/provenance.
+
+Expected:
+- every WebFlix-only capability has a placement decision;
+- the placement follows the familiar video interaction grammar;
+- no feature requires an architecture dashboard;
+- anonymous public viewing remains frictionless;
+- torrent remains first-class;
+- platform/source capability limits remain honest.
+
+## R24 visual/performance acceptance
+
+Affected R24 UI journeys must include agent-browser snapshots/screenshots plus timing evidence. A visual pass without playback measurements is not sufficient, and a timing pass with a dead-end or unfamiliar interaction is not sufficient.
