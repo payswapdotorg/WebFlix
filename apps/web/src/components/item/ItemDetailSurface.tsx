@@ -16,6 +16,9 @@ import { ItemCard } from "@/components/cards/ItemCard";
 import { playerHref } from "@/app/routing";
 import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { ActionButtons } from "@/components/player/ActionButtons";
+import { WhereToWatch } from "@/components/item/WhereToWatch";
+import { AiActionTray } from "@/components/discovery/AiActionTray";
+import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, percentWatched, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 
@@ -124,21 +127,31 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
           }
         />
       </div>
+      {/* R21-E — the DECISION HUB order (the frozen law): one canonical
+          identity first, realizations second, the AI tray and feedback
+          controls in context, raw connector diagnostics secondary. */}
+      <WhereToWatch view={view.whereToWatch} />
+      <AiActionTray view={view.aiTray} surface="item" />
+      <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="item" />
       <section className="wfx-detail__section" aria-label="Source capabilities">
-        <h2>What this source can do</h2>
-        <ul className="wfx-caplist" data-wfx-item-capabilities>
-          {view.capabilities.map((capability) => (
-            <li key={capability} className="wfx-badge">
-              {CAPABILITY_LABELS[capability] ?? capability}
-            </li>
-          ))}
-        </ul>
-        {view.capabilities.length === 0 ? (
-          <p className="wfx-row__reason" data-wfx-item-nocapabilities>
-            This source declared no capabilities for this content — every action reflects that
-            truth.
-          </p>
-        ) : null}
+        <details className="wfx-disc__capabilities" data-wfx-item-capabilities-disclosure>
+          <summary className="wfx-disc__capabilities-toggle" data-wfx-item-capabilities-toggle>
+            What this source can do
+          </summary>
+          <ul className="wfx-caplist" data-wfx-item-capabilities>
+            {view.capabilities.map((capability) => (
+              <li key={capability} className="wfx-badge">
+                {CAPABILITY_LABELS[capability] ?? capability}
+              </li>
+            ))}
+          </ul>
+          {view.capabilities.length === 0 ? (
+            <p className="wfx-row__reason" data-wfx-item-nocapabilities>
+              This source declared no capabilities for this content — every action reflects that
+              truth.
+            </p>
+          ) : null}
+        </details>
       </section>
       <AcquisitionPanel
         view={view.acquisition.view}

@@ -1,1 +1,0 @@
-- the query intent answered and was echoed, was replaced by a new intent with a fresh echo, and corrupted no long-term composition (the explicit intent vocabulary is the service-side submission — listed)

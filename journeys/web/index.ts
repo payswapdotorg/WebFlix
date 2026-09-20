@@ -162,8 +162,8 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
   {
     journeyId: "J20",
     kind: "local-only",
-    note: "The AI transformation operations with explicit progress/result states (transcription, subtitles, translation, dubbing, commentary) are the service-side transforms surface (apps/api /experience/transforms). The web renders the typed honest absence with the vocabulary named (encoded).",
-    procedure: "LOCAL-ONLY: the service-mode boot + start each transformation operation through /experience/transforms, capture the explicit in-progress and completed states.",
+    note: "R21-E: the AI ACTION TRAY is the web surface of the completed transforms transport (the R21-B/R21-C model-controls seam — the fixtures persona answers the service shapes deterministically): the five frozen actions, the model-class truth, the named preconditions, and the typed queued/cancelled operation states are encoded. The full pipeline's running→succeeded transitions (real progress + result payloads) are the service-side fabric (apps/api /experience/transforms).",
+    procedure: "LOCAL-ONLY: the service-mode boot + start each transformation operation through the tray (or /experience/transforms), capture the explicit running and completed states with results.",
   },
   {
     journeyId: "J21",

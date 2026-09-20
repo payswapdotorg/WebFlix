@@ -2507,3 +2507,353 @@ body {
 .wfx-disc__personalize[open] > .wfx-disc__personalize-toggle {
   margin-bottom: 0.75rem;
 }
+
+/* ==========================================================================
+   R21-E — the decision-hub surfaces (Where to watch / AI tray / feedback)
+   The same warm-light register: hairline borders, quiet pills, semantic
+   state paired with text, >=44px touch targets, reduced-motion-aware.
+   The decision-hub surfaces carry the SAME custom-property scope `.wfx-disc`
+   declares (they render inside the item/player surfaces, not the home
+   discovery zone) — one warm-light vocabulary across every R21 surface.
+   ========================================================================== */
+
+.wfx-disc__tray,
+.wfx-disc__feedback-controls,
+.wfx-disc__capabilities,
+.wfx-player__wheretowatch,
+.wfx-player__diagnostics,
+[data-wfx-where-to-watch] {
+  --disc-bg: #f8f6f2;
+  --disc-surface: #fffefb;
+  --disc-surface-2: #f1eee7;
+  --disc-border: #e5e1d8;
+  --disc-border-strong: #d3cec1;
+  --disc-text: #33302a;
+  --disc-text-dim: #6d685d;
+  --disc-text-faint: #8f897b;
+  --disc-ok: #0f766e;
+  --disc-ok-soft: #e4f0ec;
+  --disc-warn: #a05a09;
+  --disc-warn-soft: #f9eeda;
+  --disc-error: #b3261e;
+  --disc-error-soft: #f9e9e7;
+}
+
+[data-wfx-where-to-watch] {
+  background: var(--disc-bg);
+  color: var(--disc-text);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.85rem;
+  padding: 1rem 1.25rem;
+  margin: 0 0 1.5rem;
+}
+
+/* The Where-to-watch options list: one row per way to watch. */
+.wfx-wheretowatch__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wfx-wheretowatch__option {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.9rem;
+  padding: 0.55rem 0.8rem;
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.75rem;
+}
+
+.wfx-wheretowatch__option--unusable {
+  border-style: dashed;
+  background: transparent;
+}
+
+.wfx-wheretowatch__modelabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--disc-text);
+}
+
+.wfx-wheretowatch__reason {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--disc-text-faint);
+}
+
+/* The compact player variant: quieter margins inside the player meta. */
+.wfx-player__wheretowatch {
+  margin-top: 0.9rem;
+}
+
+.wfx-player__wheretowatch h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--disc-text);
+}
+
+/* The AI action tray: the same <details> disclosure grammar as
+   Personalize — quiet until invoked, keyboard-operable for free. */
+.wfx-disc__tray-toggle {
+  display: inline-flex;
+  list-style: none;
+  cursor: pointer;
+}
+
+.wfx-disc__tray-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-disc__tray[open] > .wfx-disc__tray-toggle {
+  margin-bottom: 0.75rem;
+}
+
+.wfx-disc__tray-summary {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--disc-text);
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border-strong);
+  border-radius: 999px;
+  transition: background-color var(--wfx-transition), border-color var(--wfx-transition);
+}
+
+.wfx-disc__tray-toggle:hover .wfx-disc__tray-summary {
+  background: var(--disc-surface-2);
+}
+
+.wfx-disc__tray-mark {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--disc-text-faint);
+}
+
+.wfx-disc__tray-panel {
+  padding: 0.9rem 1rem;
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.85rem;
+}
+
+.wfx-disc__tray-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wfx-disc__tray-action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--disc-surface-2);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.65rem;
+}
+
+.wfx-disc__tray-actionhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.8rem;
+}
+
+.wfx-disc__tray-actionlabel {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--disc-text);
+}
+
+.wfx-disc__tray-actionmodel {
+  font-size: 0.75rem;
+  color: var(--disc-text-dim);
+}
+
+.wfx-disc__tray-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.wfx-disc__select {
+  min-height: 44px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.85rem;
+  color: var(--disc-text);
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border-strong);
+  border-radius: 0.55rem;
+}
+
+.wfx-disc__tray-precondition {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--disc-warn);
+}
+
+.wfx-disc__tray-operation {
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--disc-surface-2);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.65rem;
+}
+
+.wfx-disc__tray-operationline {
+  margin: 0 0 0.35rem;
+  font-size: 0.83rem;
+  line-height: 1.45;
+  color: var(--disc-text);
+}
+
+.wfx-disc__tray-operationactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+/* The feedback controls: quiet pill buttons + the recorded chips. */
+.wfx-disc__feedback-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.wfx-disc__feedbackbtn {
+  min-height: 44px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--disc-text);
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color var(--wfx-transition), border-color var(--wfx-transition);
+}
+
+.wfx-disc__feedbackbtn:hover {
+  background: var(--disc-surface-2);
+}
+
+.wfx-disc__feedbackbtn--recorded {
+  border-color: var(--disc-ok);
+  color: var(--disc-ok);
+}
+
+.wfx-disc__feedbackrecords {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wfx-disc__feedbackrecords li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.9rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.82rem;
+  color: var(--disc-text);
+  background: var(--disc-ok-soft, rgba(15, 118, 110, 0.08));
+  border: 1px solid var(--disc-ok);
+  border-radius: 0.55rem;
+}
+
+/* The source-capability disclosure (progressive disclosure — raw
+   connector truth secondary to the product decision). */
+.wfx-disc__capabilities-toggle {
+  display: inline-flex;
+  list-style: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--disc-text);
+}
+
+.wfx-disc__capabilities-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-disc__capabilities-toggle::after {
+  content: " …";
+  color: var(--disc-text-faint);
+}
+
+/* The playback diagnostics disclosure (the engineering truth — one
+   honest disclosure away from the viewing experience). */
+.wfx-player__diagnostics-toggle {
+  display: inline-flex;
+  list-style: none;
+  cursor: pointer;
+  margin-top: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--disc-text-dim);
+  text-decoration: underline dotted;
+}
+
+.wfx-player__diagnostics-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-player__diagnostics-panel {
+  margin-top: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  background: var(--disc-surface);
+  border: 1px dashed var(--disc-border-strong);
+  border-radius: 0.65rem;
+}
+
+/* Reduced motion: the new disclosures and chips follow the same law —
+   transitions explain state, never decorate; a reduced-motion user gets
+   instant state changes. */
+@media (prefers-reduced-motion: reduce) {
+  .wfx-disc__tray-summary,
+  .wfx-disc__feedbackbtn,
+  .wfx-wheretowatch__option {
+    transition: none;
+  }
+}
+
+/* Narrow screens: the decision hub wraps naturally; the tray actions
+   and feedback rows already wrap (flex-wrap); the option rows stack
+   their reason line under the labels (flex-basis 100%). */
+@media (max-width: 640px) {
+  .wfx-disc__tray-panel {
+    padding: 0.75rem 0.8rem;
+  }
+
+  .wfx-disc__tray-form {
+    align-items: stretch;
+  }
+
+  .wfx-disc__tray-form .wfx-btn,
+  .wfx-disc__select {
+    width: 100%;
+  }
+}
