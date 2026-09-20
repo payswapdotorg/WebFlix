@@ -41,6 +41,24 @@ export function errorSection(kind: RuntimeErrorKind, detail: string): ModelSecti
 }
 
 // ---------------------------------------------------------------------------
+// The semantic state tone (R22 — the frozen design-language state families)
+// ---------------------------------------------------------------------------
+
+/**
+ * The semantic tone of a UI state (docs/architecture/
+ * webflix-design-language.md — "Semantic state color"): the styling hint
+ * every adapter maps to the SAME state-color family, always PAIRED with
+ * the state's label text (color never communicates alone).
+ *
+ * - `positive` — teal/green family: connected, ready, confirmed, healthy;
+ * - `attention` — amber family: recovering, degraded, pending, requires
+ *   attention;
+ * - `negative` — red family: failed, unavailable, destructive;
+ * - `neutral` — idle, disconnected, unsupported, not yet configured.
+ */
+export type SemanticStateTone = "positive" | "attention" | "negative" | "neutral";
+
+// ---------------------------------------------------------------------------
 // Search / shorts models
 // ---------------------------------------------------------------------------
 

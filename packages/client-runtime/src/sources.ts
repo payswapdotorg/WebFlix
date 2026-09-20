@@ -161,6 +161,11 @@ export function assertValidSourceInfo(source: SourceInfo): void {
   if (typeof source.lastChecked !== "string" || !ISO_INSTANT.test(source.lastChecked)) {
     problems.push(`source.lastChecked: expected an ISO instant, got ${previewValue(source.lastChecked)}`);
   }
+  if (source.connectable !== undefined && typeof source.connectable !== "boolean") {
+    problems.push(
+      `source.connectable: expected a boolean when present (the R22-A boot-provisioning truth), got ${previewValue(source.connectable)}`,
+    );
+  }
   if (problems.length > 0) {
     throw new RuntimeError("invalid-input", problems.join("; "));
   }
