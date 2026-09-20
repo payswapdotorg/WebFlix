@@ -1,0 +1,113 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "9fe628d62d2045534db9003adadb9ca80f8430dc",
+  "branch": "HEAD",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T00:35:03.456Z",
+    "finishedAt": "2026-09-20T00:35:07.218Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789864503456)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J11",
+      "title": "Library / watchlist / history",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the library destination renders",
+          "expected": "[data-wfx-surface='library'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist section renders",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the history section renders",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section renders (the R14 surface)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)",
+          "expected": "the typed watchlist empty state",
+          "observed": "the empty state rendered",
+          "pass": true
+        },
+        {
+          "description": "the history is honestly empty on a fresh session (typed empty state, never fabricated history)",
+          "expected": "the typed history empty state",
+          "observed": "the empty state rendered",
+          "pass": true
+        },
+        {
+          "description": "the watchlist empty state guides the user to save from details pages",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        },
+        {
+          "description": "the history empty state guides the user to watch something",
+          "expected": "text of [data-wfx-library-history] contains \"No watch history yet\"",
+          "observed": "\"History\n\nNo watch history yet\n\nWatch something — your session's watch state folds here with positions and completion.\"",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section exposes the verified offline copy (the J26 fixture)",
+          "expected": "one offline-ready entry",
+          "observed": "1 offline entries",
+          "pass": true
+        },
+        {
+          "description": "the offline entry states its earned ready-offline status (watchable without a connection — the verified truth)",
+          "expected": "a Ready-offline status label",
+          "observed": "Ready offline · 1.5 MB · 2 files · watchable without a connection",
+          "pass": true
+        },
+        {
+          "description": "no library section renders an error state in this configuration",
+          "expected": "[data-wfx-surface='library'] [data-wfx-error] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r20h-j11warm2/j11-library.png",
+        "evidence/r20h-j11warm2/j11-library-watchlist-history.snapshot.txt",
+        "evidence/r20h-j11warm2/j11-library-watchlist-history.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2315
+    }
+  ],
+  "limitations": []
+}
