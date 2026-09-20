@@ -116,6 +116,10 @@ export const j36MajorJourneyCompletion: Journey = {
     await browser.fill("#wfx-session-display-name", "J36 Journey Walker");
     await browser.fill("#wfx-session-password", "dev-password-1");
     await browser.clickInteractive("[data-wfx-session-action='register']");
+    // The register success RELOADS the page (no optimistic state — the
+    // component's own law); the navigation-safe wait polls through the
+    // reload before the assertions read the fresh DOM.
+    await browser.waitSelector("[data-wfx-session-signed-in]", 20_000);
     await assert.visible(
       "[data-wfx-session-signed-in]",
       "the register round trip completes into the authenticated state (auto-login continuity — the account exists and the session is live)",
@@ -286,12 +290,22 @@ export const j36MajorJourneyCompletion: Journey = {
       "[data-wfx-byom-first-party-section]",
       "the built-in model stays visible context (the first-party truth)",
     );
-    // The add form: the normal-path provider bind.
+    // The add form: the normal-path provider bind. The form is TOGGLED by
+    // the add action (one primary action per state — the anti-sprawl law).
+    await assert.visible(
+      "[data-wfx-byom-action='add']",
+      "the add-provider entry control renders (the management entry point)",
+    );
+    await browser.clickInteractive("[data-wfx-byom-action='add']");
+    await browser.waitSelector("[data-wfx-byom-add-form]", 10_000);
     await assert.visible("[data-wfx-byom-add-form]", "the add-provider form renders (discover → configure)");
     await browser.fill("#wfx-byom-provider-id", "j36-lab-provider");
     await browser.fill("#wfx-byom-endpoint", "https://models.example.net/v1");
     await browser.fill("#wfx-byom-key", "j36-journey-key-material");
     await browser.clickInteractive("[data-wfx-byom-action='bind']");
+    // The bind is a real POST → response → state update (network latency,
+    // never optimistic) — wait for the bound list before asserting.
+    await browser.waitSelector("[data-wfx-byom-bound-list]", 20_000);
     await assert.visible(
       "[data-wfx-byom-bound-list]",
       "the bound-provider list renders after the bind (configure → verified state)",
@@ -327,6 +341,9 @@ export const j36MajorJourneyCompletion: Journey = {
       "the Sign out control renders in the session controls (the normal-path exit)",
     );
     await browser.clickInteractive("[data-wfx-session-action='logout']");
+    // The logout success also reloads (the same no-optimism law) — poll
+    // through the reload for the honest anonymous state.
+    await browser.waitSelector("[data-wfx-session-signed-out]", 20_000);
     await assert.visible(
       "[data-wfx-session-signed-out]",
       "the sign-out completes into the honest anonymous state (no fabricated profile, no stale session)",
