@@ -36,9 +36,15 @@ import type {
   ModelPolicyModel,
   ModelProvidersModel,
   SourcesModel,
+  SourceCatalogView,
   SourceInfo,
 } from "@wfx/client-runtime";
-import { sourceRecoveryAction } from "@wfx/client-runtime";
+import type { ModelPolicy, ModelTask } from "@wfx/domain";
+import {
+  byomManagementView,
+  sourceCatalogView,
+  sourceRecoveryAction,
+} from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
 import type { PersonalizeView } from "@/host/discoverability";
@@ -46,7 +52,9 @@ import type { ByofPanelView } from "@/host/byof/byof-view";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
 import { ByofPanel } from "@/components/byof/ByofPanel";
+import { ByomManagementPanel } from "@/components/settings/ByomManagementPanel";
 import { SourceActions } from "@/components/settings/SourceActions";
+import { SourceChooser } from "@/components/settings/SourceChooser";
 import { SessionControls } from "@/components/settings/SessionControls";
 
 /** The auth-state chip vocabulary (the honest per-state truth). */
@@ -329,18 +337,42 @@ export function SettingsSurface({
               </span>
               <p className="wfx-state__title">No sources connected</p>
               <p className="wfx-state__detail">
-                Nothing is connected yet. Connect a source to browse its catalog here — or bring
-                your existing feed with the import flow below. Every connected source states its
+                Choose a supported connector below to connect it — every connected source states its
                 authorization truth here (connect, reauthorize, disconnect, per-source
-                capabilities). This host never pretends a source is connected.
+                capabilities). You can also bring your existing feed with the import flow below.
+                This host never pretends a source is connected.
               </p>
               <div className="wfx-state__actions">
-                <a className="wfx-btn" href="/settings?section=sources" data-wfx-sources-connect-cta>
+                <a
+                  className="wfx-btn wfx-btn--sm"
+                  href="#wfx-source-chooser"
+                  data-wfx-sources-connect-cta
+                >
                   Connect a source
                 </a>
               </div>
             </div>
           )}
+          {/* R22-D — the first-connect source chooser (the F2 dead-end
+              killer): the empty state now carries the connector chooser
+              itself — every supported connector the deployment wires, each
+              with its honest state truth + typed action. The CTA above
+              scrolls to the chooser; it never loops to the same empty state.
+              The initial catalog is the SAME R22-A derivation the chooser
+              would fetch (the convergence law: Home and Settings render the
+              SAME shared source state — no second navigation system). */}
+          <SourceChooser
+            mode={mode}
+            {...(sources !== undefined
+              ? {
+                  initialCatalog: sourceCatalogView({
+                    sources: sources.sources,
+                    authenticated: session.signedIn,
+                    status: sources.status,
+                  }) as SourceCatalogView,
+                }
+              : {})}
+          />
           {byof !== undefined ? <ByofPanel view={byof} mode={mode} /> : null}
         </section>
       ) : null}
@@ -405,6 +437,37 @@ export function SettingsSurface({
                 ))}
               </ul>
             </>
+          ) : null}
+          {/* R22-F — the BYOM management panel (the F8 closer): the
+              normal management entry point over the existing runtime
+              operations. The contextual AI tray remains the place to
+              USE AI; this panel is the place to MANAGE model providers.
+              Consumes Worker 1's R22-C `byomManagementView` derivation
+              (the typed binding summary + supported task capabilities +
+              privacy mode + availability + add/bind + verify/usable +
+              remove/unbind + typed errors/recovery). The provider key
+              is the SECRET on its way IN (POST /api/model/byom/bind);
+              the transport seals it server-side, answers the secret-free
+              handle ONLY — this panel never renders the key. */}
+          {modelProviders !== undefined && modelPolicies !== undefined ? (
+            <ByomManagementPanel
+              view={byomManagementView({
+                providers: modelProviders.providers,
+                policies: modelPolicies.reduce(
+                  (acc, model) => {
+                    if (model.policy !== null) {
+                      acc[model.task] = model.policy;
+                    } else {
+                      acc[model.task] = null;
+                    }
+                    return acc;
+                  },
+                  {} as Partial<Record<ModelTask, ModelPolicy | null>>,
+                ),
+                status: modelProviders.status,
+              })}
+              authenticated={session.signedIn}
+            />
           ) : null}
         </section>
       ) : null}
