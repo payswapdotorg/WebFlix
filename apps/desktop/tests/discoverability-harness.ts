@@ -11,7 +11,13 @@
  * variants this lane's laws require.
  */
 
-import { FixedClock, SequentialIdGen } from "@wfx/client-runtime";
+import {
+  FixedClock,
+  InMemoryServerPort,
+  SequentialIdGen,
+  createRuntime,
+  makeDesktopCapabilities,
+} from "@wfx/client-runtime";
 import type {
   ExposedTorrentExposure,
   PlaybackBufferingTruth,
@@ -32,6 +38,12 @@ import { DEFAULT_PLAYBACK_SCHEDULER_CONFIG, torrentError } from "@wfx/torrent-en
 import { SimEngineProcess, SimShell } from "./shell-simulator";
 import { createDesktopApp } from "../src/main";
 import { createDesktopServerPort } from "../src/platform/server-port";
+import { createDesktopAcquisitionSource } from "../src/platform/acquisition-source";
+import { createDesktopAcquisitionSurface } from "../src/surface/acquisition-surface";
+import { createDesktopFeedSurface, createUnboundFeedSurface } from "../src/surface/feed-surface";
+import { createOfflineDiscoverySurface } from "../src/surface/offline-discovery-surface";
+import type { DesktopAcquireRecipe } from "../src/surface/offline-discovery-surface";
+import { createShellStoragePort } from "../src/platform/storage";
 import { createFeedPortDouble } from "./feed-port-double";
 
 /** The feed-port double's handle type (the double's own return shape). */
@@ -293,6 +305,10 @@ export function offlineEntry(overrides: {
 export interface HarnessBoot {
   readonly withAcquisition: boolean;
   readonly withFeed: boolean;
+  /** Whether the simulated shell carries a native file dialog (default true). */
+  readonly fileDialogPresent?: boolean;
+  /** The R21-H acquire recipe (bound through the composition root when present). */
+  readonly acquire?: DesktopAcquireRecipe;
 }
 
 export interface Harness {
@@ -323,7 +339,7 @@ export function bootDesktopApp(
         })(),
       })
     : null;
-  const shell = new SimShell();
+  const shell = new SimShell({ fileDialogPresent: options.fileDialogPresent ?? true });
   const stub = new StubFetch();
   const app = createDesktopApp({
     shell,
@@ -339,6 +355,62 @@ export function bootDesktopApp(
     },
     ...(engine !== null ? { acquisition: { engine, adapter: engine.adapter } } : {}),
     ...(feedDouble !== null ? { feed: { port: feedDouble.port } } : {}),
+    ...(options.acquire !== undefined ? { offlineDiscovery: { acquire: options.acquire } } : {}),
   });
   return { app, engine, feedDouble, shell, stub } satisfies Harness & { app: ReturnType<typeof createDesktopApp> };
+}
+
+// ---------------------------------------------------------------------------
+// The direct-construction boot (the R14 harness pattern — source exposed)
+// ---------------------------------------------------------------------------
+
+/**
+ * Boot the offline-discovery surfaces DIRECTLY over the runtime + the R14
+ * acquisition source (the `acquisition-surface.test.ts` harness pattern) —
+ * the source is exposed so the tests can `bindSession` + script the full
+ * lifecycle (preparing → completing → ready-offline) the way the
+ * composition root's production wiring does.
+ */
+export function bootOfflineDiscovery(options?: {
+  readonly acquire?: DesktopAcquireRecipe;
+  readonly withFeed?: boolean;
+}) {
+  const engine = new ScriptedEngine();
+  const runtime = createRuntime(makeDesktopCapabilities(), new InMemoryServerPort(), {
+    context: { userId: "user-r21h", sessionId: "sess-r21h", locale: "en" },
+    clock: new FixedClock(HARNESS_T0),
+    ids: new SequentialIdGen(),
+  });
+  const source = createDesktopAcquisitionSource({ engine, adapter: engine.adapter, runtime });
+  const acquisition = createDesktopAcquisitionSurface(runtime, source);
+  const shell = new SimShell();
+  const feedDouble =
+    options?.withFeed === false
+      ? null
+      : createFeedPortDouble({
+          profileId: HARNESS_PROFILE,
+          userId: "user-r21h",
+          now: () => new Date(HARNESS_T0).toISOString(),
+          nextId: (() => {
+            let counter = 0;
+            return () => `r21h-${(counter += 1).toString().padStart(4, "0")}`;
+          })(),
+        });
+  const feed =
+    feedDouble !== null
+      ? createDesktopFeedSurface({
+          shell,
+          feedPort: feedDouble.port,
+          storage: createShellStoragePort(shell),
+          now: () => new Date(HARNESS_T0).toISOString(),
+        })
+      : createUnboundFeedSurface();
+  const offlineDiscovery = createOfflineDiscoverySurface({
+    runtime,
+    capabilities: makeDesktopCapabilities(),
+    acquisition,
+    feed,
+    ...(options?.acquire !== undefined ? { acquire: options.acquire } : {}),
+  });
+  return { engine, runtime, source, acquisition, feed, feedDouble, shell, offlineDiscovery };
 }

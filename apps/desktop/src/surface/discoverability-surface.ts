@@ -478,6 +478,43 @@ export function discoverabilityCopyStrings(
 }
 
 // ---------------------------------------------------------------------------
+// The standing derivations (shared with the R21-H offline/feed discovery)
+// ---------------------------------------------------------------------------
+
+/**
+ * The honest standing of the native-acquisition capabilities for THIS
+ * composition (usable iff the acquisition block is bound — never guessed).
+ * Shared with the R21-H offline-discovery surface (one derivation source).
+ */
+export function desktopAcquisitionStanding(
+  acquisition: DesktopAcquisitionSurface,
+): DesktopCapabilityStanding {
+  return acquisition.bound
+    ? { kind: "usable" }
+    : {
+        kind: "unbound",
+        block: "native-acquisition",
+        detail: UNBOUND_ACQUISITION_DETAIL,
+        recoveryHint: UNBOUND_ACQUISITION_RECOVERY,
+      };
+}
+
+/**
+ * The honest standing of the BYOF feed capability for THIS composition
+ * (usable iff the feed block is bound). One derivation source.
+ */
+export function desktopFeedStanding(feed: DesktopFeedSurface): DesktopCapabilityStanding {
+  return feed.bound
+    ? { kind: "usable" }
+    : {
+        kind: "unbound",
+        block: "byof-feed",
+        detail: UNBOUND_FEED_DETAIL,
+        recoveryHint: UNBOUND_FEED_RECOVERY,
+      };
+}
+
+// ---------------------------------------------------------------------------
 // The binding
 // ---------------------------------------------------------------------------
 
@@ -488,24 +525,10 @@ function standingFor(
   feed: DesktopFeedSurface,
 ): DesktopCapabilityStanding {
   if (capability === "native-offline" || capability === "acquisition-recovery") {
-    return acquisition.bound
-      ? { kind: "usable" }
-      : {
-          kind: "unbound",
-          block: "native-acquisition",
-          detail: UNBOUND_ACQUISITION_DETAIL,
-          recoveryHint: UNBOUND_ACQUISITION_RECOVERY,
-        };
+    return desktopAcquisitionStanding(acquisition);
   }
   if (capability === "following-byof") {
-    return feed.bound
-      ? { kind: "usable" }
-      : {
-          kind: "unbound",
-          block: "byof-feed",
-          detail: UNBOUND_FEED_DETAIL,
-          recoveryHint: UNBOUND_FEED_RECOVERY,
-        };
+    return desktopFeedStanding(feed);
   }
   return { kind: "usable" };
 }
