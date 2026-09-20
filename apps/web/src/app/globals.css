@@ -1930,3 +1930,580 @@ body {
     width: 100%;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * R21-D — the contextual discovery layer: the calm warm-light register.
+ *
+ * docs/architecture/webflix-design-language.md (frozen) binds the NEW
+ * discovery/management surfaces to the warm-light ShareNet-inspired
+ * register (the same scoped-token approach `.wfx-byof` established):
+ * everything under `.wfx-disc` renders on the warm off-white with
+ * hairline borders and soft graphite text, while the surrounding
+ * content surfaces keep the media-first treatment. Laws honored:
+ * - semantic state color is ALWAYS paired with text (the chips carry
+ *   labels; the unavailable mode chips say so in their title + refusal
+ *   panel — never color alone);
+ * - one clear primary action per zone (the source-strip connect CTA);
+ * - generous whitespace, typography-led hierarchy, no gradients/glass;
+ * - every transition has a reduced-motion path (below);
+ * - touch targets stay >= 44px on the interactive chips (the
+ *   min-height law below extends to the compact variant);
+ * - the shorts overlay floats quiet over the feed (never a modal).
+ * ------------------------------------------------------------------------- */
+
+.wfx-disc {
+  --disc-bg: #f8f6f2;
+  --disc-surface: #fffefb;
+  --disc-surface-2: #f1eee7;
+  --disc-border: #e5e1d8;
+  --disc-border-strong: #d3cec1;
+  --disc-text: #33302a;
+  --disc-text-dim: #6d685d;
+  --disc-text-faint: #8f897b;
+  --disc-ok: #0f766e;
+  --disc-ok-soft: #e4f0ec;
+  --disc-warn: #a05a09;
+  --disc-warn-soft: #f9eeda;
+  --disc-error: #b3261e;
+  --disc-error-soft: #f9e9e7;
+
+  display: block;
+  margin: 0 0 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--disc-bg);
+  color: var(--disc-text);
+  border: 1px solid var(--disc-border);
+  border-radius: 1rem;
+}
+
+.wfx-disc--compact {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+}
+
+.wfx-disc__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem 1.5rem;
+}
+
+.wfx-disc__label,
+.wfx-disc__plabel {
+  margin: 0 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--disc-text-dim);
+}
+
+/* The feed-mode chips: pill radio group, quiet active state. */
+.wfx-disc__feedmode-options,
+.wfx-disc__moderow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wfx-disc__modechip {
+  min-height: 44px;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--disc-text);
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color var(--wfx-transition), border-color var(--wfx-transition),
+    color var(--wfx-transition);
+}
+
+.wfx-disc__modechip:hover {
+  background: var(--disc-surface-2);
+}
+
+.wfx-disc__modechip--active {
+  background: var(--disc-text);
+  border-color: var(--disc-text);
+  color: var(--disc-surface);
+}
+
+.wfx-disc__modechip--unavailable {
+  color: var(--disc-text-faint);
+  border-style: dashed;
+}
+
+.wfx-disc__modechip--unavailable.wfx-disc__modechip--active {
+  background: var(--disc-warn-soft);
+  border-color: var(--disc-warn);
+  border-style: solid;
+  color: var(--disc-warn);
+}
+
+/* The typed refusal panel (unavailable mode chosen): state + next action. */
+.wfx-disc__refusal {
+  margin-top: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  background: var(--disc-warn-soft);
+  border: 1px solid var(--disc-warn);
+  border-radius: 0.75rem;
+  color: var(--disc-warn);
+}
+
+.wfx-disc__refusal-detail {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--disc-warn);
+}
+
+.wfx-disc__refusal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.wfx-disc__link {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--disc-ok);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wfx-disc__link:hover {
+  color: var(--disc-text);
+}
+
+/* The Personalize disclosure: quiet summary, calm panel. */
+.wfx-disc__personalize {
+  min-width: 15rem;
+  max-width: 34rem;
+  flex: 1 1 18rem;
+}
+
+.wfx-disc__personalize-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--disc-text);
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background-color var(--wfx-transition);
+}
+
+.wfx-disc__personalize-toggle:hover {
+  background: var(--disc-surface-2);
+}
+
+.wfx-disc__personalize-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.wfx-disc__intentmark {
+  padding: 0.1rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--disc-ok);
+  background: var(--disc-ok-soft);
+  border-radius: 999px;
+}
+
+.wfx-disc__personalize-panel {
+  margin-top: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.75rem;
+}
+
+.wfx-disc__psection {
+  margin: 0 0 1rem;
+}
+
+.wfx-disc__psection:last-of-type {
+  margin-bottom: 0.5rem;
+}
+
+.wfx-disc__phint {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--disc-text-faint);
+  max-width: 56ch;
+}
+
+.wfx-disc__intents {
+  margin: 0.35rem 0 0.5rem;
+  padding: 0.45rem 0.75rem;
+  list-style: none;
+  background: var(--disc-ok-soft);
+  border-radius: 0.5rem;
+}
+
+.wfx-disc__intents li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--disc-ok);
+}
+
+.wfx-disc__intentexpiry {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--disc-text-dim);
+}
+
+.wfx-disc__intentform {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.wfx-disc__input {
+  flex: 1 1 14rem;
+  min-height: 44px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.88rem;
+  color: var(--disc-text);
+  background: var(--disc-bg);
+  border: 1px solid var(--disc-border-strong);
+  border-radius: 0.6rem;
+}
+
+.wfx-disc__input:focus-visible {
+  outline: 2px solid var(--disc-ok);
+  outline-offset: 1px;
+}
+
+.wfx-disc__linkbtn {
+  min-height: 44px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--disc-error);
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.wfx-disc__linkbtn:hover {
+  text-decoration: underline;
+}
+
+.wfx-disc__range {
+  width: 100%;
+  max-width: 24rem;
+  min-height: 44px;
+  accent-color: var(--disc-ok);
+}
+
+.wfx-disc__failure {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--disc-error);
+  background: var(--disc-error-soft);
+  border-radius: 0.5rem;
+}
+
+/* The source strip: compact chips + the one primary CTA. */
+.wfx-disc__sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--disc-border);
+}
+
+.wfx-disc__sourcechips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wfx-disc__sourcechip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border);
+  border-radius: 999px;
+}
+
+.wfx-disc__sourcename {
+  font-weight: 700;
+  color: var(--disc-text);
+}
+
+.wfx-disc__sourceauth {
+  color: var(--disc-text-dim);
+}
+
+.wfx-disc__sourcechip--signedIn .wfx-disc__sourceauth {
+  color: var(--disc-ok);
+}
+
+.wfx-disc__sourcechip--expired .wfx-disc__sourceauth,
+.wfx-disc__sourcechip--failed .wfx-disc__sourceauth {
+  color: var(--disc-warn);
+}
+
+.wfx-disc__sourcelink {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--disc-ok);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.wfx-disc__sourcenote {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--disc-text-dim);
+  max-width: 60ch;
+}
+
+.wfx-disc__sourceactions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+/* The imported-feed cards on Home (compact, source-native). */
+.wfx-disc__importcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 10.5rem;
+  padding: 0.75rem;
+  background: var(--disc-surface);
+  border: 1px solid var(--disc-border);
+  border-radius: 0.75rem;
+  color: var(--disc-text);
+  text-decoration: none;
+  transition: border-color var(--wfx-transition);
+}
+
+.wfx-disc__importcard:hover {
+  border-color: var(--disc-border-strong);
+}
+
+.wfx-disc__importcard .wfx-card__art {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 0.5rem;
+}
+
+.wfx-disc__importtitle {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--disc-text);
+}
+
+.wfx-disc__importmeta {
+  font-size: 0.72rem;
+  color: var(--disc-text-faint);
+}
+
+/* The session menu's identity actions (the sign-in discovery path). */
+.wfx-avatar-menu__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(42, 38, 51, 0.5);
+}
+
+/* The settings empty-state actions row (the next useful action). */
+.wfx-state__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+}
+
+/* The shorts discovery overlay: floats quiet over the feed, top-left,
+   clear of the centered position pill. */
+.wfx-shorts-shell {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.wfx-shorts__discovery {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 6;
+  max-width: min(92vw, 30rem);
+}
+
+.wfx-shorts__discovery .wfx-disc--compact {
+  padding: 0.35rem 0.55rem;
+  background: rgba(10, 9, 14, 0.55);
+  border-radius: 0.9rem;
+  backdrop-filter: blur(6px);
+}
+
+.wfx-shorts__discovery .wfx-disc__row {
+  gap: 0.5rem 0.9rem;
+}
+
+/* The overlay adapts the register to the immersive dark feed context:
+   calm light chips on a translucent scrim; state still pairs with text. */
+.wfx-shorts__discovery .wfx-disc__label,
+.wfx-shorts__discovery .wfx-disc__plabel,
+.wfx-shorts__discovery .wfx-disc__phint,
+.wfx-shorts__discovery .wfx-disc__link {
+  color: rgba(236, 236, 241, 0.85);
+}
+
+.wfx-shorts__discovery .wfx-disc__modechip,
+.wfx-shorts__discovery .wfx-disc__personalize-toggle {
+  background: rgba(20, 18, 24, 0.72);
+  border-color: rgba(236, 236, 241, 0.35);
+  color: rgba(236, 236, 241, 0.92);
+}
+
+.wfx-shorts__discovery .wfx-disc__modechip--active {
+  background: rgba(236, 236, 241, 0.92);
+  border-color: rgba(236, 236, 241, 0.92);
+  color: #14121a;
+}
+
+.wfx-shorts__discovery .wfx-disc__personalize-panel,
+.wfx-shorts__discovery .wfx-disc__refusal {
+  background: rgba(20, 18, 24, 0.92);
+  border-color: rgba(236, 236, 241, 0.25);
+  color: rgba(236, 236, 241, 0.92);
+  backdrop-filter: blur(6px);
+}
+
+.wfx-shorts__discovery .wfx-disc__refusal-detail {
+  color: #fbbf24;
+}
+
+.wfx-shorts__discovery .wfx-disc__intents {
+  background: rgba(52, 211, 153, 0.15);
+}
+
+.wfx-shorts__discovery .wfx-disc__intents li {
+  color: #34d399;
+}
+
+.wfx-shorts__discovery .wfx-disc__input {
+  background: rgba(10, 9, 14, 0.6);
+  border-color: rgba(236, 236, 241, 0.3);
+  color: rgba(236, 236, 241, 0.92);
+}
+
+.wfx-shorts__discovery .wfx-disc__failure {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+}
+
+.wfx-shorts__discovery .wfx-disc__intentmark {
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.15);
+}
+
+/* Reduced motion: the discovery transitions collapse (the motion law). */
+@media (prefers-reduced-motion: reduce) {
+  .wfx-disc__modechip,
+  .wfx-disc__personalize-toggle,
+  .wfx-disc__importcard,
+  .wfx-disc__personalize-panel {
+    transition: none;
+  }
+}
+
+/* Responsive: the discovery band stays comfortable on narrow screens. */
+@media (max-width: 767px) {
+  .wfx-disc {
+    padding: 0.9rem 1rem;
+    border-radius: 0.75rem;
+  }
+
+  .wfx-disc__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .wfx-disc__personalize {
+    max-width: none;
+  }
+
+  .wfx-disc__intentform {
+    align-items: stretch;
+  }
+
+  .wfx-disc__intentform .wfx-btn,
+  .wfx-disc__intentform .wfx-disc__linkbtn {
+    width: 100%;
+  }
+
+  .wfx-disc__sources {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wfx-shorts__discovery {
+    left: 0.5rem;
+    right: 0.5rem;
+    top: 2.75rem; /* below the position pill on narrow screens */
+    max-width: none;
+  }
+}
+
+/* The Personalize <details> disclosure: the native summary styling. */
+.wfx-disc__personalize-toggle {
+  display: inline-flex;
+  list-style: none;
+  cursor: pointer;
+}
+
+.wfx-disc__personalize-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-disc__personalize[open] > .wfx-disc__personalize-toggle {
+  margin-bottom: 0.75rem;
+}

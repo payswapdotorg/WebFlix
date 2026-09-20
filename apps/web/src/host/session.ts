@@ -56,7 +56,7 @@ export interface WebSession {
   readonly state: WebSessionState;
 }
 
-/** The honest session state (signed-out until R02's identity lands). */
+/** The honest session state (the signed-out anonymous mode, named for what it is). */
 export interface WebSessionState {
   /** Truthfully `false` in R07 — the anonymous mode is not a signed-in profile. */
   readonly signedIn: boolean;
@@ -79,7 +79,7 @@ export function anonymousSessionState(
     signedIn: false,
     label: "Signed out",
     description:
-      "You are browsing in an anonymous session. Sign-in and profiles arrive with the identity lane (R02) — until then nothing here pretends to be a profile." +
+      "You are browsing in an anonymous session. WebFlix keeps this session's watch history and library honestly session-scoped — nothing pretends to be a profile." +
       note,
     sessionDurability,
   };

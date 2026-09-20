@@ -22,6 +22,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { SettingsSurface } from "@/components/settings/SettingsSurface";
 import { getWebRuntimeHost } from "@/host/web-host";
 import { byofHostBinding, loadByofPanelView } from "@/host/byof/byof-host";
+import { loadPersonalizeView } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
 import type { SettingsSection } from "@wfx/client-runtime";
 
@@ -56,6 +57,9 @@ export default async function SettingsPage({
           byofPreviewImportId.length > 0 ? byofPreviewImportId : undefined,
         )
       : undefined;
+  // R21-D — the general section's recommendation & intent management view
+  // (the Personalize control's detailed-management home).
+  const personalize = section === undefined || section === "general" ? loadPersonalizeView(host) : undefined;
   return (
     <AppShell mode={host.mode} active="settings" session={host.session.state}>
       <SettingsSurface
@@ -65,6 +69,7 @@ export default async function SettingsPage({
         {...(section !== undefined ? { section } : {})}
         {...(sources !== undefined ? { sources } : {})}
         {...(byof !== undefined ? { byof } : {})}
+        {...(personalize !== undefined ? { personalize } : {})}
       />
     </AppShell>
   );

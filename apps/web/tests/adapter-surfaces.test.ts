@@ -528,7 +528,7 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
     expect(markup).toContain("Signed out");
   });
 
-  it("the sources section renders the honest absent state (R03's lane — no fake sources)", () => {
+  it("the sources section renders the honest empty state with its connect next-action (R21-D)", () => {
     void bootHost().then((host) => {
       const markup = renderToStaticMarkup(
         createElement(AppShell, {
@@ -543,11 +543,15 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
         }),
       );
       expect(markup).toContain("No sources connected");
-      expect(markup).toContain("R03");
+      // R21-D: the empty state carries the next useful action (the connect
+      // CTA into the existing IA) — and NO stale lane promise (R03 is an
+      // accepted lane; naming it as "arrives" was the stale-copy defect).
+      expect(markup).toContain("data-wfx-sources-connect-cta");
+      expect(markup).not.toMatch(/arriv\w+ with the source-management lane/);
     });
   });
 
-  it("the model section renders the honest absent state (R06's lane)", async () => {
+  it("the model section renders the honest management truth — vocabulary + transport truth, no stale lane copy (R21-D)", async () => {
     const host = await bootHost();
     const markup = renderToStaticMarkup(
       createElement(AppShell, {
@@ -561,7 +565,16 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
         }),
       }),
     );
-    expect(markup).toContain("R06");
+    // The vocabulary is named (the capability is discovered, never hidden).
+    expect(markup).toContain("BYOM");
+    for (const term of ["transcription", "subtitles", "translation", "dubbing", "commentary"]) {
+      expect(markup).toContain(term);
+    }
+    // The honest transport truth + the contextual entry path render.
+    expect(markup).toContain("data-wfx-model-transport-truth");
+    expect(markup).toContain("data-wfx-model-tray-path");
+    // NO stale "arrives with the model lane (R06)" copy (the accepted-lane law).
+    expect(markup).not.toMatch(/arriv\w+ with the model lane/);
   });
 });
 

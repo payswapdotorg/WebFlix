@@ -28,6 +28,7 @@ import type { SourcesModel, SourceInfo } from "@wfx/client-runtime";
 import { sourceRecoveryAction } from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
+import type { PersonalizeView } from "@/host/discoverability";
 import type { ByofPanelView } from "@/host/byof/byof-view";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
@@ -132,6 +133,7 @@ export function SettingsSurface({
   section,
   sources,
   byof,
+  personalize,
 }: {
   /** The truthful platform bundle (the runtime's own declaration). */
   readonly capabilities: WebPlatformBundle;
@@ -145,6 +147,8 @@ export function SettingsSurface({
   readonly sources?: SourcesModel;
   /** The BYOF panel view (R20-D: the sources section's feed-import flow). */
   readonly byof?: ByofPanelView;
+  /** The R21-D Personalize view (the general section's recommendation management). */
+  readonly personalize?: PersonalizeView;
 }): JSX.Element {
   const descriptor = capabilities.descriptor;
   const limitations = descriptor.limitations ?? {};
@@ -223,11 +227,15 @@ export function SettingsSurface({
               </span>
               <p className="wfx-state__title">No sources connected</p>
               <p className="wfx-state__detail">
-                Source management (connect, reauthorize, disconnect, per-source capabilities and
-                authorization state) arrives with the source-management lane (R03). Until then this
-                host browses whatever its configured service carries — and never pretends a source
-                is connected.
+                Connect a source to browse its catalog through WebFlix — every connected source
+                states its authorization truth here (connect, reauthorize, disconnect, per-source
+                capabilities). This host never pretends a source is connected.
               </p>
+              <div className="wfx-state__actions">
+                <a className="wfx-btn" href="/settings?section=sources" data-wfx-sources-connect-cta>
+                  Connect a source
+                </a>
+              </div>
             </div>
           )}
           {byof !== undefined ? <ByofPanel view={byof} mode={mode} /> : null}
@@ -241,21 +249,31 @@ export function SettingsSurface({
             <span className="wfx-state__icon">
               <Icon name="sparkle" />
             </span>
-            <p className="wfx-state__title">Model controls arrive with the model lane (R06)</p>
+            <p className="wfx-state__title">AI actions live where you watch</p>
             <p className="wfx-state__detail">
-              WebFlix model selection, BYOM providers, local-model policy, privacy/cost
-              constraints, and AI media operations (transcription, subtitles, translation,
-              dubbing, commentary) are the model-controls lane. This adapter renders their honest
-              absence rather than placeholder controls.
+              WebFlix runs AI media actions — transcription, subtitles, translation, dubbing, and
+              commentary — through your model policy: the WebFlix model, a bring-your-own-model
+              (BYOM) provider, or a local model. Launch them from the AI action tray on any title
+              or player; local-model execution runs in the Desktop app.
             </p>
+            <p className="wfx-state__detail" data-wfx-model-transport-truth>
+              This host&apos;s service connection does not expose the model policy controls yet — the
+              policy travels with your WebFlix service profile. When your service serves them, the
+              policy and provider management appear here.
+            </p>
+            <div className="wfx-state__actions">
+              <a className="wfx-btn" href="/search" data-wfx-model-tray-path>
+                Find a title to transform
+              </a>
+            </div>
           </div>
         </section>
       ) : null}
 
       {section === undefined || section === "general" ? (
         <>
-          <section className="wfx-detail__section" aria-label="Session" data-wfx-settings-session>
-            <h2>Session</h2>
+          <section className="wfx-detail__section" aria-label="Profile and identity" data-wfx-settings-profile>
+            <h2>Profile &amp; identity</h2>
             <p className="wfx-card__meta">
               <span className="wfx-badge wfx-badge--type" data-wfx-session-label>
                 {session.label}
@@ -268,6 +286,51 @@ export function SettingsSurface({
                 ? "kept across browser sessions on this device"
                 : "kept for this server process (browser storage is not available in this boot context)"}
               . Boot mode: {mode}.
+            </p>
+            <p className="wfx-row__reason" data-wfx-profile-path>
+              Profiles and sign-in travel with your WebFlix service account — a durable profile
+              keeps the same watchlist, history, and personalization on every device. When this
+              host&apos;s service connection serves the sign-in flow, it appears here and in the
+              session menu.
+            </p>
+          </section>
+
+          <section
+            className="wfx-detail__section"
+            aria-label="Recommendation and intent"
+            data-wfx-settings-recommendation
+          >
+            <h2>Recommendation &amp; intent</h2>
+            {personalize !== undefined ? (
+              <p className="wfx-card__meta">
+                <span className="wfx-badge wfx-badge--type" data-wfx-attention-mode-label>
+                  {personalize.attentionModes.find((entry) => entry.selected)?.label ??
+                    personalize.attentionMode}{" "}
+                  attention
+                </span>
+                <span data-wfx-exploration-label>
+                  Exploration dial at {Math.round(personalize.exploration * 100)}%
+                </span>
+                {personalize.intents.length > 0 ? (
+                  <span data-wfx-active-intents>
+                    {personalize.intents.length} session intent
+                    {personalize.intents.length === 1 ? "" : "s"} active
+                  </span>
+                ) : (
+                  <span data-wfx-active-intents>no session intent set</span>
+                )}
+              </p>
+            ) : null}
+            <p className="wfx-row__reason">
+              The everyday controls live where you browse: Personalize on Home, Watch, and Shorts
+              sets a session intent, switches attention mode, and tunes exploration. Session
+              intents end with the session — a recent watch is one signal, never permanent
+              identity.
+            </p>
+            <p className="wfx-row__reason">
+              <a href="/" data-wfx-recommendation-entry>
+                Open Personalize on Home
+              </a>
             </p>
           </section>
 

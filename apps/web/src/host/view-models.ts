@@ -185,9 +185,10 @@ export interface HomeView {
 
 /**
  * The home seed queries — TYPED STOPGAPS (the same law the legacy host
- * kept): the frozen R01 home model owns Continue Watching; the real
- * recommendation feed composition is R05's lane. These deterministic seeds
- * are the honest browse rows until it lands.
+ * kept): the frozen R01 home model owns Continue Watching; the browse
+ * rows are the adapter's deterministic seed composition until the
+ * service-side ranked feed lands. The Personalize control (R21-D)
+ * shapes the session's intent + policy on top of these rows.
  */
 export const FOR_YOU_QUERY = "rain";
 export const TRENDING_QUERY = "a";
@@ -228,7 +229,7 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
       {
         id: "for-you",
         title: "For you",
-        reason: "Browse composed for your session (seeded until personal ranking ships — R05).",
+        reason: "Composed for your session — what your connected sources surface for you right now. Shape it with Personalize.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },
@@ -272,7 +273,7 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
       {
         id: "for-you",
         title: "For you",
-        reason: "Browse composed for your session (seeded until personal ranking ships — R05).",
+        reason: "Composed for your session — what your connected sources surface for you right now. Shape it with Personalize.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },

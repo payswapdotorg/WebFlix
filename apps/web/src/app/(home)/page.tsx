@@ -13,6 +13,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { HomeSurface } from "@/components/home/HomeSurface";
 import { getWebRuntimeHost } from "@/host/web-host";
 import { loadHomeView } from "@/host/view-models";
+import { loadDiscoveryBundle } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +21,10 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/", {});
-  const view = await loadHomeView(host);
+  const [view, discovery] = await Promise.all([loadHomeView(host), loadDiscoveryBundle(host)]);
   return (
     <AppShell mode={host.mode} active="home" session={host.session.state}>
-      <HomeSurface view={view} />
+      <HomeSurface view={view} discovery={discovery} />
     </AppShell>
   );
 }

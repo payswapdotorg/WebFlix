@@ -21,6 +21,8 @@ import type {
   RowView,
   SectionStatusView,
 } from "@/host/view-models";
+import type { DiscoveryBundle } from "@/host/discoverability";
+import { DiscoveryHeader } from "@/components/discovery/DiscoveryHeader";
 import { ItemCard, cardPlayerHref } from "@/components/cards/ItemCard";
 import { itemDetailHref } from "@/app/routing";
 import { Icon } from "@/components/shell/Icon";
@@ -228,21 +230,78 @@ function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
   );
 }
 
+/**
+ * The imported-feed section (R21-D): the records the CURRENT feed mode
+ * honors — source-native order, never re-ranked (the frozen BYOF truth
+ * law), with the freshness sentence and the Library management link.
+ */
+function ImportedFeedSection({ section }: { readonly section: NonNullable<DiscoveryBundle["importedSection"]> }): JSX.Element {
+  return (
+    <section className="wfx-row" data-wfx-row="imported-feed" data-wfx-imported-feed>
+      <div className="wfx-row__header">
+        <h2 className="wfx-row__title">{section.label}</h2>
+        <p className="wfx-row__reason" data-wfx-imported-order-note>
+          {section.orderSentence} {section.freshnessSentence}
+        </p>
+      </div>
+      <div className="wfx-row__scroller">
+        {section.cards.map((card) => (
+          <a
+            key={`${card.connectorId}:${card.externalRef}`}
+            className="wfx-disc__importcard"
+            href={itemDetailHref({
+              itemId: card.itemId,
+              connectorId: card.connectorId,
+              externalRef: card.externalRef,
+              title: card.title,
+              canonicalType: "video",
+            })}
+            data-wfx-imported-card={card.externalRef}
+          >
+            <span className="wfx-card__art" aria-hidden="true">
+              <span>{placeholderMonogram(card.title)}</span>
+            </span>
+            <span className="wfx-disc__importtitle">{card.title}</span>
+            <span className="wfx-disc__importmeta">from your feed</span>
+          </a>
+        ))}
+      </div>
+      <p className="wfx-row__reason">
+        <a href={section.manageHref}>See your imported feeds in Library</a>
+      </p>
+    </section>
+  );
+}
+
 /** The home surface. */
-export function HomeSurface({ view }: { readonly view: HomeView }): JSX.Element {
+export function HomeSurface({
+  view,
+  discovery,
+}: {
+  readonly view: HomeView;
+  /** The R21-D discovery bundle (the orientation zone + the mode's feed). */
+  readonly discovery?: DiscoveryBundle;
+}): JSX.Element {
+  const mode = discovery?.feedMode.mode ?? "foryou";
+  const showDiscoveryRows = discovery?.discoveryRowsRender ?? true;
   const hasAnyRow =
     view.rows.some((row) => row.cards.length > 0) || view.shortsRail.cards.length > 0;
   const allRowsFailed =
     view.rows.every((row) => row.status.state === "error") &&
     view.shortsRail.status.state === "error" &&
     view.continueWatching.entries.length === 0;
+  const importedSection = discovery?.importedSection ?? null;
   return (
-    <div data-wfx-surface="home" data-wfx-home>
+    <div data-wfx-surface="home" data-wfx-home data-wfx-feed-mode={mode}>
+      {discovery !== undefined ? <DiscoveryHeader bundle={discovery} /> : null}
       <Hero view={view} />
       <ContinueRow entries={view.continueWatching.entries} status={view.continueWatching.status} />
-      {view.rows.map((row) => (
-        <Row key={row.id} row={row} />
-      ))}
+      {importedSection !== null ? <ImportedFeedSection section={importedSection} /> : null}
+      {showDiscoveryRows
+        ? view.rows.map((row) => (
+            <Row key={row.id} row={row} />
+          ))
+        : null}
       {view.shortsRail.cards.length > 0 ? (
         <section className="wfx-row" data-wfx-row="shorts">
           <div className="wfx-row__header">
@@ -266,13 +325,13 @@ export function HomeSurface({ view }: { readonly view: HomeView }): JSX.Element 
           <SectionStatus status={view.shortsRail.status} title="Shorts" />
         </section>
       ) : null}
-      {!hasAnyRow && !allRowsFailed && view.continueWatching.entries.length === 0 ? (
+      {!hasAnyRow && !allRowsFailed && view.continueWatching.entries.length === 0 && importedSection === null ? (
         <EmptyState
           title="No content yet"
           detail="The configured source answered with no cards for this feed. Connect a source or check the service — WebFlix never fabricates content."
           action={
-            <a className="wfx-btn" href="/search">
-              Try search
+            <a className="wfx-btn" href="/settings?section=sources">
+              Connect a source
             </a>
           }
         />

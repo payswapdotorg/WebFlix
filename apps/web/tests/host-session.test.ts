@@ -55,7 +55,12 @@ describe("R07 web session — the anonymous-mode seam", () => {
     expect(session.state.signedIn).toBe(false);
     expect(session.state.label).toBe("Signed out");
     expect(session.state.description).toContain("anonymous session");
-    expect(session.state.description).toContain("R02");
+    // R21-D: the copy is present-tense product truth — the stale
+    // "arrives with the identity lane (R02)" wording is gone (the frozen
+    // stale-completion-copy law; the sign-in path lives in the session
+    // menu + Settings, not in a lane promise).
+    expect(session.state.description).toContain("nothing pretends to be a profile");
+    expect(session.state.description).not.toMatch(/R\d{2}/);
   });
 
   it("the session id is STABLE within the storage window (the kv seam)", async () => {

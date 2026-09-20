@@ -119,6 +119,14 @@ export function AppShell({
                   ? "kept across browser sessions on this device"
                   : "kept for this server process (browser storage is not available)"}
               </p>
+              <div className="wfx-avatar-menu__actions" data-wfx-session-actions>
+                <a className="wfx-btn wfx-btn--sm" href="/settings?section=general" data-wfx-session-signin>
+                  Sign in / Create a profile
+                </a>
+                <a className="wfx-disc__link" href="/settings?section=general" data-wfx-session-profile>
+                  Profile &amp; identity settings
+                </a>
+              </div>
               <span className={badge.className}>{badge.text}</span>
             </div>
           </details>

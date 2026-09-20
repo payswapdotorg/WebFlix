@@ -11,6 +11,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { WatchBrowseSurface } from "@/components/watch/WatchBrowseSurface";
 import { getWebRuntimeHost } from "@/host/web-host";
 import { loadWatchBrowseView } from "@/host/view-models";
+import { loadDiscoveryBundle } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
 
 export const dynamic = "force-dynamic";
@@ -18,10 +19,10 @@ export const dynamic = "force-dynamic";
 export default async function WatchPage() {
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/watch", {});
-  const view = await loadWatchBrowseView(host);
+  const [view, discovery] = await Promise.all([loadWatchBrowseView(host), loadDiscoveryBundle(host)]);
   return (
     <AppShell mode={host.mode} active="watch" session={host.session.state}>
-      <WatchBrowseSurface view={view} />
+      <WatchBrowseSurface view={view} discovery={discovery} />
     </AppShell>
   );
 }
