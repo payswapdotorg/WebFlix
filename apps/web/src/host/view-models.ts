@@ -184,10 +184,13 @@ export interface HomeView {
 }
 
 /**
- * The home seed queries — TYPED STOPGAPS (the same law the legacy host
- * kept): the frozen R01 home model owns Continue Watching; the real
- * recommendation feed composition is R05's lane. These deterministic seeds
- * are the honest browse rows until it lands.
+ * The home browse queries — the deterministic discovery seeds the frozen
+ * R01 home model composes its rows from (Continue Watching is the
+ * runtime's own; the rows are the service's search composition — R05's
+ * intent/policy state rides the same transport the Personalize controls
+ * write). The R21-B audit removed the stale "seeded until R05" language:
+ * R05 is an accepted lane; the copy names what the rows are and where
+ * the personalization controls live.
  */
 export const FOR_YOU_QUERY = "rain";
 export const TRENDING_QUERY = "a";
@@ -204,7 +207,7 @@ function continueCards(entries: readonly ContinueWatchingEntry[]): ContinueCardV
   }));
 }
 
-/** Load the home view from the runtime (Continue Watching + seeded rows). */
+/** Load the home view from the runtime (Continue Watching + the discovery rows). */
 export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
   const runtime = host.runtime;
   const [homeModel, forYouModel, trendingModel, shortsModel] = await Promise.all([
@@ -228,7 +231,7 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
       {
         id: "for-you",
         title: "For you",
-        reason: "Browse composed for your session (seeded until personal ranking ships — R05).",
+        reason: "Your discovery feed for this session — set your intent and attention mode from the Personalize control.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },
@@ -272,7 +275,7 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
       {
         id: "for-you",
         title: "For you",
-        reason: "Browse composed for your session (seeded until personal ranking ships — R05).",
+        reason: "Your discovery feed for this session — set your intent and attention mode from the Personalize control.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },

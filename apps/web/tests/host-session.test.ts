@@ -55,7 +55,39 @@ describe("R07 web session — the anonymous-mode seam", () => {
     expect(session.state.signedIn).toBe(false);
     expect(session.state.label).toBe("Signed out");
     expect(session.state.description).toContain("anonymous session");
-    expect(session.state.description).toContain("R02");
+    // R21-B stale-copy law: a COMPLETED lane never renders "arrives later"
+    // copy — the anonymous state names the real path (signing in), and
+    // the stale "identity lane (R02)" wording is gone for good.
+    expect(session.state.description).not.toMatch(/arrive|R02|later/i);
+    expect(session.state.description).toContain("Sign in");
+  });
+
+  it("R21-B — an authenticated identity binds the account + active profile (the real session path)", async () => {
+    const session = await resolveWebSession({
+      ids: sequentialIds(),
+      identity: {
+        user: { id: "wfxuser_1", displayName: "Ada", email: "ada@example.com" },
+        profiles: [
+          { id: "wfxprof_main", displayName: "Main" },
+          { id: "wfxprof_kids", displayName: "Kids" },
+        ],
+        activeProfileId: "wfxprof_kids",
+      },
+    });
+    expect(session.state.signedIn).toBe(true);
+    expect(session.context.userId).toBe("wfxuser_1");
+    expect(session.context.profileId).toBe("wfxprof_kids");
+    expect(session.state.label).toBe("Kids");
+    expect(session.state.description).toContain("Signed in as Ada");
+    expect(session.state.profile?.profiles).toHaveLength(2);
+    expect(session.state.profile?.activeProfileName).toBe("Kids");
+  });
+
+  it("R21-B — no identity supplied answers the honest anonymous binding (profileId absent)", async () => {
+    const session = await resolveWebSession({ ids: sequentialIds() });
+    expect(session.context.userId).toBe(ANONYMOUS_USER_ID);
+    expect(session.context.profileId).toBeUndefined();
+    expect(session.state.profile).toBeUndefined();
   });
 
   it("the session id is STABLE within the storage window (the kv seam)", async () => {

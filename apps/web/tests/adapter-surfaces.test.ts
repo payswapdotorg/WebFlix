@@ -528,7 +528,7 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
     expect(markup).toContain("Signed out");
   });
 
-  it("the sources section renders the honest absent state (R03's lane — no fake sources)", () => {
+  it("the sources section renders the honest absent state (R21-B: the stale 'arrives with R03' copy is GONE)", () => {
     void bootHost().then((host) => {
       const markup = renderToStaticMarkup(
         createElement(AppShell, {
@@ -543,12 +543,25 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
         }),
       );
       expect(markup).toContain("No sources connected");
-      expect(markup).toContain("R03");
+      // The stale-completion-copy law: an ACCEPTED lane never renders
+      // "arrives with R03" wording; the copy names the real next actions.
+      expect(markup).not.toContain("R03");
+      expect(markup).not.toMatch(/arriv\w+ with/i);
+      expect(markup).toContain("bring your existing feed");
     });
   });
 
-  it("the model section renders the honest absent state (R06's lane)", async () => {
+  it("the model section renders the REAL Model & AI truth over the completed transport (R21-B/R21-C)", async () => {
     const host = await bootHost();
+    // The completed transport: the runtime's model-controls read models
+    // answer the REAL registry + per-task policy truth (the fixture
+    // persona's provider row + the honest unset policies).
+    const providers = await host.runtime.modelControls.refreshProviders();
+    const policies = await host.runtime.modelControls.refreshPolicy("translation");
+    expect(providers.status.state).toBe("ready");
+    expect(providers.providers.length).toBeGreaterThan(0);
+    expect(policies.status.state).toBe("ready");
+    expect(policies.policy).toBeNull(); // the honest unset — never a fabricated default
     const markup = renderToStaticMarkup(
       createElement(AppShell, {
         mode: host.mode,
@@ -558,10 +571,17 @@ describe("R07 adapter surfaces — SETTINGS (the honest capability display)", ()
           session: host.session.state,
           mode: host.mode,
           section: "model",
+          modelProviders: providers,
+          modelPolicies: [policies],
         }),
       }),
     );
-    expect(markup).toContain("R06");
+    // The stale-completion-copy law: the "arrives with R06" copy is GONE;
+    // the section renders the real provider registry + policy truth.
+    expect(markup).not.toContain("R06");
+    expect(markup).not.toMatch(/arriv\w+ with/i);
+    expect(markup).toContain("wfx-first-party");
+    expect(markup).toContain("Not configured");
   });
 });
 
