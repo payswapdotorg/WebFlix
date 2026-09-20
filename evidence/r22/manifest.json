@@ -1,0 +1,543 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "ed911fbbe035a971acb5b7b0bd3650f6301f48f3",
+  "branch": "wfx/r22/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "webUrl": "",
+    "ci": false,
+    "startedAt": "2026-09-20T10:11:10.027Z",
+    "finishedAt": "2026-09-20T10:11:10.052Z",
+    "determinism": [
+      "the REAL Desktop surface composition (mirroring createDesktopApp's wiring, the acquisition source exposed for the acquire recipe's bindSession — the composition root's own wiring shape)",
+      "the deterministic shell simulator (SimShell — the OS keychain/dialog/task seams; no I/O, no network)",
+      "the scripted service transport (StubFetch over the documented account/source/model routes; LIFO scripting)",
+      "the scripted torrent-engine facade (the R11-R13 public shapes; authorized user-owned provenance)",
+      "the R20 FeedPort double (the shared domain engine semantics; the REAL store is proven by feed-parity.test.ts over PGlite)",
+      "one SimShell shared across the three boots (the OS keychain is the only cross-restart state)",
+      "the fixed clock (every stamp is 2026-09-20T09:30:00.000Z)"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J36",
+      "title": "Major user journey completion / no dead-end discovery (Desktop extension)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "step": "D1",
+          "description": "the fresh boot is anonymous"
+        },
+        {
+          "step": "D1",
+          "description": "no session view is fabricated"
+        },
+        {
+          "step": "D1",
+          "description": "no token exists"
+        },
+        {
+          "step": "D1",
+          "description": "the create-account entry is a first-class label"
+        },
+        {
+          "step": "D1",
+          "description": "the anonymous catalog carries the sign-in prerequisite"
+        },
+        {
+          "step": "D1",
+          "description": "BYOF answers the connect-source bridge (the F3 law)"
+        },
+        {
+          "step": "D1",
+          "description": "the bridge names the next action"
+        },
+        {
+          "step": "D2",
+          "description": "the account is created through the shared R22-B journey"
+        },
+        {
+          "step": "D2",
+          "description": "the journey model reached created"
+        },
+        {
+          "step": "D2",
+          "description": "the next action is the DOWNSTREAM choose-profile step"
+        },
+        {
+          "step": "D2",
+          "description": "the one-time token persisted through the OS keychain"
+        },
+        {
+          "step": "D2",
+          "description": "the view turned signed-in"
+        },
+        {
+          "step": "D2",
+          "description": "the profile list is present"
+        },
+        {
+          "step": "D2",
+          "description": "the active profile is the session's"
+        },
+        {
+          "step": "D2",
+          "description": "the token serves the composition"
+        },
+        {
+          "step": "D2",
+          "description": "the keychain carries the token"
+        },
+        {
+          "step": "D2",
+          "description": "the R22-B model is secret-free (machine-checked)"
+        },
+        {
+          "step": "D3",
+          "description": "the stored session VERIFIED against the service"
+        },
+        {
+          "step": "D3",
+          "description": "the restored state is signed-in"
+        },
+        {
+          "step": "D3",
+          "description": "the same profile survived the restart"
+        },
+        {
+          "step": "D3",
+          "description": "the restored token serves the session-scoped reads"
+        },
+        {
+          "step": "D3",
+          "description": "no store failure occurred"
+        },
+        {
+          "step": "D4",
+          "description": "the catalog exposes the connector entry"
+        },
+        {
+          "step": "D4",
+          "description": "the entry's state is not-connected"
+        },
+        {
+          "step": "D4",
+          "description": "the typed action is connect"
+        },
+        {
+          "step": "D4",
+          "description": "the connection method is user vocabulary"
+        },
+        {
+          "step": "D4",
+          "description": "the connect flow started"
+        },
+        {
+          "step": "D4",
+          "description": "the flow opened the authorization surface"
+        },
+        {
+          "step": "D4",
+          "description": "the authorization surface is cookie-isolated + purpose-scoped (the browser-host law)"
+        },
+        {
+          "step": "D4",
+          "description": "the flow completed on the callback navigation"
+        },
+        {
+          "step": "D4",
+          "description": "the completion was VERIFIED through the fresh management read"
+        },
+        {
+          "step": "D4",
+          "description": "the catalog entry turned Connected"
+        },
+        {
+          "step": "D4",
+          "description": "the BYOF prerequisite is satisfied"
+        },
+        {
+          "step": "D4",
+          "description": "the feed-import source is the connected one"
+        },
+        {
+          "step": "D4",
+          "description": "the next action is the import entry"
+        },
+        {
+          "step": "D4",
+          "description": "the import entry is Bring Your Feed"
+        },
+        {
+          "step": "D5",
+          "description": "the import discovery answers a usable feed capability"
+        },
+        {
+          "step": "D5",
+          "description": "the shell's native file dialog is present"
+        },
+        {
+          "step": "D5",
+          "description": "the file methods are the frozen file subset"
+        },
+        {
+          "step": "D5",
+          "description": "the native import answered a preview"
+        },
+        {
+          "step": "D5",
+          "description": "the preview reports the honest counts"
+        },
+        {
+          "step": "D5",
+          "description": "the preview reports the relationship counts"
+        },
+        {
+          "step": "D5",
+          "description": "the one-time route's freshness is snapshot"
+        },
+        {
+          "step": "D5",
+          "description": "the confirmed import completed"
+        },
+        {
+          "step": "D5",
+          "description": "the byof mode answered a view"
+        },
+        {
+          "step": "D5",
+          "description": "the byof view carries the imported records"
+        },
+        {
+          "step": "D5",
+          "description": "the order semantics is source-native (never a rank in disguise)"
+        },
+        {
+          "step": "D5",
+          "description": "the records keep the source's own order"
+        },
+        {
+          "step": "D5",
+          "description": "the webflix mode is empty of imported records"
+        },
+        {
+          "step": "D5",
+          "description": "the webflix mode states its note"
+        },
+        {
+          "step": "D5",
+          "description": "the re-import answered a preview"
+        },
+        {
+          "step": "D5",
+          "description": "the re-import confirmed"
+        },
+        {
+          "step": "D5",
+          "description": "the record count is UNCHANGED (idempotency)"
+        },
+        {
+          "step": "D5",
+          "description": "the background sync task was scheduled"
+        },
+        {
+          "step": "D5",
+          "description": "the sync pass completed"
+        },
+        {
+          "step": "D5",
+          "description": "the task registry reports completed"
+        },
+        {
+          "step": "D6",
+          "description": "the refreshed view answers the honest empty state"
+        },
+        {
+          "step": "D6",
+          "description": "the single frozen ADD action is present"
+        },
+        {
+          "step": "D6",
+          "description": "the provider bound through the transport"
+        },
+        {
+          "step": "D6",
+          "description": "the answer is the secret-free handle"
+        },
+        {
+          "step": "D6",
+          "description": "the refreshed view carries the binding"
+        },
+        {
+          "step": "D6",
+          "description": "the fail-closed truth: a bound cloud provider is NOT in use until the policy admits it"
+        },
+        {
+          "step": "D6",
+          "description": "the unusable reason names the privacy class"
+        },
+        {
+          "step": "D6",
+          "description": "the task policy write landed"
+        },
+        {
+          "step": "D6",
+          "description": "the usability truth flipped with the stored policy"
+        },
+        {
+          "step": "D6",
+          "description": "the effective privacy is the stored class"
+        },
+        {
+          "step": "D6",
+          "description": "a first-party local model is available"
+        },
+        {
+          "step": "D6",
+          "description": "the local row is the registry's own"
+        },
+        {
+          "step": "D6",
+          "description": "the local row's privacy label is the device truth"
+        },
+        {
+          "step": "D6",
+          "description": "the frozen platform note rides the truth"
+        },
+        {
+          "step": "D6",
+          "description": "the endpoint hints are input suggestions (never capability claims)"
+        },
+        {
+          "step": "D6",
+          "description": "the provider unbound"
+        },
+        {
+          "step": "D6",
+          "description": "the view lost the binding (the honest empty state returned)"
+        },
+        {
+          "step": "D7",
+          "description": "the affordance offers Make available offline"
+        },
+        {
+          "step": "D7",
+          "description": "the capability standing is usable"
+        },
+        {
+          "step": "D7",
+          "description": "the acquire action carries the SHARED label"
+        },
+        {
+          "step": "D7",
+          "description": "the acquisition started through the recipe"
+        },
+        {
+          "step": "D7",
+          "description": "the lifecycle surfaced Preparing"
+        },
+        {
+          "step": "D7",
+          "description": "the preparing progress is honestly unknown (never fabricated)"
+        },
+        {
+          "step": "D7",
+          "description": "the lifecycle surfaced Completing"
+        },
+        {
+          "step": "D7",
+          "description": "the progress is the measured fraction"
+        },
+        {
+          "step": "D7",
+          "description": "the background surface carries the completing work"
+        },
+        {
+          "step": "D7",
+          "description": "the transfer reached 4/6 verified"
+        },
+        {
+          "step": "D8",
+          "description": "the session continuity held through the interruption restart"
+        },
+        {
+          "step": "D8",
+          "description": "the recovery refresh answered ok"
+        },
+        {
+          "step": "D8",
+          "description": "the acquisition RESUMED (never a fresh restart)"
+        },
+        {
+          "step": "D8",
+          "description": "the restored session is paused at its control point"
+        },
+        {
+          "step": "D8",
+          "description": "the retained progress is the journaled fraction"
+        },
+        {
+          "step": "D8",
+          "description": "the detail names the resume truth"
+        },
+        {
+          "step": "D8",
+          "description": "the explicit resume-or-restart choice is offered"
+        },
+        {
+          "step": "D8",
+          "description": "NO false completion (the honesty law)"
+        },
+        {
+          "step": "D8",
+          "description": "the resumed lifecycle continued (never a fresh start)"
+        },
+        {
+          "step": "D8",
+          "description": "the verification phase surfaced"
+        },
+        {
+          "step": "D8",
+          "description": "a bare completion never claims Ready offline"
+        },
+        {
+          "step": "D8",
+          "description": "the verified exposure earned Ready offline"
+        },
+        {
+          "step": "D8",
+          "description": "the offline truth carries the asset facts"
+        },
+        {
+          "step": "D8",
+          "description": "the earned actions are play-offline + reverify"
+        },
+        {
+          "step": "D9",
+          "description": "the Library Offline section answers the usable capability"
+        },
+        {
+          "step": "D9",
+          "description": "the verified asset is in the readyOffline group"
+        },
+        {
+          "step": "D9",
+          "description": "the ready entry offers Play offline copy"
+        },
+        {
+          "step": "D9",
+          "description": "no failed entries exist"
+        },
+        {
+          "step": "D9",
+          "description": "no empty state is fabricated"
+        },
+        {
+          "step": "D9",
+          "description": "the player truth: playback can continue without a connection"
+        },
+        {
+          "step": "D9",
+          "description": "the player headline names Ready offline"
+        },
+        {
+          "step": "D9",
+          "description": "the Library next step is stated"
+        },
+        {
+          "step": "D10",
+          "description": "the sign-out revoked the session"
+        },
+        {
+          "step": "D10",
+          "description": "the service confirmed the revocation"
+        },
+        {
+          "step": "D10",
+          "description": "the view answered the honest anonymous state"
+        },
+        {
+          "step": "D10",
+          "description": "no token survives"
+        },
+        {
+          "step": "D10",
+          "description": "the keychain was cleared"
+        },
+        {
+          "step": "D10",
+          "description": "the catalog prerequisite returned"
+        },
+        {
+          "step": "D10",
+          "description": "BYOF returned to its bridge (never a fabricated offer)"
+        },
+        {
+          "step": "D11",
+          "description": "the surfaces project a meaningful copy set"
+        },
+        {
+          "step": "D11",
+          "description": "every projected string passes the frozen stale-copy sweep (37 strings)"
+        },
+        {
+          "step": "D12",
+          "description": "the first-run block is bound"
+        },
+        {
+          "step": "D12",
+          "description": "the model-management block is bound"
+        },
+        {
+          "step": "D12",
+          "description": "the feed block is bound"
+        },
+        {
+          "step": "D12",
+          "description": "the acquisition block is bound"
+        },
+        {
+          "step": "D12",
+          "description": "the offline-discovery affordance answers the usable standing"
+        },
+        {
+          "step": "D13",
+          "description": "the narration carries every journey leg (30 steps)"
+        },
+        {
+          "step": "D13",
+          "description": "the journey recorded real assertions"
+        }
+      ],
+      "artifacts": [
+        "j36-desktop-narration.txt",
+        "summary.md"
+      ],
+      "pageErrors": [],
+      "durationMs": 25
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J36",
+      "kind": "desktop-procedure",
+      "note": "The NATIVE halves (the real engine binary behind createShellEngineProcess, the real OS keychain, the real OS file dialog, the real provider OAuth dance, the real background tray) cannot execute in this sandbox — no native toolchain.",
+      "procedure": "LEAD (journeys/desktop/README.md): run the real Desktop product (apps/desktop over the Tauri shell with createShellEngineProcess, the engine binary from packages/native-media, a real authorized source) and drive the same journey — the state grammar this run pinned (preparing → completing → resuming-with-retained-progress → verifying → ready-offline → Library) is the acceptance vocabulary; capture per-state screenshots and the same manifest under evidence/<run>/."
+    },
+    {
+      "journeyId": "J36",
+      "kind": "configuration-limit",
+      "note": "The BYOF feed records live in the R20 FeedPort double (the shared domain semantics); the REAL server-side store is exercised by apps/desktop/tests/feed-parity.test.ts over PGlite (the documented parity path), not re-driven here.",
+      "procedure": "The PGlite parity suite (feed-parity.test.ts) is the repository's evidence for the real-store UNIQUE/import-key/mode-truth laws; the production service store is the R20 api lane's own coverage."
+    }
+  ]
+}
