@@ -294,3 +294,25 @@ Expected:
 ## R24 visual/performance acceptance
 
 Affected R24 UI journeys must include agent-browser snapshots/screenshots plus timing evidence. A visual pass without playback measurements is not sufficient, and a timing pass with a dead-end or unfamiliar interaction is not sufficient.
+
+
+## J43 — Realtime translation
+
+Fresh playable media with an authorized accessible audio stream:
+
+Play -> Translate -> choose target language -> original + translated captions -> speaker change -> optional translated speech -> temporary network interruption -> reconnect -> normal playback.
+
+Expected:
+- base playback begins independently of translation;
+- source transcript and translated output stream incrementally;
+- source/translation alignment remains understandable;
+- speaker attribution is truthful;
+- visual context is used only when the media adapter can lawfully provide frames;
+- translated speech is optional;
+- voice cloning is never enabled without explicit consent/rights;
+- translation failure falls back to original playback/captions;
+- no provider credential reaches the client;
+- Web/Desktop semantics agree on supported paths;
+- torrent/local/live playback may use the same realtime session seam.
+
+R25 release acceptance additionally requires latency/cost evidence and fresh agent-browser/native evidence.
