@@ -6,11 +6,17 @@ Status: APPROVED ARCHITECTURE PLAN
 
 ## Research summary
 
-Qwen3.8-LiveTranslate-Flash-Realtime is Qwen's current realtime simultaneous-translation model. Official Qwen material describes a Hybrid-MoE Thinker/Talker architecture with interleaved streaming understanding, translation and speech generation. Qwen reports approximately 2.3 seconds average lagging versus 2.8 seconds for the previous generation. The model adds real-time speaker separation, synchronized source + translation output, long-context disambiguation, visual context, and translated speech with optional voice cloning. cite placeholder0  
+Qwen3.8-LiveTranslate-Flash-Realtime is Qwen's current realtime simultaneous-translation model. Official Qwen material describes a Hybrid-MoE Thinker/Talker architecture with interleaved streaming understanding, translation and speech generation. Qwen reports approximately 2.3 seconds average lagging versus 2.8 seconds for the previous generation.
 
-The current cloud API accepts streaming audio and optional image frames, and returns text and/or audio. Official Qwen Cloud documentation lists 60 source languages, with 29 supporting audio output. Qwen3.8's ASR transcript is enabled by default, and the realtime protocol emits incremental transcript and translation/audio events. cite placeholder1  
+Source: https://qwen.ai/blog?id=qwen3.8-livetranslate The model adds real-time speaker separation, synchronized source + translation output, long-context disambiguation, visual context, and translated speech with optional voice cloning. cite placeholder0  
 
-The currently documented production endpoint is the Alibaba Cloud Model Studio service using model id `qwen3.8-livetranslate-flash-realtime` over WebSocket. Current official model documentation identifies Alibaba Cloud Model Studio as the inference service provider. In the reviewed official materials I did not find a public open-weight distribution, so WebFlix must treat this as a managed cloud provider, not assume self-hosting or open-weight rights. cite placeholder2  
+The current cloud API accepts streaming audio and optional image frames, and returns text and/or audio. Official Qwen Cloud documentation lists 60 source languages, with 29 supporting audio output. Qwen3.8's ASR transcript is enabled by default, and the realtime protocol emits incremental transcript and translation/audio events.
+
+Source: https://docs.qwencloud.com/developer-guides/speech/realtime-translation cite placeholder1  
+
+The currently documented production endpoint is the Alibaba Cloud Model Studio service using model id `qwen3.8-livetranslate-flash-realtime` over WebSocket. Current official model documentation identifies Alibaba Cloud Model Studio as the inference service provider. In the reviewed official materials I did not find a public open-weight distribution, so WebFlix must treat this as a managed cloud provider, not assume self-hosting or open-weight rights.
+
+Source: https://www.alibabacloud.com/help/en/model-studio/qwen3-8-livetranslate-flash-realtime cite placeholder2  
 
 ## Product role
 
@@ -142,7 +148,11 @@ Never:
 
 Browser -> Qwen with a long-lived Alibaba API key.
 
-Vercel announced WebSocket support for Functions in public beta in June 2026 and its current knowledge-base guidance says Vercel Functions can serve WebSocket connections; connections are pinned to one Function instance and durable shared state should be externalized. WebFlix should therefore prototype the bridge on Vercel Fluid Compute while keeping the shared contract provider-neutral, with reconnectable sessions and external state where necessary. cite placeholder3  
+Vercel announced WebSocket support for Functions in public beta in June 2026 and its current knowledge-base guidance says Vercel Functions can serve WebSocket connections; connections are pinned to one Function instance and durable shared state should be externalized. WebFlix should therefore prototype the bridge on Vercel Fluid Compute while keeping the shared contract provider-neutral, with reconnectable sessions and external state where necessary.
+
+Sources:
+- https://vercel.com/changelog/websocket-support-is-now-in-public-beta
+- https://vercel.com/kb/guide/do-vercel-serverless-functions-support-websocket-connections
 
 The realtime bridge should persist only what is needed for continuity/telemetry by default. Raw media should not be persisted unless the user explicitly requests a generated artifact.
 
@@ -172,7 +182,9 @@ This preserves the existing BrowserHost/security boundary.
 
 ## R25-F — Visual context
 
-Qwen3.8 can receive image frames in addition to audio. Official documentation says images may be captured from a realtime video stream and are optional. Visual input can improve translation by using on-screen text, lip movement, gestures and other visual context. cite placeholder1  
+Qwen3.8 can receive image frames in addition to audio. Official documentation says images may be captured from a realtime video stream and are optional. Visual input can improve translation by using on-screen text, lip movement, gestures and other visual context.
+
+Source: https://docs.qwencloud.com/developer-guides/speech/realtime-translation
 
 WebFlix should not send every video frame.
 
@@ -245,7 +257,9 @@ This follows R23's accountless-public-viewing law.
 
 ## R25-K — Cost and latency controls
 
-Current Alibaba documentation lists indicative International/Singapore pricing of $7.50 per million input-audio tokens, $20 per million text-output tokens, $30 per million output-audio tokens and $0.55 per million image-input tokens. The documented audio rates imply roughly $0.19/hour for input audio alone and about $1.35/hour for output audio alone before text/image usage and promotions; actual cost varies with usage and output. cite placeholder2  
+Current Alibaba documentation lists indicative International/Singapore pricing of $7.50 per million input-audio tokens, $20 per million text-output tokens, $30 per million output-audio tokens and $0.55 per million image-input tokens. The documented audio rates imply roughly $0.19/hour for input audio alone and about $1.35/hour for output audio alone before text/image usage and promotions; actual cost varies with usage and output.
+
+Source: https://www.alibabacloud.com/help/en/model-studio/qwen3-8-livetranslate-flash-realtime
 
 Because output speech is substantially more expensive than input audio, Model Policy should support:
 
@@ -261,7 +275,9 @@ Do not let cost controls block the user's existing playback.
 
 ## R25-L — Performance acceptance
 
-Qwen reports approximately 2.3 seconds average lagging, but WebFlix must benchmark end-to-end latency rather than treating that figure as guaranteed UI latency. cite placeholder0  
+Qwen reports approximately 2.3 seconds average lagging, but WebFlix must benchmark end-to-end latency rather than treating that figure as guaranteed UI latency.
+
+Source: https://qwen.ai/blog?id=qwen3.8-livetranslate
 
 Measure:
 
