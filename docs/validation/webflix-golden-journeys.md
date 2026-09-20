@@ -60,6 +60,9 @@ Each run records:
 | J34 | Capability discoverability from normal product surfaces | Yes | Yes | Yes | Lead + 2/3 |
 | J35 | Production capability parity / no stale completion states | Yes | Yes | Future | Lead |
 | J36 | Major user journey completion / no dead-end discovery | Yes | Yes | Future | Lead + 1/2/3 |
+| J37 | Anonymous public viewing without WebFlix login | Yes | Yes | Yes | Lead + 1/2 |
+| J38 | First-class authorized torrent playback | Yes (WebRTC-capable only) | Yes | Future | Worker 3 + Lead |
+| J39 | Multimodal media intelligence / semantic moment discovery | Yes | Yes | Yes | Worker 1 + 2/3 |
 
 ## Core acceptance details
 
@@ -223,3 +226,16 @@ UI work that passes component tests but fails J36 is incomplete.
 ## ShareNet-inspired visual acceptance
 
 Affected R21/R22 UI journeys must verify the visual language in docs/architecture/webflix-design-language.md: calm warm-light surfaces where appropriate, clear typography hierarchy, restrained semantic state color, single primary actions, comfortable whitespace, progressive disclosure of diagnostics, mobile touch-target quality, and reduced-motion behavior. Visual review must not treat source/protocol diagnostics as the primary entertainment experience.
+
+
+## J37 — Anonymous Viewing
+
+Fresh browser, no WebFlix account: Home -> Search -> public title -> Play -> continue watching. No login gate may appear solely because the viewer lacks a WebFlix account. Provider-specific authentication remains a separate truth.
+
+## J38 — First-Class Torrent Playback
+
+Authorized torrent realization -> Where to watch -> peer copy -> metadata/file selection -> buffering -> playback before full completion -> resume -> background completion -> verified offline -> Library. Browser validation is limited to WebRTC-capable sources; Desktop validates the complete native path.
+
+## J39 — Multimodal Media Intelligence
+
+Natural-language semantic search -> title/moment result -> transcript/chapters -> visual-event query -> timestamp jump -> AI translation/subtitle action -> model/provenance truth.
