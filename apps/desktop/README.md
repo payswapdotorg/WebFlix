@@ -102,6 +102,21 @@ transition (the F3 bridge: Bring Your Feed opens exactly when a connected
 source declares the `feedImport` capability — never the old dead end).
 ZERO duplicated business rules: the shared read models render VERBATIM.
 
+R22-I adds the MODEL & AI MANAGEMENT surface
+(`surface/model-management-surface.ts`, bound with the first-run block —
+BYOM belongs to the account): the R22-C `byomManagementView` derivation
+VERBATIM over the session-scoped provider/policy truth (the binding
+summary, the derived verify/usable truth that names WHY a bound provider
+is not in use, the per-task privacy truth with the honest null and the
+fail-closed effective class, the single frozen ADD action), the
+add/bind + remove/unbind + per-task policy operations with the R22-C
+recovery mapping, the local-model availability truth (the registry's own
+first-party local rows + the frozen platform note), and the
+Desktop-native local-serving endpoint hints (input suggestions, never
+capability claims). The key is the secret ON ITS WAY IN — after
+submission it never appears in any view (the machine-checked R22-C
+secret law).
+
 ## THE R10 SEAM (`native-media-binding.ts`)
 
 A REAL `NativeMediaPort` over the spawned engine process — the frozen

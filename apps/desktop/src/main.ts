@@ -80,6 +80,11 @@ import {
   createUnboundFirstRunSurface,
   type DesktopFirstRunSurface,
 } from "./surface/first-run-surface";
+import {
+  createDesktopModelManagementSurface,
+  createUnboundModelManagementSurface,
+  type DesktopModelManagementSurface,
+} from "./surface/model-management-surface";
 import { createDesktopAcquisitionSource } from "./platform/acquisition-source";
 import { createDesktopAuthTransport, type DesktopAuthFetchLike } from "./platform/auth-transport";
 import { createShellAuthSessionStore } from "./platform/auth-session-store";
@@ -230,6 +235,17 @@ export interface DesktopApp {
    * the honest typed verdicts.
    */
   readonly firstRun: DesktopFirstRunSurface;
+  /**
+   * R22-I: the Model & AI management surface — the R22-C BYOM management
+   * view VERBATIM over the session-scoped provider/policy truth, the
+   * add/bind + remove/unbind + per-task policy operations with the R22-C
+   * recovery mapping, the local-model availability truth, and the
+   * Desktop-native local-serving endpoint hints (input suggestions,
+   * never capability claims). Bound with the first-run block (BYOM
+   * belongs to the account); unbound compositions answer the honest
+   * typed verdicts.
+   */
+  readonly modelManagement: DesktopModelManagementSurface;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -354,19 +370,23 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
   // semantics over the R22-A/B shared read models (the optional-block
   // doctrine — absent ⇒ the honest typed UNBOUND verdicts).
   const now = (): string => new Date(options.session.clock.now()).toISOString();
-  const firstRun: DesktopFirstRunSurface =
+  const firstRunTransport =
     options.firstRun !== undefined
+      ? createDesktopAuthTransport({
+          apiBase: options.firstRun.apiBase,
+          ...(options.firstRun.fetchImpl !== undefined
+            ? { fetchImpl: options.firstRun.fetchImpl }
+            : {}),
+          ...(options.firstRun.timeoutMs !== undefined
+            ? { timeoutMs: options.firstRun.timeoutMs }
+            : {}),
+        })
+      : null;
+  const firstRun: DesktopFirstRunSurface =
+    firstRunTransport !== null && options.firstRun !== undefined
       ? createDesktopFirstRunSurface({
           runtime,
-          transport: createDesktopAuthTransport({
-            apiBase: options.firstRun.apiBase,
-            ...(options.firstRun.fetchImpl !== undefined
-              ? { fetchImpl: options.firstRun.fetchImpl }
-              : {}),
-            ...(options.firstRun.timeoutMs !== undefined
-              ? { timeoutMs: options.firstRun.timeoutMs }
-              : {}),
-          }),
+          transport: firstRunTransport,
           sessionStore: createShellAuthSessionStore({ shell: options.shell, now }),
           feed,
           shell: options.shell,
@@ -376,6 +396,17 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
             : {}),
         })
       : createUnboundFirstRunSurface();
+
+  // R22-I — the Model & AI management surface: the R22-C BYOM management
+  // semantics over the same session-scoped transport (BYOM belongs to the
+  // account; the surface reads the token through the first-run session).
+  const modelManagement: DesktopModelManagementSurface =
+    firstRunTransport !== null
+      ? createDesktopModelManagementSurface({
+          transport: firstRunTransport,
+          token: () => firstRun.currentToken(),
+        })
+      : createUnboundModelManagementSurface();
 
   let disposed = false;
   return {
@@ -391,6 +422,7 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     discoverability,
     offlineDiscovery,
     firstRun,
+    modelManagement,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -460,6 +492,22 @@ export type {
   DesktopDisconnectOutcome,
 } from "./surface/first-run-surface";
 export { createDesktopAuthTransport, createDesktopAccountRegistrationPort } from "./platform/auth-transport";
+export {
+  createDesktopModelManagementSurface,
+  createUnboundModelManagementSurface,
+  DESKTOP_LOCAL_ENDPOINT_HINTS,
+  DESKTOP_LOCAL_MODEL_PLATFORM_NOTE,
+  modelManagementCopyStrings,
+  isStaleModelManagementCopy,
+} from "./surface/model-management-surface";
+export type {
+  DesktopModelManagementSurface,
+  DesktopModelManagementOptions,
+  DesktopByomManagementFailure,
+  DesktopByomOperationResult,
+  DesktopLocalModelTruth,
+  DesktopLocalEndpointHint,
+} from "./surface/model-management-surface";
 export type {
   DesktopAuthTransport,
   DesktopAuthFailure,

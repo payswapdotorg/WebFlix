@@ -13,6 +13,7 @@
 import type {
   AccountSessionView,
   IssuedAccountSession,
+  ModelProviderInfo,
   SourceInfo,
 } from "@wfx/client-runtime";
 
@@ -127,7 +128,7 @@ export function sourcesEnvelope(
 }
 
 /** A provider-registry row (the R22-C structural guard's valid shape). */
-export function makeProviderRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+export function makeProviderRow(overrides: Record<string, unknown> = {}): ModelProviderInfo {
   return {
     id: "wfx-first-party",
     privacy: "local",
@@ -136,5 +137,5 @@ export function makeProviderRow(overrides: Record<string, unknown> = {}): Record
     costs: { transcription: 0, translation: 0 },
     availability: "available",
     ...overrides,
-  };
+  } as ModelProviderInfo;
 }
