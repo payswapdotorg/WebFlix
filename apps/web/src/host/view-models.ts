@@ -32,12 +32,18 @@ import type {
 } from "@wfx/client-runtime";
 import type { PlaybackRealization, SourceItem, UserAction } from "@wfx/domain";
 import { buildExternalReturnContext, isOfficialEmbed } from "@wfx/experience";
+import { canUsePlaybackMode } from "@wfx/client-runtime";
 
 import { WebClock } from "@/platform/lifecycle";
 
 import type { WebRuntimeHost } from "./web-host";
 import { canonicalIdFor } from "./web-host";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
+import {
+  loadAiTrayView,
+  loadWhereToWatchView,
+} from "./decision-views";
+import type { AiTrayView, WhereToWatchView } from "./decision-views";
 
 // ---------------------------------------------------------------------------
 // The per-process item join (canonical id ⇄ source identity + display)
@@ -184,10 +190,13 @@ export interface HomeView {
 }
 
 /**
- * The home seed queries — TYPED STOPGAPS (the same law the legacy host
- * kept): the frozen R01 home model owns Continue Watching; the real
- * recommendation feed composition is R05's lane. These deterministic seeds
- * are the honest browse rows until it lands.
+ * The home browse queries — the deterministic discovery seeds the frozen
+ * R01 home model composes its rows from (Continue Watching is the
+ * runtime's own; the rows are the service's search composition — R05's
+ * intent/policy state rides the same transport the Personalize controls
+ * write). No stale "seeded until R05" language survives: R05 is an
+ * accepted lane; the copy names what the rows are and where the
+ * personalization controls live (the R21-D Personalize control).
  */
 export const FOR_YOU_QUERY = "rain";
 export const TRENDING_QUERY = "a";
@@ -204,7 +213,7 @@ function continueCards(entries: readonly ContinueWatchingEntry[]): ContinueCardV
   }));
 }
 
-/** Load the home view from the runtime (Continue Watching + seeded rows). */
+/** Load the home view from the runtime (Continue Watching + the discovery rows). */
 export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
   const runtime = host.runtime;
   const [homeModel, forYouModel, trendingModel, shortsModel] = await Promise.all([
@@ -228,7 +237,7 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
       {
         id: "for-you",
         title: "For you",
-        reason: "Browse composed for your session (seeded until personal ranking ships — R05).",
+        reason: "Your discovery feed for this session — set your intent and attention mode from the Personalize control.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },
@@ -272,7 +281,7 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
       {
         id: "for-you",
         title: "For you",
-        reason: "Browse composed for your session (seeded until personal ranking ships — R05).",
+        reason: "Your discovery feed for this session — set your intent and attention mode from the Personalize control.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },
@@ -297,17 +306,57 @@ export interface SearchView {
   readonly query: string;
   readonly status: SectionStatusView;
   readonly cards: readonly CardView[];
+  /** R21-E — per-card availability summaries ("where can I watch this?"). */
+  readonly availability: ReadonlyMap<string, string>;
+}
+
+/** The compact availability summary of one result card (R21-E, pure). */
+export function cardAvailabilitySummary(usableCount: number, offered: number): string {
+  if (usableCount === 0) {
+    return "No way to play here yet";
+  }
+  if (usableCount === 1) {
+    return offered > 1 ? "1 way to play here — more on details" : "1 way to play here";
+  }
+  return `${usableCount} ways to play here`;
 }
 
 /** Load the search view for one query (canonical-joined results). */
 export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Promise<SearchView> {
   const query = rawQuery.trim();
   const model = await host.runtime.search({ query });
+  const cards = cardsFromModel(model);
+  // R21-E: the compact availability summary per result (the matrix's
+  // search contextual entry — answering "where can I watch this?" without
+  // opening every page). Typed reads: a failed resolve answers the honest
+  // absent summary (never a fabricated count), and the read is capped at
+  // the first page of results (the summary is a hint, not a claim).
+  const availability = new Map<string, string>();
+  const capped = cards.slice(0, 12);
+  await Promise.all(
+    capped.map(async (card) => {
+      const result = await host.serverPort.resolve(card.externalRef);
+      if (!result.ok || !Array.isArray(result.value)) {
+        availability.set(card.itemId, "Playback options on details");
+        return;
+      }
+      const usable = result.value.filter((realization) =>
+        canUsePlaybackMode(host.capabilities, realization.mode),
+      );
+      availability.set(card.itemId, cardAvailabilitySummary(usable.length, result.value.length));
+    }),
+  );
+  for (const card of cards) {
+    if (!availability.has(card.itemId)) {
+      availability.set(card.itemId, "Playback options on details");
+    }
+  }
   return {
     mode: host.mode,
     query,
     status: statusView(model.status),
-    cards: cardsFromModel(model),
+    cards,
+    availability,
   };
 }
 
@@ -363,6 +412,10 @@ export interface DetailView {
     readonly view: AcquisitionStatusView | null;
     readonly diagnostics: AcquisitionDiagnosticsView | null;
   };
+  /** R21-E — the Where-to-watch realization choice (the decision hub's). */
+  readonly whereToWatch: WhereToWatchView;
+  /** R21-E — the AI action tray's view (the model-class + input truth). */
+  readonly aiTray: AiTrayView;
 }
 
 /**
@@ -423,6 +476,23 @@ export async function loadDetailView(
           },
     related: cardsFromModel(trending).filter((card) => card.itemId !== itemId),
     acquisition: acquisitionBlockOf(host, itemId),
+    // R21-E: the decision hub's capability views load alongside (a typed
+    // failure in either answers its own honest section state — the page
+    // renders, never a blank).
+    whereToWatch: await loadWhereToWatchView(host, {
+      itemId,
+      connectorId: metadata.connectorId,
+      externalRef: metadata.externalRef,
+      title: metadata.title,
+      canonicalType: metadata.canonicalType ?? "video",
+      ...(metadata.durationMs !== undefined ? { durationMs: metadata.durationMs } : {}),
+    }),
+    aiTray: await loadAiTrayView(host, {
+      connectorId: metadata.connectorId,
+      externalRef: metadata.externalRef,
+      title: metadata.title,
+      ...(metadata.durationMs !== undefined ? { durationMs: metadata.durationMs } : {}),
+    }),
   };
 }
 
@@ -490,6 +560,10 @@ export interface PlayerView {
     readonly positionMs: number;
     readonly handedOffAt: string;
   } | null;
+  /** R21-E — the Where-to-watch view (the player's source switch row). */
+  readonly whereToWatch: WhereToWatchView;
+  /** R21-E — the AI action tray's view (the same tray as the item hub). */
+  readonly aiTray: AiTrayView;
 }
 
 /** Load the player view: resolve + prepare one playback session through the runtime. */
@@ -503,9 +577,43 @@ export async function loadPlayerView(
     readonly canonicalType: string;
     readonly durationMs?: number;
     readonly resumePositionMs?: number;
+    /** R21-E: the preferred realization mode (the Where-to-watch switch). */
+    readonly preferredMode?: PlaybackRealization["mode"];
   },
 ): Promise<PlayerView> {
   learnJoinedItem(input.connectorId, input.externalRef, input.title, input.canonicalType, input.durationMs);
+  // R21-E: the player's capability views (the switch row + the AI tray) —
+  // typed reads that degrade to their own honest section states.
+  const [whereToWatch, aiTray] = await Promise.all([
+    loadWhereToWatchView(host, {
+      itemId: input.itemId,
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      title: input.title,
+      canonicalType: input.canonicalType,
+      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+    }),
+    loadAiTrayView(host, {
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      title: input.title,
+      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+    }),
+  ]);
+  // R21-E: the Where-to-watch switch — resolve the preferred mode's
+  // realization and hand it to the runtime (still capability-checked: an
+  // unusable preference answers the typed capability failure, never a
+  // fake stage). A mode nobody offers is NOT forced: the runtime's own
+  // precedence answers, and the switch row names what IS offered.
+  let preferredRealization: PlaybackRealization | undefined;
+  if (input.preferredMode !== undefined) {
+    const resolved = await host.serverPort.resolve(input.externalRef);
+    if (resolved.ok && Array.isArray(resolved.value)) {
+      preferredRealization = resolved.value.find(
+        (realization) => realization.mode === input.preferredMode,
+      );
+    }
+  }
   try {
     const session = await host.runtime.resolvePlayback({
       itemId: input.itemId,
@@ -513,6 +621,7 @@ export async function loadPlayerView(
       // R17: attribute the resolve to its source — the honest unavailable
       // dead end names the missing source (never a source-less error).
       connectorId: input.connectorId,
+      ...(preferredRealization !== undefined ? { realization: preferredRealization } : {}),
       ...(input.resumePositionMs !== undefined && input.resumePositionMs > 0
         ? { resumePositionMs: input.resumePositionMs }
         : {}),
@@ -539,6 +648,8 @@ export async function loadPlayerView(
         precedenceTrace: [],
         embedAttestation: null,
         externalReturn: null,
+        whereToWatch,
+        aiTray,
       };
     }
     // Engage the surface for the resolved mode (embed/browser open the
@@ -598,6 +709,8 @@ export async function loadPlayerView(
       precedenceTrace: [...state.precedenceTrace ?? []],
       embedAttestation,
       externalReturn,
+      whereToWatch,
+      aiTray,
     };
   } catch (thrown) {
     // resolvePlayback throws the typed RuntimeError for resolution failures
@@ -624,6 +737,8 @@ export async function loadPlayerView(
       precedenceTrace: [],
       embedAttestation: null,
       externalReturn: null,
+      whereToWatch,
+      aiTray,
     };
   }
 }

@@ -154,6 +154,18 @@ export function AcquisitionPanel({
         ) : null}
         <AcquisitionActions view={view} mode={mode} sourceRef={sourceRef} />
       </div>
+      {canAcquireOnThisDevice ? null : (
+        // R21-E (J34 task 11): the Desktop platform truth rides the
+        // lifecycle states too — "on Web, acquisition panels carry the
+        // honest limited-status truth AND the Desktop next step" (the
+        // matrix's acquisition-recovery platformTruth, verbatim). The
+        // capability stays discoverable in EVERY state, never only in
+        // the nothing-known branch.
+        <p className="wfx-detail__meta" data-wfx-acquisition-elsewhere>
+          Acquisitions run in the WebFlix desktop app — this status is the honest limited view
+          Web can show. Make this title available offline there.
+        </p>
+      )}
       <AcquisitionDiagnostics diagnostics={diagnostics} />
     </section>
   );

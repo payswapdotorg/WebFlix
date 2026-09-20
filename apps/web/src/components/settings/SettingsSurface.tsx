@@ -11,28 +11,43 @@
  *   Not connected / Connection failed) with its typed recovery action
  *   (reconnect / connect / disconnect). An EXPIRED source is its own
  *   named state — never a silent fallback to "not connected", never a
- *   fake "connected". When the transport cannot read sources (the service
- *   transport has not implemented the R03 read yet), the section renders
- *   the honest not-wired state — never a fabricated connected source.
- * - MODEL: model/AI controls arrive with R06; the honest absent state.
+ *   fake "connected". When the transport cannot read sources, the
+ *   section renders the honest typed error state — never a fabricated
+ *   connected source (R21-B: the transport now IMPLEMENTS the read —
+ *   the stale "arrives with R03" copy died at its source).
+ * - MODEL (R21-B/R21-C): the REAL Model & AI truth — the provider
+ *   registry (first-party + BYOM + local with per-task capability
+ *   truth) and every task's policy state (the honest null = Not
+ *   configured, never a fabricated default). The stale "arrives with
+ *   R06" copy is gone: R06 is an accepted lane whose transport this
+ *   app now speaks.
  * - GENERAL: the capability table (storage/browser host/native media/
  *   background work/sharing/notifications), each with its level and the
- *   honest limitation reason from the descriptor, plus the session state.
+ *   honest limitation reason from the descriptor, plus the session state
+ *   (R21-B: the REAL signed-in truth + the sign-in/profile/sign-out
+ *   controls over the completed identity transport).
  *
  * Server component.
  */
 
 import type { JSX } from "react";
 
-import type { SourcesModel, SourceInfo } from "@wfx/client-runtime";
+import type {
+  ModelPolicyModel,
+  ModelProvidersModel,
+  SourcesModel,
+  SourceInfo,
+} from "@wfx/client-runtime";
 import { sourceRecoveryAction } from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
+import type { PersonalizeView } from "@/host/discoverability";
 import type { ByofPanelView } from "@/host/byof/byof-view";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
 import { ByofPanel } from "@/components/byof/ByofPanel";
 import { SourceActions } from "@/components/settings/SourceActions";
+import { SessionControls } from "@/components/settings/SessionControls";
 
 /** The auth-state chip vocabulary (the honest per-state truth). */
 const AUTH_STATE_LABELS: Readonly<Record<string, string>> = {
@@ -124,6 +139,88 @@ function CapabilityRow({
   );
 }
 
+/** The privacy-class vocabulary in user words (the frozen ModelPolicy privacy union). */
+const PRIVACY_LABELS: Readonly<Record<string, string>> = {
+  "local-only": "Local only",
+  "trusted-cloud": "Trusted cloud",
+  "any-cloud": "Any cloud",
+};
+
+/** One provider row of the Model & AI registry truth table. */
+function ProviderRow({ provider }: { readonly provider: ModelProvidersModel["providers"][number] }): JSX.Element {
+  return (
+    <li className="wfx-queue__item" data-wfx-model-provider={provider.id}>
+      <span className="wfx-card__meta">
+        <span className="wfx-badge wfx-badge--type">{provider.id}</span>
+        <span data-wfx-model-provider-privacy>{provider.privacy === "local" ? "Runs locally" : "Cloud"}</span>
+        {provider.byomBound ? (
+          <span className="wfx-capchip" data-wfx-model-provider-byom>
+            Your provider
+          </span>
+        ) : null}
+        {provider.availability === "available" ? (
+          <span className="wfx-capchip" data-wfx-model-provider-available>
+            Available
+          </span>
+        ) : (
+          <span className="wfx-capchip" data-wfx-model-provider-unsupported>
+            Not available here
+          </span>
+        )}
+      </span>
+      <p className="wfx-row__reason" data-wfx-model-provider-capabilities>
+        Tasks: {provider.capabilities.join(", ")}
+        {provider.byomBound ? " — bound by you (the key stays sealed; never shown)" : ""}
+      </p>
+    </li>
+  );
+}
+
+/** One task's policy chip (the honest current state — null = not configured). */
+function PolicyChip({ model }: { readonly model: ModelPolicyModel }): JSX.Element {
+  const configured = model.status.state === "ready" && model.policy !== null;
+  return (
+    <li
+      className="wfx-queue__item"
+      data-wfx-model-policy={model.task}
+      data-wfx-model-policy-configured={configured ? "true" : "false"}
+    >
+      <span className="wfx-card__meta">
+        <span className="wfx-badge wfx-badge--type">{model.task}</span>
+        {model.status.state === "error" ? (
+          <span className="wfx-capchip" data-wfx-model-policy-error>
+            Unavailable right now
+          </span>
+        ) : configured ? (
+          <span className="wfx-capchip" data-wfx-model-policy-privacy>
+            {PRIVACY_LABELS[model.policy?.privacy ?? ""] ?? model.policy?.privacy}
+          </span>
+        ) : (
+          <span className="wfx-capchip" data-wfx-model-policy-unset>
+            Not configured
+          </span>
+        )}
+      </span>
+      {configured && model.policy !== null ? (
+        <p className="wfx-row__reason" data-wfx-model-policy-detail>
+          Preferred: {model.policy.preferredProvider ?? "(first available)"} · fallbacks:
+          {" "}
+          {model.policy.fallbackProviders.length > 0 ? model.policy.fallbackProviders.join(", ") : "none"}
+        </p>
+      ) : model.status.state === "error" ? (
+        <p className="wfx-row__reason" data-wfx-model-policy-error-detail>
+          {model.status.error?.detail ?? "the policy read did not complete"}
+        </p>
+      ) : (
+        <p className="wfx-row__reason" data-wfx-model-policy-unset-detail>
+          No model policy configured for this task yet — the first available provider runs it
+          when you use an AI action.
+        </p>
+      )}
+    </li>
+  );
+}
+
 /** The settings surface. */
 export function SettingsSurface({
   capabilities,
@@ -132,6 +229,9 @@ export function SettingsSurface({
   section,
   sources,
   byof,
+  personalize,
+  modelProviders,
+  modelPolicies,
 }: {
   /** The truthful platform bundle (the runtime's own declaration). */
   readonly capabilities: WebPlatformBundle;
@@ -145,6 +245,12 @@ export function SettingsSurface({
   readonly sources?: SourcesModel;
   /** The BYOF panel view (R20-D: the sources section's feed-import flow). */
   readonly byof?: ByofPanelView;
+  /** The R21-D Personalize view (the general section's recommendation management). */
+  readonly personalize?: PersonalizeView;
+  /** The provider registry model (R21-C: the model section's data). */
+  readonly modelProviders?: ModelProvidersModel;
+  /** Every task's policy model (R21-C: the model section's data). */
+  readonly modelPolicies?: readonly ModelPolicyModel[];
 }): JSX.Element {
   const descriptor = capabilities.descriptor;
   const limitations = descriptor.limitations ?? {};
@@ -223,11 +329,16 @@ export function SettingsSurface({
               </span>
               <p className="wfx-state__title">No sources connected</p>
               <p className="wfx-state__detail">
-                Source management (connect, reauthorize, disconnect, per-source capabilities and
-                authorization state) arrives with the source-management lane (R03). Until then this
-                host browses whatever its configured service carries — and never pretends a source
-                is connected.
+                Nothing is connected yet. Connect a source to browse its catalog here — or bring
+                your existing feed with the import flow below. Every connected source states its
+                authorization truth here (connect, reauthorize, disconnect, per-source
+                capabilities). This host never pretends a source is connected.
               </p>
+              <div className="wfx-state__actions">
+                <a className="wfx-btn" href="/settings?section=sources" data-wfx-sources-connect-cta>
+                  Connect a source
+                </a>
+              </div>
             </div>
           )}
           {byof !== undefined ? <ByofPanel view={byof} mode={mode} /> : null}
@@ -237,25 +348,76 @@ export function SettingsSurface({
       {section === "model" ? (
         <section className="wfx-detail__section" aria-label="Model and AI" data-wfx-settings-model>
           <h2>Model &amp; AI</h2>
-          <div className="wfx-state" data-wfx-model-empty>
-            <span className="wfx-state__icon">
-              <Icon name="sparkle" />
-            </span>
-            <p className="wfx-state__title">Model controls arrive with the model lane (R06)</p>
-            <p className="wfx-state__detail">
-              WebFlix model selection, BYOM providers, local-model policy, privacy/cost
-              constraints, and AI media operations (transcription, subtitles, translation,
-              dubbing, commentary) are the model-controls lane. This adapter renders their honest
-              absence rather than placeholder controls.
-            </p>
-          </div>
+          <p className="wfx-detail__meta">
+            The truth about which models can run your AI actions — subtitles, translation,
+            transcription, dubbing, and commentary — across first-party, your own providers
+            (BYOM), and local models, with each task&apos;s current policy. Provider keys stay
+            sealed; they are never shown or sent to a model. AI actions launch from the tray
+            where you watch — any title or player; local-model execution runs in the Desktop app.
+          </p>
+          <p className="wfx-row__reason" data-wfx-model-tray-path>
+            <a href="/search">Find a title to transform — the AI action tray lives on every title and player</a>
+          </p>
+          {modelProviders !== undefined && modelProviders.status.state === "ready" ? (
+            <>
+              <h3>Providers</h3>
+              <ul
+                className="wfx-queue__list"
+                style={{ listStyle: "none", padding: 0 }}
+                data-wfx-model-providers-list
+              >
+                {modelProviders.providers.map((provider) => (
+                  <ProviderRow key={provider.id} provider={provider} />
+                ))}
+              </ul>
+            </>
+          ) : modelProviders !== undefined && modelProviders.status.state === "error" ? (
+            <div className="wfx-state" data-wfx-model-error>
+              <span className="wfx-state__icon">
+                <Icon name="sparkle" />
+              </span>
+              <p className="wfx-state__title">Model controls are unavailable right now</p>
+              <p className="wfx-state__detail">
+                {modelProviders.status.error?.detail ??
+                  "the model-controls read did not complete"}{" "}
+                — the AI actions keep their last known truth; retry from this page.
+              </p>
+            </div>
+          ) : (
+            <div className="wfx-state" data-wfx-model-loading>
+              <span className="wfx-state__icon">
+                <Icon name="sparkle" />
+              </span>
+              <p className="wfx-state__title">Reading the model truth…</p>
+              <p className="wfx-state__detail">The provider registry and your task policies load here.</p>
+            </div>
+          )}
+          {modelPolicies !== undefined ? (
+            <>
+              <h3>Task policies</h3>
+              <ul
+                className="wfx-queue__list"
+                style={{ listStyle: "none", padding: 0 }}
+                data-wfx-model-policies-list
+              >
+                {modelPolicies.map((model) => (
+                  <PolicyChip key={model.task} model={model} />
+                ))}
+              </ul>
+            </>
+          ) : null}
         </section>
       ) : null}
 
       {section === undefined || section === "general" ? (
         <>
-          <section className="wfx-detail__section" aria-label="Session" data-wfx-settings-session>
-            <h2>Session</h2>
+          <section
+            className="wfx-detail__section"
+            aria-label="Profile and identity"
+            data-wfx-settings-profile
+            data-wfx-settings-session
+          >
+            <h2>Profile &amp; identity</h2>
             <p className="wfx-card__meta">
               <span className="wfx-badge wfx-badge--type" data-wfx-session-label>
                 {session.label}
@@ -268,6 +430,57 @@ export function SettingsSurface({
                 ? "kept across browser sessions on this device"
                 : "kept for this server process (browser storage is not available in this boot context)"}
               . Boot mode: {mode}.
+            </p>
+            <p className="wfx-row__reason" data-wfx-profile-path>
+              Profiles and sign-in travel with your WebFlix service account — a durable profile
+              keeps the same watchlist, history, and personalization on every device.
+            </p>
+            <SessionControls
+              signedIn={session.signedIn}
+              profiles={session.profile?.profiles ?? []}
+              {...(session.profile?.activeProfileId !== undefined
+                ? { activeProfileId: session.profile.activeProfileId }
+                : {})}
+              mode={mode}
+            />
+          </section>
+
+          <section
+            className="wfx-detail__section"
+            aria-label="Recommendation and intent"
+            data-wfx-settings-recommendation
+          >
+            <h2>Recommendation &amp; intent</h2>
+            {personalize !== undefined ? (
+              <p className="wfx-card__meta">
+                <span className="wfx-badge wfx-badge--type" data-wfx-attention-mode-label>
+                  {personalize.attentionModes.find((entry) => entry.selected)?.label ??
+                    personalize.attentionMode}{" "}
+                  attention
+                </span>
+                <span data-wfx-exploration-label>
+                  Exploration dial at {Math.round(personalize.exploration * 100)}%
+                </span>
+                {personalize.intents.length > 0 ? (
+                  <span data-wfx-active-intents>
+                    {personalize.intents.length} session intent
+                    {personalize.intents.length === 1 ? "" : "s"} active
+                  </span>
+                ) : (
+                  <span data-wfx-active-intents>no session intent set</span>
+                )}
+              </p>
+            ) : null}
+            <p className="wfx-row__reason">
+              The everyday controls live where you browse: Personalize on Home, Watch, and Shorts
+              sets a session intent, switches attention mode, and tunes exploration. Session
+              intents end with the session — a recent watch is one signal, never permanent
+              identity.
+            </p>
+            <p className="wfx-row__reason">
+              <a href="/" data-wfx-recommendation-entry>
+                Open Personalize on Home
+              </a>
             </p>
           </section>
 

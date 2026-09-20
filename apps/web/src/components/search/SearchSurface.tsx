@@ -66,9 +66,16 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
         {view.cards.length} result{view.cards.length === 1 ? "" : "s"} for “{view.query}”
       </p>
       <div className="wfx-grid" data-wfx-search-results>
-        {view.cards.map((card) => (
-          <ItemCard key={card.itemId} card={card} />
-        ))}
+        {view.cards.map((card) => {
+          const availability = view.availability.get(card.itemId);
+          return (
+            <ItemCard
+              key={card.itemId}
+              card={card}
+              {...(availability !== undefined ? { availability } : {})}
+            />
+          );
+        })}
       </div>
     </div>
   );

@@ -65,6 +65,14 @@ export default async function PlayerPage({
   }
 
   const itemId = idParam.length > 0 ? idParam : canonicalIdFor(connectorId, externalRef);
+  // R21-E: the Where-to-watch switch — `&mode=` names the realization to
+  // prefer (validated against the frozen vocabulary; anything else is
+  // ignored, never guessed).
+  const rawMode = firstParam(params.mode);
+  const preferredMode =
+    rawMode === "embed" || rawMode === "browser" || rawMode === "external" || rawMode === "native"
+      ? rawMode
+      : undefined;
   const view = await loadPlayerView(host, {
     itemId,
     connectorId,
@@ -73,6 +81,7 @@ export default async function PlayerPage({
     canonicalType,
     ...(durationMs !== undefined ? { durationMs } : {}),
     ...(resumePositionMs !== undefined ? { resumePositionMs } : {}),
+    ...(preferredMode !== undefined ? { preferredMode } : {}),
   });
 
   return (

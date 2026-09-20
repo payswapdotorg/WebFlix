@@ -34,7 +34,9 @@ function Progress({ ratio }: { readonly ratio: number | null }): JSX.Element | n
 /**
  * One content card. `variant="short"` renders the 9:16 vertical thumb of
  * the shorts rail. `resume` (optional) renders the continue-watching
- * affordances (progress bar + resume position). An item WITHOUT a joined
+ * affordances (progress bar + resume position). `availability` (optional,
+ * R21-E) renders the compact where-to-watch summary the search surface
+ * derives from the REAL resolve answer. An item WITHOUT a joined
  * source identity (the per-process join missed it) renders UNLINKED —
  * the honest state, never a fabricated link.
  */
@@ -43,11 +45,14 @@ export function ItemCard({
   variant = "wide",
   resume,
   linked = true,
+  availability,
 }: {
   readonly card: CardView;
   readonly variant?: "wide" | "short";
   readonly resume?: { readonly resumePositionMs: number; readonly completionRatio: number | null };
   readonly linked?: boolean;
+  /** The compact availability summary (R21-E — the search surface's). */
+  readonly availability?: string;
 }): JSX.Element {
   const href = itemDetailHref({
     itemId: card.itemId,
@@ -83,9 +88,15 @@ export function ItemCard({
         </p>
         <p className="wfx-card__meta">
           {linked ? (
-            <span className="wfx-capchip" data-wfx-card-capability>
-              Playback options on details
-            </span>
+            availability !== undefined ? (
+              <span className="wfx-capchip" data-wfx-card-availability>
+                {availability}
+              </span>
+            ) : (
+              <span className="wfx-capchip" data-wfx-card-capability>
+                Playback options on details
+              </span>
+            )
           ) : (
             <span className="wfx-capchip">Source unknown in this session</span>
           )}
