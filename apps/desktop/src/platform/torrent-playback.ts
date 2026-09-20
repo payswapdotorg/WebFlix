@@ -63,7 +63,7 @@ import type {
 } from "@wfx/torrent-engine";
 import { isAuthorizedProvenanceBasis } from "@wfx/torrent-engine";
 
-import type { AcquisitionIdentity, DesktopAcquisitionSource } from "./acquisition-source";
+import type { AcquisitionIdentity, AcquisitionRetryRecipe, DesktopAcquisitionSource } from "./acquisition-source";
 
 // ---------------------------------------------------------------------------
 // The authorized torrent realization truth (the composition's source)
@@ -437,6 +437,65 @@ export function createDesktopTorrentPlaybackBinding(
     ...(realization.title.length > 0 ? { title: realization.title } : {}),
   });
 
+  /**
+   * THE RETRY RECIPE the binding binds with every session (the parity
+   * contract's error-recovery dimension — the same composition-root
+   * wiring the R14 acquire recipe performs, made first-class here): a
+   * FRESH ingestion + session over the same authorized source (the
+   * engine's own guidance for terminal sessions; the retained-progress
+   * resume is the recovery path, a different flow). Typed failures
+   * propagate honestly — never a fake fresh start.
+   */
+  const retryRecipeOf = (
+    realization: DesktopTorrentRealization,
+    fileIndexes: readonly number[] | undefined,
+  ): AcquisitionRetryRecipe => {
+    return async () => {
+      const provenanceResult = mintProvenance(realization.provenance.sourceId);
+      if (!provenanceResult.ok) {
+        return {
+          ok: false,
+          error: { code: provenanceResult.error.code, detail: provenanceResult.error.message },
+        };
+      }
+      const ingestionResult =
+        realization.torrentBytes !== undefined
+          ? await engine.ingestTorrentFile(realization.torrentBytes, provenanceResult.value)
+          : realization.magnet !== undefined
+            ? await engine.ingestMagnet(realization.magnet, provenanceResult.value)
+            : null;
+      if (ingestionResult === null) {
+        return {
+          ok: false,
+          error: {
+            code: "INVALID_INPUT",
+            detail: "the peer copy carries no open input (neither a magnet nor torrent bytes)",
+          },
+        };
+      }
+      if (!ingestionResult.ok) {
+        return {
+          ok: false,
+          error: { code: ingestionResult.error.code, detail: ingestionResult.error.message },
+        };
+      }
+      const sessionResult = await engine.createSession(ingestionResult.value.id, {
+        ...(fileIndexes !== undefined && fileIndexes.length > 0
+          ? { selection: { fileIndexes } }
+          : realization.knownFilePaths !== undefined && realization.knownFilePaths.length > 0
+            ? { selection: { filePaths: realization.knownFilePaths } }
+            : {}),
+      });
+      if (!sessionResult.ok) {
+        return {
+          ok: false,
+          error: { code: sessionResult.error.code, detail: sessionResult.error.message },
+        };
+      }
+      return { ok: true, value: { sessionId: sessionResult.value.sessionId } };
+    };
+  };
+
   return {
     peerCopyRung(itemId: string): TorrentRungSatisfaction | null {
       return desktopTorrentRungSatisfaction(realizationOf(itemId));
@@ -562,8 +621,15 @@ export function createDesktopTorrentPlaybackBinding(
       const sessionId = sessionResult.value.sessionId;
 
       // THE CANONICAL-IDENTITY BIND (the R04 composition — the same wiring
-      // the R14 acquire recipe performs; the parity contract's identity law).
-      source.bindSession(sessionId, identityOf(realization));
+      // the R14 acquire recipe performs; the parity contract's identity
+      // law) WITH the typed RETRY recipe (the error-recovery dimension:
+      // the failed view's retry action executes through the same surface
+      // as any realization's).
+      source.bindSession(
+        sessionId,
+        identityOf(realization),
+        retryRecipeOf(realization, selection),
+      );
 
       // THE NATIVE PLAYBACK ENGAGEMENT (the rung the peer copy satisfies).
       return engageNativePlayback(runtime, itemId, {
@@ -588,10 +654,18 @@ export function createDesktopTorrentPlaybackBinding(
       readonly identity: AcquisitionIdentity;
     }): Promise<TorrentResult<{ readonly sessionId: string; readonly resumed: boolean }>> {
       // The journaled session re-binds to its canonical identity (the
-      // composition root's recovery wiring — the J25/J38 continuity), then
-      // the engine's recovery report feeds the acquisition surface's refresh
-      // (the resumed/retained-progress proof). The engine owns the truth.
-      source.bindSession(input.sessionId, input.identity);
+      // composition root's recovery wiring — the J25/J38 continuity) WITH
+      // the same typed RETRY recipe the play flow binds (the recovery path
+      // keeps the error-recovery dimension's wiring — never a downgrade),
+      // then the engine's recovery report feeds the acquisition surface's
+      // refresh (the resumed/retained-progress proof). The engine owns the
+      // truth.
+      const realization = realizationOf(input.identity.canonicalItemId);
+      source.bindSession(
+        input.sessionId,
+        input.identity,
+        realization !== null ? retryRecipeOf(realization, undefined) : undefined,
+      );
       const recovery = await engine.recover();
       if (!recovery.ok) return recovery;
       const resumed =

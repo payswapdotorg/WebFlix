@@ -31,14 +31,21 @@ import {
   nativeEvent,
 } from "./r23-harness";
 
-const authorizedRealization = (overrides?: Partial<DesktopTorrentRealization>): DesktopTorrentRealization => ({
-  itemId: R23_ITEM,
-  title: "Family Archive Feature Presentation",
-  magnet: R23_MAGNET,
-  provenance: R23_PROVENANCE,
-  browserCapable: false,
-  ...overrides,
-});
+const authorizedRealization = (
+  overrides?: Omit<Partial<DesktopTorrentRealization>, "magnet"> & { magnet?: never },
+): DesktopTorrentRealization => {
+  const base: DesktopTorrentRealization = {
+    itemId: R23_ITEM,
+    title: "Family Archive Feature Presentation",
+    magnet: R23_MAGNET,
+    provenance: R23_PROVENANCE,
+    browserCapable: false,
+  };
+  if (overrides === undefined) return base;
+  const { magnet: _omit, ...rest } = overrides;
+  void _omit;
+  return { ...base, ...rest };
+};
 
 describe("R23-W3 torrent-playback — the rung decision (the R23-C contract consumed)", () => {
   it("an authorized peer copy satisfies the NATIVE rung on Desktop", () => {
@@ -171,10 +178,7 @@ describe("R23-W3 torrent-playback — the play flow (the native rung engaged)", 
       // torrent-file kind with ONE playable file → the auto-selection.
       realizationOf: (itemId) =>
         itemId === R23_ITEM
-          ? authorizedRealization({
-              magnet: undefined,
-              torrentBytes: new Uint8Array([1, 2, 3, 4]),
-            })
+          ? authorizedRealization({ torrentBytes: new Uint8Array([1, 2, 3, 4]) })
           : null,
     });
     boot.engine.torrentFiles = [
@@ -205,7 +209,7 @@ describe("R23-W3 torrent-playback — the play flow (the native rung engaged)", 
     const boot = bootR23({
       realizationOf: (itemId) =>
         itemId === R23_ITEM
-          ? authorizedRealization({ magnet: undefined, torrentBytes: new Uint8Array([1, 2, 3, 4]) })
+          ? authorizedRealization({ torrentBytes: new Uint8Array([1, 2, 3, 4]) })
           : null,
     });
     // R23_TORRENT_FILES is the default: two playable files + cover art.
@@ -415,7 +419,7 @@ function R23_T0_NOW(): number {
   return Date.parse("2026-09-21T10:00:00.000Z");
 }
 
-function engineFailureStatus(sessionId: string, reason: string) {
+function engineFailureStatus(sessionId: string, reason: "io-error" | "metadata-failed" | "corruption-detected") {
   return {
     sessionId,
     infoHash: "0123456789abcdef0123456789abcdef01234567",

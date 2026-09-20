@@ -288,18 +288,21 @@ describe("R23-W3 local-ai — the J39 media-intelligence consumption (the R23-F/
 
   it("source-provided truth renders as ARRIVED WITH THE MEDIA (never a fabricated model)", () => {
     const artifacts = j39Artifacts(R23_ITEM);
-    artifacts.transcript = {
-      kind: "transcript",
-      segments: [{ startMs: 0, endMs: 1_000, text: "Official captions.", language: "en" }],
-      language: "en",
-      model: {
-        stage: "transcription",
-        modelId: "source-provided",
-        confidence: 1,
-        producedAt: "2026-09-21T08:00:00.000Z",
+    const sourceProvidedArtifacts: MediaIntelligenceArtifacts = {
+      ...artifacts,
+      transcript: {
+        kind: "transcript",
+        segments: [{ startMs: 0, endMs: 1_000, text: "Official captions.", language: "en" }],
+        language: "en",
+        model: {
+          stage: "transcription",
+          modelId: "source-provided",
+          confidence: 1,
+          producedAt: "2026-09-21T08:00:00.000Z",
+        },
       },
     };
-    const boot = bootR23({ mediaIntelligenceOf: () => artifacts });
+    const boot = bootR23({ mediaIntelligenceOf: () => sourceProvidedArtifacts });
     const view = boot.localAi.mediaIntelligence(R23_ITEM);
     expect(view.transcript?.provenance.sourceProvided).toBe(true);
     expect(view.transcript?.provenance.sentence).toContain("arrived with the media");
@@ -308,13 +311,16 @@ describe("R23-W3 local-ai — the J39 media-intelligence consumption (the R23-F/
   it("an INVALID artifact set is rejected, never coerced (the drift law)", () => {
     const artifacts = j39Artifacts(R23_ITEM);
     // Corrupt the transcript (empty segments — the honest-shape violation).
-    artifacts.transcript = {
-      kind: "transcript",
-      segments: [],
-      language: "en",
-      model: artifacts.transcript!.model,
+    const invalidArtifacts: MediaIntelligenceArtifacts = {
+      ...artifacts,
+      transcript: {
+        kind: "transcript",
+        segments: [],
+        language: "en",
+        model: artifacts.transcript!.model,
+      },
     };
-    const boot = bootR23({ mediaIntelligenceOf: () => artifacts });
+    const boot = bootR23({ mediaIntelligenceOf: () => invalidArtifacts });
     const view = boot.localAi.mediaIntelligence(R23_ITEM);
     expect(view.status).toBe("invalid");
     expect(view.notDerivedNote).toContain("failed their shape validation");

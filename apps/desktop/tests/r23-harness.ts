@@ -24,6 +24,7 @@ import {
 } from "@wfx/client-runtime";
 import type { ClientRuntime } from "@wfx/client-runtime";
 import type { PlatformCapabilities } from "@wfx/platform-contracts";
+import type { MediaIntelligenceArtifacts } from "@wfx/model-fabric";
 import {
   authorizeProvenance,
   createAuthorizedSourceRegistry,
@@ -99,24 +100,24 @@ export class TorrentFlowEngine extends ScriptedEngine {
   refuseIngest = false;
 
   override async ingestMagnet(
-    uri: string,
-    provenance: AuthorizedProvenance,
+    uri?: string,
+    provenance?: AuthorizedProvenance,
   ): Promise<TorrentResult<TorrentIngestion>> {
     if (this.refuseIngest) {
       return torrentError("PROVENANCE_REJECTED", {
-        detail: `ingestMagnet: source '${provenance.sourceId}' is not in the authorized-source registry — ingestion is refused (invariant 5: authorized media only; register the source first)`,
+        detail: `ingestMagnet: source '${provenance?.sourceId ?? "unknown"}' is not in the authorized-source registry — ingestion is refused (invariant 5: authorized media only; register the source first)`,
       });
     }
     if (typeof uri !== "string" || !uri.startsWith("magnet:")) {
       return torrentError("INVALID_INPUT", {
-        detail: `ingestMagnet: uri must be a magnet URI ('magnet:?xt=...'), got '${uri.slice(0, 32)}'`,
+        detail: `ingestMagnet: uri must be a magnet URI ('magnet:?xt=...'), got '${String(uri).slice(0, 32)}'`,
       });
     }
     const ingestion: TorrentIngestion = {
       id: `ing-r23-${this.flowIngestions.length + 1}`,
       kind: "magnet",
       infoHash: R23_INFO_HASH,
-      provenance,
+      provenance: provenance!,
       displayName: R23_TITLE,
       files: [], // the magnet-kind law: files stay empty until a session resolves metadata
       magnetUri: uri,
@@ -126,12 +127,12 @@ export class TorrentFlowEngine extends ScriptedEngine {
   }
 
   override async ingestTorrentFile(
-    bytes: Uint8Array,
-    provenance: AuthorizedProvenance,
+    bytes?: Uint8Array,
+    provenance?: AuthorizedProvenance,
   ): Promise<TorrentResult<TorrentIngestion>> {
     if (this.refuseIngest) {
       return torrentError("PROVENANCE_REJECTED", {
-        detail: `ingestTorrentFile: source '${provenance.sourceId}' is not in the authorized-source registry — ingestion is refused (invariant 5: authorized media only; register the source first)`,
+        detail: `ingestTorrentFile: source '${provenance?.sourceId ?? "unknown"}' is not in the authorized-source registry — ingestion is refused (invariant 5: authorized media only; register the source first)`,
       });
     }
     if (!(bytes instanceof Uint8Array) || bytes.length === 0) {
@@ -141,7 +142,7 @@ export class TorrentFlowEngine extends ScriptedEngine {
       id: `ing-r23-${this.flowIngestions.length + 1}`,
       kind: "torrent-file",
       infoHash: R23_INFO_HASH,
-      provenance,
+      provenance: provenance!,
       displayName: R23_TITLE,
       files: [...this.torrentFiles],
     };
@@ -154,9 +155,12 @@ export class TorrentFlowEngine extends ScriptedEngine {
   }
 
   override async createSession(
-    ingestionId: string,
+    ingestionId?: string,
     options?: { selection?: { fileIndexes?: readonly number[]; filePaths?: readonly string[] } },
   ): Promise<TorrentResult<TorrentSessionHandle>> {
+    if (typeof ingestionId !== "string") {
+      return torrentError("INVALID_INPUT", { detail: "createSession: ingestionId is required" });
+    }
     const ingestion = this.flowIngestions.find((candidate) => candidate.id === ingestionId);
     if (ingestion === undefined) {
       return torrentError("NOT_FOUND", { sessionId: ingestionId, detail: `no ingestion '${ingestionId}'` });
@@ -237,7 +241,7 @@ export interface R23BootOptions {
   /** The local model runtime probe (default: honestly unavailable). */
   readonly runtimeProbe?: DesktopModelRuntimeProbe;
   /** The media-intelligence truth (default: nothing derived). */
-  readonly mediaIntelligenceOf?: (itemId: string) => null;
+  readonly mediaIntelligenceOf?: (itemId: string) => MediaIntelligenceArtifacts | null;
 }
 
 /** The booted R23 composition (every surface the journeys drive). */

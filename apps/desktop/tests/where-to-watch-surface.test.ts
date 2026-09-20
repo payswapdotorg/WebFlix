@@ -160,7 +160,6 @@ describe("R23-W3 where-to-watch — the PRIMARY play decision (the eligibility l
           ? {
               itemId,
               title: "Family Archive",
-              magnet: undefined,
               torrentBytes: new Uint8Array([1, 2, 3]),
               provenance: { sourceId: "vault:family-media", basis: "user-owned" },
               browserCapable: false,
