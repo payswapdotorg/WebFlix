@@ -47,6 +47,7 @@ import { j30CapabilityHonesty } from "./j30-capability-honesty";
 import { j31CrossPlatformParity } from "./j31-cross-platform-parity";
 import { j32SourceNeutralIdentity } from "./j32-source-neutral-identity";
 import { j33BringYourOwnFeed } from "./j33-bring-your-own-feed";
+import { j34CapabilityDiscoverability } from "./j34-capability-discoverability";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -95,6 +96,7 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // against the live Data API) are the service-mode local-only procedure
   // (listed below).
   j33BringYourOwnFeed,
+  j34CapabilityDiscoverability,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -164,6 +166,12 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
     kind: "local-only",
     note: "R21-E: the AI ACTION TRAY is the web surface of the completed transforms transport (the R21-B/R21-C model-controls seam — the fixtures persona answers the service shapes deterministically): the five frozen actions, the model-class truth, the named preconditions, and the typed queued/cancelled operation states are encoded. The full pipeline's running→succeeded transitions (real progress + result payloads) are the service-side fabric (apps/api /experience/transforms).",
     procedure: "LOCAL-ONLY: the service-mode boot + start each transformation operation through the tray (or /experience/transforms), capture the explicit running and completed states with results.",
+  },
+  {
+    journeyId: "J34",
+    kind: "local-only",
+    note: "R21-F: the twelve-task discoverability walk is encoded over the deterministic web-fixture boot (the same product surfaces, the same controls — fresh Home state, normal product paths only). The PRODUCTION parity sweep (J35) is the lead's journey against the live deployment.",
+    procedure: "LEAD (J35): run the same discoverability sweep against the production deployment and verify the R02/R03/R05/R06/R09/R14/R20 truths on the live surface.",
   },
   {
     journeyId: "J21",

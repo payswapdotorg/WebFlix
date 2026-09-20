@@ -411,7 +411,12 @@ export function SettingsSurface({
 
       {section === undefined || section === "general" ? (
         <>
-          <section className="wfx-detail__section" aria-label="Profile and identity" data-wfx-settings-profile>
+          <section
+            className="wfx-detail__section"
+            aria-label="Profile and identity"
+            data-wfx-settings-profile
+            data-wfx-settings-session
+          >
             <h2>Profile &amp; identity</h2>
             <p className="wfx-card__meta">
               <span className="wfx-badge wfx-badge--type" data-wfx-session-label>

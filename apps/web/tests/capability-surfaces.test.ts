@@ -428,11 +428,11 @@ describe("R21-E — the item decision hub (the composed surface)", () => {
     expect(view!.whereToWatch.options).toHaveLength(4);
     expect(view!.aiTray.actions).toHaveLength(5);
     const markup = renderToStaticMarkup(
-      createElement(
-        AppShell,
-        { mode: host.mode, session: host.session.state },
-        createElement(ItemDetailSurface, { view: view! }),
-      ),
+      createElement(AppShell, {
+        mode: host.mode,
+        session: host.session.state,
+        children: createElement(ItemDetailSurface, { view: view! }),
+      }),
     );
     expect(markup).toContain("data-wfx-where-to-watch");
     expect(markup).toContain("data-wfx-ai-tray");
@@ -461,11 +461,11 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
     expect(view.failure).toBeNull();
     expect(view.surfaceMode).toBe("browser");
     const markup = renderToStaticMarkup(
-      createElement(
-        AppShell,
-        { mode: host.mode, session: host.session.state },
-        createElement(PlayerSurface, { view }),
-      ),
+      createElement(AppShell, {
+        mode: host.mode,
+        session: host.session.state,
+        children: createElement(PlayerSurface, { view }),
+      }),
     );
     expect(markup).toContain("data-wfx-player-mode=\"browser\"");
     // The mode label names the mode word AND its user sentence.
@@ -488,11 +488,11 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
     // The recovery path: the next supported way is the primary action.
     expect(view.whereToWatch.usableCount).toBe(3);
     const markup = renderToStaticMarkup(
-      createElement(
-        AppShell,
-        { mode: host.mode, session: host.session.state },
-        createElement(PlayerSurface, { view }),
-      ),
+      createElement(AppShell, {
+        mode: host.mode,
+        session: host.session.state,
+        children: createElement(PlayerSurface, { view }),
+      }),
     );
     expect(markup).toContain("data-wfx-player-recovery");
     expect(markup).toContain("Try the next way to watch");
@@ -508,11 +508,11 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
     const view = await loadPlayerView(host, { ...DRIFT });
     expect(view.precedenceTrace.length).toBeGreaterThan(0);
     const markup = renderToStaticMarkup(
-      createElement(
-        AppShell,
-        { mode: host.mode, session: host.session.state },
-        createElement(PlayerSurface, { view }),
-      ),
+      createElement(AppShell, {
+        mode: host.mode,
+        session: host.session.state,
+        children: createElement(PlayerSurface, { view }),
+      }),
     );
     expect(markup).toContain("data-wfx-playback-diagnostics");
     expect(markup).toContain("<details"); // collapsed by default — the viewing experience stays primary

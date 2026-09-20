@@ -1,11 +1,11 @@
 # WebFlix Golden Journey Run — Evidence Summary
 
-- commit: `a64375064fc7e904122d701ae6426b1b3dba5f78`
-- branch: `wfx/r21/discoverability`
+- commit: `d168f6038e5d7f326e774c816185fe405408ac6e`
+- branch: `wfx/r21/discoverability-web`
 - environment: web-fixtures @ http://localhost:3101
-- window: 2026-09-20T01:45:47.392Z → 2026-09-20T01:50:37.568Z
+- window: 2026-09-20T03:19:16.284Z → 2026-09-20T03:24:19.803Z
 
-**33 passed · 0 failed · 0 not-run (listed with procedures) · 33 total**
+**34 passed · 0 failed · 0 not-run (listed with procedures) · 34 total**
 
 | Journey | Title | Status | Assertions | Artifacts |
 |---|---|---|---:|---:|
@@ -28,7 +28,7 @@
 | J17 | Explicit intent: learn / happier / surprise / tonight / friend taste | PASS | 6 | 3 |
 | J18 | Attention modes: mindful / balanced / immersive / custom | PASS | 4 | 3 |
 | J19 | WebFlix model / BYOM / local model policy | PASS | 8 | 3 |
-| J20 | AI subtitles / translation / transcription / dubbing / commentary | PASS | 9 | 3 |
+| J20 | AI subtitles / translation / transcription / dubbing / commentary | PASS | 18 | 3 |
 | J21 | Authorized torrent acquisition (web limited-status surface) | PASS | 14 | 3 |
 | J22 | Torrent metadata and file selection (web limited-status surface) | PASS | 7 | 3 |
 | J23 | Torrent playback before full completion (web status surface) | PASS | 15 | 3 |
@@ -42,6 +42,7 @@
 | J31 | Cross-platform Web/Desktop parity (web-side anchors) | PASS | 9 | 3 |
 | J32 | Source-neutral identity: same item, multiple realizations | PASS | 9 | 3 |
 | J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | PASS | 62 | 9 |
+| J34 | Capability discoverability from normal product surfaces | PASS | 42 | 3 |
 
 ## Explicit limitations (never silent skips)
 
@@ -63,8 +64,10 @@
   - procedure: LOCAL-ONLY: the service-mode boot + set each attention mode through /experience/policy, then drive the short feed and capture the mode-specific re-rank behavior (mindful fires at 3 swipes; immersive does not auto re-rank).
 - **J19** (local-only): R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.
   - procedure: LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces.
-- **J20** (local-only): The AI transformation operations with explicit progress/result states (transcription, subtitles, translation, dubbing, commentary) are the service-side transforms surface (apps/api /experience/transforms). The web renders the typed honest absence with the vocabulary named (encoded).
-  - procedure: LOCAL-ONLY: the service-mode boot + start each transformation operation through /experience/transforms, capture the explicit in-progress and completed states.
+- **J20** (local-only): R21-E: the AI ACTION TRAY is the web surface of the completed transforms transport (the R21-B/R21-C model-controls seam — the fixtures persona answers the service shapes deterministically): the five frozen actions, the model-class truth, the named preconditions, and the typed queued/cancelled operation states are encoded. The full pipeline's running→succeeded transitions (real progress + result payloads) are the service-side fabric (apps/api /experience/transforms).
+  - procedure: LOCAL-ONLY: the service-mode boot + start each transformation operation through the tray (or /experience/transforms), capture the explicit running and completed states with results.
+- **J34** (local-only): R21-F: the twelve-task discoverability walk is encoded over the deterministic web-fixture boot (the same product surfaces, the same controls — fresh Home state, normal product paths only). The PRODUCTION parity sweep (J35) is the lead's journey against the live deployment.
+  - procedure: LEAD (J35): run the same discoverability sweep against the production deployment and verify the R02/R03/R05/R06/R09/R14/R20 truths on the live surface.
 - **J21** (desktop-procedure): The native ACQUISITION protocol path (real magnet/.torrent ingestion through the torrent engine) is the Desktop native-media lane. The web journey encodes the limited-status lifecycle UX over the deterministic scripted feed (the R14 surface); the native protocol path is the Desktop equivalent procedure.
   - procedure: DESKTOP (journeys/desktop/README.md): run the Desktop app with the native-media engine against an authorized source, drive the real acquisition lifecycle, and capture per-state screenshots + the same manifest format via agent-browser attached to the desktop webview (or the platform's instrumentation).
 - **J23** (desktop-procedure): Native playback-before-completion (real verified-range streaming from an in-progress torrent session) is the Desktop path. The web encodes the honest status sequence (buffering → playing with runway → deadline-risk demotion).
