@@ -164,3 +164,25 @@ R23 operating laws:
 - authorized torrent realizations may satisfy native playback on Desktop and a browser rung only where the platform/source actually supports it;
 - model output never authorizes acquisition/playback;
 - open-model licenses and revisions are part of Model Fabric provenance.
+
+
+## R24 — YouTube parity + playback performance lab
+
+R23 shared contracts -> R24-A/B/C lab lanes (parallel)  
+R24-A + R24-B + R24-C -> R24-D parity matrix + performance baseline  
+R24-D -> Web/Desktop implementation lanes  
+R24 implementation -> J40 + J41 + J42 -> affected J01-J39 -> production acceptance
+
+Worker 1 owns R24-A shared parity taxonomy, performance telemetry, startup contracts and regression tests.  
+Worker 2 owns R24-B Web YouTube viewer audit, Web parity UI, Web performance harness and browser evidence.  
+Worker 3 owns R24-C Desktop/native/torrent parity, startup/recovery measurements and Desktop evidence.  
+Lead owns R24-D lab synthesis, feature/source verification, classification ratification, integration and final acceptance.
+
+R24 may begin its observational lab after R23 shared contracts are frozen and may run concurrently with unrelated R23 implementation. R24 must not create a second architecture or duplicate product rules.
+
+R24 operating laws:
+- every relevant viewer-facing YouTube capability has an explicit WebFlix pairing;
+- WebFlix-only capabilities use contextual/familiar video-product interaction grammar;
+- playback startup is not blocked by AI, recommendation, analytics or indexing;
+- torrent remains a first-class realization and participates in the same player/performance contract;
+- no UI branding or proprietary visual structure is copied from YouTube;
