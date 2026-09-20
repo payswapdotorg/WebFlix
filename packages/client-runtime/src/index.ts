@@ -69,6 +69,19 @@
  *                               authorization prerequisite — never a wall),
  *                               and the machine-checkable no-login-wall law
  *                               (J37's forbidden invariant)
+ * - `anonymous-playback-boundary.ts` — R23-B: the anonymous playback
+ *                               boundary — the per-CAPABILITY authorization
+ *                               decision table (anonymous + public =>
+ *                               playback may start; provider authorization
+ *                               independent of the WebFlix account BY
+ *                               CONSTRUCTION — the table never reads the
+ *                               viewer), the playback no-login-wall law
+ *                               (no playback decision may ever route to a
+ *                               WebFlix login), the read-path surface guard,
+ *                               the observed-source access-class/
+ *                               authorization folds, and the session-scoped
+ *                               progress law (anonymous progress is never
+ *                               durable identity until authentication)
  * - `account-creation.ts`    — R22-B: the account-creation journey —
  *                               the typed register command + shared
  *                               validation (the service's own rules), the
@@ -113,6 +126,7 @@ export * from "./model-controls";
 export * from "./control-views";
 export * from "./source-catalog";
 export * from "./anonymous-viewing";
+export * from "./anonymous-playback-boundary";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
