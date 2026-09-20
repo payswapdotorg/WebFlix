@@ -1,0 +1,108 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "21c267f00872241df1136b322cf44be978b5d48a",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T17:05:58.220Z",
+    "finishedAt": "2026-09-20T17:06:27.255Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789923969707)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J31",
+      "title": "Cross-platform Web/Desktop parity (web-side anchors)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface anchors the canonical item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_17RNQ0T1SXC1PVV1Y42R8CAVS3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the item detail surface carries the SAME canonical identity the search card linked",
+          "expected": "the detail carries wfxitm_17RNQ0T1SXC1PVV1Y42R8CAVS3",
+          "observed": "wfxitm_17RNQ0T1SXC1PVV1Y42R8CAVS3",
+          "pass": true
+        },
+        {
+          "description": "the player entry carries the SAME canonical identity (one item identity across all three surfaces)",
+          "expected": "the play link carries wfxitm_17RNQ0T1SXC1PVV1Y42R8CAVS3",
+          "observed": "wfxitm_17RNQ0T1SXC1PVV1Y42R8CAVS3",
+          "pass": true
+        },
+        {
+          "description": "the library watchlist section renders (the library-state parity anchor)",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the library history section renders (the library-state parity anchor)",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the library offline-and-verified section renders (the library-state parity anchor)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stated intent composes its outcome (the intent parity anchor)",
+          "expected": "[data-wfx-search-results] a[data-wfx-card] matches >= 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the profile/session state renders its honest anonymous truth (the profile-state parity anchor)",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "platform-specific capability differences are stated (allowed by the parity law, never hidden)",
+          "expected": "[data-wfx-capability-unsupported] matches >= 1",
+          "observed": "4 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j31-rerun/j31-cross-platform-parity.png",
+        "evidence/r16-chunks/j31-rerun/j31-cross-platform-web-desktop-parity-web-side-anchors.snapshot.txt",
+        "evidence/r16-chunks/j31-rerun/j31-cross-platform-web-desktop-parity-web-side-anchors.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13507
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J31",
+      "kind": "configuration-limit",
+      "note": "The parity COMPARISON (Web vs Desktop semantically equivalent outcomes) requires both adapters running against the same server-side state. The web-side parity anchors (canonical identity, library state, intent, session state) are encoded; the desktop-side comparison is the lead's procedure.",
+      "procedure": "LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/."
+    }
+  ]
+}

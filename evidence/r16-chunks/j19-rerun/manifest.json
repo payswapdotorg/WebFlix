@@ -1,0 +1,102 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "f467a8ba29f08d5212dcf31646c88552403ce9ad",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T16:56:01.111Z",
+    "finishedAt": "2026-09-20T16:56:37.921Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789923378546)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J19",
+      "title": "WebFlix model / BYOM / local model policy",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the add-provider form renders (discover → configure is a real control, never a hidden API)\n  expected: [data-wfx-byom-add-form] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "the Model & AI section renders",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider registry renders over the completed transport (first-party + BYOM + local truth)",
+          "expected": "[data-wfx-model-providers-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the registry carries at least the first-party provider row",
+          "expected": "[data-wfx-model-providers-list] [data-wfx-model-provider] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the per-task policy truth renders (the honest unset — never a fabricated default)",
+          "expected": "[data-wfx-model-policies-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "every frozen ModelTask carries its policy chip (the full task set is visible)",
+          "expected": "[data-wfx-model-policies-list] [data-wfx-model-policy] matches >= 9",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section names the controls' scope (providers, BYOM, local models, policy truth)",
+          "expected": "the scope named in the section",
+          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and commentary — across first-party, your own providers (BYOM), and local models, with each task's current policy. Provider keys stay sealed; they are never shown or sent to a model. AI actions launch from the tray where you watch — any title or player; local-model execution runs in the Desktop app.\n\nFind a title to transform — the AI action tray lives on every title and player\n\nProviders\nWFX-FIRST-PARTY\nRuns locally\nAvailable\n\nTasks: recommendation, ranking, summary, translation, transcription\n\nTask policies\nRECOMMENDATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nRANKING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSUMMARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSLATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSCRIPTION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSPEECHTOTEXT\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTEXTTOSPEECH\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nDUBBING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nCOMMENTARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nYour model providers\n\nBring your own model: paste your provider's web address and key — the key is stored encrypted and never shown again. The contextual AI tray (on every title and player) is where you USE AI; this is where you MANAGE which providers WebFlix may use.\n\nAdd your model provider\n\nModel providers belong to your account — sign in or create one to add your own provider.\n\nNo model provider of your own is added yet — WebFlix's built-in local model keeps working, and you can add your own provider anytime.\n\nBuilt-in models\nWFX-FIRST-PARTY\nBuilt-in\nRuns on this device\n\nWebFlix's built-in model — always available, no setup.\n\nrecommendation\nranking\nsummary\ntranslation\ntranscription",
+          "pass": true
+        },
+        {
+          "description": "the R22-F BYOM management surface renders inside the Model & AI section (the normal-path management panel)",
+          "expected": "[data-wfx-byom-management] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider form renders (discover → configure is a real control, never a hidden API)",
+          "expected": "[data-wfx-byom-add-form] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j19-rerun/j19-failure.png",
+        "evidence/r16-chunks/j19-rerun/j19-failure.snapshot.txt",
+        "evidence/r16-chunks/j19-rerun/j19-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13454
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J19",
+      "kind": "local-only",
+      "note": "R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces."
+    }
+  ]
+}

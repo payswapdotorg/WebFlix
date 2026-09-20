@@ -1,0 +1,1 @@
+- results state with 3 canonical cards and the query echo; honest no-results state; the intent entry retains the submitted query

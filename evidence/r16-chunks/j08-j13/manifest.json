@@ -1,0 +1,464 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "0da5a86d3967379bfe69f8de18e3bbabc4f5361d",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T16:51:41.728Z",
+    "finishedAt": "2026-09-20T16:53:01.015Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789923114856)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 6,
+    "encoded": 6,
+    "passed": 6,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J08",
+      "title": "Contained Browser playback",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the browser-realized item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4698BANX5ZB1YSZA5S0Z44PG38&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the detail page offers playback",
+          "expected": "a play href",
+          "observed": "/player?id=wfxitm_4698BANX5ZB1YSZA5S0Z44PG38&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the player surface renders",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the browser rung wins when embed is honestly absent",
+          "expected": "data-wfx-player-mode=\"browser\"",
+          "observed": "browser",
+          "pass": true
+        },
+        {
+          "description": "the provider page renders inside the contained surface mount",
+          "expected": "the contained iframe with data-wfx-player-frame",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the contained browser iframe is sandboxed",
+          "expected": "a sandbox attribute on the iframe",
+          "observed": "allow-scripts allow-forms allow-popups allow-presentation",
+          "pass": true
+        },
+        {
+          "description": "the contained browser iframe sends a strict referrer policy",
+          "expected": "referrerpolicy=strict-origin-when-cross-origin",
+          "observed": "strict-origin-when-cross-origin",
+          "pass": true
+        },
+        {
+          "description": "the containment note states the cookie isolation",
+          "expected": "text of [data-wfx-browser-surface-note] contains \"cookie-isolated\"",
+          "observed": "\"Contained, cookie-isolated surface — the provider keeps the playback path; WebFlix never injects into or inspects the provider page.\"",
+          "pass": true
+        },
+        {
+          "description": "the containment note states the no-injection boundary (provider security is not bypassed)",
+          "expected": "innerHTML of [data-wfx-surface='player'] contains \"never injects into or inspects the provider page\"",
+          "observed": "<10728 chars of html>",
+          "pass": true
+        },
+        {
+          "description": "the mode label names the contained browser surface",
+          "expected": "text of [data-wfx-player-mode-label] contains \"browser\"",
+          "observed": "\"Playing via browser · plays in a contained window — buffering\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j08-j13/j08-browser-playback.png",
+        "evidence/r16-chunks/j08-j13/j08-contained-browser-playback.snapshot.txt",
+        "evidence/r16-chunks/j08-j13/j08-contained-browser-playback.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 15436
+    },
+    {
+      "id": "J09",
+      "title": "External playback fallback / return context",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the multi-realization item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4698BANX5ZB1YSZA5S0Z44PG38&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the player renders the Media Surface precedence trace (the fallback decision surface)",
+          "expected": "[data-wfx-precedence-trace] matches exactly 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the trace names the native rung with its reject reason",
+          "expected": "a native: line",
+          "observed": "native: rejected — no native realization present | embed: rejected — no embed realization present | browser: accepted — realization #0 from connector 'fake-source' | external: skipped — precedence satisfied by 'browser'",
+          "pass": true
+        },
+        {
+          "description": "the trace names the embed rung decision",
+          "expected": "an embed: line",
+          "observed": "native: rejected — no native realization present | embed: rejected — no embed realization present | browser: accepted — realization #0 from connector 'fake-source' | external: skipped — precedence satisfied by 'browser'",
+          "pass": true
+        },
+        {
+          "description": "the trace names the browser rung decision",
+          "expected": "a browser: line",
+          "observed": "native: rejected — no native realization present | embed: rejected — no embed realization present | browser: accepted — realization #0 from connector 'fake-source' | external: skipped — precedence satisfied by 'browser'",
+          "pass": true
+        },
+        {
+          "description": "the trace names the external rung decision (the fallback path is always inspectable)",
+          "expected": "an external: line",
+          "observed": "native: rejected — no native realization present | embed: rejected — no embed realization present | browser: accepted — realization #0 from connector 'fake-source' | external: skipped — precedence satisfied by 'browser'",
+          "pass": true
+        },
+        {
+          "description": "the accepted rung states its decision",
+          "expected": "an accepted line for the browser rung",
+          "observed": "native: rejected — no native realization present | embed: rejected — no embed realization present | browser: accepted — realization #0 from connector 'fake-source' | external: skipped — precedence satisfied by 'browser'",
+          "pass": true
+        },
+        {
+          "description": "a link without playable content renders the honest typed empty state (never a fake stage)",
+          "expected": "[data-wfx-empty] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the missing-params state names the problem truthfully",
+          "expected": "text of [data-wfx-surface='player'] contains \"Nothing to play\"",
+          "observed": "\"Playback\n\nNothing to play\n\nThis link does not name playable content. Open content from home, watch, search, or a detail page.\n\nGo home\"",
+          "pass": true
+        },
+        {
+          "description": "the honest error offers the way back (return context to home)",
+          "expected": "[data-wfx-surface='player'] a[href='/'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "an unresolvable realization renders the typed playback failure (never a silent success)",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure state names the playback failure",
+          "expected": "text of [data-wfx-surface='player'] contains \"Playback could not start\"",
+          "observed": "\"Unknown Item\n\nPlayback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\nWhere to watch\n\nNo way to watch on this platform yet — the ways that exist are named below.\n\nNo way to play here\n0 ways offered across your sources\n\nNo source offered a way to watch this title yet — the sources strip on Home and Settings carry the connection paths.\"",
+          "pass": true
+        },
+        {
+          "description": "the failure state offers the return context back to the item detail",
+          "expected": "a link back to the item",
+          "observed": "present",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j08-j13/j09-external-fallback.png",
+        "evidence/r16-chunks/j08-j13/j09-external-playback-fallback-return-context.snapshot.txt",
+        "evidence/r16-chunks/j08-j13/j09-external-playback-fallback-return-context.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13619
+    },
+    {
+      "id": "J10",
+      "title": "Like/save/action synchronization truth",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_6G29NGJTC3N3T998QF4PKT2CEQ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "like renders its typed absent state when the source declares it unsupported",
+          "expected": "data-wfx-action-absent='like'",
+          "observed": "like, save",
+          "pass": true
+        },
+        {
+          "description": "save renders its typed absent state when the source declares it unsupported",
+          "expected": "data-wfx-action-absent='save'",
+          "observed": "like, save",
+          "pass": true
+        },
+        {
+          "description": "the absent notes state the provider truth (never a fake success)",
+          "expected": "text of [data-wfx-surface='item'] contains \"not available on this source\"",
+          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\n\nPlay\nLike: not available on this source\nSave: not available on this source\nWhere to watch\n\nPlays inside WebFlix when you press play.\n\n3 ways to play here\n4 ways offered across your sources\n\nPlays in a contained window\nsource fake-source\nPlay this way\nPlays natively in the Desktop app\nsource fake-source\nNative playback runs in the Desktop app — this platform plays it another way.\nOpens outside WebFlix\nsource fake-source\nPlay this way\nPlays inside WebFlix\nsource fake-source\nPlay this way\nAI actions\ntranscribe · subtitles · translate · dub · commentary\nShape what WebFlix shows you next\nMore like this\nNot interested\nDon't recommend this source\nI've already watched this\n\nFeedback is immediate and reversible — undoing restores the signal.\n\nWhat this source can do\nOffline copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\n\nAcquisitions run in the WebFlix desktop app — this status is the honest limited view Web can show. Make this title available offline there.\n\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\n\nSF\nVIDEO\n10m 0s\n\nSignal Fade\n\nPlayback options on details\"",
+          "pass": true
+        },
+        {
+          "description": "no settled action state renders as provider-confirmed or local-only success without a provider receipt",
+          "expected": "zero data-wfx-action-state markers",
+          "observed": "zero settled states",
+          "pass": true
+        },
+        {
+          "description": "the item page offers playback (the report surface)",
+          "expected": "a play href",
+          "observed": "/player?id=wfxitm_6G29NGJTC3N3T998QF4PKT2CEQ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the explicit watch report control is present",
+          "expected": "[data-wfx-report='complete'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch report answers its honest settled state (WebFlix-confirmed fold)",
+          "expected": "a report status naming what was recorded",
+          "observed": "Marked as watched — it moves out of Continue watching.",
+          "pass": true
+        },
+        {
+          "description": "a completed report control settles (disabled — never a re-fire lie)",
+          "expected": "the complete control is disabled after the receipt",
+          "observed": "disabled",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j08-j13/j10-action-sync-truth.png",
+        "evidence/r16-chunks/j08-j13/j10-like-save-action-synchronization-truth.snapshot.txt",
+        "evidence/r16-chunks/j08-j13/j10-like-save-action-synchronization-truth.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 8678
+    },
+    {
+      "id": "J11",
+      "title": "Library / watchlist / history",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the library destination renders",
+          "expected": "[data-wfx-surface='library'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist section renders",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the history section renders",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section renders (the R14 surface)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)",
+          "expected": "the typed watchlist empty state",
+          "observed": "the empty state rendered",
+          "pass": true
+        },
+        {
+          "description": "the history is honestly empty on a fresh session (typed empty state, never fabricated history)",
+          "expected": "the typed history empty state",
+          "observed": "the empty state rendered",
+          "pass": true
+        },
+        {
+          "description": "the watchlist empty state guides the user to save from details pages",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        },
+        {
+          "description": "the history empty state guides the user to watch something",
+          "expected": "text of [data-wfx-library-history] contains \"No watch history yet\"",
+          "observed": "\"History\n\nNo watch history yet\n\nWatch something — your session's watch state folds here with positions and completion.\"",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section exposes the verified offline copy (the J26 fixture)",
+          "expected": "one offline-ready entry",
+          "observed": "1 offline entries",
+          "pass": true
+        },
+        {
+          "description": "the offline entry states its earned ready-offline status (watchable without a connection — the verified truth)",
+          "expected": "a Ready-offline status label",
+          "observed": "Ready offline · 1.5 MB · 2 files · watchable without a connection",
+          "pass": true
+        },
+        {
+          "description": "no library section renders an error state in this configuration",
+          "expected": "[data-wfx-surface='library'] [data-wfx-error] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j08-j13/j11-library.png",
+        "evidence/r16-chunks/j08-j13/j11-library-watchlist-history.snapshot.txt",
+        "evidence/r16-chunks/j08-j13/j11-library-watchlist-history.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6916
+    },
+    {
+      "id": "J12",
+      "title": "Cross-device resume",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4698BANX5ZB1YSZA5S0Z44PG38&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the detail page offers playback",
+          "expected": "a play href",
+          "observed": "/player?id=wfxitm_4698BANX5ZB1YSZA5S0Z44PG38&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the player honors the carried resume position (continuity, stated)",
+          "expected": "text of [data-wfx-player-resume] is exactly \"Resumed at 1:00\"",
+          "observed": "\"Resumed at 1:00\"",
+          "pass": true
+        },
+        {
+          "description": "the playback phase stays the evidence-backed truth after resume (no fabricated progress)",
+          "expected": "text of [data-wfx-player-phase] contains \"buffering\"",
+          "observed": "\"Playback phase: buffering (the runtime reports evidence-backed phases only — no fake progress).\"",
+          "pass": true
+        },
+        {
+          "description": "the resumed session keeps the explicit watch-report controls (the position's honest continuation)",
+          "expected": "the report controls present",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "without a carried position the player states no resume line (never a fabricated resume)",
+          "expected": "no resume line",
+          "observed": "<none>",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j08-j13/j12-cross-device-resume.png",
+        "evidence/r16-chunks/j08-j13/j12-cross-device-resume.snapshot.txt",
+        "evidence/r16-chunks/j08-j13/j12-cross-device-resume.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9957
+    },
+    {
+      "id": "J13",
+      "title": "Account/profile/identity lifecycle",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings session section renders",
+          "expected": "[data-wfx-settings-session] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session states the honest signed-out identity (never a fabricated profile)",
+          "expected": "the signed-out session label",
+          "observed": "Signed out",
+          "pass": true
+        },
+        {
+          "description": "the session states its durability truth (how long the anonymous identity lasts)",
+          "expected": "a session stability statement",
+          "observed": "Session stability: kept for this server process (browser storage is not available)",
+          "pass": true
+        },
+        {
+          "description": "no fabricated profile management UI renders in the fixtures identity state",
+          "expected": "no profile switcher/manage controls",
+          "observed": "no profile UI text",
+          "pass": true
+        },
+        {
+          "description": "the shell session menu states the same signed-out truth",
+          "expected": "text of .wfx-topbar contains \"Signed out\"",
+          "observed": "\"WebFlix\ndev fixtures\nW\nSigned out\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j08-j13/j13-identity-lifecycle.png",
+        "evidence/r16-chunks/j08-j13/j13-account-profile-identity-lifecycle.snapshot.txt",
+        "evidence/r16-chunks/j08-j13/j13-account-profile-identity-lifecycle.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6910
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J09",
+      "kind": "configuration-limit",
+      "note": "The external-rung WIN (the visible external handoff with its return-context link) requires an item whose only realization is external — the fixture catalog carries none (every item resolves embed or browser first). The fallback DECISION trace and the typed failure states are encoded; the handoff itself is not reachable in this configuration.",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration with a source that declares an external-only realization (or a realization whose embed/browser URLs the provider restricts), open its player, and capture the data-wfx-player-mode=\"external\" handoff + the return-context link under evidence/<run>/."
+    },
+    {
+      "journeyId": "J12",
+      "kind": "configuration-limit",
+      "note": "Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes)."
+    }
+  ]
+}

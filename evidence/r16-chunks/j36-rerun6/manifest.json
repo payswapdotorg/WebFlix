@@ -1,0 +1,342 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T17:26:42.257Z",
+    "finishedAt": "2026-09-20T17:27:40.105Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789925212397)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J36",
+      "title": "Major user journey completion / no dead-end discovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the fresh Home surface renders",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu offers the create/sign-in path (the J36 identity entry — no documentation needed)",
+          "expected": "[data-wfx-session-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session controls render in Settings",
+          "expected": "[data-wfx-session-controls] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session states the honest signed-out identity before the journey starts",
+          "expected": "[data-wfx-session-signed-out] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Create account entry is visible from the signed-out state (the F1 closer — never a hidden API)",
+          "expected": "[data-wfx-session-mode-option='register'], [data-wfx-session-mode-toggle] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the register form is the active mode (one primary action per state — no modal sprawl)",
+          "expected": "data-wfx-session-mode of [data-wfx-session-controls] is \"register\"",
+          "observed": "\"register\"",
+          "pass": true
+        },
+        {
+          "description": "the register form carries the display-name field (the create-account shape, not the sign-in shape)",
+          "expected": "#wfx-session-display-name present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the register round trip completes into the authenticated state (auto-login continuity — the account exists and the session is live)",
+          "expected": "[data-wfx-session-signed-in] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "profile selection is downstream of the authenticated state (the registration closed the identity gap first)",
+          "expected": "[data-wfx-profile-select] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source chooser renders in the sources section (the F2 dead-end killer — the CTA no longer loops to the same empty state)",
+          "expected": "[data-wfx-source-chooser] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser carries at least one supported connector entry (a real catalog, never a bare anchor)",
+          "expected": "[data-wfx-source-chooser-entry] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser entry states its connection truth (the state label — never a fabricated state)",
+          "expected": "[data-wfx-source-chooser-state-label] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser entry carries the typed connection-journey state (the R22-A union)",
+          "expected": "a typed state (connected / not-connected / connecting / authorization-expired / failed / unsupported)",
+          "observed": "connected",
+          "pass": true
+        },
+        {
+          "description": "the fixture source's connected truth renders in user vocabulary (the return-to-source-management law)",
+          "expected": "the Connected state label",
+          "observed": "Connected",
+          "pass": true
+        },
+        {
+          "description": "the Bring your feed panel renders inside the sources section (BYOF is reachable once the prerequisite is satisfied — no direct URL)",
+          "expected": "[data-wfx-byof-panel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-import source card renders (the choose-source step of the import journey)",
+          "expected": "[data-wfx-byof-source='youtube'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the authorized import preview renders (preview before confirm — the provenance law)",
+          "expected": "[data-wfx-byof-preview] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the confirmed import renders its durable card (the BYOF journey completed)",
+          "expected": "[data-wfx-byof-import] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-mode choices render on the live surface (For you / Following / Your imported feed / Blend)",
+          "expected": "[data-wfx-feed-mode-option] present in the DOM",
+          "observed": "4 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the imported feed mode is present after the BYOF import (the mode transition law)",
+          "expected": "the imported-feed mode label",
+          "observed": "imported mode present",
+          "pass": true
+        },
+        {
+          "description": "the temporary session intent control renders (Personalize → intent)",
+          "expected": "[data-wfx-personalize-set-intent] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the attention modes render (Mindful / Balanced / Immersive / Custom)",
+          "expected": "[data-wfx-attention-mode] present in the DOM",
+          "observed": "4 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "a source-backed item is browsable from the normal surface (no direct route navigation)",
+          "expected": "a card link on Home",
+          "observed": "/item?id=wfxitm_5BR6QKDMD7SGRRWAD16K7NSK8R&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "the item states where to watch (the realization truth — the Where-to-watch step)",
+          "expected": "[data-wfx-item-availability], [data-wfx-acquisition] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the AI tray is reachable from the item (the use-an-AI-action step)",
+          "expected": "[data-wfx-ai-tray-toggle], [data-wfx-ai-tray] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the recommendation feedback controls render (the provide-feedback step)",
+          "expected": "[data-wfx-feedback-controls], [data-wfx-feedback] present in the DOM",
+          "observed": "5 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts viewport renders",
+          "expected": "[data-wfx-shorts-viewport] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Share action is present after hydration (the source advertises it)",
+          "expected": "[data-wfx-shorts-action='share'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Like renders exactly when the source declares the capability (the J36 hydration law — presence where permitted, typed absence where not)",
+          "expected": "the like control's capability truth",
+          "observed": "0 like control(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library Watchlist renders",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library History renders",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library offline truth renders (the honest Web platform truth)",
+          "expected": "[data-wfx-library-offline], [data-wfx-offline-status] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Model & AI settings section renders",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the BYOM management panel renders in Model & AI (the F8 closer — a normal-path management surface, never a hidden API)",
+          "expected": "[data-wfx-byom-management] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the built-in model stays visible context (the first-party truth)",
+          "expected": "[data-wfx-byom-first-party-section] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider entry control renders (the management entry point)",
+          "expected": "[data-wfx-byom-action='add'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider form renders (discover → configure)",
+          "expected": "[data-wfx-byom-add-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the bound-provider list renders after the bind (configure → verified state)",
+          "expected": "[data-wfx-byom-bound-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the just-bound provider appears in the bound list (the BYOM add completed through the normal surface)",
+          "expected": "the bound provider entry",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the provider key NEVER renders back in the management surface (secrets stay server-side)",
+          "expected": "no key material in the rendered surface",
+          "observed": "no key material",
+          "pass": true
+        },
+        {
+          "description": "after removal the honest empty state renders (the remove completed — WebFlix's built-in model takes over)",
+          "expected": "[data-wfx-byom-empty] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Sign out control renders in the session controls (the normal-path exit)",
+          "expected": "[data-wfx-session-action='logout'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the sign-out completes into the honest anonymous state (no fabricated profile, no stale session)",
+          "expected": "[data-wfx-session-signed-out] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on / (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on /settings?section=sources (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on /library (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on /shorts (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j36-rerun6/j36-major-journey-completion.png",
+        "evidence/r16-chunks/j36-rerun6/j36-major-user-journey-completion-no-dead-end-discovery.snapshot.txt",
+        "evidence/r16-chunks/j36-rerun6/j36-major-user-journey-completion-no-dead-end-discovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 43218
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J36",
+      "kind": "configuration-limit",
+      "note": "The R22-G encoding runs the full J36 completion walk over the deterministic fixtures boot: the register round trip uses the scripted dev persona (the loud dev badge — the REAL /api/auth/register transport's email-taken/validation round trips are service-mode, proven at the contract level by packages/client-runtime/tests/account-creation.test.ts); the source chooser's connected truth and the BYOF import ride the fixture connectors (the REAL provider OAuth dance is J14/J28's service-side procedure); the Shorts like/save typed absence is the fixture source's own capability truth (the hydration law is asserted as capability-truth, not blanket presence).",
+      "procedure": "LEAD (the production sweep): deploy the integrated tree, run this journey with --base-url against the deployed service-mode boot (real register transport, a real connectable connector, a source that declares like/save), and capture the evidence under evidence/r22/ — the J35 production-parity sweep covers the same deployment."
+    }
+  ]
+}

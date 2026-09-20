@@ -1,0 +1,469 @@
+{
+  "schema": "wfx-journey-union/1",
+  "note": "R22 Lead battery (J01-J34 + J36, 35 encoded): memory-bounded chunk runs with isolated reruns of the starved tails (the R21 doctrine \u2014 the union of green runs is the evidence of record). J35 remains the Lead's live-production sweep (evidence/r22/production-sweep.md).",
+  "runs": [
+    {
+      "manifest": "evidence/r16-chunks/j01-j07/manifest.json",
+      "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+      "summary": {
+        "total": 7,
+        "encoded": 7,
+        "passed": 0,
+        "failed": 7,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j01-j07b/manifest.json",
+      "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+      "summary": {
+        "total": 7,
+        "encoded": 7,
+        "passed": 7,
+        "failed": 0,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j08-j13/manifest.json",
+      "commit": "0da5a86d3967379bfe69f8de18e3bbabc4f5361d",
+      "summary": {
+        "total": 6,
+        "encoded": 6,
+        "passed": 6,
+        "failed": 0,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j14-j20/manifest.json",
+      "commit": "0da5a86d3967379bfe69f8de18e3bbabc4f5361d",
+      "summary": {
+        "total": 7,
+        "encoded": 7,
+        "passed": 6,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j19-rerun/manifest.json",
+      "commit": "f467a8ba29f08d5212dcf31646c88552403ce9ad",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j19-rerun3/manifest.json",
+      "commit": "21c267f00872241df1136b322cf44be978b5d48a",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 1,
+        "failed": 0,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j21-j27/manifest.json",
+      "commit": "f467a8ba29f08d5212dcf31646c88552403ce9ad",
+      "summary": {
+        "total": 7,
+        "encoded": 7,
+        "passed": 7,
+        "failed": 0,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j28-j34/manifest.json",
+      "commit": "21c267f00872241df1136b322cf44be978b5d48a",
+      "summary": {
+        "total": 7,
+        "encoded": 7,
+        "passed": 6,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j31-rerun/manifest.json",
+      "commit": "21c267f00872241df1136b322cf44be978b5d48a",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 1,
+        "failed": 0,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36-rerun/manifest.json",
+      "commit": "e2429b4f6e7e0874864cc47a975c7bbc88453ded",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36-rerun2/manifest.json",
+      "commit": "557e61db03425150df5bd74fc0b50a1cecd2b9b3",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36-rerun3/manifest.json",
+      "commit": "557e61db03425150df5bd74fc0b50a1cecd2b9b3",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36-rerun4/manifest.json",
+      "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36-rerun5/manifest.json",
+      "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36-rerun6/manifest.json",
+      "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 1,
+        "failed": 0,
+        "notRun": 0
+      }
+    },
+    {
+      "manifest": "evidence/r16-chunks/j36/manifest.json",
+      "commit": "21c267f00872241df1136b322cf44be978b5d48a",
+      "summary": {
+        "total": 1,
+        "encoded": 1,
+        "passed": 0,
+        "failed": 1,
+        "notRun": 0
+      }
+    }
+  ],
+  "journeys": [
+    {
+      "id": "J01",
+      "title": "First launch / profile selection / onboarding",
+      "status": "pass",
+      "assertions": 18,
+      "durationMs": 5945,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J02",
+      "title": "Home discovery / hero / rows / intent entry",
+      "status": "pass",
+      "assertions": 13,
+      "durationMs": 2492,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J03",
+      "title": "Long-form Watch browsing",
+      "status": "pass",
+      "assertions": 6,
+      "durationMs": 2975,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J04",
+      "title": "Shorts vertical discovery",
+      "status": "pass",
+      "assertions": 13,
+      "durationMs": 3939,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J05",
+      "title": "Unified search",
+      "status": "pass",
+      "assertions": 6,
+      "durationMs": 4833,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J06",
+      "title": "Item detail / availability / realization choice",
+      "status": "pass",
+      "assertions": 11,
+      "durationMs": 4267,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J07",
+      "title": "Official embed playback",
+      "status": "pass",
+      "assertions": 13,
+      "durationMs": 6664,
+      "from": "j01-j07b"
+    },
+    {
+      "id": "J08",
+      "title": "Contained Browser playback",
+      "status": "pass",
+      "assertions": 10,
+      "durationMs": 15436,
+      "from": "j08-j13"
+    },
+    {
+      "id": "J09",
+      "title": "External playback fallback / return context",
+      "status": "pass",
+      "assertions": 13,
+      "durationMs": 13619,
+      "from": "j08-j13"
+    },
+    {
+      "id": "J10",
+      "title": "Like/save/action synchronization truth",
+      "status": "pass",
+      "assertions": 9,
+      "durationMs": 8678,
+      "from": "j08-j13"
+    },
+    {
+      "id": "J11",
+      "title": "Library / watchlist / history",
+      "status": "pass",
+      "assertions": 11,
+      "durationMs": 6916,
+      "from": "j08-j13"
+    },
+    {
+      "id": "J12",
+      "title": "Cross-device resume",
+      "status": "pass",
+      "assertions": 6,
+      "durationMs": 9957,
+      "from": "j08-j13"
+    },
+    {
+      "id": "J13",
+      "title": "Account/profile/identity lifecycle",
+      "status": "pass",
+      "assertions": 5,
+      "durationMs": 6910,
+      "from": "j08-j13"
+    },
+    {
+      "id": "J14",
+      "title": "Source connect / reauthorize / disconnect",
+      "status": "pass",
+      "assertions": 11,
+      "durationMs": 7747,
+      "from": "j14-j20"
+    },
+    {
+      "id": "J15",
+      "title": "Recommendation feedback controls",
+      "status": "pass",
+      "assertions": 6,
+      "durationMs": 7099,
+      "from": "j14-j20"
+    },
+    {
+      "id": "J16",
+      "title": "Anti-tunnel / exploration after a single watched topic",
+      "status": "pass",
+      "assertions": 4,
+      "durationMs": 6538,
+      "from": "j14-j20"
+    },
+    {
+      "id": "J17",
+      "title": "Explicit intent: learn / happier / surprise / tonight / friend taste",
+      "status": "pass",
+      "assertions": 6,
+      "durationMs": 9730,
+      "from": "j14-j20"
+    },
+    {
+      "id": "J18",
+      "title": "Attention modes: mindful / balanced / immersive / custom",
+      "status": "pass",
+      "assertions": 4,
+      "durationMs": 4295,
+      "from": "j14-j20"
+    },
+    {
+      "id": "J19",
+      "title": "WebFlix model / BYOM / local model policy",
+      "status": "pass",
+      "assertions": 11,
+      "durationMs": 5542,
+      "from": "j19-rerun3"
+    },
+    {
+      "id": "J20",
+      "title": "AI subtitles / translation / transcription / dubbing / commentary",
+      "status": "pass",
+      "assertions": 18,
+      "durationMs": 14743,
+      "from": "j14-j20"
+    },
+    {
+      "id": "J21",
+      "title": "Authorized torrent acquisition (web limited-status surface)",
+      "status": "pass",
+      "assertions": 14,
+      "durationMs": 13298,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J22",
+      "title": "Torrent metadata and file selection (web limited-status surface)",
+      "status": "pass",
+      "assertions": 7,
+      "durationMs": 6803,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J23",
+      "title": "Torrent playback before full completion (web status surface)",
+      "status": "pass",
+      "assertions": 15,
+      "durationMs": 11918,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J24",
+      "title": "Torrent background completion (web status surface)",
+      "status": "pass",
+      "assertions": 18,
+      "durationMs": 12707,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J25",
+      "title": "Torrent interruption / restart / resume (web status surface)",
+      "status": "pass",
+      "assertions": 19,
+      "durationMs": 10170,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J26",
+      "title": "Verified local asset appears in Library (web status/read surface)",
+      "status": "pass",
+      "assertions": 8,
+      "durationMs": 5636,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "status": "pass",
+      "assertions": 6,
+      "durationMs": 6400,
+      "from": "j21-j27"
+    },
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "status": "pass",
+      "assertions": 22,
+      "durationMs": 23967,
+      "from": "j28-j34"
+    },
+    {
+      "id": "J29",
+      "title": "Network loss / playback recovery",
+      "status": "pass",
+      "assertions": 19,
+      "durationMs": 21854,
+      "from": "j28-j34"
+    },
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "status": "pass",
+      "assertions": 12,
+      "durationMs": 8341,
+      "from": "j28-j34"
+    },
+    {
+      "id": "J31",
+      "title": "Cross-platform Web/Desktop parity (web-side anchors)",
+      "status": "pass",
+      "assertions": 9,
+      "durationMs": 13507,
+      "from": "j31-rerun"
+    },
+    {
+      "id": "J32",
+      "title": "Source-neutral identity: same item, multiple realizations",
+      "status": "pass",
+      "assertions": 9,
+      "durationMs": 8196,
+      "from": "j28-j34"
+    },
+    {
+      "id": "J33",
+      "title": "Bring Your Own Feed: import, preview, confirm, sync, provenance",
+      "status": "pass",
+      "assertions": 62,
+      "durationMs": 41415,
+      "from": "j28-j34"
+    },
+    {
+      "id": "J34",
+      "title": "Capability discoverability from normal product surfaces",
+      "status": "pass",
+      "assertions": 42,
+      "durationMs": 15324,
+      "from": "j28-j34"
+    },
+    {
+      "id": "J36",
+      "title": "Major user journey completion / no dead-end discovery",
+      "status": "pass",
+      "assertions": 48,
+      "durationMs": 43218,
+      "from": "j36-rerun6"
+    }
+  ],
+  "totals": {
+    "encoded": 35,
+    "passed": 35,
+    "failed": 0
+  }
+}
