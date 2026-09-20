@@ -58,6 +58,17 @@
  *                               typed connect action + the user-vocabulary
  *                               connection method, the anonymous sign-in
  *                               prerequisite, the honest unsupported truth)
+ * - `anonymous-viewing.ts`   — R23-A: the anonymous viewing capability
+ *                               MATRIX — the typed three-way auth-class
+ *                               distinction (anonymous read/play /
+ *                               webflix-account mutation+sync /
+ *                               provider-authorized playback), the frozen
+ *                               capability rows with user vocabulary, the
+ *                               per-capability access resolution (open /
+ *                               typed sign-in prerequisite / typed provider
+ *                               authorization prerequisite — never a wall),
+ *                               and the machine-checkable no-login-wall law
+ *                               (J37's forbidden invariant)
  * - `account-creation.ts`    — R22-B: the account-creation journey —
  *                               the typed register command + shared
  *                               validation (the service's own rules), the
@@ -101,6 +112,7 @@ export * from "./feed-mode";
 export * from "./model-controls";
 export * from "./control-views";
 export * from "./source-catalog";
+export * from "./anonymous-viewing";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
