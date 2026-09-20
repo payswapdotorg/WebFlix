@@ -194,8 +194,37 @@ export function reconcileFeedSnapshot(
     existingByKey.set(feedImportKey(feedRecordKeyInput(record)), record);
   }
 
+  // UNIFORM-CAPTURE LAW (frozen contract, ConnectorFeedSnapshot.sourceRef):
+  // the snapshot-level sourceRef "names the capture's container when it is
+  // uniform (a scoped playlist sync); a multi-container capture omits it and
+  // every item carries its own." An item without its own sourceRef in a
+  // uniform capture THEREFORE BELONGS to the snapshot's container — its
+  // effective container is the snapshot's. (R20-H integration fix: the R20-B
+  // per-item refine made item.sourceRef authoritative without this fallback,
+  // silently excluding every contract-conforming uniform capture from its own
+  // scope — the whole capture reconciled as removals. Pinned by the
+  // uniform-capture regression tests in feeds-reconcile.test.ts.)
+  const effectiveItems: readonly ConnectorFeedItem[] =
+    snapshot.sourceRef === undefined
+      ? snapshot.items
+      : snapshot.items.map((item) =>
+          item.sourceRef === undefined && snapshot.sourceRef !== undefined
+            ? {
+                externalRef: item.externalRef,
+                relationship: item.relationship,
+                sourceOrder: item.sourceOrder,
+                sourceRef: snapshot.sourceRef,
+                ...(item.title !== undefined ? { title: item.title } : {}),
+                ...(item.sourceUpdatedAt !== undefined
+                  ? { sourceUpdatedAt: item.sourceUpdatedAt }
+                  : {}),
+                ...(item.metadata !== undefined ? { metadata: item.metadata } : {}),
+              }
+            : item,
+        );
+
   let deduplicated = 0;
-  for (const item of snapshot.items) {
+  for (const item of effectiveItems) {
     if (snapshot.connectorId !== scope.connectorId) break; // foreign capture: nothing is in scope
     if (!itemInScope(item, scope)) continue;
     const key = feedImportKey({

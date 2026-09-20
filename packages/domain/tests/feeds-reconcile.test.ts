@@ -242,6 +242,87 @@ describe("reconcileFeedSnapshot — intra-capture deduplication", () => {
 });
 
 // ---------------------------------------------------------------------------
+// The uniform-capture law (R20-H integration regression)
+// ---------------------------------------------------------------------------
+
+describe("reconcileFeedSnapshot — the uniform-capture law", () => {
+  test("items WITHOUT their own sourceRef in a uniform capture belong to the SNAPSHOT's container (unchanged = keep, no-op)", () => {
+    // The frozen contract: snapshot.sourceRef "names the capture's container
+    // when it is uniform (a scoped playlist sync)". Items without item-level
+    // sourceRef are IN scope, and their import keys carry the snapshot's
+    // container — an unchanged re-capture reconciles to keeps, never to a
+    // full-capture removal (the R20-B per-item-refine regression this pins).
+    const existing = [
+      record("Wfx54Docu001", { sourceRef: "PL_A", sourceOrder: 0 }),
+      record("Wfx54Docu002", { sourceRef: "PL_A", sourceOrder: 1 }),
+    ];
+    const capture: ConnectorFeedSnapshot = {
+      ...snapshot([
+        { externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0 },
+        { externalRef: "Wfx54Docu002", relationship: "playlist", sourceOrder: 1 },
+      ]),
+      sourceRef: "PL_A",
+    };
+    const plan = reconcileFeedSnapshot(existing, capture, { ...scope, sourceRef: "PL_A" });
+    expect(plan.counts.added).toBe(0);
+    expect(plan.counts.removed).toBe(0);
+    expect(plan.counts.updated).toBe(0);
+    expect(plan.counts.kept).toBe(2);
+    // The upsert keys address the SAME records (the container is the
+    // snapshot's for containerless items).
+    for (const upsert of plan.upserts) {
+      expect(upsert.key).toBe(
+        feedImportKey({
+          profileId: PROFILE,
+          connectorId: CONNECTOR,
+          relationship: "playlist",
+          sourceRef: "PL_A",
+          externalRef: upsert.item.externalRef,
+        }),
+      );
+      expect(upsert.item.sourceRef).toBe("PL_A");
+    }
+  });
+
+  test("a changed uniform capture adds/removes correctly through the snapshot container", () => {
+    const existing = [
+      record("Wfx54Docu001", { sourceRef: "PL_A", sourceOrder: 0 }),
+      record("Wfx54Docu002", { sourceRef: "PL_A", sourceOrder: 1 }),
+    ];
+    const changed: ConnectorFeedSnapshot = {
+      ...snapshot([
+        { externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0 },
+        { externalRef: "Wfx54Docu003", relationship: "playlist", sourceOrder: 1 },
+      ]),
+      sourceRef: "PL_A",
+    };
+    const plan = reconcileFeedSnapshot(existing, changed, { ...scope, sourceRef: "PL_A" });
+    expect(plan.counts.removed).toBe(1); // Docu002 gone from the source
+    expect(plan.counts.added).toBe(1); // Docu003 new
+    expect(plan.counts.kept).toBe(1);
+    const removed = plan.decisions.find((d) => d.action === "remove");
+    expect(removed?.externalRef).toBe("Wfx54Docu002");
+    expect(removed?.sourceRef).toBe("PL_A");
+  });
+
+  test("a uniform capture never touches records of a DIFFERENT container (scoped truth)", () => {
+    const existing = [
+      record("Wfx54Docu001", { sourceRef: "PL_A", sourceOrder: 0 }),
+      record("Wfx54Docu009", { sourceRef: "PL_B", sourceOrder: 0 }),
+    ];
+    const capture: ConnectorFeedSnapshot = {
+      ...snapshot([
+        { externalRef: "Wfx54Docu001", relationship: "playlist", sourceOrder: 0 },
+      ]),
+      sourceRef: "PL_A",
+    };
+    const plan = reconcileFeedSnapshot(existing, capture, { ...scope, sourceRef: "PL_A" });
+    expect(plan.counts.removed).toBe(0); // PL_B's record is out of scope — retained
+    expect(plan.counts.kept).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Key integrity through the engine
 // ---------------------------------------------------------------------------
 
