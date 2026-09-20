@@ -168,6 +168,8 @@ export const j36MajorJourneyCompletion: Journey = {
 
     // ------------------------------------------------------------------
     // 4 — BYOF after connection (the prerequisite is satisfied).
+    // (The proven J33 flow: the fixture source starts not-connected — the
+    // J36 walk CONNECTS it first, then completes the import.)
     // ------------------------------------------------------------------
     await assert.visible(
       "[data-wfx-byof-panel]",
@@ -177,12 +179,25 @@ export const j36MajorJourneyCompletion: Journey = {
       "[data-wfx-byof-source='youtube']",
       "the feed-import source card renders (the choose-source step of the import journey)",
     );
+    // Connect the source (the prerequisite completion), then the import.
+    await browser.clickInteractive("[data-wfx-byof-action='connect']");
+    await browser.pollTextContains(
+      "[data-wfx-byof-source-auth='connected']",
+      "Connected — WebFlix can read the feed",
+      30_000,
+    );
     await browser.clickInteractive("[data-wfx-byof-action='preview']");
+    await browser.pollTextContains("[data-wfx-byof-preview]", "Preview your import from", 30_000);
+    await browser.waitLoad("networkidle");
+    await browser.snapshotInteractive();
     await assert.visible(
       "[data-wfx-byof-preview]",
       "the authorized import preview renders (preview before confirm — the provenance law)",
     );
     await browser.clickInteractive("[data-wfx-byof-action='confirm']");
+    await browser.pollTextContains("[data-wfx-byof-feed]", "Your imported feeds", 30_000);
+    await browser.waitLoad("networkidle");
+    await browser.snapshotInteractive();
     await assert.visible(
       "[data-wfx-byof-import]",
       "the confirmed import renders its durable card (the BYOF journey completed)",
