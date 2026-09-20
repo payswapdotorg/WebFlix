@@ -259,6 +259,19 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
             )
           }
         />
+        {/* R23 web-A — the typed PROVIDER-authorization truth: when the
+            source's OWN authorization is the missing piece, the reconnect
+            path is the SOURCE's (Settings → Sources) — distinct from any
+            WebFlix-account requirement; no playback failure may ever route
+            to a WebFlix login. */}
+        {view.providerAuthorization !== null ? (
+          <p className="wfx-player__trace" data-wfx-player-provider-auth={view.providerAuthorization.connectorId}>
+            {view.providerAuthorization.sentence}{" "}
+            <a href={view.providerAuthorization.reconnectHref} data-wfx-player-provider-reconnect>
+              Reconnect {view.providerAuthorization.connectorId}
+            </a>
+          </p>
+        ) : null}
         <WhereToWatch view={view.whereToWatch} variant="player" />
         {view.skippedForCapability.map((skipped) => (
           <p key={skipped.mode} className="wfx-player__trace" data-wfx-player-skipped={skipped.mode}>
@@ -283,6 +296,15 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
           </span>
           {view.resumePositionMs > 0 ? (
             <span data-wfx-player-resume>Resumed at {formatPosition(view.resumePositionMs)}</span>
+          ) : null}
+        </p>
+        {/* R23 web-A — the session-scoped progress truth (anonymous
+            sessions keep the place session-local; sign-in is the optional
+            upgrade, never a playback prerequisite). */}
+        <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
+          {view.progressScope.sentence}
+          {view.progressScope.offersSignInUpgrade ? (
+            <>{" "}<a href="/settings?section=general" data-wfx-player-progress-signin>Sign in (optional)</a></>
           ) : null}
         </p>
         <div className="wfx-actionbar">

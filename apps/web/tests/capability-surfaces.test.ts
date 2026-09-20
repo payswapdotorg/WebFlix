@@ -182,6 +182,7 @@ describe("R21-E — the Where-to-watch view (the decision hub's realization choi
 
   it("the typed resolve error renders its own error state with the retry next-action", () => {
     const view: import("../src/host/decision-views").WhereToWatchView = {
+      viewer: "anonymous",
       status: "error",
       errorDetail: "fixture transport 'resolve' failed: TypeError: fetch failed",
       activeSentence: "The ways to watch could not be read right now.",

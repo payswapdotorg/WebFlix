@@ -107,7 +107,7 @@ export function anonymousSessionState(
     signedIn: false,
     label: "Signed out",
     description:
-      "You are browsing in an anonymous session. Sign in to bring your history, watchlist, and profiles across devices — until then, this session stays honestly session-scoped and nothing pretends to be a profile." +
+      "You are watching in an anonymous session — no account is needed to watch public content. Sign in only to bring your history, watchlist, and profiles across devices; until then, this session stays honestly session-scoped and nothing pretends to be a profile." +
       note,
     sessionDurability,
   };

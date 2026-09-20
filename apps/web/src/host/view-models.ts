@@ -37,6 +37,8 @@ import { canUsePlaybackMode } from "@wfx/client-runtime";
 import { WebClock } from "@/platform/lifecycle";
 
 import type { WebRuntimeHost } from "./web-host";
+import { progressScopeTruthOf, viewerKindOf } from "./anonymous-truth";
+import type { ProgressScopeTruth } from "./anonymous-truth";
 import { canonicalIdFor } from "./web-host";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
 import {
@@ -324,6 +326,19 @@ export function cardAvailabilitySummary(usableCount: number, offered: number): s
 /** Load the search view for one query (canonical-joined results). */
 export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Promise<SearchView> {
   const query = rawQuery.trim();
+  // The empty query is NOT a search (the state machine's invalid-target
+  // law): the typed empty state answers WITHOUT asking the runtime —
+  // the J05 known defect (an unguarded empty query threw the typed
+  // invalid-input error into the error boundary), fixed here.
+  if (query.length === 0) {
+    return {
+      mode: host.mode,
+      query: "",
+      status: { state: "ready" },
+      cards: [],
+      availability: new Map<string, string>(),
+    };
+  }
   const model = await host.runtime.search({ query });
   const cards = cardsFromModel(model);
   // R21-E: the compact availability summary per result (the matrix's
@@ -564,6 +579,23 @@ export interface PlayerView {
   readonly whereToWatch: WhereToWatchView;
   /** R21-E — the AI action tray's view (the same tray as the item hub). */
   readonly aiTray: AiTrayView;
+  /**
+   * R23 web-A — the progress-scope truth of THIS surface's session
+   * binding (anonymous sessions keep progress session-local with
+   * sign-in offered as the optional upgrade — never a playback wall).
+   */
+  readonly progressScope: ProgressScopeTruth;
+  /**
+   * R23 web-A — the typed PROVIDER-authorization truth, present iff
+   * playback failed on the source's OWN authorization (the R23-B
+   * boundary's distinct truth — the reconnect path is the source's,
+   * never a WebFlix login).
+   */
+  readonly providerAuthorization: {
+    readonly connectorId: string;
+    readonly sentence: string;
+    readonly reconnectHref: string;
+  } | null;
 }
 
 /** Load the player view: resolve + prepare one playback session through the runtime. */
@@ -600,6 +632,20 @@ export async function loadPlayerView(
       ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
     }),
   ]);
+  // R23 web-A: the session truth of THIS surface's binding — the
+  // progress-scope sentence (session-local for anonymous sessions, with
+  // sign-in as the optional upgrade) and the typed provider-authorization
+  // truth when the resolve failed on the source's OWN authorization.
+  const viewer = viewerKindOf(host.session.state);
+  const progressScope = progressScopeTruthOf(viewer);
+  const providerAuthorizationOf_ = (failureKind: string): PlayerView["providerAuthorization"] => {
+    if (failureKind !== "unauthorized") return null;
+    return {
+      connectorId: input.connectorId,
+      sentence: `This needs ${input.connectorId}'s own sign-in — that is the source's requirement, not a WebFlix account. Reconnect the source to keep watching.`,
+      reconnectHref: "/settings?section=sources",
+    };
+  };
   // R21-E: the Where-to-watch switch — resolve the preferred mode's
   // realization and hand it to the runtime (still capability-checked: an
   // unusable preference answers the typed capability failure, never a
@@ -650,6 +696,8 @@ export async function loadPlayerView(
         externalReturn: null,
         whereToWatch,
         aiTray,
+        progressScope,
+        providerAuthorization: providerAuthorizationOf_("not-found"),
       };
     }
     // Engage the surface for the resolved mode (embed/browser open the
@@ -711,6 +759,8 @@ export async function loadPlayerView(
       externalReturn,
       whereToWatch,
       aiTray,
+      progressScope,
+      providerAuthorization: null,
     };
   } catch (thrown) {
     // resolvePlayback throws the typed RuntimeError for resolution failures
@@ -739,6 +789,8 @@ export async function loadPlayerView(
       externalReturn: null,
       whereToWatch,
       aiTray,
+      progressScope,
+      providerAuthorization: providerAuthorizationOf_(typeof kind === "string" ? kind : ""),
     };
   }
 }

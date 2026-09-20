@@ -82,6 +82,13 @@ export function WhereToWatch({
               <span className="wfx-capchip" data-wfx-watch-source>
                 source {option.connectorId}
               </span>
+              {/* R23 web-A — the typed access truth: public plays for
+                  everyone; a provider's OWN sign-in truth renders as the
+                  source's (active or needed), never a WebFlix-account
+                  requirement. */}
+              <span className="wfx-capchip wfx-capchip--access" data-wfx-watch-access={option.accessState}>
+                {option.accessSentence}
+              </span>
               {option.usable ? (
                 option.switchHref !== undefined ? (
                   <a className="wfx-btn wfx-btn--sm" href={option.switchHref} data-wfx-watch-switch={option.mode}>

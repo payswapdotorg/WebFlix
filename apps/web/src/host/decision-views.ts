@@ -25,13 +25,23 @@
  */
 
 import { realizationChoiceView } from "@wfx/client-runtime";
-import type { RealizationChoiceView } from "@wfx/client-runtime";
+import type {
+  RealizationAccessClass,
+  RealizationChoiceView,
+  ViewerSessionKind,
+} from "@wfx/client-runtime";
 import type { PlaybackMode } from "@wfx/domain";
 import { PLAYBACK_MODE_PRECEDENCE } from "@wfx/client-runtime";
 import { canUsePlaybackMode } from "@wfx/client-runtime";
 import type { ModelTask } from "@wfx/domain";
 
 import type { WebRuntimeHost } from "./web-host";
+import { realizationAccessTruth, viewerKindOf } from "./anonymous-truth";
+
+/** The viewer kind of a surface's session binding (the R23-A fold). */
+function viewerKindOfSession(state: { readonly signedIn: boolean }) {
+  return viewerKindOf(state);
+}
 
 // ---------------------------------------------------------------------------
 // The Where-to-watch view (the realization choice — R09 semantics)
@@ -49,6 +59,16 @@ export interface WatchOptionView {
   readonly usable: boolean;
   /** Present iff unusable: the honest platform reason. */
   readonly unusableReason?: string;
+  /**
+   * R23 web-A — the typed access truth (the R23-A/B boundary): the
+   * access class + the one-sentence user truth distinguishing PUBLIC
+   * realizations (play for everyone) from the PROVIDER's OWN sign-in
+   * requirement (never a WebFlix-account requirement).
+   */
+  readonly accessClass: RealizationAccessClass;
+  readonly accessSentence: string;
+  /** The rendered chip state (public / the source's sign-in active / needed). */
+  readonly accessState: "public" | "provider-authorized" | "provider-sign-in-needed";
   /**
    * The switch path: the player link that prefers this mode (present for
    * usable options — the "switch source" recovery the matrix binds).
@@ -68,6 +88,8 @@ export interface WhereToWatchView {
   readonly options: readonly WatchOptionView[];
   /** How many ways this platform can play the title right now. */
   readonly usableCount: number;
+  /** R23 web-A — the viewer the view resolved for (the session's own truth). */
+  readonly viewer: ViewerSessionKind;
 }
 
 /**
@@ -124,6 +146,17 @@ export async function loadWhereToWatchView(
     readonly durationMs?: number;
   },
 ): Promise<WhereToWatchView> {
+  // R23 web-A: the sources read (the provider-authorization truth the
+  // per-option access sentences fold) + the viewer of THIS surface's
+  // session binding. A failed sources read degrades to the honest empty
+  // fact list — the access sentences render the source's requirement
+  // truthfully without a fabricated authorization state.
+  const sourcesModel = await host.runtime.sources.refresh().catch(() => null);
+  const sources =
+    sourcesModel !== null && sourcesModel.status.state === "ready"
+      ? sourcesModel.sources
+      : [];
+  const viewer = viewerKindOfSession(host.session.state);
   const result = await host.serverPort.resolve(input.externalRef);
   if (!result.ok) {
     return {
@@ -132,6 +165,7 @@ export async function loadWhereToWatchView(
       activeSentence: "The ways to watch could not be read right now.",
       options: [],
       usableCount: 0,
+      viewer,
     };
   }
   const realizations = result.value;
@@ -153,31 +187,49 @@ export async function loadWhereToWatchView(
     })),
     active,
   });
-  const options: WatchOptionView[] = choice.options.map((option) => ({
-    mode: option.mode,
-    modeLabel: option.modeLabel,
-    connectorId: option.connectorId,
-    usable: option.usable,
-    ...(option.unusableReason !== undefined ? { unusableReason: option.unusableReason } : {}),
-    ...(option.usable
-      ? {
-          switchHref: playerHrefWithMode({
-            itemId: input.itemId,
-            connectorId: input.connectorId,
-            externalRef: input.externalRef,
-            title: input.title,
-            canonicalType: input.canonicalType,
-            ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-            mode: option.mode,
-          }),
-        }
-      : {}),
-  }));
+  const options: WatchOptionView[] = choice.options.map((option) => {
+    const access = realizationAccessTruth({
+      viewer,
+      mode: option.mode,
+      connectorId: option.connectorId,
+      sources,
+    });
+    const accessState: WatchOptionView["accessState"] =
+      access.accessClass === "public"
+        ? "public"
+        : access.playbackDecision.kind === "playback-may-start"
+          ? "provider-authorized"
+          : "provider-sign-in-needed";
+    return {
+      mode: option.mode,
+      modeLabel: option.modeLabel,
+      connectorId: option.connectorId,
+      usable: option.usable,
+      ...(option.unusableReason !== undefined ? { unusableReason: option.unusableReason } : {}),
+      accessClass: access.accessClass,
+      accessSentence: access.sentence,
+      accessState,
+      ...(option.usable
+        ? {
+            switchHref: playerHrefWithMode({
+              itemId: input.itemId,
+              connectorId: input.connectorId,
+              externalRef: input.externalRef,
+              title: input.title,
+              canonicalType: input.canonicalType,
+              ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+              mode: option.mode,
+            }),
+          }
+        : {}),
+    };
+  });
   return {
     status: "ready",
     activeSentence: activeSentenceOf(choice, options.filter((option) => option.usable).length),
     options,
     usableCount: options.filter((option) => option.usable).length,
+    viewer,
   };
 }
 
