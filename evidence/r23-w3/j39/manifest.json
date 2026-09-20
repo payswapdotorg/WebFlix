@@ -1,0 +1,171 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "18a3f0d17b9d2130f574f7d99dc235acdbc4182f",
+  "branch": "wfx/r23/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "webUrl": "",
+    "ci": false,
+    "startedAt": "2026-09-20T21:24:47.735Z",
+    "finishedAt": "2026-09-20T21:24:47.745Z",
+    "determinism": [
+      "the REAL R23-W3 Desktop surface composition (the localAi + whereToWatch + torrentPlayback surfaces over ONE shared runtime)",
+      "the R23-F artifact fixture (the honest shapes: transcripts with speaker labels, chapters/scenes, searchable moments — every artifact carrying its provenance block)",
+      "the scripted-available model runtime probe (the packaging truth's available branch)",
+      "the InMemoryNativeMediaPort (the R10 seam's truthful event pump)",
+      "the fixed clock (every stamp is 2026-09-21T10:00:00.000Z)"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J39",
+      "title": "Multimodal Media Intelligence (Desktop — the artifacts consumed)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "step": "M1",
+          "description": "the researched catalog renders (the plan's candidates)"
+        },
+        {
+          "step": "M1",
+          "description": "the R2T2 row records the REAL license terms"
+        },
+        {
+          "step": "M1",
+          "description": "the row carries the pinned revision + provenance"
+        },
+        {
+          "step": "M1",
+          "description": "the hardware truth is honest (consumer GPU)"
+        },
+        {
+          "step": "M2",
+          "description": "the runtime probe answers available"
+        },
+        {
+          "step": "M2",
+          "description": "the version is the runtime's own truth"
+        },
+        {
+          "step": "M2",
+          "description": "the descriptor names the local-desktop execution"
+        },
+        {
+          "step": "M3",
+          "description": "no legal audio => the typed refusal (no bypass)"
+        },
+        {
+          "step": "M3",
+          "description": "legal audio => the gate opens (the routing consulted)"
+        },
+        {
+          "step": "M3",
+          "description": "the frozen envelope renders (80ms-2s chunks; 200-600ms latency)"
+        },
+        {
+          "step": "M4",
+          "description": "the artifacts are derived"
+        },
+        {
+          "step": "M4",
+          "description": "the transcript carries the timed segments"
+        },
+        {
+          "step": "M4",
+          "description": "the speaker labels ride the diarization"
+        },
+        {
+          "step": "M4",
+          "description": "the chapters carry the structural units"
+        },
+        {
+          "step": "M4",
+          "description": "the searchable moments carry the descriptions"
+        },
+        {
+          "step": "M5",
+          "description": "the transcript names its model"
+        },
+        {
+          "step": "M5",
+          "description": "the revision pin rides the provenance"
+        },
+        {
+          "step": "M5",
+          "description": "the confidence renders honestly"
+        },
+        {
+          "step": "M5",
+          "description": "the source-provided distinction exists in the vocabulary"
+        },
+        {
+          "step": "M6",
+          "description": "every discovery feature answers"
+        },
+        {
+          "step": "M6",
+          "description": "some features are available on these artifacts"
+        },
+        {
+          "step": "M6",
+          "description": "the missing prerequisites are NAMED (never approximated)"
+        },
+        {
+          "step": "M7",
+          "description": "the playback started (the native playhead exists)"
+        },
+        {
+          "step": "M7",
+          "description": "the moment matches the visual-event query"
+        },
+        {
+          "step": "M7",
+          "description": "the jump executed"
+        },
+        {
+          "step": "M7",
+          "description": "the playhead moved to the moment's start"
+        },
+        {
+          "step": "M8",
+          "description": "the available runtime answers the local-desktop hop"
+        },
+        {
+          "step": "M8",
+          "description": "the authority boundary renders (no model authorizes anything)"
+        },
+        {
+          "step": "M9",
+          "description": "the narration carries every journey leg (8 steps)"
+        },
+        {
+          "step": "M9",
+          "description": "the journey recorded real assertions"
+        }
+      ],
+      "artifacts": [
+        "j39-desktop-narration.txt",
+        "summary.md"
+      ],
+      "pageErrors": [],
+      "durationMs": 10
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J39",
+      "kind": "desktop-procedure",
+      "note": "The REAL model invocation paths (the local runtime executing open models, the semantic search over a live index) and the native webview surfaces cannot execute in this sandbox; the artifacts here are the composition's truth seam feeding the REAL surface projections.",
+      "procedure": "LEAD (journeys/desktop/README.md): run the real Desktop product with a real derived-artifact set and the packaged local model runtime; the truths this run pinned (license/provenance rendering, the runtime packaging truth, the legal-audio gate, the artifact views, the typed feature availability, the moment jump) are the acceptance vocabulary."
+    }
+  ]
+}

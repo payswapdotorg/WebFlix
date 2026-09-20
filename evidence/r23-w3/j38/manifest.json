@@ -1,0 +1,270 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "18a3f0d17b9d2130f574f7d99dc235acdbc4182f",
+  "branch": "wfx/r23/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "webUrl": "",
+    "ci": false,
+    "startedAt": "2026-09-20T21:24:47.610Z",
+    "finishedAt": "2026-09-20T21:24:47.623Z",
+    "determinism": [
+      "the REAL R23-W3 Desktop surface composition (mirroring createDesktopApp's wiring: the whereToWatch + torrentPlayback + openViewing + localAi + offlineDiscovery surfaces over ONE shared runtime)",
+      "the deterministic torrent-flow engine double (the R11-R13 public shapes; the authorized user-owned provenance through the registry mint)",
+      "the InMemoryNativeMediaPort (the R10 seam's truthful event pump — the runtime's only progress source)",
+      "the fixed clock (every stamp is 2026-09-21T10:00:00.000Z)"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (Desktop — the full native path)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "step": "W1",
+          "description": "the three frozen groups render in the frozen order"
+        },
+        {
+          "step": "W1",
+          "description": "the peer-copy entry carries the frozen label"
+        },
+        {
+          "step": "W1",
+          "description": "the peer copy satisfies the NATIVE rung"
+        },
+        {
+          "step": "W1",
+          "description": "the peer copy is ELIGIBLE for the primary play decision (the R23-E law)"
+        },
+        {
+          "step": "W1",
+          "description": "the label is never 'Offline copy' (the vocabulary law)"
+        },
+        {
+          "step": "W2",
+          "description": "the primary action is the play decision"
+        },
+        {
+          "step": "W2",
+          "description": "the primary action plays the peer copy"
+        },
+        {
+          "step": "W2",
+          "description": "the primary label names the peer copy"
+        },
+        {
+          "step": "W2",
+          "description": "the primary detail states playback-before-completion"
+        },
+        {
+          "step": "W3",
+          "description": "the multi-file torrent answers the file-choice step"
+        },
+        {
+          "step": "W3",
+          "description": "the candidates are protocol-free"
+        },
+        {
+          "step": "W3",
+          "description": "the playable files lead"
+        },
+        {
+          "step": "W3",
+          "description": "the next-step sentence is honest"
+        },
+        {
+          "step": "W3",
+          "description": "the chosen file starts the playback"
+        },
+        {
+          "step": "W4",
+          "description": "the playback session W3 started is live"
+        },
+        {
+          "step": "W4",
+          "description": "the playback runs through the NATIVE rung (never a torrent mode)"
+        },
+        {
+          "step": "W4",
+          "description": "the realization is the peer-copy vocabulary"
+        },
+        {
+          "step": "W4",
+          "description": "the open input was the authorized torrent"
+        },
+        {
+          "step": "W4",
+          "description": "playback engaged BEFORE completion (the progress is under way)"
+        },
+        {
+          "step": "W4",
+          "description": "the acquisition surfaced Buffering"
+        },
+        {
+          "step": "W4",
+          "description": "the progress is the measured fraction (1/6 — before completion)"
+        },
+        {
+          "step": "W5",
+          "description": "the playback session is live"
+        },
+        {
+          "step": "W5",
+          "description": "the playback phase is playing"
+        },
+        {
+          "step": "W5",
+          "description": "the position is the port's evidence"
+        },
+        {
+          "step": "W5",
+          "description": "the acquisition surfaced Playing (while the rest downloads)"
+        },
+        {
+          "step": "W5",
+          "description": "the runway is the measured truth"
+        },
+        {
+          "step": "W6",
+          "description": "the seek moved the playhead to 42s"
+        },
+        {
+          "step": "W6",
+          "description": "the watch state kept the place (the same fold any way of watching feeds)"
+        },
+        {
+          "step": "W6",
+          "description": "a seek honestly demotes the acquisition to Buffering (the deadline truth)"
+        },
+        {
+          "step": "W7",
+          "description": "the playback paused"
+        },
+        {
+          "step": "W7",
+          "description": "the acquisition carries the paused modifier (never a paused STATE)"
+        },
+        {
+          "step": "W7",
+          "description": "the playback resumed (playing)"
+        },
+        {
+          "step": "W7",
+          "description": "the acquisition returned to Playing"
+        },
+        {
+          "step": "W8",
+          "description": "the acquisition surfaced Completing"
+        },
+        {
+          "step": "W8",
+          "description": "the background-completion surface carries the work"
+        },
+        {
+          "step": "W8",
+          "description": "the verification phase surfaced (checking the finished files)"
+        },
+        {
+          "step": "W8",
+          "description": "a bare completion never claims Ready offline"
+        },
+        {
+          "step": "W9",
+          "description": "the verified exposure EARNED Ready offline"
+        },
+        {
+          "step": "W9",
+          "description": "the earned actions are play-offline + reverify"
+        },
+        {
+          "step": "W9",
+          "description": "the Library Offline section carries the verified asset"
+        },
+        {
+          "step": "W9",
+          "description": "the player truth: playback can continue without a connection"
+        },
+        {
+          "step": "W10",
+          "description": "the recovery re-bound the journaled session"
+        },
+        {
+          "step": "W10",
+          "description": "the acquisition RESUMED (never a fresh restart)"
+        },
+        {
+          "step": "W10",
+          "description": "the restored session is paused at its control point"
+        },
+        {
+          "step": "W10",
+          "description": "the retained progress is the journaled fraction (4/6)"
+        },
+        {
+          "step": "W10",
+          "description": "NO false completion (the honesty law)"
+        },
+        {
+          "step": "W10",
+          "description": "the failure surfaced (the loudest fact)"
+        },
+        {
+          "step": "W10",
+          "description": "the failure is recoverable with the SAME retry action"
+        },
+        {
+          "step": "W10",
+          "description": "the default failure detail is protocol-free"
+        },
+        {
+          "step": "W10",
+          "description": "the retry executed through the same surface"
+        },
+        {
+          "step": "W10",
+          "description": "the retry's fresh session is bound"
+        },
+        {
+          "step": "W10",
+          "description": "the fresh attempt surfaced truthfully (preparing)"
+        },
+        {
+          "step": "W11",
+          "description": "every walk-surface string passes the stale-copy sweep (5 strings)"
+        },
+        {
+          "step": "W11",
+          "description": "the narration carries every journey leg (15 steps)"
+        },
+        {
+          "step": "W11",
+          "description": "the journey recorded real assertions"
+        }
+      ],
+      "artifacts": [
+        "j38-desktop-narration.txt",
+        "summary.md"
+      ],
+      "pageErrors": [],
+      "durationMs": 13
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J38",
+      "kind": "desktop-procedure",
+      "note": "The NATIVE halves (the real engine binary behind createShellEngineProcess streaming the in-progress torrent through the R15 range gateway, the real swarm, the real tray-kept background work) cannot execute in this sandbox — no native toolchain.",
+      "procedure": "LEAD (journeys/desktop/README.md): run the real Desktop product (apps/desktop over the Tauri shell with createShellEngineProcess, the engine binary from packages/native-media, a real authorized source) and drive the same walk — the state grammar this run pinned (where-to-watch → file-choice → buffering → playing-before-completion → seek → pause/resume → completing → verifying → ready-offline → Library → interrupted-recovery resuming-with-retained-progress → failed-retry) is the acceptance vocabulary; capture per-state screenshots and the same manifest under evidence/<run>/."
+    }
+  ]
+}

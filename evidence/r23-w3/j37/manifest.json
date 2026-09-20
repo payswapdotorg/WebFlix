@@ -1,0 +1,206 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "18a3f0d17b9d2130f574f7d99dc235acdbc4182f",
+  "branch": "wfx/r23/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "webUrl": "",
+    "ci": false,
+    "startedAt": "2026-09-20T21:24:47.481Z",
+    "finishedAt": "2026-09-20T21:24:47.489Z",
+    "determinism": [
+      "the REAL R23-W3 Desktop surface composition (the openViewing + whereToWatch + torrentPlayback surfaces over ONE shared runtime)",
+      "the deterministic torrent-flow engine double (the R11-R13 public shapes; authorized user-owned provenance)",
+      "the InMemoryNativeMediaPort (the R10 seam's truthful event pump)",
+      "the fixed clock (every stamp is 2026-09-21T10:00:00.000Z)"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J37",
+      "title": "Anonymous Viewing (Desktop — the open-viewing semantics)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "step": "A1",
+          "description": "the fresh viewer is anonymous"
+        },
+        {
+          "step": "A1",
+          "description": "every primary surface opens anonymously"
+        },
+        {
+          "step": "A1",
+          "description": "the surfaces are the frozen set"
+        },
+        {
+          "step": "A2",
+          "description": "the account note never demands sign-in to watch"
+        },
+        {
+          "step": "A2",
+          "description": "the account note names what signing in brings"
+        },
+        {
+          "step": "A2",
+          "description": "the public-watch rows exist"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for open-home (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for open-watch (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for open-shorts (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for open-search (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for open-item-details (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for resolve-public-realizations (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for play-public-embed (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for play-public-browser (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for play-public-external (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for play-public-native-compatible (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for watch-continuously-anonymous-session (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for public-playback-controls (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for platform-capability-truth (anonymous viewer)"
+        },
+        {
+          "step": "A2",
+          "description": "no login redirect is lawful for non-persistent-local-interaction (anonymous viewer)"
+        },
+        {
+          "step": "A3",
+          "description": "the Where-to-watch groups render for the anonymous viewer"
+        },
+        {
+          "step": "A3",
+          "description": "the peer copy is offered to the anonymous viewer"
+        },
+        {
+          "step": "A3",
+          "description": "the peer copy is primary-eligible"
+        },
+        {
+          "step": "A4",
+          "description": "the public realization may start for the anonymous viewer"
+        },
+        {
+          "step": "A4",
+          "description": "the authorized peer copy may start without any account"
+        },
+        {
+          "step": "A5",
+          "description": "the gap answers the provider-authorization prerequisite"
+        },
+        {
+          "step": "A5",
+          "description": "the next action is the provider's own authorization"
+        },
+        {
+          "step": "A5",
+          "description": "the action names the distinction"
+        },
+        {
+          "step": "A5",
+          "description": "a WebFlix login redirect is NEVER lawful here"
+        },
+        {
+          "step": "A6",
+          "description": "the anonymous playback started through the native rung"
+        },
+        {
+          "step": "A6",
+          "description": "the playback is playing"
+        },
+        {
+          "step": "A6",
+          "description": "no login was ever required to watch"
+        },
+        {
+          "step": "A7",
+          "description": "the playback session is still live"
+        },
+        {
+          "step": "A7",
+          "description": "the progress record is session-local"
+        },
+        {
+          "step": "A7",
+          "description": "the record belongs to this session"
+        },
+        {
+          "step": "A7",
+          "description": "the anonymous promotion REFUSES (never durable identity)"
+        },
+        {
+          "step": "A8",
+          "description": "every open-viewing string passes the stale-copy sweep (7 strings)"
+        },
+        {
+          "step": "A8",
+          "description": "the narration carries every journey leg (7 steps)"
+        },
+        {
+          "step": "A8",
+          "description": "the journey recorded real assertions"
+        }
+      ],
+      "artifacts": [
+        "j37-desktop-narration.txt",
+        "summary.md"
+      ],
+      "pageErrors": [],
+      "durationMs": 8
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J37",
+      "kind": "desktop-procedure",
+      "note": "The NATIVE halves (the real Desktop webview's rendered surfaces over the Tauri shell) cannot execute in this sandbox — no native toolchain; the TypeScript composition is the proven surface.",
+      "procedure": "LEAD (journeys/desktop/README.md): run the real Desktop product and drive the same anonymous walk — the truths this run pinned (every surface opens anonymously, no login wall for public playback, provider-auth distinct, session-scoped progress) are the acceptance vocabulary."
+    }
+  ]
+}
