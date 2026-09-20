@@ -2,7 +2,7 @@
 
 **Historical release registry:** R00-R19 in docs/plans/2026-09-16-webflix-remediation-plan.md — COMPLETE and release-accepted.
 
-**Active execution registry:** R22 in docs/plans/2026-09-20-webflix-major-journey-hardening-plan.md. R20 and R21 are implementation-complete and acceptance-green; their issue records must be reconciled in R22-M.
+**Active execution registry:** R23/R24/R25 are registered (docs/plans/2026-09-20-webflix-open-viewing-torrent-ai-plan.md, -youtube-parity-performance-plan.md, -qwen-livetranslate-plan.md). **R20, R21 and R22 are implementation-complete and acceptance-green** (R22 accepted 2026-09-20: main @ `7252002`; battery — lint 0/10 baseline, typecheck clean, 4039 tests / 0 fail, contract-check OK, lane-check OK, 35/35 encoded journeys green per evidence/r22/journeys-union.json; production sweep — evidence/r22/production-sweep.md; issues #25/#26/#27 closed to match).
 
 The earlier WFX-001–043 registry remains historical context only. No worker should treat a legacy WFX item as sufficient proof that the corresponding product capability is complete.
 
@@ -66,6 +66,8 @@ R22 is complete only when a fresh user can COMPLETE the major product journeys a
 - affected J01-J35 journeys are rerun;
 - production smoke verification matches the final integrated SHA;
 - R20/R21 issue state and the work registry agree with completion truth.
+
+**ACCEPTANCE RECORD (2026-09-20, the Lead):** every clause above is green — the account-creation path, the source chooser with its typed prerequisite/connected truth, the BYOF completion after connection, the BYOM management round trip (add → bound → remove through the normal surface), the hydrated Shorts action truth, and the Web/Desktop shared-contract alignment are all carried by the three-lane integration on `main` @ `7252002`; J36 passes (48 assertions, evidence/r16-chunks/j36-rerun6/); all 35 encoded journeys rerun green (evidence/r22/journeys-union.json, the R21 isolated-rerun doctrine for the starved tails); the production smoke at the final SHA is evidence/r22/production-sweep.md; the J19 encoding was updated to the R22-F law (the BYOM panel is the section's real control surface); the model-controls fixture state became file-backed (the Turbopack split-module law) so the dev-boot journey exercises the real bind/remove round trip; issues #25/#26/#27 are closed to match.
 
 
 ## R23 completion truth
