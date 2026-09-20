@@ -39,7 +39,12 @@ import type {
   SourceCatalogView,
   SourceInfo,
 } from "@wfx/client-runtime";
-import { sourceCatalogView, sourceRecoveryAction } from "@wfx/client-runtime";
+import type { ModelPolicy, ModelTask } from "@wfx/domain";
+import {
+  byomManagementView,
+  sourceCatalogView,
+  sourceRecoveryAction,
+} from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
 import type { PersonalizeView } from "@/host/discoverability";
@@ -47,6 +52,7 @@ import type { ByofPanelView } from "@/host/byof/byof-view";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
 import { ByofPanel } from "@/components/byof/ByofPanel";
+import { ByomManagementPanel } from "@/components/settings/ByomManagementPanel";
 import { SourceActions } from "@/components/settings/SourceActions";
 import { SourceChooser } from "@/components/settings/SourceChooser";
 import { SessionControls } from "@/components/settings/SessionControls";
@@ -431,6 +437,37 @@ export function SettingsSurface({
                 ))}
               </ul>
             </>
+          ) : null}
+          {/* R22-F — the BYOM management panel (the F8 closer): the
+              normal management entry point over the existing runtime
+              operations. The contextual AI tray remains the place to
+              USE AI; this panel is the place to MANAGE model providers.
+              Consumes Worker 1's R22-C `byomManagementView` derivation
+              (the typed binding summary + supported task capabilities +
+              privacy mode + availability + add/bind + verify/usable +
+              remove/unbind + typed errors/recovery). The provider key
+              is the SECRET on its way IN (POST /api/model/byom/bind);
+              the transport seals it server-side, answers the secret-free
+              handle ONLY — this panel never renders the key. */}
+          {modelProviders !== undefined && modelPolicies !== undefined ? (
+            <ByomManagementPanel
+              view={byomManagementView({
+                providers: modelProviders.providers,
+                policies: modelPolicies.reduce(
+                  (acc, model) => {
+                    if (model.policy !== null) {
+                      acc[model.task] = model.policy;
+                    } else {
+                      acc[model.task] = null;
+                    }
+                    return acc;
+                  },
+                  {} as Partial<Record<ModelTask, ModelPolicy | null>>,
+                ),
+                status: modelProviders.status,
+              })}
+              authenticated={session.signedIn}
+            />
           ) : null}
         </section>
       ) : null}
