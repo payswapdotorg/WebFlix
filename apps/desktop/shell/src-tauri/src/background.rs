@@ -17,17 +17,19 @@
 //! EXECUTION BINDING (documented boundary): the executors that drive
 //! `acquisition` tasks are the native-media engine sessions themselves
 //! (R10's service process keeps downloading — it reports progress/state
-//! through the engine channel, and R14 wires the acquisition UX);
-//! `sync`/`maintenance` executors land with R15's connector sync. Until
-//! an executor attaches, a task honestly sits in `scheduled` (progress
-//! `-1`) — never fake `running`.
+//! through the engine channel, and R14 wires the acquisition UX); the
+//! BYOF feed `sync` executor landed with R20-F (the Desktop adapter's
+//! feed-sync driver reports through the `wfx_task_report` seam); other
+//! `sync`/`maintenance` executors land with their lanes. Until an executor
+//! attaches, a task honestly sits in `scheduled` (progress `-1`) — never
+//! fake `running`.
 
 use std::collections::HashMap;
 use std::sync::Mutex;
 
 use tauri::{AppHandle, Emitter};
 
-use crate::ipc::{now_ms, CommandResult, ShellTaskOutcome, ShellTaskSpec, ShellTaskStatus};
+use crate::ipc::{now_ms, CommandResult, ShellTaskOutcome, ShellTaskReport, ShellTaskSpec, ShellTaskStatus};
 
 /// The registry cap (bounded bookkeeping; `at-capacity` is a typed answer).
 const MAX_TRACKED_TASKS: usize = 256;
@@ -129,24 +131,34 @@ impl Tasks {
         self.tasks.lock().map(|tasks| tasks.values().cloned().collect()).unwrap_or_default()
     }
 
-    /// The executor-facing report seam (R10/R14/R15): an executor reports
-    /// a truthful transition; the registry records and pushes it.
-    #[allow(dead_code)]
-    pub fn report(&self, app: &AppHandle, task_id: &str, state: &'static str, progress: f64, detail: Option<String>) {
+    /// The executor-facing report seam (R10/R14/R15/R20-F): an executor
+    /// reports a truthful transition; the registry records and pushes it.
+    /// The state string is VALIDATED against the closed task-state
+    /// vocabulary — a bogus state never reaches the channel. Answers
+    /// whether a KNOWN task was moved (`false` = unknown id: an honest
+    /// no, never a fake transition).
+    pub fn report(&self, app: &AppHandle, report: &ShellTaskReport) -> bool {
+        const STATES: [&str; 6] = ["scheduled", "running", "suspended", "completed", "failed", "cancelled"];
+        let state: &'static str = match STATES.iter().find(|s| **s == report.state) {
+            Some(valid) => valid,
+            None => return false, // a state outside the closed vocabulary is refused
+        };
         if let Ok(mut tasks) = self.tasks.lock() {
-            if let Some(task) = tasks.get(task_id) {
+            if let Some(task) = tasks.get(&report.task_id) {
                 let next = ShellTaskStatus {
-                    task_id: task_id.to_string(),
+                    task_id: report.task_id.clone(),
                     kind: task.kind.clone(),
                     state,
-                    progress,
-                    detail,
+                    progress: report.progress,
+                    detail: report.detail.clone(),
                     updated_at_ms: now_ms(),
                 };
                 Self::push(app, next.clone());
-                tasks.insert(task_id.to_string(), next);
+                tasks.insert(report.task_id.clone(), next);
+                return true;
             }
         }
+        false
     }
 }
 

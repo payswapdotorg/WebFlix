@@ -51,6 +51,10 @@
  *                   member of the frozen Capability union)
  *   readLibrary   → libraryRead
  *   writeLibrary  → libraryWrite
+ *   importFeed    → feedImport (R20-B: the EXPLICIT feed/import capability —
+ *                   never inferred from catalogSearch; connectors that
+ *                   cannot legally/reliably expose the user's feed answer
+ *                   the typed `unsupported` verdict)
  *   identity, availability → informational only: they gate no SDK operation
  *   (availability is reported per item via SourceItem.availability; identity
  *   is surfaced by auth-aware orchestrators, e.g. WFX-012).
@@ -65,6 +69,8 @@ import type {
   Capability,
   ConnectorContext,
   ConnectorDescriptor,
+  ConnectorFeedSnapshot,
+  FeedImportRequest,
   LibraryCommand,
   LibraryEntry,
   PlaybackRealization,
@@ -73,6 +79,7 @@ import type {
   SourceItem,
   UserAction,
 } from "@wfx/domain";
+import { isFeedImportMethod, isFeedRelationship } from "@wfx/domain";
 
 import { defineDescriptor } from "./descriptor";
 import { assertOperational, ConnectorLifecycle, type LifecycleState } from "./lifecycle";
@@ -235,6 +242,37 @@ function validateLibraryCommand(command: unknown): ConnectorError | null {
   }
   if (command.metadata !== undefined && !isPlainObject(command.metadata)) {
     return invalidString("command.metadata", "must be an object when present");
+  }
+  return null;
+}
+
+function validateFeedImportRequest(request: unknown): ConnectorError | null {
+  if (!isPlainObject(request)) {
+    return invalidString("request", "must be an object");
+  }
+  if (!isFeedImportMethod(request.method)) {
+    return invalidInput(
+      `request.method must be one of 'api' | 'official-export' | 'user-file' | 'snapshot', got '${String(request.method)}'`,
+    );
+  }
+  if (request.relationships !== undefined) {
+    if (!Array.isArray(request.relationships)) {
+      return invalidString("request.relationships", "must be an array when present");
+    }
+    for (const relationship of request.relationships) {
+      if (!isFeedRelationship(relationship)) {
+        return invalidInput(
+          `request.relationships contains an unknown relationship '${String(relationship)}'`,
+        );
+      }
+    }
+  }
+  if (request.sourceRef !== undefined) {
+    const refError = validateNonEmptyString("request.sourceRef", request.sourceRef);
+    if (refError) return refError;
+  }
+  if (request.artifact !== undefined && !(request.artifact instanceof Uint8Array)) {
+    return invalidInput("request.artifact must be a Uint8Array when present");
   }
   return null;
 }
@@ -457,6 +495,24 @@ export abstract class BaseConnector implements SourceConnector {
     );
   }
 
+  /**
+   * Optional authorized feed import (R20-B). Default: typed `unsupported` —
+   * a connector that declares 'feedImport' but provides no implementation
+   * honestly answers unsupported instead of fabricating a feed. The frozen
+   * `SourceConnector` interface carries no importFeed member (BYOF is an
+   * SDK-extended surface, like the YouTube pagination surfaces); the result
+   * surface below is the canonical entry point.
+   */
+  protected onImportFeed(
+    _ctx: ConnectorContext,
+    _request: FeedImportRequest,
+  ): AsyncConnectorResultInput<ConnectorFeedSnapshot> {
+    return unsupported(
+      "feedImport",
+      `connector '${this.id}' declares 'feedImport' but provides no onImportFeed implementation`,
+    );
+  }
+
   /** Optional async setup, run before the registered → initialized transition. */
   protected onInitialize(): void | Promise<void> {}
 
@@ -540,6 +596,26 @@ export abstract class BaseConnector implements SourceConnector {
     const capError = this.requireCapability("libraryWrite");
     if (capError) return this.failWith(capError);
     return this.settle("writeLibrary", () => this.onWriteLibrary(ctx, command));
+  }
+
+  /**
+   * Typed authorized feed import (R20-B). Requires the EXPLICIT `feedImport`
+   * capability — never `catalogSearch`. The hook returns one honest
+   * `ConnectorFeedSnapshot` (a point-in-time capture with provenance) or a
+   * typed failure: `unsupported` when the provider cannot legally/reliably
+   * expose the requested feed, `unauthorized` when the user's grant is
+   * missing.
+   */
+  async importFeedResult(
+    ctx: ConnectorContext,
+    request: FeedImportRequest,
+  ): Promise<ConnectorResult<ConnectorFeedSnapshot>> {
+    assertOperational(this.lifecycle_.state());
+    const inputError = validateContext(ctx) ?? validateFeedImportRequest(request);
+    if (inputError) return this.failWith(inputError);
+    const capError = this.requireCapability("feedImport");
+    if (capError) return this.failWith(capError);
+    return this.settle("importFeed", () => this.onImportFeed(ctx, request));
   }
 
   // --- plain surface (frozen-contract shims — see module docs) --------------

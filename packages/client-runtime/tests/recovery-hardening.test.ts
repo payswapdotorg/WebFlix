@@ -125,7 +125,7 @@ describe("R17 — sourceRecoveryAction (the typed re-auth offer per auth state)"
       identity: false, catalogSearch: true, metadata: true, playNative: false, playEmbed: true,
       playBrowser: false, playExternal: true, availability: true, libraryRead: true,
       libraryWrite: true, like: true, save: true, follow: false, comment: false,
-      download: false, transform: false,
+      download: false, transform: false, feedImport: false,
     },
     authState: "signedIn",
     requiresAuthorization: true,

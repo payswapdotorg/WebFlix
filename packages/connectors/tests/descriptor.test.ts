@@ -20,8 +20,8 @@ const VALID = {
 } as const;
 
 describe("CAPABILITIES truth constant", () => {
-  it("contains exactly the 16 frozen capabilities", () => {
-    expect(CAPABILITIES).toHaveLength(16);
+  it("contains exactly the 17 frozen capabilities", () => {
+    expect(CAPABILITIES).toHaveLength(17);
     expect(CAPABILITIES).toContain("identity");
     expect(CAPABILITIES).toContain("catalogSearch");
     expect(CAPABILITIES).toContain("metadata");
@@ -38,6 +38,9 @@ describe("CAPABILITIES truth constant", () => {
     expect(CAPABILITIES).toContain("comment");
     expect(CAPABILITIES).toContain("download");
     expect(CAPABILITIES).toContain("transform");
+    // R20-B: the explicit feed/import capability (declared by BYOF-capable
+    // connectors; never inferred from catalogSearch).
+    expect(CAPABILITIES).toContain("feedImport");
   });
 
   it("isCapability / isAuthMode do runtime membership checks", () => {

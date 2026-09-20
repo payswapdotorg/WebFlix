@@ -28,8 +28,10 @@ import type { SourcesModel, SourceInfo } from "@wfx/client-runtime";
 import { sourceRecoveryAction } from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
+import type { ByofPanelView } from "@/host/byof/byof-view";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
+import { ByofPanel } from "@/components/byof/ByofPanel";
 import { SourceActions } from "@/components/settings/SourceActions";
 
 /** The auth-state chip vocabulary (the honest per-state truth). */
@@ -129,6 +131,7 @@ export function SettingsSurface({
   mode,
   section,
   sources,
+  byof,
 }: {
   /** The truthful platform bundle (the runtime's own declaration). */
   readonly capabilities: WebPlatformBundle;
@@ -140,6 +143,8 @@ export function SettingsSurface({
   readonly section?: "sources" | "model" | "general";
   /** The runtime's sources model (R17: the sources section's data). */
   readonly sources?: SourcesModel;
+  /** The BYOF panel view (R20-D: the sources section's feed-import flow). */
+  readonly byof?: ByofPanelView;
 }): JSX.Element {
   const descriptor = capabilities.descriptor;
   const limitations = descriptor.limitations ?? {};
@@ -225,6 +230,7 @@ export function SettingsSurface({
               </p>
             </div>
           )}
+          {byof !== undefined ? <ByofPanel view={byof} mode={mode} /> : null}
         </section>
       ) : null}
 

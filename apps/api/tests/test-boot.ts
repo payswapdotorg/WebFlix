@@ -36,6 +36,7 @@ import {
 import type { ApiBoot } from "../src/host/boot";
 import { resolveApiConfig } from "../src/host/config";
 import { RecommendationControlsHost } from "../src/host/controls";
+import { createFeedImportHost, type FeedConnectorWiring } from "../src/host/feed-import";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
 import { HistoryHost } from "../src/host/history";
 import { ModelControlsHost } from "../src/host/model-controls";
@@ -73,11 +74,18 @@ export interface ApiTestBoot {
  * connector — the SDK's testing.ts pattern) and per-connector auth-flow
  * wirings (a stubbed token exchange), so the /sources routes' round-trips
  * are exercised deterministically with NO network.
+ *
+ * R20-H: `feedWiring` injects the feed-import connector wiring (the REAL
+ * YouTube connector over its recorded fixtures — the exact wiring law the
+ * web fixtures host established) so the /feeds routes' round-trips are
+ * exercised deterministically with NO network. Default: the honest EMPTY
+ * registry (an unprovisioned deployment's truth).
  */
 export async function createApiTestBoot(sourceOverrides?: {
   readonly extraSources?: readonly import("@wfx/experience").ConnectorPort[];
   readonly wirings?: ReadonlyMap<string, SourceAuthWiring>;
   readonly authGate?: import("../src/host/fan-out").FanOutAuthGate;
+  readonly feedWiring?: readonly FeedConnectorWiring[];
 }): Promise<ApiTestBoot> {
   const testDb = await createTestDb();
   const clock = new FixedClock(HANDLER_TEST_CLOCK_MS);
@@ -137,6 +145,23 @@ export async function createApiTestBoot(sourceOverrides?: {
     key: decodeEncryptionKey(TEST_ENCRYPTION_KEY_BASE64),
   });
 
+  // R20-H — the BYOF feed-import host (the exact wiring bootApi performs:
+  // the REAL FeedImportService over the same PGlite DbClient + the REAL
+  // migration set, plus the injected connector wiring — the recorded YouTube
+  // fixtures' connector in the /feeds route tests).
+  const feedImports = await createFeedImportHost({
+    db: testDb.db,
+    clock,
+    ids,
+    accounts: connectorAccounts,
+    wirings: new Map(
+      (sourceOverrides?.feedWiring ?? []).map((wiring) => [
+        wiring.connector.descriptor().id,
+        wiring,
+      ]),
+    ),
+  });
+
   // The R02 identity services — the SAME wiring bootApi performs (the
   // boot's 2.6 step): register/authenticate, session tokens, profiles,
   // and the profile-aware event sink, all over the shared seams.
@@ -175,6 +200,7 @@ export async function createApiTestBoot(sourceOverrides?: {
     history,
     controls,
     modelControls,
+    feedImports,
   };
   return { boot, testDb, clock, ids };
 }

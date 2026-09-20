@@ -116,6 +116,7 @@ export const CAPABILITIES = [
   "comment",
   "download",
   "transform",
+  "feedImport",
 ] as const satisfies readonly Capability[];
 const _capabilitiesCovers: Covers<Capability, typeof CAPABILITIES> = null;
 

@@ -42,6 +42,7 @@ export const CAPABILITIES: readonly Capability[] = [
   "comment",
   "download",
   "transform",
+  "feedImport",
 ] as const;
 
 // Compile-time exhaustiveness check: if the frozen Capability union gains or

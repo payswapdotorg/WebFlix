@@ -25,6 +25,7 @@ use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 mod background;
 mod browser_host;
 mod engine;
+mod file_import;
 mod ipc;
 mod lifecycle;
 mod notifications;
@@ -34,6 +35,7 @@ mod storage;
 use background::Tasks;
 use browser_host::Surfaces;
 use engine::Engines;
+use file_import::FileImports;
 use ipc::*;
 use lifecycle::Lifecycle;
 use storage::Storage;
@@ -52,6 +54,7 @@ pub fn run() {
             app.manage(Storage::new(&app_data_dir).expect("the storage areas could not be created"));
             app.manage(Surfaces::new(app_data_dir.clone()));
             app.manage(Tasks::new());
+            app.manage(FileImports::new());
             app.manage(Arc::new(Engines::new()));
             app.manage(Lifecycle::new());
 
@@ -106,6 +109,10 @@ pub fn run() {
             wfx_task_cancel,
             wfx_task_status,
             wfx_task_list,
+            wfx_task_report,
+            wfx_file_pick_available,
+            wfx_file_pick_open,
+            wfx_file_read,
             wfx_share_can_present,
             wfx_share_present,
             wfx_engine_spawn,
@@ -265,6 +272,28 @@ fn wfx_task_status(app: AppHandle, task_id: String) -> Option<ShellTaskStatus> {
 #[tauri::command]
 fn wfx_task_list(app: AppHandle) -> Vec<ShellTaskStatus> {
     app.state::<Tasks>().list()
+}
+
+#[tauri::command]
+fn wfx_task_report(app: AppHandle, report: ShellTaskReport) -> bool {
+    file_import::task_report(&app, report)
+}
+
+// — native file import (R20-F: the BYOF import file picker) —
+
+#[tauri::command]
+fn wfx_file_pick_available() -> ShellFilePickSupport {
+    file_import::pick_available()
+}
+
+#[tauri::command]
+async fn wfx_file_pick_open(app: AppHandle, request: ShellFilePickRequest) -> ShellFilePickOutcome {
+    file_import::pick_open(app, request).await
+}
+
+#[tauri::command]
+fn wfx_file_read(app: AppHandle, path: String) -> CommandResult<Vec<u8>> {
+    file_import::read_file(&app, &path)
 }
 
 // — sharing ———————————————————————————————————————————————————————————————

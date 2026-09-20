@@ -1,0 +1,1 @@
+- the library destination rendered watchlist/history/offline-and-verified with honest fresh-session empty states and the verified offline copy exposed

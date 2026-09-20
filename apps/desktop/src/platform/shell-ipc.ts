@@ -263,6 +263,75 @@ export type ShellTaskOutcome =
       readonly detail: string;
     };
 
+/**
+ * The executor-facing task report (R20-F): one truthful transition the
+ * EXECUTOR that drives a scheduled task reports to the registry. The
+ * registry is the state authority — it records the transition and pushes
+ * it on the `wfx://task` channel verbatim; it never invents progress.
+ */
+export interface ShellTaskReport {
+  readonly taskId: string;
+  readonly state: ShellTaskStatus["state"];
+  /** The executor's honest progress ([0,1], or -1 when genuinely unknown). */
+  readonly progress: number;
+  /** Honest detail (typed verdict vocabulary on failure states). */
+  readonly detail?: string;
+}
+
+// ---------------------------------------------------------------------------
+// Native file import (R20-F — the BYOF import file picker)
+// ---------------------------------------------------------------------------
+
+/** One file-type filter row of a pick request (the OS dialog's filter list). */
+export interface ShellFilePickFilter {
+  /** The filter's display name (plain product language, e.g. `"Official export"`). */
+  readonly name: string;
+  /** The extensions the filter admits, without dots (e.g. `["json"]`). */
+  readonly extensions: readonly string[];
+}
+
+/** A native open-file dialog request. */
+export interface ShellFilePickRequest {
+  /** The dialog title (plain product language; the shell picks a default when absent). */
+  readonly title?: string;
+  /** File-type filters shown in the dialog (absent/empty = all files). */
+  readonly filters?: readonly ShellFilePickFilter[];
+}
+
+/** One picked file (shell-truth metadata; the bytes come from `fileRead`). */
+export interface ShellPickedFile {
+  /** The absolute path the OS dialog returned. */
+  readonly path: string;
+  /** The file's base name (for display). */
+  readonly fileName: string;
+  /** The file's size in bytes, as the shell read it from the filesystem. */
+  readonly sizeBytes: number;
+}
+
+/**
+ * The typed outcome of a pick. A pick that did not happen names the honest
+ * reason — `dismissed` (the user closed the dialog: a normal non-event,
+ * never an error) or `unsupported` (this shell/platform cannot show a
+ * native file dialog — the typed capability truth, never a silent no-op).
+ */
+export type ShellFilePickOutcome =
+  | { readonly picked: true; readonly file: ShellPickedFile }
+  | {
+      readonly picked: false;
+      readonly reason: "dismissed" | "unsupported";
+      readonly detail: string;
+    };
+
+/**
+ * The shell's honest file-dialog capability answer (the
+ * `notificationPermission`-style query: a cheap truthful pre-check, never
+ * a probe that opens a dialog). `available: false` carries the platform
+ * reason (e.g. a headless platform with no dialog service).
+ */
+export type ShellFilePickSupport =
+  | { readonly available: true }
+  | { readonly available: false; readonly detail: string };
+
 // ---------------------------------------------------------------------------
 // Sharing
 // ---------------------------------------------------------------------------
@@ -354,6 +423,35 @@ export interface ShellIpc {
   taskStatus(taskId: string): Promise<ShellTaskStatus | null>;
   taskList(): Promise<readonly ShellTaskStatus[]>;
   onTaskEvent(handler: (status: ShellTaskStatus) => void): Unsubscribe;
+  /**
+   * R20-F — the executor report seam: report one truthful transition of a
+   * tracked task. Answers whether the report moved a KNOWN task (`false`
+   * when the taskId was never scheduled — an honest no, never a fake
+   * transition). This is how a TypeScript-side EXECUTOR (the BYOF feed
+   * sync driver) drives registry state the way the engine sessions drive
+   * acquisition tasks.
+   */
+  taskReport(report: ShellTaskReport): Promise<boolean>;
+
+  // — native file import (R20-F: the BYOF import file picker) —
+  /**
+   * The honest file-dialog capability query (cheap; never opens a dialog).
+   * Mirrors `notificationPermission` / `shareCanPresent` — the typed
+   * pre-check the import surface renders its offer from.
+   */
+  filePickAvailable(): Promise<ShellFilePickSupport>;
+  /**
+   * Open the OS open-file dialog. The typed outcome carries the picked
+   * file's shell-truth metadata — `dismissed` and `unsupported` are honest
+   * answers, never errors.
+   */
+  filePickOpen(request: ShellFilePickRequest): Promise<ShellFilePickOutcome>;
+  /**
+   * Read one picked file's bytes. Rejects with a typed `ShellIpcError`
+   * (`io` for read failures, `unavailable` for shell-side trouble) —
+   * never a bare Error, never fabricated bytes.
+   */
+  fileRead(path: string): Promise<Uint8Array>;
 
   // — sharing —
   shareCanPresent(request: ShellShareRequest): Promise<boolean>;

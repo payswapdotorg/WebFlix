@@ -10,3 +10,4 @@ export * from "./device";
 export * from "./validation";
 export * from "./intent/index";
 export * from "./graph/index";
+export * from "./feeds/index";

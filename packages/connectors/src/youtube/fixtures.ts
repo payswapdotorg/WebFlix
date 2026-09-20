@@ -25,7 +25,9 @@ import type {
   YouTubeChannelListResponse,
   YouTubePlaylistItemInsertResponse,
   YouTubePlaylistItemListResponse,
+  YouTubePlaylistListResponse,
   YouTubeSearchListResponse,
+  YouTubeSubscriptionListResponse,
   YouTubeVideoListResponse,
 } from "./api";
 import type { YouTubeHttpReply, YouTubeHttpTransport } from "./http";
@@ -591,6 +593,176 @@ export const FIXTURE_PLAYLIST_ITEM_INSERTED: YouTubePlaylistItemInsertResponse =
     videoId: FIXTURE_VIDEO_IDS.documentary,
     videoPublishedAt: "2025-03-14T09:00:00Z",
   },
+};
+
+// ---------------------------------------------------------------------------
+// R20-B BYOF feed fixtures (subscriptions.list + playlists.list + WL page)
+// ---------------------------------------------------------------------------
+
+/** A second synthetic channel id (24 chars, "UC" prefix). */
+export const FIXTURE_CHANNEL_ID_B = "UCWfx54Channel00000000000B";
+
+/** A third synthetic channel id (24 chars, "UC" prefix). */
+export const FIXTURE_CHANNEL_ID_C = "UCWfx54Channel00000000000C";
+
+/**
+ * subscriptions.list (mine=true): two subscriptions in the documented
+ * most-recent-first order — the user subscribed to channel B most recently
+ * (2026-09-10), channel A earlier (2026-08-01). The ARRAY ORDER is the
+ * source-native order (there is no position field).
+ */
+export const FIXTURE_SUBSCRIPTIONS: YouTubeSubscriptionListResponse = {
+  kind: "youtube#subscriptionListResponse",
+  etag: "fixture-etag-subs",
+  pageInfo: { totalResults: 2, resultsPerPage: 50 },
+  items: [
+    {
+      kind: "youtube#subscription",
+      etag: "fixture-etag-sub-b",
+      id: "FIXTURE_SUB_B",
+      snippet: {
+        publishedAt: "2026-09-10T08:00:00Z",
+        title: "Storm Chasers Lab",
+        description: "The most recently followed fixture channel.",
+        channelId: FIXTURE_CHANNEL_ID,
+        resourceId: { kind: "youtube#channel", channelId: FIXTURE_CHANNEL_ID_B },
+        thumbnails: {
+          default: { url: "https://yt3.ggpht.com/fixture-b=s88-c-k-c0x00ffffff-no-rj", width: 88, height: 88 },
+        },
+      },
+    },
+    {
+      kind: "youtube#subscription",
+      etag: "fixture-etag-sub-a",
+      id: "FIXTURE_SUB_A",
+      snippet: {
+        publishedAt: "2026-08-01T12:00:00Z",
+        title: "WebFlix Fixture Channel",
+        description: "The earlier followed fixture channel.",
+        channelId: FIXTURE_CHANNEL_ID,
+        resourceId: { kind: "youtube#channel", channelId: FIXTURE_CHANNEL_ID },
+      },
+    },
+  ],
+};
+
+/** A synthetic owned playlist id. */
+export const FIXTURE_PLAYLIST_ID = "PLwfx54Fixture000000000000000001";
+
+/**
+ * playlists.list (mine=true): two playlists in the documented newest-first
+ * order — "Rain Documentaries" (2 items) and "Empty seeds" (0 items — the
+ * import route skips empty playlists honestly).
+ */
+export const FIXTURE_PLAYLISTS_MINE: YouTubePlaylistListResponse = {
+  kind: "youtube#playlistListResponse",
+  etag: "fixture-etag-playlists",
+  pageInfo: { totalResults: 2, resultsPerPage: 25 },
+  items: [
+    {
+      kind: "youtube#playlist",
+      etag: "fixture-etag-pl-rain",
+      id: FIXTURE_PLAYLIST_ID,
+      snippet: {
+        publishedAt: "2026-07-15T09:00:00Z",
+        channelId: FIXTURE_CHANNEL_ID,
+        title: "Rain Documentaries",
+        description: "The user's fixture playlist.",
+        channelTitle: "WebFlix Fixture Channel",
+      },
+      contentDetails: { itemCount: 2 },
+    },
+    {
+      kind: "youtube#playlist",
+      etag: "fixture-etag-pl-empty",
+      id: "PLwfx54Fixture000000000000000002",
+      snippet: {
+        publishedAt: "2026-05-02T09:00:00Z",
+        channelId: FIXTURE_CHANNEL_ID,
+        title: "Empty seeds",
+        description: "An empty fixture playlist.",
+        channelTitle: "WebFlix Fixture Channel",
+      },
+      contentDetails: { itemCount: 0 },
+    },
+  ],
+};
+
+/**
+ * playlistItems.list on the "Rain Documentaries" playlist: two videos at
+ * the provider's OWN positions (1 and 0 — deliberately not in array order,
+ * so tests prove the projection uses snippet.position, not the array).
+ */
+export const FIXTURE_PLAYLIST_ITEMS_RAIN: YouTubePlaylistItemListResponse = {
+  kind: "youtube#playlistItemListResponse",
+  etag: "fixture-etag-pl-rain-items",
+  items: [
+    {
+      kind: "youtube#playlistItem",
+      etag: "fixture-etag-pl-rain-1",
+      id: "FIXTURE_RAIN_ITEM_1",
+      snippet: {
+        publishedAt: "2026-07-20T10:00:00Z",
+        channelId: FIXTURE_CHANNEL_ID,
+        title: "Desert Rain — A Night Documentary",
+        description: "Playlist fixture row (position 1).",
+        channelTitle: "WebFlix Fixture Channel",
+        playlistId: FIXTURE_PLAYLIST_ID,
+        position: 1,
+        resourceId: { kind: "youtube#video", videoId: FIXTURE_VIDEO_IDS.documentary },
+      },
+      contentDetails: {
+        videoId: FIXTURE_VIDEO_IDS.documentary,
+        videoPublishedAt: "2025-03-14T09:00:00Z",
+      },
+    },
+    {
+      kind: "youtube#playlistItem",
+      etag: "fixture-etag-pl-rain-0",
+      id: "FIXTURE_RAIN_ITEM_0",
+      snippet: {
+        publishedAt: "2026-07-18T10:00:00Z",
+        channelId: FIXTURE_CHANNEL_ID,
+        title: "Rain Over the Dunes (no embeds)",
+        description: "Playlist fixture row (position 0).",
+        channelTitle: "WebFlix Fixture Channel",
+        playlistId: FIXTURE_PLAYLIST_ID,
+        position: 0,
+        resourceId: { kind: "youtube#video", videoId: FIXTURE_VIDEO_IDS.notEmbeddable },
+      },
+      contentDetails: {
+        videoId: FIXTURE_VIDEO_IDS.notEmbeddable,
+        videoPublishedAt: "2024-11-30T18:00:00Z",
+      },
+    },
+  ],
+};
+
+/** playlistItems.list on Watch Later ("WL"): one video at position 0. */
+export const FIXTURE_PLAYLIST_ITEMS_WATCH_LATER: YouTubePlaylistItemListResponse = {
+  kind: "youtube#playlistItemListResponse",
+  etag: "fixture-etag-pl-wl-page",
+  items: [
+    {
+      kind: "youtube#playlistItem",
+      etag: "fixture-etag-pl-wl-page-1",
+      id: "FIXTURE_WL_PAGE_ITEM_1",
+      snippet: {
+        publishedAt: "2026-09-13T09:00:00Z",
+        channelId: FIXTURE_CHANNEL_ID,
+        title: "Desert Rain — A Night Documentary",
+        description: "Watch-later fixture row.",
+        channelTitle: "WebFlix Fixture Channel",
+        playlistId: "WL",
+        position: 0,
+        resourceId: { kind: "youtube#video", videoId: FIXTURE_VIDEO_IDS.liveStream },
+      },
+      contentDetails: {
+        videoId: FIXTURE_VIDEO_IDS.liveStream,
+        videoPublishedAt: "2025-01-02T03:00:00Z",
+      },
+    },
+  ],
 };
 
 // ---------------------------------------------------------------------------

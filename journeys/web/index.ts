@@ -1,7 +1,7 @@
 /**
  * @wfx/journeys — the encoded journey registry (R16).
  *
- * Every encoded Web journey, in catalog order (J01–J32). The registry
+ * Every encoded Web journey, in catalog order (J01–J33). The registry
  * is the single source the runner consumes; the NOT-RUN entries
  * (journeys this configuration cannot execute) are declared here too —
  * with their exact reason and procedure — so the manifest lists them
@@ -46,6 +46,7 @@ import { j29NetworkLossRecovery } from "./j29-network-loss-recovery";
 import { j30CapabilityHonesty } from "./j30-capability-honesty";
 import { j31CrossPlatformParity } from "./j31-cross-platform-parity";
 import { j32SourceNeutralIdentity } from "./j32-source-neutral-identity";
+import { j33BringYourOwnFeed } from "./j33-bring-your-own-feed";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -86,6 +87,14 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   j30CapabilityHonesty,
   j31CrossPlatformParity,
   j32SourceNeutralIdentity,
+  // R20-E — J33 (Bring Your Own Feed) is encoded over the REAL shared
+  // composition the fixtures boot wires (the FeedImportService + the
+  // real YouTube connector answering importFeedResult from its recorded
+  // API fixtures — the same seam the persistence integration proves).
+  // The REAL provider round trips (a live Google OAuth consent dance
+  // against the live Data API) are the service-mode local-only procedure
+  // (listed below).
+  j33BringYourOwnFeed,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -197,5 +206,11 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
     kind: "known-defect",
     note: "FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state=\"empty-query\" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.",
     procedure: "FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions.",
+  },
+  {
+    journeyId: "J33",
+    kind: "local-only",
+    note: "The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.",
+    procedure: "LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot.",
   },
 ];

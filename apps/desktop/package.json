@@ -9,7 +9,9 @@
     "@wfx/domain": "workspace:*",
     "@wfx/experience": "workspace:*",
     "@wfx/native-media": "workspace:*",
+    "@wfx/persistence": "workspace:*",
     "@wfx/platform-contracts": "workspace:*",
-    "@wfx/torrent-engine": "workspace:*"
+    "@wfx/torrent-engine": "workspace:*",
+    "@electric-sql/pglite": "^0.2.17"
   }
 }

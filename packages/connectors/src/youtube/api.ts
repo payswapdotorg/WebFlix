@@ -827,3 +827,262 @@ export async function youtubeVideosRate(
   const query: Record<string, string> = { id: params.videoId, rating: params.rating };
   await callApi(transport, { method: "POST", path: "/videos/rate", query, auth });
 }
+
+// ---------------------------------------------------------------------------
+// subscriptions.list — 1 quota unit (R20-B, the BYOF follow graph)
+// ---------------------------------------------------------------------------
+
+/** subscriptions.list item (part=snippet) — the user's own subscriptions. */
+export interface YouTubeSubscriptionItem {
+  kind: "youtube#subscription";
+  etag: string;
+  id: string;
+  snippet: {
+    /** When the SUBSCRIPTION was added (the follow's source-native recency). */
+    publishedAt: string;
+    /** The channel's title as the subscription reports it. */
+    title: string;
+    description: string;
+    /** The SUBSCRIBER's channel id (the authenticated user). */
+    channelId: string;
+    /** The followed channel — the feed item's external identity. */
+    resourceId: { kind: string; channelId: string };
+    thumbnails?: YouTubeThumbnails;
+  };
+}
+
+/** subscriptions.list response (one page). */
+export interface YouTubeSubscriptionListResponse {
+  kind: "youtube#subscriptionListResponse";
+  etag: string;
+  nextPageToken?: string;
+  pageInfo?: { totalResults?: number; resultsPerPage?: number };
+  items: YouTubeSubscriptionItem[];
+}
+
+/**
+ * subscriptions.list — 1 quota unit. `mine=true` (the authenticated user's
+ * subscriptions) with part=snippet. OAuth ONLY: the documented parameter
+ * requires an authorized token; an API key answers 401/403 honestly.
+ *
+ * SOURCE-NATIVE ORDER TRUTH: the documented response returns subscriptions
+ * in reverse chronological order (most recently added first). The ARRAY
+ * ORDER is the order truth — there is no position field — and the connector
+ * projects `sourceOrder` as the array index.
+ */
+export async function youtubeSubscriptionsList(
+  transport: YouTubeHttpTransport,
+  auth: YouTubeCallAuth,
+  params: { maxResults?: number; pageToken?: string } = {},
+): Promise<YouTubeSubscriptionListResponse> {
+  const query: Record<string, string> = {
+    part: "snippet",
+    mine: "true",
+    maxResults: String(Math.min(Math.max(params.maxResults ?? 50, 1), 50)),
+  };
+  if (params.pageToken !== undefined && params.pageToken.length > 0) {
+    query["pageToken"] = params.pageToken;
+  }
+  const reply = await callApi(transport, {
+    method: "GET",
+    path: "/subscriptions",
+    query,
+    auth,
+  });
+  return parseSubscriptionListResponse(parseJsonBody(reply, "subscriptions.list"));
+}
+
+function parseSubscriptionEntry(raw: unknown): YouTubeSubscriptionItem {
+  const item = expectRecord(raw, "subscriptions item");
+  const id = item["id"];
+  if (typeof id !== "string" || id.length === 0) {
+    throw youTubeMalformedResponse("subscriptions item lacks a non-empty 'id'");
+  }
+  const snippet = expectRecord(item["snippet"], "subscriptions item.snippet");
+  const publishedAt = snippet["publishedAt"];
+  const title = snippet["title"];
+  const description = snippet["description"];
+  const channelId = snippet["channelId"];
+  const resourceId = expectRecord(snippet["resourceId"], "subscriptions item.snippet.resourceId");
+  const resourceChannelId = resourceId["channelId"];
+  if (
+    typeof publishedAt !== "string" ||
+    typeof title !== "string" ||
+    typeof description !== "string" ||
+    typeof channelId !== "string" ||
+    typeof resourceChannelId !== "string" ||
+    resourceChannelId.length === 0
+  ) {
+    throw youTubeMalformedResponse(
+      "subscriptions item.snippet lacks publishedAt/title/description/channelId/resourceId.channelId",
+    );
+  }
+  return {
+    kind: "youtube#subscription",
+    etag: typeof item["etag"] === "string" ? item["etag"] : "",
+    id,
+    snippet: {
+      publishedAt,
+      title,
+      description,
+      channelId,
+      resourceId: {
+        kind: typeof resourceId["kind"] === "string" ? resourceId["kind"] : "youtube#channel",
+        channelId: resourceChannelId,
+      },
+      ...(isRecord(snippet["thumbnails"])
+        ? { thumbnails: parseThumbnails(snippet["thumbnails"]) }
+        : {}),
+    },
+  };
+}
+
+function parseSubscriptionListResponse(value: unknown): YouTubeSubscriptionListResponse {
+  const root = expectRecord(value, "subscriptions.list response");
+  const kind = root["kind"];
+  if (kind !== "youtube#subscriptionListResponse") {
+    throw youTubeMalformedResponse(
+      `subscriptions.list response kind is '${String(kind)}', expected 'youtube#subscriptionListResponse'`,
+    );
+  }
+  const rawItems = root["items"];
+  if (!Array.isArray(rawItems)) {
+    throw youTubeMalformedResponse("subscriptions.list response has no 'items' array");
+  }
+  const nextPageToken = root["nextPageToken"];
+  return {
+    kind: "youtube#subscriptionListResponse",
+    etag: typeof root["etag"] === "string" ? root["etag"] : "",
+    ...(typeof nextPageToken === "string" ? { nextPageToken } : {}),
+    items: rawItems.map(parseSubscriptionEntry),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// playlists.list — 1 quota unit (R20-B, the BYOF playlist containers)
+// ---------------------------------------------------------------------------
+
+/** playlists.list item (part=snippet,contentDetails) — the user's own playlists. */
+export interface YouTubePlaylistSummary {
+  kind: "youtube#playlist";
+  etag: string;
+  id: string;
+  snippet: {
+    /** When the playlist was created. */
+    publishedAt: string;
+    channelId: string;
+    title: string;
+    description: string;
+    channelTitle: string;
+    thumbnails?: YouTubeThumbnails;
+  };
+  contentDetails: {
+    /** The number of items in the playlist (the bounded-fan-out truth). */
+    itemCount: number;
+  };
+}
+
+/** playlists.list response (one page). */
+export interface YouTubePlaylistListResponse {
+  kind: "youtube#playlistListResponse";
+  etag: string;
+  nextPageToken?: string;
+  pageInfo?: { totalResults?: number; resultsPerPage?: number };
+  items: YouTubePlaylistSummary[];
+}
+
+/**
+ * playlists.list — 1 quota unit. `mine=true` with part=snippet,contentDetails
+ * (contentDetails.itemCount powers the bounded import discipline). OAuth ONLY
+ * for mine=true. The documented response returns playlists in reverse
+ * chronological creation order (newest first) — the ARRAY ORDER is the
+ * order truth, projected as `sourceOrder` by index.
+ */
+export async function youtubePlaylistsList(
+  transport: YouTubeHttpTransport,
+  auth: YouTubeCallAuth,
+  params: { maxResults?: number; pageToken?: string } = {},
+): Promise<YouTubePlaylistListResponse> {
+  const query: Record<string, string> = {
+    part: "snippet,contentDetails",
+    mine: "true",
+    maxResults: String(Math.min(Math.max(params.maxResults ?? 25, 1), 50)),
+  };
+  if (params.pageToken !== undefined && params.pageToken.length > 0) {
+    query["pageToken"] = params.pageToken;
+  }
+  const reply = await callApi(transport, {
+    method: "GET",
+    path: "/playlists",
+    query,
+    auth,
+  });
+  return parsePlaylistListResponse(parseJsonBody(reply, "playlists.list"));
+}
+
+function parsePlaylistEntry(raw: unknown): YouTubePlaylistSummary {
+  const item = expectRecord(raw, "playlists item");
+  const id = item["id"];
+  if (typeof id !== "string" || id.length === 0) {
+    throw youTubeMalformedResponse("playlists item lacks a non-empty 'id'");
+  }
+  const snippet = expectRecord(item["snippet"], "playlists item.snippet");
+  const publishedAt = snippet["publishedAt"];
+  const channelId = snippet["channelId"];
+  const title = snippet["title"];
+  const description = snippet["description"];
+  const channelTitle = snippet["channelTitle"];
+  if (
+    typeof publishedAt !== "string" ||
+    typeof channelId !== "string" ||
+    typeof title !== "string" ||
+    typeof description !== "string" ||
+    typeof channelTitle !== "string"
+  ) {
+    throw youTubeMalformedResponse(
+      "playlists item.snippet lacks publishedAt/channelId/title/description/channelTitle",
+    );
+  }
+  const contentDetails = expectRecord(item["contentDetails"], "playlists item.contentDetails");
+  const itemCount = contentDetails["itemCount"];
+  if (typeof itemCount !== "number") {
+    throw youTubeMalformedResponse("playlists item.contentDetails lacks a numeric 'itemCount'");
+  }
+  return {
+    kind: "youtube#playlist",
+    etag: typeof item["etag"] === "string" ? item["etag"] : "",
+    id,
+    snippet: {
+      publishedAt,
+      channelId,
+      title,
+      description,
+      channelTitle,
+      ...(isRecord(snippet["thumbnails"])
+        ? { thumbnails: parseThumbnails(snippet["thumbnails"]) }
+        : {}),
+    },
+    contentDetails: { itemCount },
+  };
+}
+
+function parsePlaylistListResponse(value: unknown): YouTubePlaylistListResponse {
+  const root = expectRecord(value, "playlists.list response");
+  const kind = root["kind"];
+  if (kind !== "youtube#playlistListResponse") {
+    throw youTubeMalformedResponse(
+      `playlists.list response kind is '${String(kind)}', expected 'youtube#playlistListResponse'`,
+    );
+  }
+  const rawItems = root["items"];
+  if (!Array.isArray(rawItems)) {
+    throw youTubeMalformedResponse("playlists.list response has no 'items' array");
+  }
+  const nextPageToken = root["nextPageToken"];
+  return {
+    kind: "youtube#playlistListResponse",
+    etag: typeof root["etag"] === "string" ? root["etag"] : "",
+    ...(typeof nextPageToken === "string" ? { nextPageToken } : {}),
+    items: rawItems.map(parsePlaylistEntry),
+  };
+}
