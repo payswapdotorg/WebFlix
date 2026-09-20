@@ -68,17 +68,29 @@ export const j19ModelPolicy: Journey = {
       text !== null && text.includes("BYOM") && text.includes("policy"),
     );
 
-    // No placeholder model controls (never fake capability) — the section
-    // is the real read model; the detailed management controls are the
-    // R21-D settings-hub surface.
-    const buttons = await browser.eval<number>(
-      `(() => { const section = document.querySelector('[data-wfx-settings-model]'); return section === null ? 0 : section.querySelectorAll('button, select, input').length; })()`,
+    // R22 update: the Model & AI section now carries REAL management
+    // controls — the R22-F BYOM management panel (the F8 closer: a user
+    // can discover, configure, verify, and remove a provider through the
+    // normal surface). The R21-era "zero interactive controls" law is
+    // superseded by the R22 plan; the no-placeholder INTENT is preserved:
+    // every interactive control in the section must belong to the typed
+    // BYOM management surface (no stray placeholder controls outside it).
+    await assert.visible(
+      "[data-wfx-byom-management]",
+      "the R22-F BYOM management surface renders inside the Model & AI section (the normal-path management panel)",
+    );
+    await assert.visible(
+      "[data-wfx-byom-add-form]",
+      "the add-provider form renders (discover → configure is a real control, never a hidden API)",
+    );
+    const strayControls = await browser.eval<number>(
+      `(() => { const section = document.querySelector('[data-wfx-settings-model]'); if (section === null) return -1; const panel = section.querySelector('[data-wfx-byom-management]'); if (panel === null) return -1; return [...section.querySelectorAll('button, select, input')].filter((el) => panel.contains(el) === false).length; })()`,
     );
     assert.that(
-      "no placeholder model controls render (a fixture is never presented as capability)",
-      "zero interactive model controls",
-      `${buttons} interactive controls`,
-      buttons === 0,
+      "no placeholder model controls render outside the BYOM management panel (a fixture is never presented as capability)",
+      "zero interactive controls outside the typed BYOM panel",
+      `${strayControls} stray controls`,
+      strayControls === 0,
     );
 
     // No fabricated model state: the honest unset policies render "Not
