@@ -32,6 +32,7 @@ The earlier WFX-001–043 registry remains historical context only. No worker sh
 | R21 | Journey-driven product discoverability + capability surface integration | Worker 1 + Worker 2 + Worker 3; Lead integration | R20 |
 | R22 | Major user-journey completion + dead-end hardening | Worker 1 + Worker 2 + Worker 3; Lead integration | R21 |
 | R24 | YouTube parity + playback performance lab | Worker 1 + Worker 2 + Worker 3; Lead integration | R23 shared contracts |
+| R25 | Qwen3.8 LiveTranslate realtime media translation | Worker 1 + Worker 2 + Worker 3; Lead integration | R23 Model Fabric; R24 parity/performance |
 
 ## Worker assignment rules
 
@@ -79,3 +80,9 @@ R24 is complete only when the viewer-facing YouTube parity inventory is complete
 
 Canonical plan: docs/plans/2026-09-20-webflix-youtube-parity-performance-plan.md
 Canonical lab: docs/validation/youtube-parity-lab.md
+
+## R25 completion truth
+
+R25 is complete only when Qwen3.8-LiveTranslate is registered through Model Fabric as a realtime translation provider, a provider-neutral realtime media-session seam is implemented, Web/Desktop supported paths can start/continue live translation without delaying base playback, credentials remain server-side, cost/latency/usage telemetry is captured, voice-cloning policy is enforced, J43 passes, and R23/R24 journeys remain green.
+
+Canonical plan: docs/plans/2026-09-20-webflix-qwen-livetranslate-plan.md
