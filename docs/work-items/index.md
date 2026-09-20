@@ -64,3 +64,10 @@ R22 is complete only when a fresh user can COMPLETE the major product journeys a
 - affected J01-J35 journeys are rerun;
 - production smoke verification matches the final integrated SHA;
 - R20/R21 issue state and the work registry agree with completion truth.
+
+
+## R23 completion truth
+
+R23 is complete only when public playback works without requiring a WebFlix account, provider-auth boundaries remain truthful, torrent is a first-class realization/playback path rather than only an offline utility, browser-capable torrent scenarios are exercised where technically supported, AI media intelligence is production-wired through Model Fabric with license/provenance truth, and J37-J39 pass without regressions to J01-J36.
+
+Canonical plan: docs/plans/2026-09-20-webflix-open-viewing-torrent-ai-plan.md
