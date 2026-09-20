@@ -214,3 +214,16 @@ No new architecture dashboard or conceptual top-level Feed/BYOF navigation is pe
 Freeze A/B/C first. Then Worker 2 and Worker 3 may work concurrently. Lead integrates only after G/J evidence is fresh, then reruns J36 plus affected J01-J35 and performs the production sweep.
 
 The canonical detailed plan is docs/plans/2026-09-20-webflix-major-journey-hardening-plan.md.
+
+
+## Post-release R23 — Open viewing, first-class torrent and AI media intelligence
+
+Canonical plan: docs/plans/2026-09-20-webflix-open-viewing-torrent-ai-plan.md
+
+The product law is now explicit: public viewing is accountless. Login is optional for public read/play and is required only for durable identity, account-scoped personalization, provider authorization or mutations requiring identity. Provider authentication is never conflated with WebFlix authentication.
+
+Torrent is not an offline afterthought. It is a first-class source/realization that participates in canonical identity, Where to watch, playback, resume, AI actions, Library and recovery. The existing Media Surface modes stay platform modes; torrent enters as a realization/source transport and can satisfy native playback on Desktop or a browser-capable rung where the platform truly supports it.
+
+R23 research direction: R2T2/Confucius4-R2T2 for low-latency live ASR; VideoPrism/Qwen2.5-VL/MOSS-Transcribe-Diarize/Whisper/BGE-M3 through Model Fabric; Hugging Face Inference Endpoints for production open-model hosting; Transformers.js/WebGPU for optional private browser-side inference.
+
+New acceptance journeys: J37 Anonymous Viewing, J38 First-Class Torrent Playback, J39 Multimodal Media Intelligence.
