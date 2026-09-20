@@ -69,6 +69,7 @@ import {
 import type { SearchResult } from "@wfx/domain";
 import { createNavigationStore, type NavigationController } from "./navigation";
 import { createSourceStateStore, type SourceStateOperations } from "./sources";
+import { createFeedModeStore, type FeedModeOperations } from "./feed-mode";
 import {
   WatchStateEngine,
   type WatchEventRetryReport,
@@ -148,6 +149,13 @@ export interface ClientRuntime {
    * themselves run through the adapter's platform UX).
    */
   readonly sources: SourceStateOperations;
+  /**
+   * R21-A (ADD-ONLY): the feed-mode control operations — the shared
+   * presentation state behind the Home / Watch / Shorts feed-mode
+   * control (For you / Following / imported / Blend). The adapter
+   * reports the availability truth; typed refusals carry recovery hints.
+   */
+  readonly feedMode: FeedModeOperations;
   /**
    * R14: the native acquisition UX operations — the platform adapter's
    * protocol-free fact intake and the honest lifecycle views (Available /
@@ -243,6 +251,8 @@ export function createRuntime(
   // local R01 laws are unchanged; see intent.ts).
   const intents = new IntentStore(session.clock, session.ids, server);
   const sources = createSourceStateStore(server);
+  // R21-A: the feed-mode control store (pure presentation state).
+  const feedMode = createFeedModeStore();
   // R14: the acquisition store — the runtime's UX-state seam over the
   // adapters' protocol-free facts (no clock, no timers: the host owns the
   // reporting cadence — the R10 no-hidden-timers law).
@@ -381,6 +391,7 @@ export function createRuntime(
     libraryOps: libraryEngine.operations(),
     intents: intents.operations(),
     sources,
+    feedMode,
     // R14: the native acquisition UX surface — the adapter intake (facts)
     // and the honest lifecycle views the default surfaces render (see
     // src/acquisition.ts; protocol-free BY TYPE).
