@@ -50,6 +50,12 @@ export const SOURCE_AUTH_FIXTURE_STATE_FILE = join(
   "wfx-dev-source-auth-fixtures.json",
 );
 
+/** The shared model-controls fixture state file (R22-F — J36's BYOM round trip). */
+export const MODEL_FIXTURE_STATE_FILE = join(
+  tmpdir(),
+  "wfx-dev-model-fixtures.json",
+);
+
 /** A running product handle. */
 export interface ProductHandle {
   /** The base URL journeys navigate (http://localhost:3101). */
@@ -101,6 +107,19 @@ export function resetSourceAuthFixtureState(): void {
   }
 }
 
+/**
+ * Reset the model-controls fixture state (R22-F): the persona starts with
+ * NO BYOM bindings and honest unset policies (determinism — J36 drives the
+ * add → bind → remove round trip itself from the pristine empty state).
+ */
+export function resetModelFixtureState(): void {
+  try {
+    rmSync(MODEL_FIXTURE_STATE_FILE, { force: true });
+  } catch {
+    // An absent file is already pristine (the honest empty state).
+  }
+}
+
 /** Whether anything is already listening on the port (a loud pre-flight). */
 async function portIsTaken(port: number): Promise<boolean> {
   try {
@@ -132,9 +151,11 @@ export async function bootWebFixturesProduct(
   }
 
   // Determinism: the scripted acquisition journeys start from step 0,
-  // and the scripted source-auth lifecycle starts signed in (R17/J28).
+  // the scripted source-auth lifecycle starts signed in (R17/J28), and
+  // the model-controls persona starts unbound (R22-F/J36).
   resetAcquisitionFixtureState();
   resetSourceAuthFixtureState();
+  resetModelFixtureState();
 
   const server: BackgroundProc = startBackgroundProc(
     "bun",

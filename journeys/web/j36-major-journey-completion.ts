@@ -340,11 +340,14 @@ export const j36MajorJourneyCompletion: Journey = {
       modelText !== null && modelText.includes("j36-journey-key-material") ? "KEY MATERIAL VISIBLE" : "no key material",
       modelText === null || !modelText.includes("j36-journey-key-material"),
     );
-    // Remove: the unbind round trip (the complete management journey).
+    // Remove: the unbind round trip (the complete management journey). The
+    // remove also reloads (the honest refresh law) — poll through it for
+    // the honest empty state.
     await browser.clickInteractive("[data-wfx-byom-action='remove']");
+    await browser.waitSelector("[data-wfx-byom-empty]", 20_000);
     await assert.visible(
-      "[data-wfx-byom-first-party-section]",
-      "after removal the built-in model remains (the remove completed — WebFlix's model takes over)",
+      "[data-wfx-byom-empty]",
+      "after removal the honest empty state renders (the remove completed — WebFlix's built-in model takes over)",
     );
 
     // ------------------------------------------------------------------
