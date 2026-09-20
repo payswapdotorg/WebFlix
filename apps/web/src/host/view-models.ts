@@ -184,11 +184,13 @@ export interface HomeView {
 }
 
 /**
- * The home seed queries — TYPED STOPGAPS (the same law the legacy host
- * kept): the frozen R01 home model owns Continue Watching; the browse
- * rows are the adapter's deterministic seed composition until the
- * service-side ranked feed lands. The Personalize control (R21-D)
- * shapes the session's intent + policy on top of these rows.
+ * The home browse queries — the deterministic discovery seeds the frozen
+ * R01 home model composes its rows from (Continue Watching is the
+ * runtime's own; the rows are the service's search composition — R05's
+ * intent/policy state rides the same transport the Personalize controls
+ * write). No stale "seeded until R05" language survives: R05 is an
+ * accepted lane; the copy names what the rows are and where the
+ * personalization controls live (the R21-D Personalize control).
  */
 export const FOR_YOU_QUERY = "rain";
 export const TRENDING_QUERY = "a";
@@ -205,7 +207,7 @@ function continueCards(entries: readonly ContinueWatchingEntry[]): ContinueCardV
   }));
 }
 
-/** Load the home view from the runtime (Continue Watching + seeded rows). */
+/** Load the home view from the runtime (Continue Watching + the discovery rows). */
 export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
   const runtime = host.runtime;
   const [homeModel, forYouModel, trendingModel, shortsModel] = await Promise.all([
@@ -229,7 +231,7 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
       {
         id: "for-you",
         title: "For you",
-        reason: "Composed for your session — what your connected sources surface for you right now. Shape it with Personalize.",
+        reason: "Your discovery feed for this session — set your intent and attention mode from the Personalize control.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },
@@ -273,7 +275,7 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
       {
         id: "for-you",
         title: "For you",
-        reason: "Composed for your session — what your connected sources surface for you right now. Shape it with Personalize.",
+        reason: "Your discovery feed for this session — set your intent and attention mode from the Personalize control.",
         status: statusView(forYouModel.status),
         cards: forYouCards,
       },

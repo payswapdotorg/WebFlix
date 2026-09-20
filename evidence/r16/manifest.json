@@ -1,16 +1,17 @@
 {
   "schema": "wfx-journey-manifest/1",
-  "commit": "47e886547e8dfd50ef6eea7a96750f3a9178ae86",
-  "branch": "wfx/r16/journey-automation",
+  "commit": "a64375064fc7e904122d701ae6426b1b3dba5f78",
+  "branch": "wfx/r21/discoverability",
   "environment": {
     "mode": "web-fixtures",
     "webUrl": "http://localhost:3101",
     "ci": false,
-    "startedAt": "2026-09-18T11:07:22.567Z",
-    "finishedAt": "2026-09-18T11:10:19.777Z",
+    "startedAt": "2026-09-20T01:45:47.392Z",
+    "finishedAt": "2026-09-20T01:50:37.568Z",
     "determinism": [
       "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
-      "one isolated agent-browser session per run (wfx-journeys-1789729646102)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789868751520)",
       "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
       "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
       "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
@@ -18,9 +19,9 @@
     ]
   },
   "summary": {
-    "total": 31,
-    "encoded": 31,
-    "passed": 31,
+    "total": 33,
+    "encoded": 33,
+    "passed": 33,
     "failed": 0,
     "notRun": 0
   },
@@ -113,7 +114,7 @@
         {
           "description": "the home landing renders source-neutral cards",
           "expected": "a[data-wfx-card] matches >= 4",
-          "observed": "13 matching element(s)",
+          "observed": "14 matching element(s)",
           "pass": true
         },
         {
@@ -147,7 +148,7 @@
         "evidence/r16/j01-first-launch-profile-selection-onboarding.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3306
+      "durationMs": 2550
     },
     {
       "id": "J02",
@@ -207,13 +208,13 @@
         {
           "description": "the home feed renders browse cards",
           "expected": "a[data-wfx-card] matches >= 5",
-          "observed": "13 matching element(s)",
+          "observed": "14 matching element(s)",
           "pass": true
         },
         {
           "description": "every browse card carries a canonical title (source-neutral identity)",
-          "expected": "13 cards each with a title",
-          "observed": "13 titled cards of 13",
+          "expected": "14 cards each with a title",
+          "observed": "14 titled cards of 14",
           "pass": true
         },
         {
@@ -241,7 +242,7 @@
         "evidence/r16/j02-home-discovery-hero-rows-intent-entry.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2569
+      "durationMs": 2552
     },
     {
       "id": "J03",
@@ -271,13 +272,13 @@
         {
           "description": "the Watch rows render long-form cards",
           "expected": "[data-wfx-row] a[data-wfx-card] matches >= 4",
-          "observed": "7 matching element(s)",
+          "observed": "8 matching element(s)",
           "pass": true
         },
         {
           "description": "every Watch card enters the item detail or playback destination",
-          "expected": "7 cards all linking /item or /player",
-          "observed": "7 of 7 cards link product destinations",
+          "expected": "8 cards all linking /item or /player",
+          "observed": "8 of 8 cards link product destinations",
           "pass": true
         },
         {
@@ -293,7 +294,7 @@
         "evidence/r16/j03-long-form-watch-browsing.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2477
+      "durationMs": 2656
     },
     {
       "id": "J04",
@@ -387,7 +388,7 @@
         "evidence/r16/j04-shorts-vertical-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3878
+      "durationMs": 3965
     },
     {
       "id": "J05",
@@ -439,7 +440,7 @@
         "evidence/r16/j05-unified-search.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3820
+      "durationMs": 4003
     },
     {
       "id": "J06",
@@ -505,7 +506,7 @@
         {
           "description": "the detail page offers related exploration",
           "expected": "section[aria-label='Related content'] a[data-wfx-card] matches >= 1",
-          "observed": "6 matching element(s)",
+          "observed": "7 matching element(s)",
           "pass": true
         },
         {
@@ -521,7 +522,7 @@
         "evidence/r16/j06-item-detail-availability-realization-choice.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4290
+      "durationMs": 4230
     },
     {
       "id": "J07",
@@ -533,13 +534,13 @@
         {
           "description": "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1FNE24THKA2ZCNZFVS4A1PC2F4&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_605Q7ZXTV0BN9HR462THXPFHV1&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_1FNE24THKA2ZCNZFVS4A1PC2F4&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_605Q7ZXTV0BN9HR462THXPFHV1&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -581,7 +582,7 @@
         {
           "description": "the embed note states the attestation truth",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"no provider official-embed attestation\"",
-          "observed": "<2876 chars of html>",
+          "observed": "<2874 chars of html>",
           "pass": true
         },
         {
@@ -615,7 +616,7 @@
         "evidence/r16/j07-official-embed-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6115
+      "durationMs": 5925
     },
     {
       "id": "J08",
@@ -627,13 +628,13 @@
         {
           "description": "the search surface offers the browser-realized item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_3TFKEZH9M3E95Y31ASWAJXMSMJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_3121Y9KW55EQGZ7HTVVGZ9ARMC&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_3TFKEZH9M3E95Y31ASWAJXMSMJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_3121Y9KW55EQGZ7HTVVGZ9ARMC&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -675,7 +676,7 @@
         {
           "description": "the containment note states the no-injection boundary (provider security is not bypassed)",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"never injects into or inspects the provider page\"",
-          "observed": "<2793 chars of html>",
+          "observed": "<2791 chars of html>",
           "pass": true
         },
         {
@@ -691,7 +692,7 @@
         "evidence/r16/j08-contained-browser-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6458
+      "durationMs": 5964
     },
     {
       "id": "J09",
@@ -703,7 +704,7 @@
         {
           "description": "the search surface offers the multi-realization item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_3TFKEZH9M3E95Y31ASWAJXMSMJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_3121Y9KW55EQGZ7HTVVGZ9ARMC&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -769,7 +770,7 @@
         {
           "description": "the failure state names the playback failure",
           "expected": "text of [data-wfx-surface='player'] contains \"Playback could not start\"",
-          "observed": "\"Unknown Item\n\nPlayback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
+          "observed": "\"Unknown Item\n\nPlayback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
           "pass": true
         },
         {
@@ -785,7 +786,7 @@
         "evidence/r16/j09-external-playback-fallback-return-context.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9444
+      "durationMs": 9458
     },
     {
       "id": "J10",
@@ -797,7 +798,7 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_7B634BG0FQRW7D1JHV7NQY41W4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -815,7 +816,7 @@
         {
           "description": "the absent notes state the provider truth (never a fake success)",
           "expected": "text of [data-wfx-surface='item'] contains \"not available on this source\"",
-          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\n\nPlay\nLike: not available on this source\nSave: not available on this source\nWhat this source can do\nNative playback\nEmbedded playback\nWeb player\nExternal handoff\nOffline copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\"",
+          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\n\nPlay\nLike: not available on this source\nSave: not available on this source\nWhat this source can do\nNative playback\nEmbedded playback\nWeb player\nExternal handoff\nOffline copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\n\nSF\nVIDEO\n10m 0s\n\nSignal Fade\n\nPlayback options on details\"",
           "pass": true
         },
         {
@@ -827,7 +828,7 @@
         {
           "description": "the item page offers playback (the report surface)",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_7B634BG0FQRW7D1JHV7NQY41W4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -855,7 +856,7 @@
         "evidence/r16/j10-like-save-action-synchronization-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6049
+      "durationMs": 36900
     },
     {
       "id": "J11",
@@ -937,7 +938,7 @@
         "evidence/r16/j11-library-watchlist-history.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2217
+      "durationMs": 6697
     },
     {
       "id": "J12",
@@ -949,13 +950,13 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_3TFKEZH9M3E95Y31ASWAJXMSMJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_3121Y9KW55EQGZ7HTVVGZ9ARMC&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_3TFKEZH9M3E95Y31ASWAJXMSMJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_3121Y9KW55EQGZ7HTVVGZ9ARMC&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -989,7 +990,7 @@
         "evidence/r16/j12-cross-device-resume.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7629
+      "durationMs": 7094
     },
     {
       "id": "J13",
@@ -1035,7 +1036,7 @@
         "evidence/r16/j13-account-profile-identity-lifecycle.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2137
+      "durationMs": 2463
     },
     {
       "id": "J14",
@@ -1051,21 +1052,45 @@
           "pass": true
         },
         {
-          "description": "the sources section renders its typed empty state (no sources connected)",
-          "expected": "[data-wfx-sources-empty] present in the DOM",
+          "description": "the source card renders (the runtime's own sources read)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
           "observed": "1 matching element(s)",
           "pass": true
         },
         {
-          "description": "the sources section states the honest no-sources truth",
-          "expected": "text of [data-wfx-settings-sources] contains \"No sources connected\"",
-          "observed": "\"Sources\n\nNo sources connected\n\nSource management (connect, reauthorize, disconnect, per-source capabilities and authorization state) arrives with the source-management lane (R03). Until then this host browses whatever its configured service carries — and never pretends a source is connected.\"",
+          "description": "the source states its authorization truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
           "pass": true
         },
         {
-          "description": "the sources section states the never-pretend law",
-          "expected": "text of [data-wfx-settings-sources] contains \"never pretends\"",
-          "observed": "\"Sources\n\nNo sources connected\n\nSource management (connect, reauthorize, disconnect, per-source capabilities and authorization state) arrives with the source-management lane (R03). Until then this host browses whatever its configured service carries — and never pretends a source is connected.\"",
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "the chip label (case-insensitive)",
+          "observed": "CONNECTED",
+          "pass": true
+        },
+        {
+          "description": "the source card states its connection truth",
+          "expected": "text of [data-wfx-source-recovery-detail] contains \"This source is connected\"",
+          "observed": "\"This source is connected.\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source offers its typed disconnect action",
+          "expected": "[data-wfx-source-action='disconnect'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no fabricated authorization states render beyond the scripted truth",
+          "expected": "no expired/failed chips while signed in",
+          "observed": "no expired chip",
+          "pass": true
+        },
+        {
+          "description": "no expired source row renders while signed in (never a fabricated state)",
+          "expected": "[data-wfx-source-auth-state='expired'] matches exactly 0",
+          "observed": "0 matching element(s)",
           "pass": true
         },
         {
@@ -1085,12 +1110,6 @@
           "expected": "[data-wfx-settings-sections] a[href='/settings?section=general'] matches >= 1",
           "observed": "1 matching element(s)",
           "pass": true
-        },
-        {
-          "description": "no fabricated connected-source rows render in the fixtures configuration",
-          "expected": "no source rows with authorization states",
-          "observed": "no connected-source controls",
-          "pass": true
         }
       ],
       "artifacts": [
@@ -1099,7 +1118,7 @@
         "evidence/r16/j14-source-connect-reauthorize-disconnect.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2232
+      "durationMs": 2705
     },
     {
       "id": "J15",
@@ -1151,7 +1170,7 @@
         "evidence/r16/j15-recommendation-feedback-controls.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4295
+      "durationMs": 4367
     },
     {
       "id": "J16",
@@ -1191,7 +1210,7 @@
         "evidence/r16/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4662
+      "durationMs": 4285
     },
     {
       "id": "J17",
@@ -1233,7 +1252,7 @@
         {
           "description": "the home composition still carries its cards (the session intent corrupted no long-term preference)",
           "expected": "a[data-wfx-card] matches >= 4",
-          "observed": "13 matching element(s)",
+          "observed": "14 matching element(s)",
           "pass": true
         }
       ],
@@ -1243,7 +1262,7 @@
         "evidence/r16/j17-explicit-intent-learn-happier-surprise-tonight-friend-taste.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5568
+      "durationMs": 5548
     },
     {
       "id": "J18",
@@ -1283,7 +1302,7 @@
         "evidence/r16/j18-attention-modes-mindful-balanced-immersive-custom.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3482
+      "durationMs": 3958
     },
     {
       "id": "J19",
@@ -1299,15 +1318,33 @@
           "pass": true
         },
         {
-          "description": "the model section renders its typed honest-absent state (the controls are the service-side lane)",
-          "expected": "[data-wfx-model-empty] present in the DOM",
+          "description": "the provider registry renders over the completed transport (first-party + BYOM + local truth)",
+          "expected": "[data-wfx-model-providers-list] present in the DOM",
           "observed": "1 matching element(s)",
           "pass": true
         },
         {
-          "description": "the model section names the model lane's scope (selection, BYOM, local policy, privacy/cost)",
-          "expected": "the scope named in the absent state",
-          "observed": "Model & AI\n\nModel controls arrive with the model lane (R06)\n\nWebFlix model selection, BYOM providers, local-model policy, privacy/cost constraints, and AI media operations (transcription, subtitles, translation, dubbing, commentary) are the model-controls lane. This adapter renders their honest absence rather than placeholder controls.",
+          "description": "the registry carries at least the first-party provider row",
+          "expected": "[data-wfx-model-providers-list] [data-wfx-model-provider] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the per-task policy truth renders (the honest unset — never a fabricated default)",
+          "expected": "[data-wfx-model-policies-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "every frozen ModelTask carries its policy chip (the full task set is visible)",
+          "expected": "[data-wfx-model-policies-list] [data-wfx-model-policy] matches >= 9",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section names the controls' scope (providers, BYOM, local models, policy truth)",
+          "expected": "the scope named in the section",
+          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and commentary — across first-party, your own providers (BYOM), and local models, with each task's current policy. Provider keys stay sealed; they are never shown or sent to a model.\n\nProviders\nWFX-FIRST-PARTY\nRuns locally\nAvailable\n\nTasks: recommendation, ranking, summary, translation, transcription\n\nTask policies\nRECOMMENDATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nRANKING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSUMMARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSLATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSCRIPTION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSPEECHTOTEXT\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTEXTTOSPEECH\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nDUBBING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nCOMMENTARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.",
           "pass": true
         },
         {
@@ -1317,9 +1354,9 @@
           "pass": true
         },
         {
-          "description": "no fabricated selected-model or provider state renders",
-          "expected": "no model/provider status chips",
-          "observed": "no model state chips",
+          "description": "no fabricated selected-model state renders (the honest unset is named)",
+          "expected": "the policy truth is the honest unset",
+          "observed": "no selected-model lie",
           "pass": true
         }
       ],
@@ -1329,7 +1366,7 @@
         "evidence/r16/j19-webflix-model-byom-local-model-policy.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2059
+      "durationMs": 2168
     },
     {
       "id": "J20",
@@ -1399,7 +1436,7 @@
         "evidence/r16/j20-ai-subtitles-translation-transcription-dubbing-commentary.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3251
+      "durationMs": 3052
     },
     {
       "id": "J21",
@@ -1411,7 +1448,7 @@
         {
           "description": "the search surface offers the scripted authorized acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_7B634BG0FQRW7D1JHV7NQY41W4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -1499,7 +1536,7 @@
         "evidence/r16/j21-authorized-torrent-acquisition-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6394
+      "durationMs": 6218
     },
     {
       "id": "J22",
@@ -1557,7 +1594,7 @@
         "evidence/r16/j22-torrent-metadata-and-file-selection-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6049
+      "durationMs": 6125
     },
     {
       "id": "J23",
@@ -1663,7 +1700,7 @@
         "evidence/r16/j23-torrent-playback-before-full-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 12503
+      "durationMs": 12071
     },
     {
       "id": "J24",
@@ -1787,7 +1824,7 @@
         "evidence/r16/j24-torrent-background-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 12586
+      "durationMs": 12259
     },
     {
       "id": "J25",
@@ -1799,7 +1836,7 @@
         {
           "description": "the search surface offers the interrupted-acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_5SMREG1YWFHJ4FYFKYMDA2HR28&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "observed": "/item?id=wfxitm_2HWH4JNN2HNDCN4Q5FNE8NR1T5&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
           "pass": true
         },
         {
@@ -1871,7 +1908,7 @@
         {
           "description": "the search surface offers the resumed-session item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_3TFKEZH9M3E95Y31ASWAJXMSMJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_3121Y9KW55EQGZ7HTVVGZ9ARMC&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -1917,7 +1954,7 @@
         "evidence/r16/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9940
+      "durationMs": 9786
     },
     {
       "id": "J26",
@@ -1981,7 +2018,7 @@
         "evidence/r16/j26-verified-local-asset-appears-in-library-web-status-read-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5621
+      "durationMs": 5157
     },
     {
       "id": "J27",
@@ -2005,7 +2042,7 @@
         {
           "description": "the search surface offers an unscripted item (no acquisition session)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_5C8BF47WFJ337A430H0W0XCMR2&connector=fake-source&ref=fake%3Ashort-2&title=Midnight+Scoop&type=video&duration=90000",
+          "observed": "/item?id=wfxitm_0WNYJYP69Q9HEBCAR06MY7NQ82&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
           "pass": true
         },
         {
@@ -2033,7 +2070,155 @@
         "evidence/r16/j27-native-local-media-playback-web-constrained-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5630
+      "durationMs": 5584
+    },
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the item while the source is signed in",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_605Q7ZXTV0BN9HR462THXPFHV1&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the item page offers its play decision while the source is signed in",
+          "expected": "a player link",
+          "observed": "/player?id=wfxitm_605Q7ZXTV0BN9HR462THXPFHV1&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the scripted source's card renders (the fixtures' own source truth)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its signed-in truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "the chip label (case-insensitive)",
+          "observed": "CONNECTED",
+          "pass": true
+        },
+        {
+          "description": "no expired marker renders while signed in",
+          "expected": "[data-wfx-source-expired] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired credential renders its OWN named state (never a silent fallback)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"expired\"",
+          "observed": "\"expired\"",
+          "pass": true
+        },
+        {
+          "description": "the expired state carries its explicit marker",
+          "expected": "[data-wfx-source-expired] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired source renders its named Sign-in-expired chip",
+          "expected": "the expired chip label (case-insensitive)",
+          "observed": "SIGN-IN EXPIRED",
+          "pass": true
+        },
+        {
+          "description": "the expired state states its recovery path",
+          "expected": "text of [data-wfx-source-recovery-detail] contains \"reconnect to restore this source\"",
+          "observed": "\"The stored sign-in expired — reconnect to restore this source.\"",
+          "pass": true
+        },
+        {
+          "description": "the availability note names the expired authorization",
+          "expected": "text of [data-wfx-source-notes] contains \"The stored authorization expired\"",
+          "observed": "\"The stored authorization expired — reconnect to restore this source.\"",
+          "pass": true
+        },
+        {
+          "description": "the expired state offers its typed reauthorize (reconnect) action",
+          "expected": "[data-wfx-source-action='reauthorize'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired credential renders the player's typed failure",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure kind is the typed unauthorized (the classified credential)",
+          "expected": "text of [data-wfx-error] contains \"unauthorized\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure NAMES the expired credential (the honest classified state)",
+          "expected": "text of [data-wfx-error] contains \"authorization for this source expired\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure states its re-auth recovery path",
+          "expected": "text of [data-wfx-error] contains \"reconnect\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure offers its recovery path back to the item",
+          "expected": "[data-wfx-surface='player'] a[href*='/item?'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no provider frame renders for an expired credential (never a fake stage)",
+          "expected": "[data-wfx-player-frame] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the reauthorized source is signed in again (the recovery completed)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the expired marker is gone after recovery",
+          "expected": "[data-wfx-source-expired] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the recovered source resolves playback again (the read recovered)",
+          "expected": "a resolved playback mode (not failed)",
+          "observed": "embed",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j28-credential-expiry.png",
+        "evidence/r16/j28-provider-credential-expiry-recovery.snapshot.txt",
+        "evidence/r16/j28-provider-credential-expiry-recovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 45069
     },
     {
       "id": "J29",
@@ -2081,7 +2266,7 @@
         {
           "description": "the failure is specific (names what failed)",
           "expected": "text of [data-wfx-error] contains \"Playback could not start\"",
-          "observed": "\"Playback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
+          "observed": "\"Playback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
           "pass": true
         },
         {
@@ -2095,6 +2280,66 @@
           "expected": "[data-wfx-player-frame] matches exactly 0",
           "observed": "0 matching element(s)",
           "pass": true
+        },
+        {
+          "description": "the search surface offers the network-loss item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_1EEYQVSMFBM083RNAQB99RGKZK&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
+          "pass": true
+        },
+        {
+          "description": "the starved session renders its explicit starvation marker",
+          "expected": "[data-wfx-acquisition-starved='true'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the starved session renders its waiting badge (the honest named state)",
+          "expected": "text of [data-wfx-acquisition-waiting] is exactly \"Waiting for the download source\"",
+          "observed": "\"Waiting for the download source\"",
+          "pass": true
+        },
+        {
+          "description": "the starved session's progress bar stays the MEASURED 35% (never a fake moving bar)",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"35%\"",
+          "observed": "\"35%\"",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session offers its typed resume action (keep the saved progress)",
+          "expected": "[data-wfx-acquisition-action='resume'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session offers its typed clean-restart action (discard the saved progress)",
+          "expected": "[data-wfx-acquisition-action='restart'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the resume action SAYS it keeps the saved progress",
+          "expected": "a keep-progress label",
+          "observed": "Resume download — keep saved progress",
+          "pass": true
+        },
+        {
+          "description": "the restart action SAYS it discards the saved progress",
+          "expected": "a discard-progress label",
+          "observed": "Start over — discard saved progress",
+          "pass": true
+        },
+        {
+          "description": "the restarted session carries NO resuming badge (a fresh start — the progress was discarded)",
+          "expected": "[data-wfx-acquisition-resuming] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the restarted session carries no starvation marker (a fresh healthy attempt)",
+          "expected": "[data-wfx-acquisition-starved='true'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
         }
       ],
       "artifacts": [
@@ -2103,7 +2348,7 @@
         "evidence/r16/j29-network-loss-playback-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4052
+      "durationMs": 18299
     },
     {
       "id": "J30",
@@ -2191,7 +2436,7 @@
         "evidence/r16/j30-unsupported-capability-honesty.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7038
+      "durationMs": 7434
     },
     {
       "id": "J31",
@@ -2203,19 +2448,19 @@
         {
           "description": "the search surface anchors the canonical item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_7B634BG0FQRW7D1JHV7NQY41W4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
           "description": "the item detail surface carries the SAME canonical identity the search card linked",
-          "expected": "the detail carries wfxitm_7B634BG0FQRW7D1JHV7NQY41W4",
-          "observed": "wfxitm_7B634BG0FQRW7D1JHV7NQY41W4",
+          "expected": "the detail carries wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS",
+          "observed": "wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS",
           "pass": true
         },
         {
           "description": "the player entry carries the SAME canonical identity (one item identity across all three surfaces)",
-          "expected": "the play link carries wfxitm_7B634BG0FQRW7D1JHV7NQY41W4",
-          "observed": "wfxitm_7B634BG0FQRW7D1JHV7NQY41W4",
+          "expected": "the play link carries wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS",
+          "observed": "wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS",
           "pass": true
         },
         {
@@ -2261,7 +2506,7 @@
         "evidence/r16/j31-cross-platform-web-desktop-parity-web-side-anchors.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9165
+      "durationMs": 9011
     },
     {
       "id": "J32",
@@ -2273,7 +2518,7 @@
         {
           "description": "the search card links the CANONICAL identity (id-first, not source-first)",
           "expected": "an /item?id=wfxitm_… link",
-          "observed": "/item?id=wfxitm_7B634BG0FQRW7D1JHV7NQY41W4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_62YBK6R66GF4MD2CRRRKF0E9FS&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -2321,7 +2566,7 @@
         {
           "description": "every search card carries a distinct canonical identity (the join is identity-keyed, not source-keyed)",
           "expected": "3 distinct canonical ids",
-          "observed": "wfxitm_5F07NPHYQQNJ032376T4QHH3XP, wfxitm_459832DHTMFE9P58P1EXWCB131, wfxitm_5SMREG1YWFHJ4FYFKYMDA2HR28",
+          "observed": "wfxitm_0WNYJYP69Q9HEBCAR06MY7NQ82, wfxitm_7SHQKRYN9GH1DTAQ4QKRT24ES9, wfxitm_2HWH4JNN2HNDCN4Q5FNE8NR1T5",
           "pass": true
         }
       ],
@@ -2331,15 +2576,409 @@
         "evidence/r16/j32-source-neutral-identity-same-item-multiple-realizations.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7290
+      "durationMs": 6437
+    },
+    {
+      "id": "J33",
+      "title": "Bring Your Own Feed: import, preview, confirm, sync, provenance",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the BYOF drive state resets to pristine before the journey (determinism)",
+          "expected": "HTTP 200 from the dev-reset drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the Bring your feed panel renders inside the settings sources section (the existing IA)",
+          "expected": "[data-wfx-byof-panel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-import source card renders (the choose-source step)",
+          "expected": "[data-wfx-byof-source='youtube'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its authorization truth (not connected — never fabricated)",
+          "expected": "data-wfx-byof-source-auth-state of [data-wfx-byof-source='youtube'] is \"not-connected\"",
+          "observed": "\"not-connected\"",
+          "pass": true
+        },
+        {
+          "description": "the source's honest absence (watch history) renders with its reason",
+          "expected": "[data-wfx-byof-absence='history'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source's honest absence (the ranked home feed) renders with its reason",
+          "expected": "[data-wfx-byof-absence='ranked-feed'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the import attempt answers the TYPED unauthorized failure",
+          "expected": "data-wfx-byof-failure-kind of [data-wfx-byof-action-error] is \"unauthorized\"",
+          "observed": "\"unauthorized\"",
+          "pass": true
+        },
+        {
+          "description": "the failure states its recovery path (connect first — actionable, never silent)",
+          "expected": "[data-wfx-byof-failure-recovery] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failed attempt lands its honest trail row",
+          "expected": "[data-wfx-byof-import-status='reauthorization-required'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its connected truth after the connect step",
+          "expected": "data-wfx-byof-source-auth-state of [data-wfx-byof-source='youtube'] is \"connected\"",
+          "observed": "\"connected\"",
+          "pass": true
+        },
+        {
+          "description": "the preview states what will be imported (the count the capture produced)",
+          "expected": "text of [data-wfx-byof-preview-count] contains \"7 items\"",
+          "observed": "\"Ready to bring in 7 items — captured Sep 19, 2026, 12:00 PM UTC.\"",
+          "pass": true
+        },
+        {
+          "description": "the follow summary chip renders",
+          "expected": "[data-wfx-byof-relationship='follow'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the likes summary chip renders",
+          "expected": "[data-wfx-byof-relationship='like'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playlist summary chip renders",
+          "expected": "[data-wfx-byof-relationship='playlist'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch-later summary chip renders",
+          "expected": "[data-wfx-byof-relationship='watchlist'] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the preview labels its order semantics as source-native",
+          "expected": "data-wfx-byof-order-semantics of [data-wfx-byof-preview] is \"source-native\"",
+          "observed": "\"source-native\"",
+          "pass": true
+        },
+        {
+          "description": "the preview states the mode distinction in plain language",
+          "expected": "text of [data-wfx-byof-preview] contains \"not a WebFlix ranking\"",
+          "observed": "\"Preview your import from YouTube\n\nReady to bring in 7 items — captured Sep 19, 2026, 12:00 PM UTC.\n\n2 · Channels you follow\n2 · Liked videos\n1 · Watch Later\n2 · Playlists\n\nIn YouTube's own order — this is the order YouTube lists your feed in, not a WebFlix ranking.\n\nThis capture is a snapshot of your feed as it stood. Because this source can be re-read, the import keeps itself current after you confirm (it will show as Live).\n\nStorm Chasers Lab\nChannels you follow · position 1 as listed by YouTube\nDesert Rain — A Night Documentary\nLiked videos · position 1 as listed by YouTube\nDesert Rain — A Night Documentary\nWatch Later · position 1 as listed by YouTube\nRain Over the Dunes (no embeds)\nPlaylists · position 1 as listed by YouTube\nWebFlix Fixture Channel\nChannels you follow · position 2 as listed by YouTube\nDesert Rain in 45 Seconds\nLiked videos · position 2 as listed by YouTube\nDesert Rain — A Night Documentary\nPlaylists · position 2 as listed by YouTube\n\nConfirming imports exactly what you see above, with where it came from. It never touches your WebFlix watchlist, history, or recommendations — those stay their own thing.\n\nConfirm import\nNot now\"",
+          "pass": true
+        },
+        {
+          "description": "the capture's freshness is the honest snapshot state",
+          "expected": "data-wfx-byof-freshness of [data-wfx-byof-preview] [data-wfx-byof-freshness] is \"snapshot\"",
+          "observed": "\"snapshot\"",
+          "pass": true
+        },
+        {
+          "description": "the freshness states the snapshot truth in plain language",
+          "expected": "text of [data-wfx-byof-preview] [data-wfx-byof-freshness] contains \"This capture is a snapshot\"",
+          "observed": "\"This capture is a snapshot of your feed as it stood. Because this source can be re-read, the import keeps itself current after you confirm (it will show as Live).\"",
+          "pass": true
+        },
+        {
+          "description": "the preview's sample renders the source's own first item (most-recent-first order)",
+          "expected": "Storm Chasers Lab first (the fixture capture's own order)",
+          "observed": "Storm Chasers Lab\nChannels you follow · position 1 as listed by YouTube",
+          "pass": true
+        },
+        {
+          "description": "the post-confirm landing renders its banner (the feed appears)",
+          "expected": "[data-wfx-byof-imported-banner] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the confirmed import renders its durable card",
+          "expected": "[data-wfx-byof-import] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the import card states its provenance (count + method)",
+          "expected": "text of [data-wfx-byof-import] contains \"7 items imported via the authorized API\"",
+          "observed": "\"YouTube\nLive — kept current\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThis import syncs from its source; last synced Sep 20, 2026, 10:00 AM UTC.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 2 · IN YOUTUBE'S OWN ORDER\n\nStorm Chasers Lab\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 2 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain in 45 Seconds\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "the import card states its capture time",
+          "expected": "text of [data-wfx-byof-import] contains \"captured \"",
+          "observed": "\"YouTube\nLive — kept current\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThis import syncs from its source; last synced Sep 20, 2026, 10:00 AM UTC.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 2 · IN YOUTUBE'S OWN ORDER\n\nStorm Chasers Lab\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 2 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain in 45 Seconds\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "the imported follow/subscription summary renders",
+          "expected": "text of [data-wfx-byof-following-summary] contains \"2 followed channels\"",
+          "observed": "\"Following summary: 2 followed channels across your imported feed (the \"Following\" subset of what you imported — shown in each source's own order).\"",
+          "pass": true
+        },
+        {
+          "description": "the imported feed labels its order semantics as source-native",
+          "expected": "data-wfx-byof-order-semantics of [data-wfx-byof-import] is \"source-native\"",
+          "observed": "\"source-native\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix-mode separation is stated (no silent recommendation identity)",
+          "expected": "text of [data-wfx-byof-mode-note] contains \"never silently replaced by this imported feed\"",
+          "observed": "\"Source-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\"",
+          "pass": true
+        },
+        {
+          "description": "the confirmed continuous route lands its live state",
+          "expected": "data-wfx-byof-sync-state of [data-wfx-byof-import] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the live state renders its chip label",
+          "expected": "text of [data-wfx-byof-sync-chip] contains \"Live — kept current\"",
+          "observed": "\"Live — kept current\"",
+          "pass": true
+        },
+        {
+          "description": "the follow group renders",
+          "expected": "[data-wfx-byof-group='follow'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the likes group renders",
+          "expected": "[data-wfx-byof-group='like'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playlist group renders",
+          "expected": "[data-wfx-byof-group='playlist'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch-later group renders",
+          "expected": "[data-wfx-byof-group='watchlist'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix watchlist stays untouched by the import",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix history stays untouched by the import",
+          "expected": "text of [data-wfx-library-history] contains \"No watch history yet\"",
+          "observed": "\"History\n\nNo watch history yet\n\nWatch something — your session's watch state folds here with positions and completion.\"",
+          "pass": true
+        },
+        {
+          "description": "the import card carries its id (the sync action's target)",
+          "expected": "an import id",
+          "observed": "wfximp_00000000000000000000000011",
+          "pass": true
+        },
+        {
+          "description": "the same-data sync reports the honest all-unchanged counts (the server's own report)",
+          "expected": "text of [data-wfx-byof-action-result='sync'] contains \"0 added · 0 updated · 0 removed · 7 unchanged\"",
+          "observed": "\"Synced — here is exactly what changed:\n\n0 added · 0 updated · 0 removed · 7 unchanged. The feed below re-renders on your next visit.\n\nSee your imported feed\"",
+          "pass": true
+        },
+        {
+          "description": "the changed-source drive answers (the scripted source lifecycle)",
+          "expected": "HTTP 200 from the advance-source drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the changed-source sync reports the engine's honest reconciliation counts",
+          "expected": "text of [data-wfx-byof-action-result='sync'] contains \"1 added · 2 updated · 1 removed · 4 unchanged\"",
+          "observed": "\"Synced — here is exactly what changed:\n\n1 added · 2 updated · 1 removed · 4 unchanged. The feed below re-renders on your next visit.\n\nSee your imported feed\"",
+          "pass": true
+        },
+        {
+          "description": "the newly followed channel appears in the feed after the sync",
+          "expected": "text of [data-wfx-byof-feed] contains \"Aurora Nights\"",
+          "observed": "\"Your imported feeds\n\nFeeds you brought from your sources — shown in each source's own order, with where they came from. Your WebFlix watchlist and history below stay their own thing: an import never writes into them, and disconnecting an import never deletes them.\n\nYouTube\nLive — kept current\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThis import syncs from its source; last synced Sep 20, 2026, 10:00 AM UTC.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 3 · IN YOUTUBE'S OWN ORDER\n\nAurora Nights\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nStorm Chasers Lab\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 3 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\n\nFollowing summary: 3 followed channels across your imported feed (the \"Following\" subset of what you imported — shown in each source's own order).\"",
+          "pass": true
+        },
+        {
+          "description": "the removed like is gone after the reconciliation (honest removal, never hidden)",
+          "expected": "no 'Desert Rain in 45 Seconds' row",
+          "observed": "gone",
+          "pass": true
+        },
+        {
+          "description": "the follow summary reflects the reconciled source (3 follows)",
+          "expected": "text of [data-wfx-byof-following-summary] contains \"3 followed channels\"",
+          "observed": "\"Following summary: 3 followed channels across your imported feed (the \"Following\" subset of what you imported — shown in each source's own order).\"",
+          "pass": true
+        },
+        {
+          "description": "the expire-auth drive answers (the scripted grant loss)",
+          "expected": "HTTP 200 from the expire-auth drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the failing sync answers the typed unauthorized failure",
+          "expected": "data-wfx-byof-failure-kind of [data-wfx-byof-action-error] is \"unauthorized\"",
+          "observed": "\"unauthorized\"",
+          "pass": true
+        },
+        {
+          "description": "the import renders the named reauthorization-required state (its own truth)",
+          "expected": "data-wfx-byof-sync-state of [data-wfx-byof-import] is \"reauthorization-required\"",
+          "observed": "\"reauthorization-required\"",
+          "pass": true
+        },
+        {
+          "description": "the reauthorization gap renders its chip label",
+          "expected": "text of [data-wfx-byof-sync-chip] contains \"Authorization needed\"",
+          "observed": "\"Authorization needed\"",
+          "pass": true
+        },
+        {
+          "description": "every record is retained through the authorization gap",
+          "expected": "text of [data-wfx-byof-import] contains \"7 items imported via the authorized API\"",
+          "observed": "\"YouTube\nAuthorization needed\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThe connection to this source needs your authorization again. Your imported items are kept while you reconnect — nothing is deleted by a failing sync.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 3 · IN YOUTUBE'S OWN ORDER\n\nAurora Nights\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nStorm Chasers Lab\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 3 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "all seven records still render (the survival law)",
+          "expected": "[data-wfx-byof-record] matches >= 7",
+          "observed": "7 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the reconnect drive answers (the scripted grant recovery)",
+          "expected": "HTTP 200 from the connect drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the recovered import is live again (the reauthorization completed)",
+          "expected": "data-wfx-byof-sync-state of [data-wfx-byof-import] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the disconnect result states the retention law",
+          "expected": "text of [data-wfx-byof-retained-truth] contains \"7 imported records are retained\"",
+          "observed": "\"Your 7 imported records are retained with their provenance — you will still see them in your Library. WebFlix stopped syncing this feed; deleting the records is a separate, explicit action.\"",
+          "pass": true
+        },
+        {
+          "description": "the import renders its user-disconnected truth",
+          "expected": "data-wfx-byof-disconnected of [data-wfx-byof-import] is \"true\"",
+          "observed": "\"true\"",
+          "pass": true
+        },
+        {
+          "description": "the disconnected state renders its own chip label",
+          "expected": "text of [data-wfx-byof-sync-chip] contains \"Disconnected — records retained\"",
+          "observed": "\"Disconnected — records retained\"",
+          "pass": true
+        },
+        {
+          "description": "all seven records still render after the disconnect (provenance survives)",
+          "expected": "[data-wfx-byof-record] matches >= 7",
+          "observed": "7 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance (capture time) still renders after the disconnect",
+          "expected": "text of [data-wfx-byof-import] contains \"captured \"",
+          "observed": "\"YouTube\nDisconnected — records retained\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nYou disconnected this import. Your imported items and where they came from are kept; WebFlix stopped syncing this feed. Deleting the imported records is a separate, explicit action.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 3 · IN YOUTUBE'S OWN ORDER\n\nAurora Nights\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nStorm Chasers Lab\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 3 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix watchlist is untouched by the import AND the disconnect",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix history is untouched by the import AND the disconnect",
+          "expected": "text of [data-wfx-library-history] contains \"No watch history yet\"",
+          "observed": "\"History\n\nNo watch history yet\n\nWatch something — your session's watch state folds here with positions and completion.\"",
+          "pass": true
+        },
+        {
+          "description": "the destructive action arms explicitly (a separate deliberate step — never a side effect)",
+          "expected": "[data-wfx-byof-delete-armed='true'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the deletion result states the separation law",
+          "expected": "text of [data-wfx-byof-action-result='deleted'] contains \"watchlist and history were never touched\"",
+          "observed": "\"Deleted 7 imported records.\n\nThe imported records are permanently removed. Your WebFlix watchlist and history were never touched by this import.\n\nSee your Library\"",
+          "pass": true
+        },
+        {
+          "description": "the ended import renders the honest empty state (the feed is gone)",
+          "expected": "[data-wfx-byof-empty] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the empty state is the feed's own truth after the explicit deletion",
+          "expected": "text of [data-wfx-byof-empty] contains \"No imported feeds yet\"",
+          "observed": "\"No imported feeds yet\n\nBring the feed you already have on a source — your follows, likes, and playlists, in your source's own order.\n\nBring your feed\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix watchlist survives the deletion untouched",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j33-authorization-failure.png",
+        "evidence/r16/j33-preview.png",
+        "evidence/r16/j33-feed-appears.png",
+        "evidence/r16/j33-sync-reconciled.png",
+        "evidence/r16/j33-reauthorization-required.png",
+        "evidence/r16/j33-disconnect-retained.png",
+        "evidence/r16/j33-deleted-explicit.png",
+        "evidence/r16/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.snapshot.txt",
+        "evidence/r16/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 20551
     }
   ],
   "limitations": [
     {
       "journeyId": "J28",
       "kind": "local-only",
-      "note": "Provider credential expiry/recovery round trips (connect → expiry → typed unauthorized read → reauthorize → recovery) are the service-side source-management lane: apps/api /auth + /sources routes over the durable connector-account store. The web fixtures boot has no auth surface to drive.",
-      "procedure": "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), expire the token, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+      "note": "The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot."
     },
     {
       "journeyId": "J09",
@@ -2356,8 +2995,8 @@
     {
       "journeyId": "J14",
       "kind": "local-only",
-      "note": "The connect/reauthorize/disconnect ROUND TRIPS are the service-side source-management routes (R03's delivery over the connector-account store). The web fixtures boot renders the honest no-sources state (encoded); the round trips are not drivable here.",
-      "procedure": "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect, capturing each state."
+      "note": "The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state."
     },
     {
       "journeyId": "J15",
@@ -2386,7 +3025,7 @@
     {
       "journeyId": "J19",
       "kind": "local-only",
-      "note": "The WebFlix-model / BYOM / local-model policy with privacy/cost/fallback constraints is R06's service surface (apps/api /experience/model-policy, /model-providers, BYOM bindings). The web adapter renders the typed honest-absent state (encoded — never placeholder controls).",
+      "note": "R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.",
       "procedure": "LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces."
     },
     {
@@ -2436,6 +3075,12 @@
       "kind": "known-defect",
       "note": "FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state=\"empty-query\" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.",
       "procedure": "FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions."
+    },
+    {
+      "journeyId": "J33",
+      "kind": "local-only",
+      "note": "The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.",
+      "procedure": "LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot."
     }
   ]
 }

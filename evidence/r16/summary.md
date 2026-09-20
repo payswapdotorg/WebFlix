@@ -1,11 +1,11 @@
 # WebFlix Golden Journey Run — Evidence Summary
 
-- commit: `47e886547e8dfd50ef6eea7a96750f3a9178ae86`
-- branch: `wfx/r16/journey-automation`
+- commit: `a64375064fc7e904122d701ae6426b1b3dba5f78`
+- branch: `wfx/r21/discoverability`
 - environment: web-fixtures @ http://localhost:3101
-- window: 2026-09-18T11:07:22.567Z → 2026-09-18T11:10:19.777Z
+- window: 2026-09-20T01:45:47.392Z → 2026-09-20T01:50:37.568Z
 
-**31 passed · 0 failed · 0 not-run (listed with procedures) · 31 total**
+**33 passed · 0 failed · 0 not-run (listed with procedures) · 33 total**
 
 | Journey | Title | Status | Assertions | Artifacts |
 |---|---|---|---:|---:|
@@ -22,12 +22,12 @@
 | J11 | Library / watchlist / history | PASS | 11 | 3 |
 | J12 | Cross-device resume | PASS | 6 | 3 |
 | J13 | Account/profile/identity lifecycle | PASS | 5 | 3 |
-| J14 | Source connect / reauthorize / disconnect | PASS | 8 | 3 |
+| J14 | Source connect / reauthorize / disconnect | PASS | 11 | 3 |
 | J15 | Recommendation feedback controls | PASS | 6 | 3 |
 | J16 | Anti-tunnel / exploration after a single watched topic | PASS | 4 | 3 |
 | J17 | Explicit intent: learn / happier / surprise / tonight / friend taste | PASS | 6 | 3 |
 | J18 | Attention modes: mindful / balanced / immersive / custom | PASS | 4 | 3 |
-| J19 | WebFlix model / BYOM / local model policy | PASS | 5 | 3 |
+| J19 | WebFlix model / BYOM / local model policy | PASS | 8 | 3 |
 | J20 | AI subtitles / translation / transcription / dubbing / commentary | PASS | 9 | 3 |
 | J21 | Authorized torrent acquisition (web limited-status surface) | PASS | 14 | 3 |
 | J22 | Torrent metadata and file selection (web limited-status surface) | PASS | 7 | 3 |
@@ -36,21 +36,23 @@
 | J25 | Torrent interruption / restart / resume (web status surface) | PASS | 19 | 3 |
 | J26 | Verified local asset appears in Library (web status/read surface) | PASS | 8 | 3 |
 | J27 | Native local media playback (web constrained truth) | PASS | 6 | 3 |
-| J29 | Network loss / playback recovery | PASS | 9 | 3 |
+| J28 | Provider credential expiry/recovery | PASS | 22 | 3 |
+| J29 | Network loss / playback recovery | PASS | 19 | 3 |
 | J30 | Unsupported capability honesty | PASS | 12 | 3 |
 | J31 | Cross-platform Web/Desktop parity (web-side anchors) | PASS | 9 | 3 |
 | J32 | Source-neutral identity: same item, multiple realizations | PASS | 9 | 3 |
+| J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | PASS | 62 | 9 |
 
 ## Explicit limitations (never silent skips)
 
-- **J28** (local-only): Provider credential expiry/recovery round trips (connect → expiry → typed unauthorized read → reauthorize → recovery) are the service-side source-management lane: apps/api /auth + /sources routes over the durable connector-account store. The web fixtures boot has no auth surface to drive.
-  - procedure: LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), expire the token, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot.
+- **J28** (local-only): The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.
+  - procedure: LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot.
 - **J09** (configuration-limit): The external-rung WIN (the visible external handoff with its return-context link) requires an item whose only realization is external — the fixture catalog carries none (every item resolves embed or browser first). The fallback DECISION trace and the typed failure states are encoded; the handoff itself is not reachable in this configuration.
   - procedure: LOCAL-ONLY: boot the service-mode configuration with a source that declares an external-only realization (or a realization whose embed/browser URLs the provider restricts), open its player, and capture the data-wfx-player-mode="external" handoff + the return-context link under evidence/<run>/.
 - **J12** (configuration-limit): Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).
   - procedure: LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes).
-- **J14** (local-only): The connect/reauthorize/disconnect ROUND TRIPS are the service-side source-management routes (R03's delivery over the connector-account store). The web fixtures boot renders the honest no-sources state (encoded); the round trips are not drivable here.
-  - procedure: LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect, capturing each state.
+- **J14** (local-only): The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.
+  - procedure: LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state.
 - **J15** (local-only): The full reversible feedback vocabulary (More-like-this / Not-interested / creator-source suppression / Already-watched) is R05's service-side policy surface (apps/api /experience/feedback + /experience/policy routes). The web adapter ships the session re-rank explainability + the typed-absent feedback grammar (both encoded).
   - procedure: LOCAL-ONLY: the service-mode boot + apply each feedback control through the API routes, verify the policy composition change, and capture the affected surfaces.
 - **J16** (local-only): Profile-LEVEL anti-tunnel (a concentrated watch history not permanently dominating the profile) is R05's service-side recommendation policy; the web fixtures session has no persistent profile. The feed-level exploration mechanics (kept runway, multi-item composition) are encoded.
@@ -59,7 +61,7 @@
   - procedure: LOCAL-ONLY: the service-mode boot + submit each intent kind through /experience/intents, verify the session-scoped composition and the untouched long-term policy, and capture the affected feed surfaces.
 - **J18** (local-only): SWITCHING attention modes (mindful=3-swipe / immersive=none / custom) is the service-side policy submission (apps/api /experience/policy). The web session boots the balanced default; its observable threshold behavior (no re-rank below 5, re-rank at 5) is encoded.
   - procedure: LOCAL-ONLY: the service-mode boot + set each attention mode through /experience/policy, then drive the short feed and capture the mode-specific re-rank behavior (mindful fires at 3 swipes; immersive does not auto re-rank).
-- **J19** (local-only): The WebFlix-model / BYOM / local-model policy with privacy/cost/fallback constraints is R06's service surface (apps/api /experience/model-policy, /model-providers, BYOM bindings). The web adapter renders the typed honest-absent state (encoded — never placeholder controls).
+- **J19** (local-only): R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.
   - procedure: LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces.
 - **J20** (local-only): The AI transformation operations with explicit progress/result states (transcription, subtitles, translation, dubbing, commentary) are the service-side transforms surface (apps/api /experience/transforms). The web renders the typed honest absence with the vocabulary named (encoded).
   - procedure: LOCAL-ONLY: the service-mode boot + start each transformation operation through /experience/transforms, capture the explicit in-progress and completed states.
@@ -77,3 +79,5 @@
   - procedure: LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/.
 - **J05** (known-defect): FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state="empty-query" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.
   - procedure: FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions.
+- **J33** (local-only): The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.
+  - procedure: LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot.

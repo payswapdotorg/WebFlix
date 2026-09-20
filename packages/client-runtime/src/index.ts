@@ -72,6 +72,8 @@ export * from "./models";
 export * from "./registry";
 export * from "./discoverability";
 export * from "./feed-mode";
+export * from "./model-controls";
+export * from "./control-views";
 export { createRuntime, type ClientRuntime, type RuntimeSession, type RuntimeOptions } from "./runtime";
 
 // Test doubles — clearly marked, testing-only (see testing.ts module doc).

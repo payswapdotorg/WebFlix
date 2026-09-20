@@ -70,6 +70,7 @@ import type { SearchResult } from "@wfx/domain";
 import { createNavigationStore, type NavigationController } from "./navigation";
 import { createSourceStateStore, type SourceStateOperations } from "./sources";
 import { createFeedModeStore, type FeedModeOperations } from "./feed-mode";
+import { createModelControlsStore, type ModelControlsOperations } from "./model-controls";
 import {
   WatchStateEngine,
   type WatchEventRetryReport,
@@ -156,6 +157,13 @@ export interface ClientRuntime {
    * reports the availability truth; typed refusals carry recovery hints.
    */
   readonly feedMode: FeedModeOperations;
+  /**
+   * R21-C (ADD-ONLY): the model-controls operations — the Model & AI
+   * surfaces' read/write model over the R06 ServerPort extension
+   * (policy per task, provider registry, BYOM bindings, transform
+   * operations) with honest in-model degradation.
+   */
+  readonly modelControls: ModelControlsOperations;
   /**
    * R14: the native acquisition UX operations — the platform adapter's
    * protocol-free fact intake and the honest lifecycle views (Available /
@@ -253,6 +261,8 @@ export function createRuntime(
   const sources = createSourceStateStore(server);
   // R21-A: the feed-mode control store (pure presentation state).
   const feedMode = createFeedModeStore();
+  // R21-C: the model-controls store (the R06 semantics' read model).
+  const modelControls = createModelControlsStore(server);
   // R14: the acquisition store — the runtime's UX-state seam over the
   // adapters' protocol-free facts (no clock, no timers: the host owns the
   // reporting cadence — the R10 no-hidden-timers law).
@@ -392,6 +402,7 @@ export function createRuntime(
     intents: intents.operations(),
     sources,
     feedMode,
+    modelControls,
     // R14: the native acquisition UX surface — the adapter intake (facts)
     // and the honest lifecycle views the default surfaces render (see
     // src/acquisition.ts; protocol-free BY TYPE).

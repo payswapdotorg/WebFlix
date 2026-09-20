@@ -58,6 +58,8 @@ import type {
   IntentRecord,
   LibraryCommand,
   LibraryEntry,
+  ModelPolicy,
+  ModelTask,
   PlaybackRealization,
   RecommendationPolicy,
   SearchResult,
@@ -66,6 +68,10 @@ import type {
 } from "@wfx/domain";
 import { isIso8601, isRecord, validatePlaybackRealization } from "@wfx/domain";
 import type {
+  ByomBindingCommand,
+  ByomBindingHandle,
+  ModelPolicyCommand,
+  ModelProviderInfo,
   ProfileHistoryEntry,
   RecommendationPolicyCommand,
   RuntimeContext,
@@ -75,8 +81,12 @@ import type {
   ServerFailureKind,
   ServerPort,
   ServerResult,
+  SourceInfo,
+  TransformOperation,
+  TransformSubmitCommand,
   UserIntentCommand,
 } from "@wfx/client-runtime";
+import { isTransformOperationState, isUsableSourceInfo } from "@wfx/client-runtime";
 
 // ---------------------------------------------------------------------------
 // The production seams (clock + ids — the same discipline as the web host)
@@ -282,6 +292,111 @@ function isUsableReceipt(value: unknown): value is ActionReceipt {
 }
 
 // ---------------------------------------------------------------------------
+// The R03/R06 model-controls payload guards (R21-B — the desktop twin of
+// the web port's completion; a malformed service answer never becomes
+// domain data)
+// ---------------------------------------------------------------------------
+
+/** The frozen ModelTask vocabulary (mirrors the frozen domain union). */
+const MODEL_TASKS: readonly ModelTask[] = [
+  "recommendation",
+  "ranking",
+  "summary",
+  "translation",
+  "transcription",
+  "speechToText",
+  "textToSpeech",
+  "dubbing",
+  "commentary",
+];
+
+/** The frozen ModelPolicy privacy vocabulary. */
+const MODEL_PRIVACIES: readonly ModelPolicy["privacy"][] = [
+  "local-only",
+  "trusted-cloud",
+  "any-cloud",
+];
+
+/** Transport guard for one usable `ModelPolicy` (the frozen shape). */
+function isUsableModelPolicy(value: unknown): value is ModelPolicy {
+  if (!isRecord(value)) return false;
+  if (!MODEL_TASKS.includes(value.task as ModelTask)) return false;
+  if (value.preferredProvider !== undefined && typeof value.preferredProvider !== "string") {
+    return false;
+  }
+  if (
+    !Array.isArray(value.fallbackProviders) ||
+    !value.fallbackProviders.every((provider) => typeof provider === "string" && provider.length > 0)
+  ) {
+    return false;
+  }
+  if (!MODEL_PRIVACIES.includes(value.privacy as ModelPolicy["privacy"])) return false;
+  if (
+    value.maxCostPerOperation !== undefined &&
+    (typeof value.maxCostPerOperation !== "number" ||
+      !Number.isFinite(value.maxCostPerOperation) ||
+      value.maxCostPerOperation < 0)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+/** Transport guard for one usable `ModelProviderInfo` (the registry row). */
+function isUsableModelProvider(value: unknown): value is ModelProviderInfo {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.id)) return false;
+  if (value.privacy !== "local" && value.privacy !== "cloud") return false;
+  if (
+    !Array.isArray(value.capabilities) ||
+    !value.capabilities.every((task) => MODEL_TASKS.includes(task as ModelTask))
+  ) {
+    return false;
+  }
+  if (typeof value.byomBound !== "boolean") return false;
+  if (!isRecord(value.costs)) return false;
+  for (const cost of Object.values(value.costs)) {
+    if (typeof cost !== "number" || !Number.isFinite(cost) || cost < 0) return false;
+  }
+  if (value.availability !== "available" && value.availability !== "unsupported") return false;
+  return true;
+}
+
+/** Transport guard for one usable BYOM binding handle (secret-free projection). */
+function isUsableByomHandle(value: unknown): value is ByomBindingHandle {
+  if (!isRecord(value)) return false;
+  if (!isNonEmptyString(value.id)) return false;
+  if (!isNonEmptyString(value.providerId)) return false;
+  if (!isNonEmptyString(value.endpointUrl)) return false;
+  if (!isNonEmptyString(value.keyId)) return false;
+  if (value.metadata !== null && !isRecord(value.metadata)) return false;
+  if (typeof value.createdAt !== "string" || !isIso8601(value.createdAt)) return false;
+  if (typeof value.updatedAt !== "string" || !isIso8601(value.updatedAt)) return false;
+  return true;
+}
+
+/** Transport guard for one usable `TransformOperation` (the snapshot record). */
+function isUsableTransformOperation(value: unknown): value is TransformOperation {
+  if (!isRecord(value)) return false;
+  if (typeof value.id !== "string" || !value.id.startsWith("wfxtx_")) return false;
+  if (typeof value.kind !== "string" || value.kind.length === 0) return false;
+  if (typeof value.targetRef !== "string") return false;
+  if (!isRecord(value.options)) return false;
+  if (!isTransformOperationState(value.state)) return false;
+  if (
+    value.progress !== null &&
+    (typeof value.progress !== "number" || !Number.isFinite(value.progress))
+  ) {
+    return false;
+  }
+  if (value.resultRef !== null && typeof value.resultRef !== "string") return false;
+  if (value.errorDetail !== null && typeof value.errorDetail !== "string") return false;
+  if (typeof value.createdAt !== "string" || !isIso8601(value.createdAt)) return false;
+  if (typeof value.updatedAt !== "string" || !isIso8601(value.updatedAt)) return false;
+  return true;
+}
+
+// ---------------------------------------------------------------------------
 // The transport core
 // ---------------------------------------------------------------------------
 
@@ -321,7 +436,7 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
   }
 
   async function request(
-    method: "GET" | "POST" | "PUT",
+    method: "GET" | "POST" | "PUT" | "DELETE",
     url: string,
     body?: string,
   ): Promise<RequestOutcome> {
@@ -355,8 +470,8 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
             : "malformed";
       // 404 -> "unavailable" (lead ratification, R02 integration): the
       // profile-aware reads map onto /experience/{history,intents,policy},
-      // which land in R04/R05 — until then the honest answer is "the
-      // service cannot serve this right now", not "garbage payload".
+      // which the R04/R05 lanes serve — the honest answer is "the service
+      // cannot serve this right now", not "garbage payload".
       return {
         ok: false,
         failure: {
@@ -365,6 +480,7 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
         },
       };
     }
+    if (response.status === 204) return { ok: true, value: undefined };
     try {
       return { ok: true, value: await response.json() };
     } catch (thrown) {
@@ -578,6 +694,192 @@ export function createDesktopServerPort(options: DesktopServerPortOptions): Serv
       );
       if (!result.ok) return { ok: false, failure: result.failure };
       return { ok: true, value: undefined };
+    },
+
+    // — the R03 source read (ADD-ONLY; R21-B wires the desktop transport —
+    // the same completion the web port received: GET /sources over the
+    // { authenticated, sources } envelope) —
+
+    async readSources(): Promise<ServerResult<readonly SourceInfo[]>> {
+      const result = await request("GET", endpoint("/sources"));
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isRecord(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "GET /sources answered a non-object payload (expected the { authenticated, sources } envelope)",
+          },
+        };
+      }
+      const sources = (result.value as { sources?: unknown }).sources;
+      if (!Array.isArray(sources)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "GET /sources answered a 'sources' field that is not a JSON array",
+          },
+        };
+      }
+      const usable = sources.filter((source) => isUsableSourceInfo(source));
+      return { ok: true, value: usable as readonly SourceInfo[] };
+    },
+
+    // — the R06 model-and-AI-controls extension (ADD-ONLY; the R21-B
+    // transport completion — the desktop twin of the web port's mapping) —
+
+    async readModelPolicy(task: ModelTask): Promise<ServerResult<ModelPolicy | null>> {
+      const result = await request(
+        "GET",
+        endpoint("/experience/model-policy", new URLSearchParams({ task })),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (result.value === null) return { ok: true, value: null };
+      if (!isUsableModelPolicy(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: `GET /experience/model-policy answered a malformed ModelPolicy (task '${task}')`,
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async writeModelPolicy(command: ModelPolicyCommand): Promise<ServerResult<void>> {
+      const result = await request(
+        "PUT",
+        endpoint("/experience/model-policy"),
+        JSON.stringify(command),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      return { ok: true, value: undefined };
+    },
+
+    async readModelProviders(): Promise<ServerResult<readonly ModelProviderInfo[]>> {
+      const result = await readArray(
+        endpoint("/experience/model-providers"),
+        isUsableModelProvider,
+        "GET /experience/model-providers",
+      );
+      if (!result.ok) return result;
+      return { ok: true, value: result.value as readonly ModelProviderInfo[] };
+    },
+
+    async bindByomProvider(command: ByomBindingCommand): Promise<ServerResult<ByomBindingHandle>> {
+      const result = await request(
+        "PUT",
+        endpoint(`/experience/model-providers/byom/${encodeURIComponent(command.providerId)}`),
+        JSON.stringify({
+          endpointUrl: command.endpointUrl,
+          key: command.key,
+          ...(command.metadata !== undefined ? { metadata: command.metadata } : {}),
+          ...(command.capabilities !== undefined ? { capabilities: command.capabilities } : {}),
+          ...(command.costPerCall !== undefined ? { costPerCall: command.costPerCall } : {}),
+        }),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isUsableByomHandle(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "PUT /experience/model-providers/byom answered a malformed binding handle",
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async unbindByomProvider(providerId: string): Promise<ServerResult<void>> {
+      const result = await request(
+        "DELETE",
+        endpoint(`/experience/model-providers/byom/${encodeURIComponent(providerId)}`),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      return { ok: true, value: undefined };
+    },
+
+    async submitTransform(command: TransformSubmitCommand): Promise<ServerResult<TransformOperation>> {
+      const result = await request(
+        "POST",
+        endpoint("/experience/transforms"),
+        JSON.stringify({
+          kind: command.kind,
+          input: command.input,
+          ...(command.options !== undefined ? { options: command.options } : {}),
+        }),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isUsableTransformOperation(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: "POST /experience/transforms answered a malformed transform operation",
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async readTransform(operationId: string): Promise<ServerResult<TransformOperation>> {
+      const result = await request(
+        "GET",
+        endpoint(`/experience/transforms/${encodeURIComponent(operationId)}`),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      const operation = isRecord(result.value)
+        ? (result.value as { operation?: unknown }).operation
+        : undefined;
+      if (!isUsableTransformOperation(operation)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: `GET /experience/transforms/:id answered a malformed transform operation ('${operationId}')`,
+          },
+        };
+      }
+      return { ok: true, value: operation };
+    },
+
+    async cancelTransform(operationId: string): Promise<ServerResult<TransformOperation>> {
+      const result = await request(
+        "POST",
+        endpoint(`/experience/transforms/${encodeURIComponent(operationId)}/cancel`),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isUsableTransformOperation(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: `POST /experience/transforms/:id/cancel answered a malformed transform operation ('${operationId}')`,
+          },
+        };
+      }
+      return { ok: true, value: result.value };
+    },
+
+    async clearTransformResult(operationId: string): Promise<ServerResult<TransformOperation>> {
+      const result = await request(
+        "DELETE",
+        endpoint(`/experience/transforms/${encodeURIComponent(operationId)}`),
+      );
+      if (!result.ok) return { ok: false, failure: result.failure };
+      if (!isUsableTransformOperation(result.value)) {
+        return {
+          ok: false,
+          failure: {
+            kind: "malformed",
+            detail: `DELETE /experience/transforms/:id answered a malformed transform operation ('${operationId}')`,
+          },
+        };
+      }
+      return { ok: true, value: result.value };
     },
   };
 }

@@ -382,3 +382,192 @@ describe("R08 — the desktop server port (the frozen WFX_API_BASE mapping)", ()
     expect(stub.last().body).toContain("mindful");
   });
 });
+
+// ---------------------------------------------------------------------------
+// R21-B — the desktop transport completion (sources + model controls)
+// ---------------------------------------------------------------------------
+
+const SOURCE_ROW = {
+  connectorId: "conn-1",
+  displayName: "One Source",
+  version: "1.0.0",
+  authMode: "oauth",
+  capabilities: {
+    identity: false, catalogSearch: true, metadata: true, playNative: false,
+    playEmbed: true, playBrowser: true, playExternal: true, availability: true,
+    libraryRead: false, libraryWrite: false, like: false, save: false,
+    follow: false, comment: false, download: false, transform: false,
+  },
+  authState: "signedIn",
+  requiresAuthorization: true,
+  connected: true,
+  accountId: "acct-1",
+  authorizedAt: "2026-09-18T12:00:00.000Z",
+  lastStateChange: "2026-09-18T12:00:00.000Z",
+  expiresAt: null,
+  availabilityNotes: [],
+  lastChecked: "2026-09-18T12:00:00.000Z",
+};
+
+const MODEL_POLICY = {
+  task: "translation",
+  fallbackProviders: ["wfx-first-party"],
+  privacy: "local-only",
+};
+
+const PROVIDER_ROW = {
+  id: "wfx-first-party",
+  privacy: "local",
+  capabilities: ["translation", "summary"],
+  byomBound: false,
+  costs: { translation: 0 },
+  availability: "available",
+};
+
+const BYOM_HANDLE = {
+  id: "binding-1",
+  providerId: "openai-compatible",
+  endpointUrl: "https://models.example/v1",
+  keyId: "key_1",
+  metadata: null,
+  createdAt: "2026-09-18T12:00:00.000Z",
+  updatedAt: "2026-09-18T12:00:00.000Z",
+};
+
+const OPERATION = {
+  id: "wfxtx_00000000000000000000000001",
+  kind: "translation",
+  targetRef: "conn-1:ref-1",
+  options: {},
+  state: "queued",
+  progress: null,
+  resultRef: null,
+  errorDetail: null,
+  createdAt: "2026-09-18T12:00:00.000Z",
+  updatedAt: "2026-09-18T12:00:00.000Z",
+};
+
+describe("R21-B — the desktop transport completion (sources + model controls)", () => {
+  it("readSources maps GET /sources and unwraps the { authenticated, sources } envelope", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/sources"), () => jsonResponse({ authenticated: true, sources: [SOURCE_ROW] }));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readSources?.();
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) {
+      expect(result.value).toHaveLength(1);
+      expect(result.value[0]?.connectorId).toBe("conn-1");
+    }
+    const request = stub.last();
+    expect(request.url).toContain("/sources");
+    // Malformed rows are skipped (garbage never becomes a source card):
+    stub.script((url) => url.includes("/sources"), () => jsonResponse({ authenticated: true, sources: [{ junk: true }, SOURCE_ROW] }));
+    const port2 = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result2 = await port2.readSources?.();
+    expect(result2).toMatchObject({ ok: true });
+    if (result2?.ok) expect(result2.value).toHaveLength(1);
+  });
+
+  it("a 5xx sources read answers the typed unavailable (an ERROR state, never a fake empty list)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/sources"), () => jsonResponse({ ok: false }, 502));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readSources?.();
+    expect(result).toMatchObject({ ok: false, failure: { kind: "unavailable" } });
+  });
+
+  it("readModelPolicy GETs ?task=; the honest null stays null; malformed answers typed", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/model-policy"), () => jsonResponse(MODEL_POLICY));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readModelPolicy?.("translation");
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) expect(result.value?.privacy).toBe("local-only");
+    expect(stub.last().url).toContain("/experience/model-policy?task=translation");
+
+    stub.script((url) => url.includes("/experience/model-policy"), () => jsonResponse(null));
+    const port2 = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const nullResult = await port2.readModelPolicy?.("translation");
+    expect(nullResult).toMatchObject({ ok: true, value: null });
+
+    stub.script((url) => url.includes("/experience/model-policy"), () => jsonResponse({ task: "bogus" }));
+    const port3 = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const malformed = await port3.readModelPolicy?.("translation");
+    expect(malformed).toMatchObject({ ok: false, failure: { kind: "malformed" } });
+  });
+
+  it("writeModelPolicy PUTs the command; readModelProviders answers guarded rows", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/model-policy"), () => jsonResponse({}, 204));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const write = await port.writeModelPolicy?.({
+      task: "translation",
+      fallbackProviders: ["wfx-first-party"],
+      privacy: "local-only",
+    });
+    expect(write?.ok).toBe(true);
+    expect(stub.last().method).toBe("PUT");
+
+    stub.script((url) => url.includes("/experience/model-providers"), () => jsonResponse([{ junk: true }, PROVIDER_ROW]));
+    const providers = await port.readModelProviders?.();
+    expect(providers).toMatchObject({ ok: true });
+    if (providers?.ok) expect(providers.value).toHaveLength(1);
+  });
+
+  it("bindByomProvider PUTs the provider-addressed route; unbind DELETEs (204 = ok)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/model-providers/byom/openai-compatible"), () => jsonResponse(BYOM_HANDLE));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const bind = await port.bindByomProvider?.({
+      providerId: "openai-compatible",
+      endpointUrl: "https://models.example/v1",
+      key: "secret-key",
+    });
+    expect(bind).toMatchObject({ ok: true });
+    if (bind?.ok) {
+      expect(JSON.stringify(bind.value)).not.toContain("secret-key"); // the handle is secret-free
+    }
+    const bindRequest = stub.last();
+    expect(bindRequest.method).toBe("PUT");
+    expect(bindRequest.url).toContain("/experience/model-providers/byom/openai-compatible");
+    expect(bindRequest.body ?? "").toContain("secret-key"); // the key rides the request (sealed server-side)
+
+    stub.script((url) => url.includes("/experience/model-providers/byom/openai-compatible"), () => new Response(null, { status: 204 }));
+    const unbind = await port.unbindByomProvider?.("openai-compatible");
+    expect(unbind?.ok).toBe(true);
+    expect(stub.last().method).toBe("DELETE");
+  });
+
+  it("the transform lifecycle maps typed (submit POST, read envelope GET, cancel POST, clear DELETE)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.endsWith("/experience/transforms"), () => jsonResponse(OPERATION));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const submitted = await port.submitTransform?.({ kind: "translation", input: { ref: "r" } });
+    expect(submitted).toMatchObject({ ok: true, value: { state: "queued" } });
+    expect(stub.last().method).toBe("POST");
+
+    stub.script((url) => url.includes("/experience/transforms/"), () => jsonResponse({ operation: OPERATION, history: [] }));
+    const read = await port.readTransform?.("wfxtx_00000000000000000000000001");
+    expect(read).toMatchObject({ ok: true });
+    if (read?.ok) expect(read.value.id).toBe("wfxtx_00000000000000000000000001");
+
+    stub.script((url) => url.includes("/cancel"), () => jsonResponse({ ...OPERATION, state: "cancelled" }));
+    const cancelled = await port.cancelTransform?.("wfxtx_00000000000000000000000001");
+    expect(cancelled).toMatchObject({ ok: true, value: { state: "cancelled" } });
+    expect(stub.last().method).toBe("POST");
+    expect(stub.last().url).toContain("/cancel");
+
+    stub.script((url) => url.includes("/experience/transforms/"), () => jsonResponse({ ...OPERATION, state: "succeeded", resultRef: null }));
+    const cleared = await port.clearTransformResult?.("wfxtx_00000000000000000000000001");
+    expect(cleared).toMatchObject({ ok: true });
+    expect(stub.last().method).toBe("DELETE");
+  });
+
+  it("a 404 transform read answers the typed unavailable (the honest miss)", async () => {
+    const stub = new StubFetch();
+    stub.script((url) => url.includes("/experience/transforms/"), () => jsonResponse({ error: "not-found" }, 404));
+    const port = createDesktopServerPort({ apiBase: BASE, context: CONTEXT, fetchImpl: stub.fetch });
+    const result = await port.readTransform?.("wfxtx_missing");
+    expect(result).toMatchObject({ ok: false, failure: { kind: "unavailable" } });
+  });
+});

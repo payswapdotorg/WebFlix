@@ -156,7 +156,7 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
   {
     journeyId: "J19",
     kind: "local-only",
-    note: "The WebFlix-model / BYOM / local-model policy with privacy/cost/fallback constraints is R06's service surface (apps/api /experience/model-policy, /model-providers, BYOM bindings). The web adapter renders the typed honest-absent state (encoded — never placeholder controls).",
+    note: "R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.",
     procedure: "LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces.",
   },
   {

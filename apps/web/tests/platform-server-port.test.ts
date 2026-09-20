@@ -462,3 +462,303 @@ describe("R07 ServerPort — the R02 profile extension (lead integration)", () =
     });
   });
 });
+
+// ---------------------------------------------------------------------------
+// R21-B — the transport completion: sources + model-controls + bearer auth
+// ---------------------------------------------------------------------------
+
+describe("R21-B — the sources read (GET /sources envelope)", () => {
+  const SOURCE_ROW = {
+    connectorId: "conn-1",
+    displayName: "One Source",
+    version: "1.0.0",
+    authMode: "oauth",
+    capabilities: {
+      identity: false, catalogSearch: true, metadata: true, playNative: false,
+      playEmbed: true, playBrowser: true, playExternal: true, availability: true,
+      libraryRead: false, libraryWrite: false, like: false, save: false,
+      follow: false, comment: false, download: false, transform: false,
+    },
+    authState: "signedIn",
+    requiresAuthorization: true,
+    connected: true,
+    accountId: "acct-1",
+    authorizedAt: "2026-09-18T12:00:00.000Z",
+    lastStateChange: "2026-09-18T12:00:00.000Z",
+    expiresAt: null,
+    availabilityNotes: [],
+    lastChecked: "2026-09-18T12:00:00.000Z",
+  };
+
+  it("reads GET /sources, unwraps the { authenticated, sources } envelope", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => json({ authenticated: true, sources: [SOURCE_ROW] }),
+      async () => port.readSources?.(),
+    );
+    expect(calls[0]?.method).toBe("GET");
+    expect(calls[0]?.url).toContain("/sources");
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) {
+      expect(result.value).toHaveLength(1);
+      expect(result.value[0]?.connectorId).toBe("conn-1");
+    }
+  });
+
+  it("the anonymous envelope answers the honest empty list (never a fabricated source)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json({ authenticated: false, sources: [] }),
+      async () => port.readSources?.(),
+    );
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) expect(result.value).toHaveLength(0);
+  });
+
+  it("a malformed envelope answers the typed malformed failure; malformed rows are skipped", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json({ authenticated: true, sources: "nope" }),
+      async () => port.readSources?.(),
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      failure: { kind: "malformed", detail: expect.stringContaining("sources") },
+    });
+
+    const port2 = makePort();
+    const { result: result2 } = await withFetchStub(
+      () => json({ authenticated: true, sources: [{ garbage: true }, SOURCE_ROW] }),
+      async () => port2.readSources?.(),
+    );
+    expect(result2).toMatchObject({ ok: true });
+    if (result2?.ok) expect(result2.value).toHaveLength(1);
+  });
+
+  it("a 5xx sources read answers unavailable (an ERROR state, never a fake empty list)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json({ ok: false }, 502),
+      async () => port.readSources?.(),
+    );
+    expect(result).toMatchObject({ ok: false, failure: { kind: "unavailable" } });
+  });
+});
+
+describe("R21-B — the model-controls transport (model-policy, providers, byom, transforms)", () => {
+  const POLICY = {
+    task: "translation",
+    fallbackProviders: ["wfx-first-party"],
+    privacy: "local-only",
+  };
+  const PROVIDER_ROW = {
+    id: "wfx-first-party",
+    privacy: "local",
+    capabilities: ["translation", "summary"],
+    byomBound: false,
+    costs: { translation: 0 },
+    availability: "available",
+  };
+  const BYOM_HANDLE = {
+    id: "binding-1",
+    providerId: "openai-compatible",
+    endpointUrl: "https://models.example/v1",
+    keyId: "key_1",
+    metadata: null,
+    createdAt: "2026-09-18T12:00:00.000Z",
+    updatedAt: "2026-09-18T12:00:00.000Z",
+  };
+  const OPERATION = {
+    id: "wfxtx_00000000000000000000000001",
+    kind: "translation",
+    targetRef: "conn-1:ref-1",
+    options: {},
+    state: "queued",
+    progress: null,
+    resultRef: null,
+    errorDetail: null,
+    createdAt: "2026-09-18T12:00:00.000Z",
+    updatedAt: "2026-09-18T12:00:00.000Z",
+  };
+
+  it("readModelPolicy GETs ?task= and answers the policy; the honest null stays null", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => json(POLICY),
+      async () => port.readModelPolicy?.("translation"),
+    );
+    expect(calls[0]?.url).toContain("/experience/model-policy?task=translation");
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) expect(result.value?.privacy).toBe("local-only");
+
+    const port2 = makePort();
+    const { result: result2 } = await withFetchStub(
+      () => json(null),
+      async () => port2.readModelPolicy?.("translation"),
+    );
+    expect(result2).toMatchObject({ ok: true, value: null });
+  });
+
+  it("writeModelPolicy PUTs the command JSON", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => json({}, 204),
+      async () =>
+        port.writeModelPolicy?.({
+          task: "translation",
+          fallbackProviders: ["wfx-first-party"],
+          privacy: "local-only",
+        }),
+    );
+    expect(calls[0]?.method).toBe("PUT");
+    expect(calls[0]?.url).toContain("/experience/model-policy");
+    expect(calls[0]?.body ?? "").toContain("translation");
+    expect(result?.ok).toBe(true);
+  });
+
+  it("a malformed model policy answers the typed malformed failure (never fake data)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json({ task: "not-a-task", fallbackProviders: [], privacy: "nope" }),
+      async () => port.readModelPolicy?.("translation"),
+    );
+    expect(result).toMatchObject({
+      ok: false,
+      failure: { kind: "malformed", detail: expect.stringContaining("ModelPolicy") },
+    });
+  });
+
+  it("readModelProviders answers the registry rows; malformed rows are skipped", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json([{ junk: true }, PROVIDER_ROW]),
+      async () => port.readModelProviders?.(),
+    );
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) {
+      expect(result.value).toHaveLength(1);
+      expect(result.value[0]?.id).toBe("wfx-first-party");
+    }
+  });
+
+  it("bindByomProvider PUTs to the provider-addressed byom route; the handle is secret-free", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => json(BYOM_HANDLE),
+      async () =>
+        port.bindByomProvider?.({
+          providerId: "openai-compatible",
+          endpointUrl: "https://models.example/v1",
+          key: "secret-key",
+        }),
+    );
+    expect(calls[0]?.method).toBe("PUT");
+    expect(calls[0]?.url).toContain("/experience/model-providers/byom/openai-compatible");
+    expect(calls[0]?.body ?? "").toContain("secret-key"); // the key rides the request body (sealed server-side)
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) {
+      expect(JSON.stringify(result.value)).not.toContain("secret-key"); // NEVER in the answer
+    }
+  });
+
+  it("unbindByomProvider DELETEs the provider route; 204 answers ok", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => new Response(null, { status: 204 }),
+      async () => port.unbindByomProvider?.("openai-compatible"),
+    );
+    expect(calls[0]?.method).toBe("DELETE");
+    expect(calls[0]?.url).toContain("/experience/model-providers/byom/openai-compatible");
+    expect(result?.ok).toBe(true);
+  });
+
+  it("submitTransform POSTs the command; the queued operation answers with its typed state", async () => {
+    const port = makePort();
+    const { calls, result } = await withFetchStub(
+      () => json(OPERATION),
+      async () => port.submitTransform?.({ kind: "translation", input: { ref: "conn-1:ref-1" } }),
+    );
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toContain("/experience/transforms");
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) expect(result.value.state).toBe("queued");
+  });
+
+  it("readTransform unwraps the { operation, history } envelope; 404 answers unavailable", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json({ operation: OPERATION, history: [] }),
+      async () => port.readTransform?.("wfxtx_00000000000000000000000001"),
+    );
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) expect(result.value.id).toBe("wfxtx_00000000000000000000000001");
+
+    const port2 = makePort();
+    const { result: result2 } = await withFetchStub(
+      () => json({ error: "not-found" }, 404),
+      async () => port2.readTransform?.("wfxtx_00000000000000000000000001"),
+    );
+    expect(result2).toMatchObject({ ok: false, failure: { kind: "unavailable" } });
+  });
+
+  it("cancelTransform POSTs to the cancel route; clearTransformResult DELETEs the operation", async () => {
+    const port = makePort();
+    const cancelled = { ...OPERATION, state: "cancelled" as const };
+    const { calls, result } = await withFetchStub(
+      () => json(cancelled),
+      async () => port.cancelTransform?.("wfxtx_00000000000000000000000001"),
+    );
+    expect(calls[0]?.method).toBe("POST");
+    expect(calls[0]?.url).toContain("/experience/transforms/wfxtx_00000000000000000000000001/cancel");
+    expect(result).toMatchObject({ ok: true });
+    if (result?.ok) expect(result.value.state).toBe("cancelled");
+
+    const cleared = { ...OPERATION, state: "succeeded" as const, resultRef: null };
+    const { calls: calls2, result: result2 } = await withFetchStub(
+      () => json(cleared),
+      async () => port.clearTransformResult?.("wfxtx_00000000000000000000000001"),
+    );
+    expect(calls2[0]?.method).toBe("DELETE");
+    expect(calls2[0]?.url).toContain("/experience/transforms/wfxtx_00000000000000000000000001");
+    expect(result2).toMatchObject({ ok: true });
+  });
+
+  it("every model-controls failure maps to the typed kinds (unauthorized on 401, unavailable on 502)", async () => {
+    const port = makePort();
+    const { result } = await withFetchStub(
+      () => json({ error: "invalid-credentials" }, 401),
+      async () => port.readModelProviders?.(),
+    );
+    expect(result).toMatchObject({ ok: false, failure: { kind: "unauthorized" } });
+
+    const port2 = makePort();
+    const { result: result2 } = await withFetchStub(
+      () => json({ ok: false }, 502),
+      async () => port2.submitTransform?.({ kind: "translation", input: {} }),
+    );
+    expect(result2).toMatchObject({ ok: false, failure: { kind: "unavailable" } });
+  });
+});
+
+describe("R21-B — the authenticated session's bearer channel", () => {
+  it("an authToken option stamps Authorization: Bearer on every request", async () => {
+    const port = makePort({ authToken: "wfxsess_token123" });
+    const { calls } = await withFetchStub(
+      () => json([]),
+      async () => port.search("rain"),
+    );
+    expect(calls[0]?.headers["authorization"]).toBe("Bearer wfxsess_token123");
+    // Identity still rides the frozen headers (never in URLs).
+    expect(calls[0]?.url).not.toContain("wfxsess_token123");
+    expect(calls[0]?.headers["x-wfx-user-id"]).toBe("wfx-anonymous");
+  });
+
+  it("an empty/whitespace authToken sends NO authorization header (the honest anonymous channel)", async () => {
+    const port = makePort({ authToken: "   " });
+    const { calls } = await withFetchStub(
+      () => json([]),
+      async () => port.search("rain"),
+    );
+    expect(calls[0]?.headers["authorization"]).toBeUndefined();
+  });
+});

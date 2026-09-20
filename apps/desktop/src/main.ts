@@ -128,9 +128,12 @@ export interface DesktopAppOptions {
    * the Desktop BYOF surface (native file import + background sync +
    * the filesystem cache) over it; absent ⇒ the honest UNBOUND surface
    * (typed verdicts, never a silent empty feed). PRODUCTION WIRING: the
-   * server-transport FeedPort arrives with the R20 API lane; the frozen
-   * contract is this lane's binding (the plan's "R20-F/G start against
-   * frozen contract stubs" doctrine).
+   * R20 API lane (`/feeds/*`) is complete and the Web adapter binds its
+   * HTTP transport; the Desktop binding composes this lane's file/import
+   * surfaces (R20-F/G) with the service FeedPort transport wiring in the
+   * R21 Desktop lane (R21-G/H) — the frozen contract is this lane's
+   * binding (the plan's "R20-F/G start against frozen contract stubs"
+   * doctrine).
    */
   readonly feed?: {
     readonly port: FeedPort;
