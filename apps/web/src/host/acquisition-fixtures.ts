@@ -73,6 +73,19 @@ interface ScriptedAcquisition {
     readonly basis: string;
     readonly dataDir: string;
   };
+  /**
+   * R23-E — the item's authorized PEER COPY declaration (the first-class
+   * torrent realization truth): `authorized` is the R11/R13 gate (every
+   * fixture copy carries the user-owned/licensed provenance basis the
+   * protocol overlay records); `browserCapable` is the honest per-SWARM
+   * truth — which fixture swarms are WebRTC-hybrid (reachable from a
+   * browser) and which are ordinary TCP/UDP-only swarms (the honest
+   * Desktop next step on Web — the capability truth R23-C demands).
+   */
+  readonly torrent: {
+    readonly authorized: true;
+    readonly browserCapable: boolean;
+  };
   /** The learned canonical item id (set at seed — PER MODULE INSTANCE). */
   itemId: string | null;
 }
@@ -308,6 +321,7 @@ const midnightScoopScript: readonly AcquisitionFacts[] = [
 const SCRIPTED: readonly ScriptedAcquisition[] = [
   {
     externalRef: "fake:movie-1",
+    torrent: { authorized: true, browserCapable: true },
     searchQuery: "Asteroid",
     script: asteriodScript,
     protocol: {
@@ -325,6 +339,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:series-1",
+    torrent: { authorized: true, browserCapable: false },
     searchQuery: "Harbor",
     script: harborScript,
     protocol: {
@@ -342,6 +357,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:video-1",
+    torrent: { authorized: true, browserCapable: true },
     searchQuery: "Deep Field",
     script: deepFieldScript,
     protocol: {
@@ -359,6 +375,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:video-3",
+    torrent: { authorized: true, browserCapable: false },
     searchQuery: "Desert Rain",
     script: desertScript,
     protocol: {
@@ -382,6 +399,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
     // "bloom" feed-fallback test keeps its single-card truth). The script
     // facts keep the "Static Bloom" view title (tests assert it by title).
     externalRef: "fake:video-4",
+    torrent: { authorized: true, browserCapable: true },
     searchQuery: "Signal Fade",
     script: staticBloomScript,
     protocol: {
@@ -399,6 +417,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:short-2",
+    torrent: { authorized: true, browserCapable: false },
     searchQuery: "Midnight Scoop",
     script: midnightScoopScript,
     protocol: {
@@ -486,6 +505,31 @@ function scriptedOf(itemId: string): ScriptedAcquisition | undefined {
 /** The scripted item of a stable external ref (the cross-module key). */
 function scriptedByRef(ref: string): ScriptedAcquisition | undefined {
   return SCRIPTED.find((item) => item.externalRef === ref);
+}
+
+/**
+ * R23-E — the item's authorized peer-copy DECLARATION (the first-class
+ * torrent realization truth) or the honest `null` (no authorized copy is
+ * known for the item). FIXTURES MODE ONLY (the loud dev badge); the
+ * shape is the shared `TorrentRealizationDeclaration` (R23-C), consumed
+ * verbatim by the Where-to-watch surface — never re-derived.
+ */
+export function torrentRealizationFixtureOf(externalRef: string): {
+  readonly transport: "torrent";
+  readonly authorized: boolean;
+  readonly browserCapable: boolean;
+  readonly accessClass: "public";
+} | null {
+  const item = scriptedByRef(externalRef);
+  if (item === undefined) return null;
+  // The authorized peer copy needs no provider sign-in: the honest R23-A
+  // access class is public (the R23-C declaration law).
+  return {
+    transport: "torrent",
+    authorized: item.torrent.authorized === true,
+    browserCapable: item.torrent.browserCapable,
+    accessClass: "public",
+  };
 }
 
 /**

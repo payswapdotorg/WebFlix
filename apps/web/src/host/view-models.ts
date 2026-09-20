@@ -39,6 +39,8 @@ import { WebClock } from "@/platform/lifecycle";
 import type { WebRuntimeHost } from "./web-host";
 import { progressScopeTruthOf, viewerKindOf } from "./anonymous-truth";
 import type { ProgressScopeTruth } from "./anonymous-truth";
+import { torrentRealizationOf } from "./torrent-realizations";
+import { WEB_BROWSER_TORRENT_IMPLEMENTATION } from "@/platform/browser-torrent-environment";
 import { canonicalIdFor } from "./web-host";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
 import {
@@ -596,6 +598,47 @@ export interface PlayerView {
     readonly sentence: string;
     readonly reconnectHref: string;
   } | null;
+  /**
+   * R23-E — the authorized peer copy (the first-class torrent
+   * realization), present iff this player view plays through the peer
+   * copy (`&realization=torrent`). The provider fields above carry the
+   * typed not-applicable truths for this render (the peer copy path
+   * never consults a provider realization).
+   */
+  readonly torrent: TorrentPlayerView | null;
+}
+
+/**
+ * R23-E — the authorized peer copy's PLAYER view: the first-class
+ * torrent realization through the browser rung (WebTorrent/WebRTC) with
+ * the acquisition lifecycle (protocol-free states), the honest rung
+ * truth when this adapter cannot play it (the Desktop next step — the
+ * SAME CANONICAL ITEM, never a dead unavailable), and the nine-dimension
+ * parity surfaces the provider stage renders (Where-to-watch switch, AI
+ * tray, feedback, actions — the same canonical identity).
+ */
+export interface TorrentPlayerView {
+  /** The frozen primary label ("Authorized peer copy"). */
+  readonly label: string;
+  /** The frozen one-sentence detail. */
+  readonly detail: string;
+  /**
+   * The R23-C rung outcome for THIS adapter, verbatim (the full union —
+   * the Desktop keeps the native rung in the shared vocabulary; the web
+   * adapter's platform truth answers browser/desktop-next/gate only).
+   */
+  readonly rungKind: "satisfies-native-rung" | "satisfies-browser-rung" | "desktop-next-step" | "requires-authorization";
+  /** The rung's honest one-sentence truth. */
+  readonly rungDetail: string;
+  /** The honest Desktop next step (present iff the rung is desktop-next-step). */
+  readonly desktopNextStep: { readonly label: string; readonly detail: string } | null;
+  /** The acquisition lifecycle view (the runtime store's protocol-free fold). */
+  readonly acquisition: {
+    readonly view: AcquisitionStatusView | null;
+    readonly diagnostics: AcquisitionDiagnosticsView | null;
+  };
+  /** The wired browser adapter's identity (inspectable, never a silent claim). */
+  readonly implementation: string;
 }
 
 /** Load the player view: resolve + prepare one playback session through the runtime. */
@@ -611,6 +654,12 @@ export async function loadPlayerView(
     readonly resumePositionMs?: number;
     /** R21-E: the preferred realization mode (the Where-to-watch switch). */
     readonly preferredMode?: PlaybackRealization["mode"];
+    /**
+     * R23-E: the preferred realization TRANSPORT (the authorized peer
+     * copy — the first-class torrent realization; a transport kind,
+     * never a playback mode).
+     */
+    readonly preferredRealization?: "torrent";
   },
 ): Promise<PlayerView> {
   learnJoinedItem(input.connectorId, input.externalRef, input.title, input.canonicalType, input.durationMs);
@@ -646,6 +695,112 @@ export async function loadPlayerView(
       reconnectHref: "/settings?section=sources",
     };
   };
+  // R23-E — the authorized peer copy branch (the first-class torrent
+  // realization): the player prefers the peer copy when asked
+  // (`&realization=torrent`). The R23-C rung decision (verbatim) answers
+  // the stage's truth: the BROWSER rung when this adapter can play it,
+  // the honest Desktop next step when it cannot, the typed refusal if
+  // the copy is not authorized (never offered by the surfaces; the
+  // defensive truth). The provider playback resolution is SKIPPED for
+  // this render — the peer copy path never consults a provider
+  // realization.
+  if (input.preferredRealization === "torrent") {
+    const peerCopy = torrentRealizationOf(host, input.externalRef);
+    if (peerCopy === null) {
+      return {
+        mode: host.mode,
+        kind: "session",
+        itemId: input.itemId,
+        title: input.title,
+        canonicalType: input.canonicalType,
+        connectorId: input.connectorId,
+        externalRef: input.externalRef,
+        sessionId: "none",
+        surfaceMode: "browser",
+        surfaceUrl: null,
+        realizationCapabilities: [],
+        resumePositionMs: 0,
+        phase: "failed",
+        skippedForCapability: [],
+        browserSurface: null,
+        failure: {
+          kind: "not-found",
+          detail:
+            "no authorized peer copy is known for this title on this host — choose another way to watch below",
+        },
+        precedenceTrace: [],
+        embedAttestation: null,
+        externalReturn: null,
+        whereToWatch,
+        aiTray,
+        progressScope,
+        providerAuthorization: null,
+        torrent: null,
+      };
+    }
+    const rung = peerCopy.rung;
+    const torrentView: TorrentPlayerView = {
+      label: peerCopy.label,
+      detail: peerCopy.detail,
+      rungKind: rung.kind,
+      rungDetail: rung.detail,
+      desktopNextStep:
+        rung.kind === "desktop-next-step" ? rung.nextStep : null,
+      acquisition: acquisitionBlockOf(host, input.itemId),
+      implementation: WEB_BROWSER_TORRENT_IMPLEMENTATION,
+    };
+    // The parity surfaces all render (Where-to-watch switch row, the AI
+    // tray, the feedback controls, the actions) — the same canonical
+    // identity, the same recovery vocabulary (the R23-C parity set).
+    if (rung.kind === "satisfies-browser-rung") {
+      // The telemetry parity: the peer-copy play applies the same
+      // watch-state start command the provider path applies at play
+      // time (the resume position carried; the same fold).
+      await host.runtime
+        .updateWatchState({
+          kind: "start",
+          itemId: input.itemId,
+          ...(input.resumePositionMs !== undefined && input.resumePositionMs > 0
+            ? { positionMs: input.resumePositionMs }
+            : {}),
+        })
+        .catch(() => undefined);
+    }
+    return {
+      mode: host.mode,
+      kind: "session",
+      itemId: input.itemId,
+      title: input.title,
+      canonicalType: input.canonicalType,
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      sessionId: "wfx-peercopy",
+      surfaceMode: "browser",
+      surfaceUrl: null,
+      realizationCapabilities: [],
+      resumePositionMs: input.resumePositionMs ?? 0,
+      phase: rung.kind === "satisfies-browser-rung" ? "buffering" : "failed",
+      skippedForCapability:
+        rung.kind === "desktop-next-step"
+          ? [{ mode: "browser", reason: rung.detail }]
+          : [],
+      browserSurface: null,
+      failure:
+        rung.kind === "requires-authorization"
+          ? { kind: "unauthorized", detail: rung.detail }
+          : null,
+      precedenceTrace: [
+        "authorized peer copy (torrent transport) — the browser rung via WebRTC-capable peers",
+      ],
+      embedAttestation: null,
+      externalReturn: null,
+      whereToWatch,
+      aiTray,
+      progressScope,
+      providerAuthorization: null,
+      torrent: torrentView,
+    };
+  }
   // R21-E: the Where-to-watch switch — resolve the preferred mode's
   // realization and hand it to the runtime (still capability-checked: an
   // unusable preference answers the typed capability failure, never a
@@ -698,6 +853,7 @@ export async function loadPlayerView(
         aiTray,
         progressScope,
         providerAuthorization: providerAuthorizationOf_("not-found"),
+        torrent: null,
       };
     }
     // Engage the surface for the resolved mode (embed/browser open the
@@ -761,6 +917,7 @@ export async function loadPlayerView(
       aiTray,
       progressScope,
       providerAuthorization: null,
+      torrent: null,
     };
   } catch (thrown) {
     // resolvePlayback throws the typed RuntimeError for resolution failures
@@ -791,6 +948,7 @@ export async function loadPlayerView(
       aiTray,
       progressScope,
       providerAuthorization: providerAuthorizationOf_(typeof kind === "string" ? kind : ""),
+      torrent: null,
     };
   }
 }

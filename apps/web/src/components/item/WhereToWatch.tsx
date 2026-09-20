@@ -30,6 +30,55 @@ function AvailabilityChip({ view }: { readonly view: WhereToWatchView }): JSX.El
   return <span className="wfx-badge wfx-badge--state">{view.usableCount} ways to play here</span>;
 }
 
+/**
+ * R23-E — the AUTHORIZED PEER COPY entry (the first-class torrent
+ * realization): rendered in its own Where-to-watch group with the frozen
+ * label ("Authorized peer copy", never merely "Offline copy"), eligible
+ * for the primary play decision when this adapter's browser rung is
+ * satisfied, and honest about the Desktop next step when it is not.
+ */
+function PeerCopyEntry({
+  peerCopy,
+  variant,
+}: {
+  readonly peerCopy: NonNullable<WhereToWatchView["peerCopy"]>;
+  readonly variant: "item" | "player";
+}): JSX.Element {
+  return (
+    <li
+      className={`wfx-wheretowatch__option wfx-wheretowatch__option--peercopy${peerCopy.usable ? "" : " wfx-wheretowatch__option--unusable"}`}
+      data-wfx-watch-option="authorized-peer-copy"
+      data-wfx-watch-transport="torrent"
+      {...(peerCopy.usable ? { "data-wfx-watch-usable": "true" } : { "data-wfx-watch-usable": "false" })}
+    >
+      <span className="wfx-wheretowatch__modelabel" data-wfx-watch-mode-label>
+        {peerCopy.label}
+      </span>
+      <span className="wfx-capchip" data-wfx-watch-source>
+        your permitted copy
+      </span>
+      <span className="wfx-capchip wfx-capchip--access" data-wfx-watch-access={peerCopy.accessState}>
+        {peerCopy.accessSentence}
+      </span>
+      <span className="wfx-row__reason" data-wfx-peercopy-detail>
+        {peerCopy.detail}
+      </span>
+      {peerCopy.usable ? (
+        peerCopy.switchHref !== undefined ? (
+          <a className="wfx-btn wfx-btn--sm" href={peerCopy.switchHref} data-wfx-watch-switch="authorized-peer-copy">
+            <Icon name="play" size={14} />
+            {variant === "player" ? "Switch to this" : "Play this way"}
+          </a>
+        ) : null
+      ) : (
+        <span className="wfx-wheretowatch__reason" data-wfx-watch-unusable-reason>
+          {peerCopy.unusableReason ?? "This platform cannot host this way of watching."}
+        </span>
+      )}
+    </li>
+  );
+}
+
 /** The Where-to-watch row. `variant="player"` renders the compact switch row. */
 export function WhereToWatch({
   view,
@@ -64,9 +113,21 @@ export function WhereToWatch({
       <p className="wfx-card__meta">
         <AvailabilityChip view={view} />
         <span data-wfx-wheretowatch-count>
-          {view.options.length} way{view.options.length === 1 ? "" : "s"} offered across your sources
+          {view.options.length + (view.peerCopy !== null ? 1 : 0)} way
+          {view.options.length + (view.peerCopy !== null ? 1 : 0) === 1 ? "" : "s"} offered across
+          your sources and copies
         </span>
       </p>
+      {/* R23-E — the FROZEN grouping vocabulary (R23-C's order, rendered
+          identically on Web and Desktop): the WebFlix source first, the
+          authorized peer copy second (the first-class torrent entry),
+          other realizations last. Group headings render only when their
+          group has content (no empty headings). */}
+      {view.options.length > 0 ? (
+        <p className="wfx-card__meta wfx-wheretowatch__group" data-wfx-wheretowatch-group="webflix-source">
+          <span className="wfx-capchip">WebFlix source</span>
+        </p>
+      ) : null}
       {view.options.length > 0 ? (
         <ul className="wfx-wheretowatch__options" data-wfx-wheretowatch-options>
           {view.options.map((option) => (
@@ -110,6 +171,16 @@ export function WhereToWatch({
           carry the connection paths.
         </p>
       )}
+      {view.peerCopy !== null ? (
+        <>
+          <p className="wfx-card__meta wfx-wheretowatch__group" data-wfx-wheretowatch-group="authorized-peer-copy">
+            <span className="wfx-capchip">{view.peerCopy.label}</span>
+          </p>
+          <ul className="wfx-wheretowatch__options" data-wfx-wheretowatch-peercopy>
+            <PeerCopyEntry peerCopy={view.peerCopy} variant={variant} />
+          </ul>
+        </>
+      ) : null}
     </section>
   );
 }

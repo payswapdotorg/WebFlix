@@ -11,7 +11,7 @@
  *   replacement: it satisfies the BROWSER rung only where the swarm is
  *   WebRTC-capable (`browserCapable` — the per-realization declared
  *   truth) AND the viewer's browser provides WebRTC (the environment
- *   probe below);
+ *   probe);
  * - CAPABILITY TRUTH distinguishes WebTorrent-capable from ordinary
  *   torrent availability (the two are never conflated);
  * - the adapter lives BEHIND the existing `TorrentLibrary` boundary
@@ -23,6 +23,12 @@
  *   adapter adds no acquisition rights of its own);
  * - unsupported/browser-incompatible torrents fall back HONESTLY to the
  *   Desktop/native next step (the R23-C `desktop-next-step` outcome).
+ *
+ * MODULE SPLIT LAW: the PURE environment truth lives in
+ * `browser-torrent-environment.ts` (zero imports — the only part a
+ * CLIENT component may consume); THIS module keeps the TorrentLibrary
+ * binding and is SERVER-side only (the seam's node-facing barrel must
+ * never enter a browser chunk).
  *
  * LIBRARY EVALUATION RECORD (documented for lead review — the invariant-6
  * law the Node binding follows):
@@ -46,11 +52,6 @@
  * - **LAZY-IMPORT LAW**: `webtorrent` and `parse-torrent` load ONLY via
  *   dynamic `import()` inside the functions that need them, so neither
  *   the server bundle nor any non-torrent page ever loads them.
- *
- * WHAT THIS MODULE IS: the browser-side `TorrentLibrary` binding + the
- * environment/capability truth the R23-E surfaces consume. The staged
- * playback UX (the acquisition lifecycle surface) lives in the player's
- * torrent stage; this module is the adapter, not the UI.
  */
 
 import type { TorrentResult } from "@wfx/torrent-engine";
@@ -63,74 +64,21 @@ import type {
   TorrentLibrary,
 } from "@wfx/torrent-engine";
 
-// ---------------------------------------------------------------------------
-// The adapter identity + the capability truth
-// ---------------------------------------------------------------------------
+// The pure environment truth (client-safe) re-exported for server
+// consumers — one derivation source, two consumption contexts.
+export {
+  WEB_BROWSER_TORRENT_IMPLEMENTATION,
+  WEB_BROWSER_TORRENT_SUPPORTED,
+  detectBrowserTorrentEnvironment,
+  browserTorrentEnvironmentSentence,
+} from "./browser-torrent-environment";
+import {
+  WEB_BROWSER_TORRENT_IMPLEMENTATION,
+  detectBrowserTorrentEnvironment,
+  browserTorrentEnvironmentSentence,
+} from "./browser-torrent-environment";
 
-/**
- * The browser adapter's identity (the same version-pin law as the Node
- * binding; surfaces in capability truth so the wired stack is always
- * inspectable — never a silent fixture-as-production claim).
- */
-export const WEB_BROWSER_TORRENT_IMPLEMENTATION =
-  "webtorrent@3.0.21 browser build (WebRTC peers; parse-torrent@11.0.24)";
 
-/**
- * THE ADAPTER-DECLARED CAPABILITY TRUTH the R23-C rung decision consumes
- * (`TorrentPlatformTruth.browserTorrentSupported` on the web platform):
- * the Web adapter WIRES browser torrent playback through this adapter —
- * a real adapter path, not an assumption. Per-realization truth
- * (`browserCapable`) and per-environment truth (the WebRTC probe below)
- * still decide each play, with honest typed fallbacks — the capability
- * claim never outruns the adapter.
- */
-export const WEB_BROWSER_TORRENT_SUPPORTED = true;
-
-// ---------------------------------------------------------------------------
-// The environment probe (WebRTC truth; client-side only)
-// ---------------------------------------------------------------------------
-
-/** The browser-torrent environment truth (the honest probe result). */
-export interface BrowserTorrentEnvironment {
-  /** Whether this context provides RTCPeerConnection (WebRTC peers). */
-  readonly webrtc: boolean;
-  /** Whether this context is a secure context (WebRTC requires it). */
-  readonly secureContext: boolean;
-}
-
-/**
- * Probe the CURRENT context's WebRTC truth honestly. In a browser this
- * reads the live globals; in a server render pass (or any non-browser
- * host) every facility is honestly absent — the adapter answers the
- * typed browser-incompatible failure there, never a fabricated session.
- */
-export function detectBrowserTorrentEnvironment(): BrowserTorrentEnvironment {
-  const globals = globalThis as {
-    RTCPeerConnection?: unknown;
-    isSecureContext?: boolean;
-    window?: { RTCPeerConnection?: unknown };
-  };
-  const rtc =
-    typeof globals.RTCPeerConnection === "function" ||
-    typeof globals.window?.RTCPeerConnection === "function";
-  return {
-    webrtc: rtc,
-    secureContext: globals.isSecureContext !== false,
-  };
-}
-
-/** The one-sentence user truth of one probe (rendered by the surfaces). */
-export function browserTorrentEnvironmentSentence(
-  environment: BrowserTorrentEnvironment,
-): string {
-  if (environment.webrtc && environment.secureContext) {
-    return "This browser can reach WebRTC-capable peer copies — browser playback is wired through the WebTorrent adapter.";
-  }
-  if (!environment.secureContext) {
-    return "Browser peer playback needs a secure context (https) — this page does not have one, so peer copies fall back to the Desktop app.";
-  }
-  return "This browser cannot reach peer copies (no WebRTC) — the same authorized copy plays in the Desktop app's native player.";
-}
 
 // ---------------------------------------------------------------------------
 // The browser binding (the TorrentLibrary contract, browser build)

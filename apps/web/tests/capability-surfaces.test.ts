@@ -134,8 +134,14 @@ describe("R21-E — the Where-to-watch view (the decision hub's realization choi
     expect(view.status).toBe("ready");
     expect(view.options).toHaveLength(4); // native + embed + browser + external
     // The usable ways on Web: embed, browser, external (native is the
-    // Desktop capability — the honest platform truth).
-    expect(view.usableCount).toBe(3);
+    // Desktop capability — the honest platform truth)... plus R23-E: the
+    // authorized peer copy (browser-capable on this fixture item) counts
+    // as a way to play — 4 total (3 provider + the peer copy).
+    expect(view.usableCount).toBe(4);
+    expect(view.peerCopy).not.toBeNull();
+    expect(view.peerCopy?.label).toBe("Authorized peer copy");
+    expect(view.peerCopy?.usable).toBe(true);
+    expect(view.peerCopy?.switchHref).toContain("realization=torrent");
     const native = view.options.find((option) => option.mode === "native");
     expect(native).toBeDefined();
     expect(native!.usable).toBe(false);
@@ -169,8 +175,8 @@ describe("R21-E — the Where-to-watch view (the decision hub's realization choi
     const markup = renderToStaticMarkup(createElement(WhereToWatch, { view }));
     expect(markup).toContain("data-wfx-where-to-watch");
     expect(markup).toContain("Where to watch");
-    expect(markup).toContain("3 ways to play here");
-    expect(markup).toContain("4 ways offered across your sources");
+    expect(markup).toContain("4 ways to play here");
+    expect(markup).toContain("5 ways offered across your sources and copies");
     // The Desktop next step is the honest truth — never a dead "not available".
     expect(markup).toContain("Desktop app");
     expect(markup).toContain("data-wfx-watch-switch=\"browser\"");
@@ -183,6 +189,7 @@ describe("R21-E — the Where-to-watch view (the decision hub's realization choi
   it("the typed resolve error renders its own error state with the retry next-action", () => {
     const view: import("../src/host/decision-views").WhereToWatchView = {
       viewer: "anonymous",
+      peerCopy: null,
       status: "error",
       errorDetail: "fixture transport 'resolve' failed: TypeError: fetch failed",
       activeSentence: "The ways to watch could not be read right now.",
@@ -487,7 +494,8 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
     expect(view.failure!.detail).toContain("native");
     expect(view.failure!.detail).toContain("nativeMedia");
     // The recovery path: the next supported way is the primary action.
-    expect(view.whereToWatch.usableCount).toBe(3);
+    // R23-E: the peer copy counts as a way to play (3 provider + 1 peer).
+    expect(view.whereToWatch.usableCount).toBe(4);
     const markup = renderToStaticMarkup(
       createElement(AppShell, {
         mode: host.mode,

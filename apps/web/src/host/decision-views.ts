@@ -24,11 +24,12 @@
  *   carry PRODUCT sentences; connector ids ride only as compact labels.
  */
 
-import { realizationChoiceView } from "@wfx/client-runtime";
+import { realizationChoiceView, WHERE_TO_WATCH_GROUP_VIEWS } from "@wfx/client-runtime";
 import type {
   RealizationAccessClass,
   RealizationChoiceView,
   ViewerSessionKind,
+  WhereToWatchEntryKind,
 } from "@wfx/client-runtime";
 import type { PlaybackMode } from "@wfx/domain";
 import { PLAYBACK_MODE_PRECEDENCE } from "@wfx/client-runtime";
@@ -37,6 +38,7 @@ import type { ModelTask } from "@wfx/domain";
 
 import type { WebRuntimeHost } from "./web-host";
 import { realizationAccessTruth, viewerKindOf } from "./anonymous-truth";
+import { torrentRealizationOf } from "./torrent-realizations";
 
 /** The viewer kind of a surface's session binding (the R23-A fold). */
 function viewerKindOfSession(state: { readonly signedIn: boolean }) {
@@ -76,6 +78,30 @@ export interface WatchOptionView {
   readonly switchHref?: string;
 }
 
+/** The first-class authorized peer copy as a Where-to-watch entry. */
+export interface PeerCopyOptionView {
+  /** The entry's group (always the frozen authorized-peer-copy group). */
+  readonly group: WhereToWatchEntryKind;
+  /** The frozen primary label ("Authorized peer copy" — never "Offline copy"). */
+  readonly label: string;
+  /** The frozen one-sentence detail (rendered verbatim). */
+  readonly detail: string;
+  /** Whether THIS adapter can play the peer copy now (the browser rung). */
+  readonly usable: boolean;
+  /** Present when not usable: the honest reason (the Desktop next step / the gate). */
+  readonly unusableReason: string | null;
+  /** The typed access truth (an authorized peer copy is public — no provider sign-in). */
+  readonly accessSentence: string;
+  /** The rendered chip state (public / provider-authorized / needed). */
+  readonly accessState: "public" | "provider-authorized" | "provider-sign-in-needed";
+  /**
+   * The play path: the player link preferring the peer-copy realization
+   * (present when usable — the torrent realization is ELIGIBLE for the
+   * primary play decision, never hidden).
+   */
+  readonly switchHref?: string;
+}
+
 /** The Where-to-watch view (the item decision hub + the player switch row). */
 export interface WhereToWatchView {
   /** The typed read status (an error renders the typed state, never a fake row). */
@@ -84,9 +110,16 @@ export interface WhereToWatchView {
   readonly errorDetail?: string;
   /** The user sentence for the way WebFlix will play this title. */
   readonly activeSentence: string;
-  /** Every offered way to watch (frozen precedence order, secondary data first). */
+  /** Every offered provider way to watch (frozen precedence order, secondary data first). */
   readonly options: readonly WatchOptionView[];
-  /** How many ways this platform can play the title right now. */
+  /**
+   * R23-E — the item's authorized peer copy (the first-class torrent
+   * realization), when one is declared: the "Authorized peer copy" entry
+   * of the frozen Where-to-watch grouping. Null when no authorized copy
+   * is known (the honest absence — the entry never renders).
+   */
+  readonly peerCopy: PeerCopyOptionView | null;
+  /** How many ways this platform can play the title right now (peer copy included). */
   readonly usableCount: number;
   /** R23 web-A — the viewer the view resolved for (the session's own truth). */
   readonly viewer: ViewerSessionKind;
@@ -104,6 +137,8 @@ export function playerHrefWithMode(input: {
   readonly canonicalType: string;
   readonly durationMs?: number;
   readonly mode?: PlaybackMode;
+  /** R23-E: the realization transport preference (the peer copy's path). */
+  readonly realization?: "torrent";
   readonly resumePositionMs?: number;
 }): string {
   const params = new URLSearchParams({
@@ -115,6 +150,7 @@ export function playerHrefWithMode(input: {
   });
   if (input.durationMs !== undefined) params.set("duration", String(input.durationMs));
   if (input.mode !== undefined) params.set("mode", input.mode);
+  if (input.realization !== undefined) params.set("realization", input.realization);
   if (input.resumePositionMs !== undefined && input.resumePositionMs > 0) {
     params.set("resume", String(input.resumePositionMs));
   }
@@ -164,6 +200,7 @@ export async function loadWhereToWatchView(
       errorDetail: result.failure.detail,
       activeSentence: "The ways to watch could not be read right now.",
       options: [],
+      peerCopy: null,
       usableCount: 0,
       viewer,
     };
@@ -224,14 +261,51 @@ export async function loadWhereToWatchView(
         : {}),
     };
   });
+  // R23-E — the item's authorized peer copy (the first-class torrent
+  // realization): the frozen "Authorized peer copy" entry, eligible for
+  // the primary play decision when this adapter's browser rung is
+  // satisfied, with the honest Desktop next step / authorization gate
+  // named when it is not (never hidden, never a dead unavailable).
+  const peerCopyView = torrentRealizationOf(host, input.externalRef);
+  const peerCopy: PeerCopyOptionView | null =
+    peerCopyView !== null
+      ? {
+          group: "authorized-peer-copy",
+          label: peerCopyView.label,
+          detail: peerCopyView.detail,
+          usable: peerCopyView.playableHere,
+          unusableReason: peerCopyView.notPlayableHereReason,
+          accessSentence: "Public — your own permitted copy, no provider sign-in needed.",
+          accessState: "public",
+          ...(peerCopyView.playableHere
+            ? {
+                switchHref: playerHrefWithMode({
+                  itemId: input.itemId,
+                  connectorId: input.connectorId,
+                  externalRef: input.externalRef,
+                  title: input.title,
+                  canonicalType: input.canonicalType,
+                  ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+                  realization: "torrent",
+                }),
+              }
+            : {}),
+        }
+      : null;
+  const providerUsable = options.filter((option) => option.usable).length;
+  const peerUsable = peerCopy !== null && peerCopy.usable ? 1 : 0;
   return {
     status: "ready",
-    activeSentence: activeSentenceOf(choice, options.filter((option) => option.usable).length),
+    activeSentence: activeSentenceOf(choice, providerUsable),
     options,
-    usableCount: options.filter((option) => option.usable).length,
+    peerCopy,
+    usableCount: providerUsable + peerUsable,
     viewer,
   };
 }
+
+/** The frozen Where-to-watch group vocabulary (re-exported for surfaces). */
+export const WHERE_TO_WATCH_GROUPS = WHERE_TO_WATCH_GROUP_VIEWS;
 
 // ---------------------------------------------------------------------------
 // The AI action tray view (the R06 model-controls projection)

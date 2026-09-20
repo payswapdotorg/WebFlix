@@ -35,6 +35,7 @@ import type { PlayerView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { WatchStateReporter } from "@/components/player/WatchStateReporter";
 import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
+import { TorrentPlaybackStage, TorrentAcquisitionLifecycle } from "@/components/player/TorrentPlaybackStage";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
 import { FeedbackControls } from "@/components/discovery/FeedbackControls";
@@ -56,8 +57,28 @@ function modeSentenceOf(mode: PlayerView["surfaceMode"]): string {
   }
 }
 
+/** The realization sentence for the peer-copy render (R23-E). */
+function torrentSentenceOf(view: PlayerView): string {
+  const torrent = view.torrent;
+  if (torrent === null) return "";
+  if (torrent.rungKind === "satisfies-browser-rung") {
+    return "playing your authorized peer copy through WebRTC-capable peers — it plays like any other way of watching";
+  }
+  if (torrent.rungKind === "desktop-next-step") {
+    return "this peer copy needs the Desktop app's native player";
+  }
+  return "this peer copy is not authorized";
+}
+
 /** The resolved stage — one branch per Media Surface mode. */
 function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
+  // R23-E — the authorized peer copy (the first-class torrent
+  // realization): the torrent stage owns this render when the view plays
+  // through the peer copy (the browser rung / the honest Desktop next
+  // step / the typed refusal).
+  if (view.torrent !== null) {
+    return <TorrentPlaybackStage view={view} />;
+  }
   if (view.failure !== null) {
     return (
       <div className="wfx-player__handoff" data-wfx-player-mode="failed">
@@ -292,7 +313,11 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         <p className="wfx-detail__meta">
           <span className="wfx-badge wfx-badge--type">{view.canonicalType}</span>
           <span data-wfx-player-mode-label>
-            Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)} — {view.phase}
+            {view.torrent !== null ? (
+              <>Authorized peer copy · {torrentSentenceOf(view)} — {view.phase}</>
+            ) : (
+              <>Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)} — {view.phase}</>
+            )}
           </span>
           {view.resumePositionMs > 0 ? (
             <span data-wfx-player-resume>Resumed at {formatPosition(view.resumePositionMs)}</span>
@@ -346,6 +371,7 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         <WhereToWatch view={view.whereToWatch} variant="player" />
         <AiActionTray view={view.aiTray} surface="player" />
         <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="player" />
+        {view.torrent !== null ? <TorrentAcquisitionLifecycle view={view} /> : null}
         <PlaybackDiagnostics view={view} />
       </div>
       <div

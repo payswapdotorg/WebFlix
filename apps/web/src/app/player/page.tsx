@@ -73,6 +73,12 @@ export default async function PlayerPage({
     rawMode === "embed" || rawMode === "browser" || rawMode === "external" || rawMode === "native"
       ? rawMode
       : undefined;
+  // R23-E: the realization TRANSPORT preference — `&realization=torrent`
+  // prefers the item's authorized peer copy (the first-class torrent
+  // realization; a TRANSPORT kind, never a playback mode). Anything else
+  // is ignored, never guessed.
+  const rawRealization = firstParam(params.realization);
+  const preferredRealization = rawRealization === "torrent" ? ("torrent" as const) : undefined;
   const view = await loadPlayerView(host, {
     itemId,
     connectorId,
@@ -82,6 +88,7 @@ export default async function PlayerPage({
     ...(durationMs !== undefined ? { durationMs } : {}),
     ...(resumePositionMs !== undefined ? { resumePositionMs } : {}),
     ...(preferredMode !== undefined ? { preferredMode } : {}),
+    ...(preferredRealization !== undefined ? { preferredRealization } : {}),
   });
 
   return (

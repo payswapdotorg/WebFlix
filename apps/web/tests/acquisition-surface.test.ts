@@ -92,6 +92,47 @@ function withoutGatedDiagnostics(markup: string): string {
   return markup.replace(/<details[^>]*data-wfx-advanced-diagnostics[\s\S]*?<\/details>/g, "");
 }
 
+/** The VISIBLE TEXT of a markup string (tags and attributes stripped). */
+function visibleTextOf(markup: string): string {
+  return markup.replace(/<[^>]*>/g, " ");
+}
+
+/**
+ * R23-C refinement: the WIRE-protocol terms forbidden on every default
+ * surface's visible text. The realization-choice PRODUCT vocabulary
+ * ("peer copy", "peer-to-peer" — the frozen R23-C label/detail Workers
+ * 2/3 render verbatim in Where to watch) is lawful and excluded here;
+ * the acquisition-panel scan keeps the FULL strict list (the J21 law).
+ */
+const WIRE_PROTOCOL_TERMS: readonly string[] = [
+  "piece",
+  "pieces",
+  "tracker",
+  "trackers",
+  "swarm",
+  "seed",
+  "seeding",
+  "leech",
+  "leeching",
+  "ratio",
+  "torrent",
+  "infohash",
+  "info hash",
+  "bitfield",
+  "magnet",
+  "dht",
+  "pex",
+  "choke",
+];
+
+/** Does a default surface's visible text leak WIRE-protocol vocabulary? */
+function containsWireProtocolTerminology(text: string): boolean {
+  for (const term of WIRE_PROTOCOL_TERMS) {
+    if (new RegExp(`\\b${term}\\b`, "i").test(text)) return true;
+  }
+  return false;
+}
+
 /** One honest view for a state (rendered through the panel directly). */
 function viewOf(overrides: Partial<AcquisitionStatusView> & { state: AcquisitionStatusView["state"] }): AcquisitionStatusView {
   return {
@@ -360,7 +401,16 @@ describe("R14 web — the default surfaces never leak protocol terminology", () 
       expect(driven.ok).toBe(true);
       const fresh = await detailOf(host, asteroid.itemId);
       const markup = withoutGatedDiagnostics(renderItem(host, fresh));
-      expect(containsAcquisitionProtocolTerminology(markup)).toBe(false);
+      // The ACQUISITION PANEL subtree keeps the STRICT law (J21 verbatim).
+      const panelMatch = /<section[^>]*data-wfx-acquisition[\s\S]*?<\/section>/.exec(markup);
+      expect(panelMatch).not.toBeNull();
+      if (panelMatch !== null) {
+        expect(containsAcquisitionProtocolTerminology(visibleTextOf(panelMatch[0]))).toBe(false);
+      }
+      // The wider item surface's visible text carries no WIRE-protocol
+      // vocabulary; the R23-C frozen realization-choice vocabulary ("peer
+      // copy", "peer-to-peer") is lawful product language, not jargon.
+      expect(containsWireProtocolTerminology(visibleTextOf(markup))).toBe(false);
     }
     const final = host.runtime.acquisition.view(asteroid.itemId);
     expect(final?.state).toBe("ready-offline");

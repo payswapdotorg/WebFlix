@@ -1,5 +1,13 @@
 /**
- * @wfx/app-web — the acquisition panel (R14): the DEFAULT lifecycle surface.
+ * @wfx/app-web — the acquisition panel (R14 + R23-E): the authorized peer
+ * copy's LIFECYCLE surface.
+ *
+ * R23-E repositioned the conceptual ENTRY: the primary way to choose a
+ * peer copy is the Where-to-watch "Authorized peer copy" entry (the
+ * first-class realization) — this panel is its STATUS/lifecycle surface
+ * (the acquisition states, truthful progress, typed actions), no longer
+ * the sole torrent entry point it was pre-R23. The heading stays
+ * PROTOCOL-FREE ("Your copy" — the J21-J25 law binds this surface).
  *
  * Renders ONE `AcquisitionStatusView` (the runtime's honest, protocol-free
  * fold of the adapter's facts) in the user lifecycle vocabulary — the
@@ -69,11 +77,11 @@ export function AcquisitionPanel({
     return (
       <section
         className="wfx-detail__section"
-        aria-label="Offline availability"
+        aria-label="Your copy status"
         data-wfx-acquisition
         data-wfx-acquisition-none
       >
-        <h2>Offline copy</h2>
+        <h2>Your copy</h2>
         {canAcquireOnThisDevice ? (
           <p className="wfx-detail__meta" data-wfx-acquisition-available>
             Ready to be made available offline.
@@ -94,11 +102,11 @@ export function AcquisitionPanel({
   return (
     <section
       className="wfx-detail__section"
-      aria-label="Offline copy"
+      aria-label="Your copy status"
       data-wfx-acquisition
       data-wfx-acquisition-state={view.state}
     >
-      <h2>Offline copy</h2>
+      <h2>Your copy</h2>
       <div className="wfx-acquisition" data-wfx-acquisition-item={view.itemId}>
         <p className="wfx-detail__meta">
           <span className={STATE_TONES[view.state] ?? "wfx-badge wfx-badge--type"} data-wfx-acquisition-label>
