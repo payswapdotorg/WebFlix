@@ -62,6 +62,15 @@ import {
   type DesktopAcquisitionSurface,
 } from "./surface/acquisition-surface";
 import {
+  createDesktopDiscoverabilitySurface,
+  type DesktopDiscoverabilitySurface,
+} from "./surface/discoverability-surface";
+import {
+  createOfflineDiscoverySurface,
+  type DesktopOfflineDiscoverySurface,
+  type DesktopAcquireRecipe,
+} from "./surface/offline-discovery-surface";
+import {
   createDesktopFeedSurface,
   createUnboundFeedSurface,
   type DesktopFeedSurface,
@@ -138,6 +147,18 @@ export interface DesktopAppOptions {
   readonly feed?: {
     readonly port: FeedPort;
   };
+  /**
+   * R21-H — the offline discovery block (OPTIONAL, the R14/R20 seam
+   * precedent): the composition root's acquisition-START recipe (the
+   * authorized ingestion + session + `bindSession` flow — the same
+   * wiring shape the acquisition source's retry/restart recipes use).
+   * When bound, the item surface's "Make available offline" affordance
+   * is actionable end-to-end (`executeAcquire`); absent ⇒ the honest
+   * typed not-wired verdict (never a fabricated start).
+   */
+  readonly offlineDiscovery?: {
+    readonly acquire: DesktopAcquireRecipe;
+  };
 }
 
 /** A booted Desktop application: the runtime over the native adapter. */
@@ -160,6 +181,19 @@ export interface DesktopApp {
   readonly acquisition: DesktopAcquisitionSurface;
   /** R20-G: the BYOF feed surface (import + sync + cache over the frozen FeedPort). */
   readonly feed: DesktopFeedSurface;
+  /**
+   * R21-G: the discoverability surface — the frozen R21-A capability
+   * matrix + the R21-C shared control views bound to the Desktop
+   * platform (parity-projected, with the honest standing verdicts).
+   */
+  readonly discoverability: DesktopDiscoverabilitySurface;
+  /**
+   * R21-H: the offline/feed discovery surface — the Desktop's extra
+   * powers at the moment they become useful (the from-content offline
+   * affordance, the player's offline truth, the Library Offline
+   * section, background completion, and the BYOF import discovery).
+   */
+  readonly offlineDiscovery: DesktopOfflineDiscoverySurface;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -257,6 +291,29 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
         })
       : createUnboundFeedSurface();
 
+  // R21-G — the Desktop discoverability surface: the frozen capability
+  // matrix + the shared control views bound to THIS composition (the
+  // standing verdicts derive from the bound flags above — never guessed).
+  const discoverability: DesktopDiscoverabilitySurface = createDesktopDiscoverabilitySurface({
+    runtime,
+    capabilities: capabilities as PlatformCapabilities,
+    acquisition,
+    feed,
+  });
+
+  // R21-H — the offline/feed discovery surface: the Desktop's extra
+  // powers at the moment of use, over the same bound surfaces (the
+  // optional acquire recipe is the composition root's start wiring).
+  const offlineDiscovery: DesktopOfflineDiscoverySurface = createOfflineDiscoverySurface({
+    runtime,
+    capabilities: capabilities as PlatformCapabilities,
+    acquisition,
+    feed,
+    ...(options.offlineDiscovery !== undefined
+      ? { acquire: options.offlineDiscovery.acquire }
+      : {}),
+  });
+
   let disposed = false;
   return {
     platform: "desktop",
@@ -268,6 +325,8 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     surface,
     acquisition,
     feed,
+    discoverability,
+    offlineDiscovery,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -286,6 +345,39 @@ export {
   createUnboundAcquisitionSurface,
 } from "./surface/acquisition-surface";
 export type { DesktopAcquisitionSurface } from "./surface/acquisition-surface";
+export { createDesktopDiscoverabilitySurface } from "./surface/discoverability-surface";
+export type {
+  DesktopDiscoverabilitySurface,
+  DesktopCapabilityView,
+  DesktopCapabilityStanding,
+  DesktopJ34TaskView,
+  DesktopPlatformDifferenceView,
+  DesktopPlatformTruthProjection,
+  DesktopAiActionSpec,
+  DesktopAiActionView,
+  DesktopAiActionTrayView,
+} from "./surface/discoverability-surface";
+export {
+  DESKTOP_AI_ACTIONS,
+  AI_TRAY_TASKS,
+  desktopCapabilityParityIssues,
+  discoverabilityCopyStrings,
+  isStaleDesktopDiscoverabilityCopy,
+} from "./surface/discoverability-surface";
+export { createOfflineDiscoverySurface } from "./surface/offline-discovery-surface";
+export type {
+  DesktopOfflineDiscoverySurface,
+  DesktopOfflineAffordanceView,
+  DesktopPlayerOfflineView,
+  DesktopLibraryOfflineSection,
+  DesktopFeedImportDiscoveryView,
+  DesktopAcquisitionActionView,
+  DesktopAcquireRecipe,
+} from "./surface/offline-discovery-surface";
+export {
+  DESKTOP_ACQUISITION_ACTION_LABELS,
+  offlineDiscoveryCopyStrings,
+} from "./surface/offline-discovery-surface";
 export {
   createDesktopFeedSurface,
   createUnboundFeedSurface,
