@@ -28,6 +28,37 @@ import { NextResponse } from "next/server";
 import { getWebRuntimeHostForRequest } from "@/host/web-host";
 import { sessionTokenFromRequest } from "@/host/session-cookie";
 
+// ---------------------------------------------------------------------------
+// R23-K — the anonymous AI boundary's session quota (typed, never a wall)
+// ---------------------------------------------------------------------------
+
+/**
+ * THE ANONYMOUS AI BOUNDARY: high-cost/stateful AI work (transform
+ * submissions) is quota-limited for ANONYMOUS sessions with a USEFUL
+ * TYPED STATE — never a login wall. The low-cost/local reads (semantic
+ * search, transcript/chapters/moments, the live-captions route view)
+ * stay open to every viewer by construction (they read only).
+ *
+ * The quota is SESSION-SCOPED (the anonymous session the host binds —
+ * one per process on this adapter): a signed-in viewer's submissions
+ * are durable-account work and never consult this counter.
+ */
+const ANONYMOUS_SESSION_TRANSFORM_QUOTA = 3;
+const anonymousTransformCounts = new Map<string, number>();
+
+/** The typed quota decision for one session (pure). */
+function anonymousTransformQuotaOf(sessionId: string): {
+  readonly kind: "within-quota" | "session-quota-reached";
+  readonly used: number;
+  readonly quota: number;
+} {
+  const used = anonymousTransformCounts.get(sessionId) ?? 0;
+  if (used >= ANONYMOUS_SESSION_TRANSFORM_QUOTA) {
+    return { kind: "session-quota-reached", used, quota: ANONYMOUS_SESSION_TRANSFORM_QUOTA };
+  }
+  return { kind: "within-quota", used, quota: ANONYMOUS_SESSION_TRANSFORM_QUOTA };
+}
+
 export const dynamic = "force-dynamic";
 
 /** The closed submit vocabulary (the fabric's task kinds the tray offers). */
@@ -102,6 +133,27 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
+  // R23-K: the anonymous session quota — the typed state answers BEFORE
+  // the submission (the useful typed state, never a login redirect; a
+  // signed-in session never consults the counter).
+  const submitHost = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
+  if (!submitHost.session.state.signedIn) {
+    const quota = anonymousTransformQuotaOf(submitHost.session.context.sessionId);
+    if (quota.kind === "session-quota-reached") {
+      return NextResponse.json(
+        {
+          error: "session-quota-reached",
+          detail: `This anonymous session has used its ${quota.quota} AI transforms — the reads (search by meaning, transcripts, chapters, moments) stay open. Sign in any time to keep using transforms; watching never requires an account.`,
+        },
+        { status: 429 },
+      );
+    }
+    anonymousTransformCounts.set(
+      submitHost.session.context.sessionId,
+      quota.used + 1,
+    );
+  }
+
   // The per-kind input truth (the fabric's own validators' requirements —
   // the honest precondition named BEFORE submission, at the seam the
   // service would enforce it):
@@ -153,8 +205,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     commandInput = { text, targetLanguage };
   }
 
-  const host = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
-  const result = await host.runtime.modelControls.submitTransform({
+  const result = await submitHost.runtime.modelControls.submitTransform({
     kind,
     input: commandInput,
   });

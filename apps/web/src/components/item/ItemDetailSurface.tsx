@@ -18,6 +18,7 @@ import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
+import { IntelligenceSurface } from "@/components/item/IntelligenceSurface";
 import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, percentWatched, placeholderArt, placeholderMonogram } from "@/components/ui/format";
@@ -151,6 +152,19 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
           controls in context, raw connector diagnostics secondary. */}
       <WhereToWatch view={view.whereToWatch} />
       <AiActionTray view={view.aiTray} surface="item" />
+      {/* R23 (J39) — the item's derived intelligence: transcript, chapters,
+          findable moments with jump paths, per-feature availability, and
+          honest model provenance (progressively disclosed). */}
+      <IntelligenceSurface
+        view={view.intelligence}
+        target={{
+          itemId: view.itemId,
+          connectorId: view.connectorId,
+          externalRef: view.externalRef,
+          title: view.title,
+          canonicalType: view.canonicalType,
+        }}
+      />
       <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="item" />
       <section className="wfx-detail__section" aria-label="Source capabilities">
         <details className="wfx-disc__capabilities" data-wfx-item-capabilities-disclosure>

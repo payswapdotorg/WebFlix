@@ -106,6 +106,31 @@ const FIXTURE_FIRST_PARTY_PROVIDER: ModelProviderInfo = {
 };
 
 /**
+ * R23-J — one registered open model's REAL `ModelProviderInfo` row: the
+ * catalog's supported frozen ModelTasks, the catalog's privacy class
+ * (remote → cloud), self-operated cost 0, availability available. The
+ * registration truth stays in the file; this projection is shape-only.
+ */
+function openModelProviderRow(providerId: string): ModelProviderInfo {
+  const capabilitiesByProvider: Readonly<Record<string, readonly ModelTask[]>> = {
+    "open-model:r2t2": ["speechToText", "transcription"],
+    "open-model:moss-transcribe-diarize": ["transcription"],
+    "open-model:whisper-large-v3-turbo": ["transcription"],
+  };
+  const tasks = capabilitiesByProvider[providerId] ?? [];
+  const costs: Record<string, number> = {};
+  for (const task of tasks) costs[task] = 0;
+  return {
+    id: providerId,
+    privacy: "cloud",
+    capabilities: [...tasks],
+    byomBound: false,
+    costs,
+    availability: "available",
+  };
+}
+
+/**
  * The fixture persona's OWN model-controls state (the same double law as
  * its library/search data: writes land in the persona's state; reads
  * answer it — the honest unset policy stays null). R22-F: the state is
@@ -331,7 +356,13 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
           availability: "available",
         }),
       );
-      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER, ...bound] };
+      // R23-J: the persona's REGISTERED open models join the registry
+      // read (the file's registrations projected into the real shape —
+      // a catalog row is not a provider until registered).
+      const openModels: readonly ModelProviderInfo[] = state.openModelRegistrations.map(
+        (providerId) => openModelProviderRow(providerId),
+      );
+      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER, ...bound, ...openModels] };
     },
 
     async bindByomProvider(command: ByomBindingCommand): Promise<ServerResult<ByomBindingHandle>> {

@@ -38,6 +38,8 @@ import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
 import { TorrentPlaybackStage, TorrentAcquisitionLifecycle } from "@/components/player/TorrentPlaybackStage";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
+import { IntelligenceSurface } from "@/components/item/IntelligenceSurface";
+import { LiveCaptionsSurface } from "@/components/player/LiveCaptionsSurface";
 import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
@@ -370,6 +372,21 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
             behind ONE progressive disclosure. */}
         <WhereToWatch view={view.whereToWatch} variant="player" />
         <AiActionTray view={view.aiTray} surface="player" />
+        {/* R23-G — the live captions surface: the legal-audio gate + the
+            R2T2 route truth (progressively disclosed on the player). */}
+        <LiveCaptionsSurface view={view.liveAsr} mode={view.mode} />
+        {/* R23 (J39) — the transcript/chapters/moment navigation (the same
+            intelligence surface as the item hub — the parity law). */}
+        <IntelligenceSurface
+          view={view.intelligence}
+          target={{
+            itemId: view.itemId,
+            connectorId: view.connectorId,
+            externalRef: view.externalRef,
+            title: view.title,
+            canonicalType: view.canonicalType,
+          }}
+        />
         <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="player" />
         {view.torrent !== null ? <TorrentAcquisitionLifecycle view={view} /> : null}
         <PlaybackDiagnostics view={view} />

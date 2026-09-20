@@ -49,11 +49,18 @@ export interface FixtureByomBinding {
 export interface ModelFixtureState {
   readonly byomBindings: Readonly<Record<string, FixtureByomBinding>>;
   readonly policies: Readonly<Record<string, ModelPolicy>>;
+  /**
+   * R23-J — the persona's REGISTERED open models (the registration truth
+   * the R23-G live-ASR route consumes: a catalog row is not a provider
+   * until an adapter binds an executor and registers it — the fixtures'
+   * typed register/unregister actions move this list).
+   */
+  readonly openModelRegistrations: readonly string[];
 }
 
 /** The empty state (a missing or corrupt file reads as EMPTY, never fatal). */
 export function emptyModelFixtureState(): ModelFixtureState {
-  return { byomBindings: {}, policies: {} };
+  return { byomBindings: {}, policies: {}, openModelRegistrations: [] };
 }
 
 /** Read the state FRESH from the shared file (per call — the file is truth). */
@@ -69,7 +76,14 @@ export function readModelFixtureState(): ModelFixtureState {
     if (typeof record.policies !== "object" || record.policies === null) {
       return emptyModelFixtureState();
     }
-    return { byomBindings: record.byomBindings as Record<string, FixtureByomBinding>, policies: record.policies as Record<string, ModelPolicy> };
+    const openModelRegistrations = Array.isArray(record.openModelRegistrations)
+      ? record.openModelRegistrations.filter((entry): entry is string => typeof entry === "string")
+      : [];
+    return {
+      byomBindings: record.byomBindings as Record<string, FixtureByomBinding>,
+      policies: record.policies as Record<string, ModelPolicy>,
+      openModelRegistrations,
+    };
   } catch {
     return emptyModelFixtureState();
   }
@@ -120,4 +134,43 @@ export function resetModelFixtureState(): void {
   } catch {
     // A missing file IS the empty state — never fatal.
   }
+}
+
+// ---------------------------------------------------------------------------
+// R23-J — the open-model registration drive (the live route's truth)
+// ---------------------------------------------------------------------------
+
+/** The registrable open-model catalog ids the fixtures expose (the R2T2 live route + the batch companions). */
+export const FIXTURE_OPEN_MODEL_IDS: readonly string[] = [
+  "open-model:r2t2",
+  "open-model:moss-transcribe-diarize",
+  "open-model:whisper-large-v3-turbo",
+] as const;
+
+/**
+ * Register one open model for the persona (the typed drive; idempotent).
+ * The registered rows answer the REAL `ModelProviderInfo` shape in
+ * `dev-fixture-server-port.ts`'s providers read — the registry a user
+ * sees is the honest file truth.
+ */
+export function registerFixtureOpenModel(providerId: string): boolean {
+  if (!FIXTURE_OPEN_MODEL_IDS.includes(providerId)) return false;
+  const state = readModelFixtureState();
+  if (state.openModelRegistrations.includes(providerId)) return true;
+  writeModelFixtureState({
+    ...state,
+    openModelRegistrations: [...state.openModelRegistrations, providerId],
+  });
+  return true;
+}
+
+/** Unregister one open model (the typed removal; idempotent). */
+export function unregisterFixtureOpenModel(providerId: string): boolean {
+  const state = readModelFixtureState();
+  if (!state.openModelRegistrations.includes(providerId)) return true;
+  writeModelFixtureState({
+    ...state,
+    openModelRegistrations: state.openModelRegistrations.filter((id) => id !== providerId),
+  });
+  return true;
 }

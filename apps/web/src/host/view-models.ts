@@ -40,6 +40,12 @@ import type { WebRuntimeHost } from "./web-host";
 import { progressScopeTruthOf, viewerKindOf } from "./anonymous-truth";
 import type { ProgressScopeTruth } from "./anonymous-truth";
 import { torrentRealizationOf } from "./torrent-realizations";
+import { loadItemIntelligence, loadLiveAsrRoute, searchByMeaning } from "./intelligence";
+import type {
+  ItemIntelligenceView,
+  LiveAsrRouteView,
+  SemanticSearchView,
+} from "./intelligence";
 import { WEB_BROWSER_TORRENT_IMPLEMENTATION } from "@/platform/browser-torrent-environment";
 import { canonicalIdFor } from "./web-host";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
@@ -312,6 +318,12 @@ export interface SearchView {
   readonly cards: readonly CardView[];
   /** R21-E — per-card availability summaries ("where can I watch this?"). */
   readonly availability: ReadonlyMap<string, string>;
+  /**
+   * R23-H — the semantic search section (search by meaning + moments
+   * over the item intelligence index, with honest provenance). The
+   * honest unavailable state when the host serves none.
+   */
+  readonly semantic: SemanticSearchView;
 }
 
 /** The compact availability summary of one result card (R21-E, pure). */
@@ -339,8 +351,19 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
       status: { state: "ready" },
       cards: [],
       availability: new Map<string, string>(),
+      semantic: {
+        status: "unavailable",
+        meaning: [],
+        moments: [],
+        provenance: [],
+        meaningSearchAvailable: false,
+      },
     };
   }
+  // R23-H: the semantic search runs alongside the title search (search
+  // by meaning + moments, with honest provenance — a low-cost local
+  // read serving anonymous viewers too, the R23-K boundary).
+  const semantic = await searchByMeaning(host, query);
   const model = await host.runtime.search({ query });
   const cards = cardsFromModel(model);
   // R21-E: the compact availability summary per result (the matrix's
@@ -374,6 +397,7 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
     status: statusView(model.status),
     cards,
     availability,
+    semantic,
   };
 }
 
@@ -433,6 +457,12 @@ export interface DetailView {
   readonly whereToWatch: WhereToWatchView;
   /** R21-E — the AI action tray's view (the model-class + input truth). */
   readonly aiTray: AiTrayView;
+  /**
+   * R23 (J39) — the item's derived intelligence view (transcript,
+   * chapters, moments, per-feature availability, provenance) — the
+   * honest unavailable state when the host has none.
+   */
+  readonly intelligence: ItemIntelligenceView;
 }
 
 /**
@@ -510,6 +540,9 @@ export async function loadDetailView(
       title: metadata.title,
       ...(metadata.durationMs !== undefined ? { durationMs: metadata.durationMs } : {}),
     }),
+    // R23 (J39): the item's derived intelligence (the transcript /
+    // chapters / moments surface + the honest unavailable state).
+    intelligence: await loadItemIntelligence(host, metadata.externalRef),
   };
 }
 
@@ -606,6 +639,10 @@ export interface PlayerView {
    * never consults a provider realization).
    */
   readonly torrent: TorrentPlayerView | null;
+  /** R23 (J39) — the item's derived intelligence view (the parity surface). */
+  readonly intelligence: ItemIntelligenceView;
+  /** R23-G — the live-ASR route view (the live captions surface's truth). */
+  readonly liveAsr: LiveAsrRouteView;
 }
 
 /**
@@ -681,6 +718,13 @@ export async function loadPlayerView(
       ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
     }),
   ]);
+  // R23 (J39 + R23-G): the item's intelligence + live-ASR route views
+  // (the transcript/chapters/moment navigation + the live captions
+  // surface — low-cost local reads serving anonymous viewers too).
+  const [intelligence, liveAsr] = await Promise.all([
+    loadItemIntelligence(host, input.externalRef),
+    loadLiveAsrRoute(host, input.externalRef),
+  ]);
   // R23 web-A: the session truth of THIS surface's binding — the
   // progress-scope sentence (session-local for anonymous sessions, with
   // sign-in as the optional upgrade) and the typed provider-authorization
@@ -736,6 +780,8 @@ export async function loadPlayerView(
         progressScope,
         providerAuthorization: null,
         torrent: null,
+        intelligence,
+        liveAsr,
       };
     }
     const rung = peerCopy.rung;
@@ -799,6 +845,8 @@ export async function loadPlayerView(
       progressScope,
       providerAuthorization: null,
       torrent: torrentView,
+      intelligence,
+      liveAsr,
     };
   }
   // R21-E: the Where-to-watch switch — resolve the preferred mode's
@@ -854,6 +902,8 @@ export async function loadPlayerView(
         progressScope,
         providerAuthorization: providerAuthorizationOf_("not-found"),
         torrent: null,
+        intelligence,
+        liveAsr,
       };
     }
     // Engage the surface for the resolved mode (embed/browser open the
@@ -918,6 +968,8 @@ export async function loadPlayerView(
       progressScope,
       providerAuthorization: null,
       torrent: null,
+      intelligence,
+      liveAsr,
     };
   } catch (thrown) {
     // resolvePlayback throws the typed RuntimeError for resolution failures
@@ -949,6 +1001,8 @@ export async function loadPlayerView(
       progressScope,
       providerAuthorization: providerAuthorizationOf_(typeof kind === "string" ? kind : ""),
       torrent: null,
+      intelligence,
+      liveAsr,
     };
   }
 }
