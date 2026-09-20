@@ -1,1 +1,1 @@
-- the settings sources section rendered the typed no-sources state with the never-pretend note (the connect/reauthorize/disconnect round trips are the service-mode local-only procedure — listed)
+- the settings sources section rendered the scripted source's card with its signed-in truth, Connected chip, and typed disconnect action (the expiry/reauthorize round trip is J28's encoding; the real provider round trips are the service-mode local-only procedure — listed)

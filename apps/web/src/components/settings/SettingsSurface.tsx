@@ -339,8 +339,9 @@ export function SettingsSurface({
         <section className="wfx-detail__section" aria-label="Model and AI" data-wfx-settings-model>
           <h2>Model &amp; AI</h2>
           <p className="wfx-detail__meta">
-            The truth about which models can run your AI actions — first-party, your own providers
-            (BYOM), and local models — with each task&apos;s current policy. Provider keys stay
+            The truth about which models can run your AI actions — subtitles, translation,
+            transcription, dubbing, and commentary — across first-party, your own providers
+            (BYOM), and local models, with each task&apos;s current policy. Provider keys stay
             sealed; they are never shown or sent to a model.
           </p>
           {modelProviders !== undefined && modelProviders.status.state === "ready" ? (

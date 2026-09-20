@@ -107,7 +107,7 @@ export function anonymousSessionState(
     signedIn: false,
     label: "Signed out",
     description:
-      "You are browsing in an anonymous session. Sign in to bring your profiles, watch history, and saved items across devices." +
+      "You are browsing in an anonymous session. Sign in to bring your history, watchlist, and profiles across devices." +
       note,
     sessionDurability,
   };
