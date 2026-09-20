@@ -58,6 +58,14 @@
  *                               typed connect action + the user-vocabulary
  *                               connection method, the anonymous sign-in
  *                               prerequisite, the honest unsupported truth)
+ * - `account-creation.ts`    — R22-B: the account-creation journey —
+ *                               the typed register command + shared
+ *                               validation (the service's own rules), the
+ *                               typed failure vocabulary with recovery
+ *                               next actions, the auto-login session views
+ *                               (secret-free; the one-time token passes
+ *                               through ONCE), and the journey state
+ *                               machine over the EXISTING auth transport
  * - `testing.ts`              — ⚠️ TEST DOUBLES — production code never imports it
  */
 
@@ -81,6 +89,7 @@ export * from "./feed-mode";
 export * from "./model-controls";
 export * from "./control-views";
 export * from "./source-catalog";
+export * from "./account-creation";
 export { createRuntime, type ClientRuntime, type RuntimeSession, type RuntimeOptions } from "./runtime";
 
 // Test doubles — clearly marked, testing-only (see testing.ts module doc).
