@@ -181,3 +181,27 @@ A WebFlix surface passes when it feels calm and premium, the primary decision is
 The ShareNet source implements its consumer shell with scoped warm-light OKLCH tokens, semantic connected/warning/error/neutral state tokens, hairline borders, rounded/pill controls, typography-driven summaries, centered empty/error/loading states, a compact desktop rail/mobile bottom navigation, and reduced-motion-aware active-navigation motion.
 
 WebFlix should reproduce those design principles, not copy ShareNet components verbatim.
+
+
+## Familiar video-product interaction grammar — R24
+
+WebFlix should borrow the **interaction grammar users already understand from mature video products such as YouTube** without copying their branding, icon set, visual identity, or exact information architecture.
+
+This means:
+
+- play is always the dominant action on playable media;
+- common player controls appear where viewers expect them;
+- queue/save/share/feedback controls live near the content decision they affect;
+- search, Watch, Shorts, Library and playback retain predictable relationships;
+- loading and recovery states preserve the player shell rather than replacing it with an engineering state;
+- advanced source/provenance/model information is progressively disclosed;
+- WebFlix-only capabilities such as Where to watch, torrent realizations, BYOF, explicit intent, attention modes and AI transformations are introduced at the moment of user intent rather than behind a separate architecture surface;
+- source or platform differences are expressed as capability truth, not a different product language.
+
+This is the **YouTube parity law**: WebFlix may be more capable than YouTube, but those extra capabilities should feel like natural additions to a familiar video product.
+
+## Playback ease
+
+Playback UX is also a design requirement.
+
+The UI should avoid adding WebFlix-only ceremony between a user deciding to watch and the first playable frame. Metadata, recommendations, AI enrichment, provenance details and nonessential analytics must not block playback. Torrent realizations follow the same rule: when an authorized peer copy can play, it should look and behave like another way to watch, not like a download workflow.
