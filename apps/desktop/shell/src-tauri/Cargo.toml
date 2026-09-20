@@ -25,6 +25,13 @@ uuid = { version = "1", features = ["v4"] }
 # no dialog service answers the honest typed `unsupported` verdict.
 rfd = "0.15"
 
+# R22-H — the OS credential store for the session secret: the platform's
+# REAL keychain (macOS Keychain / Windows Credential Manager / the Linux
+# Secret Service) behind the auth-store area. A platform with no
+# reachable service answers the honest typed `unsupported` verdict —
+# never a silent fallback to plaintext storage.
+keyring = "3"
+
 # macOS share sheet backend (NSSharingServicePicker). Other platforms
 # answer the honest `unsupported` outcome through the same seam (the
 # adapter's canShare truthfully reports false there — see share.rs).

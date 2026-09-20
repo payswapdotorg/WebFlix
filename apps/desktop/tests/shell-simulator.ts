@@ -32,6 +32,8 @@ import type { Unsubscribe } from "@wfx/platform-contracts";
 
 import { ShellIpcError } from "../src/platform/shell-ipc";
 import type {
+  ShellAuthStoreEntry,
+  ShellAuthStoreSupport,
   ShellEngineConfig,
   ShellFilePickOutcome,
   ShellFilePickRequest,
@@ -309,6 +311,14 @@ export interface SimShellOptions {
    * headless/dialog-less platform (the R20-F typed truth).
    */
   readonly fileDialogPresent?: boolean;
+  /**
+   * Whether the OS credential store (keychain) is present on this
+   * simulated platform (default `true`). `false` simulates the honest
+   * `unsupported` store verdict — a platform with no keychain service
+   * (the R22-H typed truth; the adapter must surface it, never silently
+   * downgrade to plaintext storage).
+   */
+  readonly keychainPresent?: boolean;
 }
 
 /** One tracked surface session (isolation observable through cookie jars). */
@@ -395,6 +405,19 @@ export class SimShell implements ShellIpc {
   /** Every pick request the dialog saw (assertion surface). */
   readonly pickRequests: ShellFilePickRequest[] = [];
 
+  // — auth store (R22-H: the OS keychain for the session secret) —
+  private readonly keychainPresent: boolean;
+  /** The in-memory credential entry (the keychain's single-slot truth). */
+  private keychainEntry: ShellAuthStoreEntry | null = null;
+  /**
+   * Test hook: force `authStoreGet` to answer the honest `corrupt`
+   * failure (a stored secret that cannot be read back — surfaced, never
+   * silently treated as absent).
+   */
+  keychainCorrupt = false;
+  /** Test hook: force `authStoreSet` to fail with the typed `io` code. */
+  keychainWriteFailure = false;
+
   // — engine hosting —
   private engineCounter = 0;
   private readonly engines = new Map<string, { handle: SimEngineHandle; handlers: Set<EngineEventHandler> }>();
@@ -408,6 +431,7 @@ export class SimShell implements ShellIpc {
     this.shareSheetPresent = options.shareSheetPresent ?? true;
     this.canRequestPermission = options.notificationCanRequest ?? true;
     this.fileDialogPresent = options.fileDialogPresent ?? true;
+    this.keychainPresent = options.keychainPresent ?? true;
   }
 
   // -----------------------------------------------------------------------
@@ -851,6 +875,67 @@ export class SimShell implements ShellIpc {
       throw new ShellIpcError("io", `fileRead('${path}'): the file does not exist on this platform`);
     }
     return bytes;
+  }
+
+  // -----------------------------------------------------------------------
+  // ShellIpc — auth store (R22-H: the OS keychain for the session secret)
+  // -----------------------------------------------------------------------
+
+  async authStoreSupport(): Promise<ShellAuthStoreSupport> {
+    if (!this.keychainPresent) {
+      return {
+        available: false,
+        detail:
+          "the simulated platform has no OS credential service (the honest unsupported truth — the adapter surfaces it, never a plaintext fallback)",
+      };
+    }
+    return { available: true };
+  }
+
+  async authStoreSet(entry: ShellAuthStoreEntry): Promise<void> {
+    if (!this.keychainPresent) {
+      throw new ShellIpcError(
+        "unavailable",
+        "authStoreSet: the simulated platform has no OS credential service (the honest unsupported truth)",
+      );
+    }
+    if (this.keychainWriteFailure) {
+      throw new ShellIpcError("io", "authStoreSet: the credential service refused the write (scripted failure)");
+    }
+    if (typeof entry?.payload !== "string" || entry.payload.length === 0) {
+      throw new ShellIpcError("invalid-key", "authStoreSet: expected a non-empty payload");
+    }
+    if (typeof entry?.savedAt !== "string" || entry.savedAt.length === 0) {
+      throw new ShellIpcError("invalid-key", "authStoreSet: expected a non-empty savedAt instant");
+    }
+    // The keychain's own upsert: one slot, `set` REPLACES.
+    this.keychainEntry = { payload: entry.payload, savedAt: entry.savedAt };
+  }
+
+  async authStoreGet(): Promise<ShellAuthStoreEntry | null> {
+    if (!this.keychainPresent) {
+      throw new ShellIpcError(
+        "unavailable",
+        "authStoreGet: the simulated platform has no OS credential service (the honest unsupported truth)",
+      );
+    }
+    if (this.keychainCorrupt) {
+      throw new ShellIpcError("corrupt", "authStoreGet: the stored entry could not be read (scripted corruption)");
+    }
+    if (this.keychainEntry === null) return null;
+    return { ...this.keychainEntry };
+  }
+
+  async authStoreClear(): Promise<void> {
+    if (!this.keychainPresent) {
+      throw new ShellIpcError(
+        "unavailable",
+        "authStoreClear: the simulated platform has no OS credential service (the honest unsupported truth)",
+      );
+    }
+    // Idempotent: clearing when nothing was stored is a success.
+    this.keychainEntry = null;
+    this.keychainCorrupt = false;
   }
 
   // -----------------------------------------------------------------------

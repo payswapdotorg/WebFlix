@@ -23,6 +23,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, RunEvent, WindowEvent};
 
 mod background;
+mod auth_store;
 mod browser_host;
 mod engine;
 mod file_import;
@@ -32,6 +33,7 @@ mod notifications;
 mod sharing;
 mod storage;
 
+use auth_store::AuthStore;
 use background::Tasks;
 use browser_host::Surfaces;
 use engine::Engines;
@@ -55,6 +57,7 @@ pub fn run() {
             app.manage(Surfaces::new(app_data_dir.clone()));
             app.manage(Tasks::new());
             app.manage(FileImports::new());
+            app.manage(AuthStore::new());
             app.manage(Arc::new(Engines::new()));
             app.manage(Lifecycle::new());
 
@@ -113,6 +116,10 @@ pub fn run() {
             wfx_file_pick_available,
             wfx_file_pick_open,
             wfx_file_read,
+            wfx_auth_store_support,
+            wfx_auth_store_set,
+            wfx_auth_store_get,
+            wfx_auth_store_clear,
             wfx_share_can_present,
             wfx_share_present,
             wfx_engine_spawn,
@@ -294,6 +301,28 @@ async fn wfx_file_pick_open(app: AppHandle, request: ShellFilePickRequest) -> Sh
 #[tauri::command]
 fn wfx_file_read(app: AppHandle, path: String) -> CommandResult<Vec<u8>> {
     file_import::read_file(&app, &path)
+}
+
+// — auth store (R22-H: the OS keychain for the session secret) ——————————
+
+#[tauri::command]
+fn wfx_auth_store_support(app: AppHandle) -> ShellAuthStoreSupport {
+    app.state::<AuthStore>().support()
+}
+
+#[tauri::command]
+fn wfx_auth_store_set(app: AppHandle, entry: ShellAuthStoreEntry) -> CommandResult<()> {
+    app.state::<AuthStore>().set(entry)
+}
+
+#[tauri::command]
+fn wfx_auth_store_get(app: AppHandle) -> CommandResult<Option<ShellAuthStoreEntry>> {
+    app.state::<AuthStore>().get()
+}
+
+#[tauri::command]
+fn wfx_auth_store_clear(app: AppHandle) -> CommandResult<()> {
+    app.state::<AuthStore>().clear()
 }
 
 // — sharing ———————————————————————————————————————————————————————————————

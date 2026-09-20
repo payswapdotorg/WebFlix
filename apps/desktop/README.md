@@ -67,6 +67,9 @@ const app = createDesktopApp({
 | feed-import       | `feed-import.ts`          | R20-F — the BYOF native file-import binding: pick → read → `FeedPort.previewImport` (the artifact crosses VERBATIM); typed verdicts for every platform outcome (dismissed / unsupported / failed / invalid-input); method-honest offers (a connector that does not declare the file method never reaches the port). |
 | feed-sync         | `feed-sync.ts`            | R20-F — the `sync`-kind background executor: `scheduleSync` (idempotent `wfx-feed-sync/<importId>` task), `runSync` (scheduled → running → completed/failed through the report seam; `FeedPort.syncImport` does the work; NO deletion path — the survival law is structural), `cancelSync` (disconnect truth: stop the task, retain every record). |
 | feed-cache        | `feed-cache.ts`           | R20-G — the richer Desktop feed cache: a PRESENTATION cache over the shell filesystem KV with honest `savedAt`/`capturedAt` age labels (never live); the port stays canonical; explicit eviction; a malformed cache is an honest miss. |
+| auth-transport    | `auth-transport.ts`       | R22-H — the Desktop account/source transport: the typed client of the service's documented `POST /auth/register` / `POST /auth/login` / `GET /auth/me` / `POST /auth/logout` / `PUT /profiles/:id/select` + the source-management routes (`GET /sources`, `POST /sources/:id/connect|reauthorize|disconnect`) + the session-scoped model routes (R22-I). The R22-B `AccountRegistrationPort` binds over it with the SAME failure mapping the Web adapter applies (the parity law). The token rides `Authorization` ONLY — never a URL, never a body. |
+| auth-session-store | `auth-session-store.ts`   | R22-H — the adapter's platform storage law for the one-time session token: the OS KEYCHAIN (the shell's auth-store area — macOS Keychain / Windows Credential Manager / the Linux Secret Service), never plaintext adapter files. `store`/`restore`/`clear` with the structurally-validated payload shape; a corrupt entry answers the typed sign-in-again recovery; a platform with no credential service answers the typed will-not-persist consequence — NEVER a silent downgrade to plaintext. |
+| source-connect-flow | `source-connect-flow.ts` | R22-H — the ADAPTER-OWNED native connect flows (the sources.ts layering law): the contained authorization surface (cookie-isolated, `purpose: "authorization"`, navigation OBSERVED never steered) for provider sign-in; the device instructions + host-driven polls; the direct local/none connects. Every completion VERIFIES through a fresh management read — never an assumed success; the observed rows (mid-flow `authorizing` included) report into `runtime.sources.observe`. |
 | sharing           | `sharing.ts`               | OS share sheet (macOS picker) with `canShare` truthful per request and platform; dismissal ≠ failure; Linux-like platforms answer honest unsupported (never a fake share). |
 | server-port       | `server-port.ts`           | The frozen `WFX_API_BASE` HTTP transport with the R01 typed failures (`ServerResult`/`ServerFailure`; the event-sink law preserved verbatim; identity rides as `x-wfx-*` headers, never URLs). |
 | native-media-binding | `native-media-binding.ts` | **THE R10 SEAM** — see below. |
@@ -86,6 +89,18 @@ semantics as the Web lane — mode truth, freshness, provenance survival,
 idempotent import). An absent optional block answers the honest UNBOUND
 surface (typed verdicts — never a silent empty feed, never a fixture
 fallback).
+
+R22-H adds the FIRST-RUN block (`surface/first-run-surface.ts`, the same
+optional-block doctrine over `DesktopAppOptions.firstRun`): the
+account-creation/sign-in state (the R22-B shared journey over the OS
+keychain, with the boot continuity probe that VERIFIES the stored session
+against the service), the first-connect source catalog (the R22-A shared
+derivation over the runtime's observed rows — the seven state truths,
+the anonymous prerequisite, the honest unsupported truth), the
+adapter-owned native connect/recovery flows, and the BYOF prerequisite
+transition (the F3 bridge: Bring Your Feed opens exactly when a connected
+source declares the `feedImport` capability — never the old dead end).
+ZERO duplicated business rules: the shared read models render VERBATIM.
 
 ## THE R10 SEAM (`native-media-binding.ts`)
 

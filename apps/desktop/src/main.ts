@@ -75,7 +75,14 @@ import {
   createUnboundFeedSurface,
   type DesktopFeedSurface,
 } from "./surface/feed-surface";
+import {
+  createDesktopFirstRunSurface,
+  createUnboundFirstRunSurface,
+  type DesktopFirstRunSurface,
+} from "./surface/first-run-surface";
 import { createDesktopAcquisitionSource } from "./platform/acquisition-source";
+import { createDesktopAuthTransport, type DesktopAuthFetchLike } from "./platform/auth-transport";
+import { createShellAuthSessionStore } from "./platform/auth-session-store";
 
 // ---------------------------------------------------------------------------
 // Options
@@ -159,6 +166,27 @@ export interface DesktopAppOptions {
   readonly offlineDiscovery?: {
     readonly acquire: DesktopAcquireRecipe;
   };
+  /**
+   * R22-H — the first-run block (OPTIONAL, the R14/R20/R21 seam
+   * precedent): the account/source onboarding parity surface. When
+   * bound, the composition builds the Desktop auth transport (the
+   * documented account + source-management routes over the same
+   * `WFX_API_BASE` family), the OS-keychain session store, the
+   * adapter-owned native connect flows, and the first-run surface that
+   * consumes the R22-A/B shared read models VERBATIM. Absent ⇒ the
+   * honest UNBOUND surface (typed verdicts — identity flows and source
+   * onboarding are surfaced as not wired, never silently absent).
+   */
+  readonly firstRun?: {
+    /** The validated base URL of the Experience API (the same `WFX_API_BASE` family). */
+    readonly apiBase: URL;
+    /** The fetch implementation (tests inject a stub). */
+    readonly fetchImpl?: DesktopAuthFetchLike;
+    /** Per-request timeout in ms (default 10 000; `0` disables). */
+    readonly timeoutMs?: number;
+    /** The adapter's platform-truth map (R22-A `unsupportedOnPlatform`). */
+    readonly unsupportedOnPlatform?: ReadonlyMap<string, string>;
+  };
 }
 
 /** A booted Desktop application: the runtime over the native adapter. */
@@ -194,6 +222,14 @@ export interface DesktopApp {
    * section, background completion, and the BYOF import discovery).
    */
   readonly offlineDiscovery: DesktopOfflineDiscoverySurface;
+  /**
+   * R22-H: the first-run parity surface — the account-creation/sign-in
+   * state (R22-B over the OS keychain), the first-connect source
+   * catalog (R22-A), the adapter-owned native connect/recovery flows,
+   * and the BYOF prerequisite transition. Unbound compositions answer
+   * the honest typed verdicts.
+   */
+  readonly firstRun: DesktopFirstRunSurface;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -314,6 +350,33 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
       : {}),
   });
 
+  // R22-H — the first-run parity surface: the account/source onboarding
+  // semantics over the R22-A/B shared read models (the optional-block
+  // doctrine — absent ⇒ the honest typed UNBOUND verdicts).
+  const now = (): string => new Date(options.session.clock.now()).toISOString();
+  const firstRun: DesktopFirstRunSurface =
+    options.firstRun !== undefined
+      ? createDesktopFirstRunSurface({
+          runtime,
+          transport: createDesktopAuthTransport({
+            apiBase: options.firstRun.apiBase,
+            ...(options.firstRun.fetchImpl !== undefined
+              ? { fetchImpl: options.firstRun.fetchImpl }
+              : {}),
+            ...(options.firstRun.timeoutMs !== undefined
+              ? { timeoutMs: options.firstRun.timeoutMs }
+              : {}),
+          }),
+          sessionStore: createShellAuthSessionStore({ shell: options.shell, now }),
+          feed,
+          shell: options.shell,
+          now,
+          ...(options.firstRun.unsupportedOnPlatform !== undefined
+            ? { unsupportedOnPlatform: options.firstRun.unsupportedOnPlatform }
+            : {}),
+        })
+      : createUnboundFirstRunSurface();
+
   let disposed = false;
   return {
     platform: "desktop",
@@ -327,6 +390,7 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     feed,
     discoverability,
     offlineDiscovery,
+    firstRun,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -378,6 +442,51 @@ export {
   DESKTOP_ACQUISITION_ACTION_LABELS,
   offlineDiscoveryCopyStrings,
 } from "./surface/offline-discovery-surface";
+export {
+  createDesktopFirstRunSurface,
+  createUnboundFirstRunSurface,
+  firstRunCopyStrings,
+  isStaleFirstRunCopy,
+} from "./surface/first-run-surface";
+export type {
+  DesktopFirstRunSurface,
+  DesktopFirstRunFailure,
+  DesktopFirstRunFailureCode,
+  DesktopAccountStateView,
+  DesktopSessionRestoreResult,
+  DesktopIssuedSessionOutcome,
+  DesktopCreateAccountResult,
+  DesktopByofPrerequisiteView,
+  DesktopDisconnectOutcome,
+} from "./surface/first-run-surface";
+export { createDesktopAuthTransport, createDesktopAccountRegistrationPort } from "./platform/auth-transport";
+export type {
+  DesktopAuthTransport,
+  DesktopAuthFailure,
+  DesktopAuthFailureKind,
+  DesktopAuthResult,
+  DesktopConnectAnswer,
+  DesktopDisconnectView,
+  DesktopLoginInput,
+} from "./platform/auth-transport";
+export { createShellAuthSessionStore } from "./platform/auth-session-store";
+export type {
+  DesktopAuthSessionStore,
+  DesktopAuthSessionStoreFailure,
+  DesktopAuthSessionState,
+  DesktopAuthStoreCapability,
+} from "./platform/auth-session-store";
+export {
+  createDesktopSourceConnectFlow,
+} from "./platform/source-connect-flow";
+export type {
+  DesktopSourceConnectFlow,
+  DesktopSourceFlowView,
+  DesktopSourceFlowState,
+  DesktopSourceFlowRecovery,
+  DesktopSourceFlowStartInput,
+  DesktopSourceFlowStartResult,
+} from "./platform/source-connect-flow";
 export {
   createDesktopFeedSurface,
   createUnboundFeedSurface,
