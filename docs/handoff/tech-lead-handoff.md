@@ -260,3 +260,51 @@ Every WebFlix-only capability remains first-class but should appear where a user
 Authorized torrent copies are shown alongside other ways to watch, use the same player semantics, and are evaluated on startup/recovery performance. Torrent must not be reduced to a download-only experience when playback is supported.
 
 UI-affecting R24 work requires fresh agent-browser evidence; the Lead independently reruns J40-J42 plus affected J01-J39 after integration.
+
+
+## Post-release R25 — Qwen3.8 LiveTranslate realtime media translation
+
+Canonical plan: docs/plans/2026-09-20-webflix-qwen-livetranslate-plan.md
+
+R25 adds a provider-neutral realtime translation session seam because the current batch TransformOperation model is not appropriate for continuous WebSocket media.
+
+Worker 1:
+- realtime session contract;
+- Model Fabric realtime task/capabilities;
+- provider provenance/licensing/service metadata;
+- router/cost/privacy policy;
+- normalized streaming events.
+
+Worker 2:
+- WebSocket bridge;
+- player Translate control;
+- bilingual subtitles/transcript;
+- translated speech controls;
+- Web anonymous behavior;
+- browser evidence.
+
+Worker 3:
+- native audio capture/output;
+- torrent/local/live integration;
+- translated-audio buffering;
+- reconnect/recovery;
+- Desktop evidence.
+
+Lead:
+- current Qwen API/source verification;
+- Vercel realtime deployment verification;
+- provider/security/privacy boundary;
+- voice-cloning consent gate;
+- end-to-end latency/cost benchmarks;
+- J43 acceptance.
+
+### R25 non-negotiables
+
+Do not:
+- expose Qwen credentials to the browser;
+- make Qwen a direct shared-product dependency;
+- capture protected provider media by bypassing browser/DRM/access controls;
+- block first-frame playback on translation;
+- silently clone a speaker's voice.
+
+Qwen3.8 should complement R2T2 for live ASR and the existing batch models for long-form transcription/indexing.
