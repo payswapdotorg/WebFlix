@@ -52,6 +52,32 @@
  *                               shared For you / Following / imported /
  *                               Blend presentation state with honest
  *                               availability truth + typed recovery hints)
+ * - `source-catalog.ts`      — R22-A: the first-connect source catalog —
+ *                               the typed chooser read model (the seven
+ *                               state truths, the real connector id + the
+ *                               typed connect action + the user-vocabulary
+ *                               connection method, the anonymous sign-in
+ *                               prerequisite, the honest unsupported truth)
+ * - `account-creation.ts`    — R22-B: the account-creation journey —
+ *                               the typed register command + shared
+ *                               validation (the service's own rules), the
+ *                               typed failure vocabulary with recovery
+ *                               next actions, the auto-login session views
+ *                               (secret-free; the one-time token passes
+ *                               through ONCE), and the journey state
+ *                               machine over the EXISTING auth transport
+ * - `byom-management.ts`     — R22-C: the BYOM management view — the
+ *                               UI-ready shared model over the EXISTING
+ *                               runtime operations (binding summary,
+ *                               supported task capabilities, privacy mode,
+ *                               availability, add/bind + remove/unbind
+ *                               actions, the derived verify/usable truth,
+ *                               typed errors/recovery) + the bind-command
+ *                               validation + the machine-checked secret law
+ * - `secret-guard.ts`        — R22: the client read-model secret guard
+ *                               (the machine check — secret material never
+ *                               appears in a client read model after
+ *                               submission)
  * - `testing.ts`              — ⚠️ TEST DOUBLES — production code never imports it
  */
 
@@ -74,6 +100,10 @@ export * from "./discoverability";
 export * from "./feed-mode";
 export * from "./model-controls";
 export * from "./control-views";
+export * from "./source-catalog";
+export * from "./account-creation";
+export * from "./secret-guard";
+export * from "./byom-management";
 export { createRuntime, type ClientRuntime, type RuntimeSession, type RuntimeOptions } from "./runtime";
 
 // Test doubles — clearly marked, testing-only (see testing.ts module doc).

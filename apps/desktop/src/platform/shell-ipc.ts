@@ -333,6 +333,39 @@ export type ShellFilePickSupport =
   | { readonly available: false; readonly detail: string };
 
 // ---------------------------------------------------------------------------
+// Auth store (R22-H: the OS keychain area)
+// ---------------------------------------------------------------------------
+
+/**
+ * The shell's honest OS-keychain capability answer (the
+ * `filePickAvailable`-style query: a cheap truthful pre-check). The OS
+ * credential store is the Desktop platform storage law for session
+ * secrets (the R22-B contract): macOS Keychain, Windows Credential
+ * Manager, or the Linux Secret Service. A platform with no credential
+ * service answers `available: false` with the honest reason — the
+ * adapter then surfaces the typed unsupported truth and NEVER falls
+ * back to plaintext storage (a silent downgrade would be a fabricated
+ * safety).
+ */
+export type ShellAuthStoreSupport =
+  | { readonly available: true }
+  | { readonly available: false; readonly detail: string };
+
+/**
+ * The stored session material: an OPAQUE payload the adapter owns the
+ * shape of (the one-time session token + the secret-free account view,
+ * serialized by `auth-session-store.ts`). The shell stores and serves
+ * the bytes verbatim through the OS credential store — it never parses,
+ * never logs, never renders them (the secret law at this seam).
+ */
+export interface ShellAuthStoreEntry {
+  /** The adapter-owned serialized session material (opaque to the shell). */
+  readonly payload: string;
+  /** When the adapter stored the entry (ISO instant — the freshness truth). */
+  readonly savedAt: string;
+}
+
+// ---------------------------------------------------------------------------
 // Sharing
 // ---------------------------------------------------------------------------
 
@@ -452,6 +485,29 @@ export interface ShellIpc {
    * never a bare Error, never fabricated bytes.
    */
   fileRead(path: string): Promise<Uint8Array>;
+
+  // — auth store (R22-H: the OS keychain for the session secret) —
+  /**
+   * The honest OS-credential-store capability query (cheap; never writes).
+   * `available: false` is the typed platform truth — the adapter surfaces
+   * it and never silently downgrades to plaintext storage.
+   */
+  authStoreSupport(): Promise<ShellAuthStoreSupport>;
+  /**
+   * Store the session material through the OS credential store (the
+   * Desktop platform storage law for the one-time session token — R22-B).
+   * Rejects typed (`unavailable` when the platform has no credential
+   * service; `io` for store failures) — never a silent drop.
+   */
+  authStoreSet(entry: ShellAuthStoreEntry): Promise<void>;
+  /**
+   * Restore the stored session material (`null` when none was stored —
+   * the honest absent answer). Rejects typed (`corrupt` for an unreadable
+   * stored entry — surfaced, never silently treated as absent).
+   */
+  authStoreGet(): Promise<ShellAuthStoreEntry | null>;
+  /** Clear the stored session material (idempotent). */
+  authStoreClear(): Promise<void>;
 
   // — sharing —
   shareCanPresent(request: ShellShareRequest): Promise<boolean>;

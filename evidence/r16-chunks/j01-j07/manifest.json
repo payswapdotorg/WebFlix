@@ -1,0 +1,133 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T17:29:27.500Z",
+    "finishedAt": "2026-09-20T17:29:48.416Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789925379857)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 7,
+    "encoded": 7,
+    "passed": 0,
+    "failed": 7,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J01",
+      "title": "First launch / profile selection / onboarding",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [],
+      "pageErrors": [],
+      "durationMs": 435
+    },
+    {
+      "id": "J02",
+      "title": "Home discovery / hero / rows / intent entry",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j01-j07/j02-failure.png",
+        "evidence/r16-chunks/j01-j07/j02-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 382
+    },
+    {
+      "id": "J03",
+      "title": "Long-form Watch browsing",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/watch\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j01-j07/j03-failure.png",
+        "evidence/r16-chunks/j01-j07/j03-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 297
+    },
+    {
+      "id": "J04",
+      "title": "Shorts vertical discovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/shorts\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j01-j07/j04-failure.png",
+        "evidence/r16-chunks/j01-j07/j04-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 285
+    },
+    {
+      "id": "J05",
+      "title": "Unified search",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/search?q=rain\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j01-j07/j05-failure.png",
+        "evidence/r16-chunks/j01-j07/j05-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 302
+    },
+    {
+      "id": "J06",
+      "title": "Item detail / availability / realization choice",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j01-j07/j06-failure.png",
+        "evidence/r16-chunks/j01-j07/j06-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 318
+    },
+    {
+      "id": "J07",
+      "title": "Official embed playback",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/search?q=Harbor\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j01-j07/j07-failure.png",
+        "evidence/r16-chunks/j01-j07/j07-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 325
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J05",
+      "kind": "known-defect",
+      "note": "FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state=\"empty-query\" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.",
+      "procedure": "FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions."
+    }
+  ]
+}

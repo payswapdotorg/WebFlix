@@ -1,0 +1,696 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "f467a8ba29f08d5212dcf31646c88552403ce9ad",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T16:57:19.258Z",
+    "finishedAt": "2026-09-20T16:58:53.136Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789923459837)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 7,
+    "encoded": 7,
+    "passed": 7,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J21",
+      "title": "Authorized torrent acquisition (web limited-status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the scripted authorized acquisition item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_1T01DGVMZEZN5A8HJZJX20WYYH&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition's authorized source basis is recorded (the gated diagnostics carry the provenance)",
+          "expected": "the provenance line (authorized source, user-owned basis)",
+          "observed": "vault:family-media (user-owned)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"available\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"available\"",
+          "observed": "\"available\"",
+          "pass": true
+        },
+        {
+          "description": "the \"available\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Ready to be made available offline.\"",
+          "observed": "Ready to be made available offline.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Available",
+          "pass": true
+        },
+        {
+          "description": "the available state offers its typed acquire action (user vocabulary — no torrent terms)",
+          "expected": "[data-wfx-acquisition-action='acquire'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no progress bar renders while progress is honestly unknown (never a fake number)",
+          "expected": "[data-wfx-acquisition-progress] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the preparing state offers its typed pause action",
+          "expected": "[data-wfx-acquisition-action='pause'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the locating step renders no progress bar (the fraction is still honestly unknown)",
+          "expected": "[data-wfx-acquisition-progress] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the advanced diagnostics remain gated closed on the default surface (protocol terminology is not primary UX)",
+          "expected": "the diagnostics disclosure closed",
+          "observed": "closed",
+          "pass": true
+        },
+        {
+          "description": "the default acquisition surface carries NO torrent protocol vocabulary (the J21 web law)",
+          "expected": "no protocol terms in the panel text",
+          "observed": "clean",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j21-authorized-acquisition.png",
+        "evidence/r16-chunks/j21-j27/j21-authorized-torrent-acquisition-web-limited-status-surface.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j21-authorized-torrent-acquisition-web-limited-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13298
+    },
+    {
+      "id": "J22",
+      "title": "Torrent metadata and file selection (web limited-status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the scripted acquisition is in its preparing phase (the deterministic run order from J21)",
+          "expected": "the preparing state",
+          "observed": "preparing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Preparing the files you selected.\"",
+          "observed": "Preparing the files you selected.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the choosing step renders its truthful known progress (0%)",
+          "expected": "a 0% progress readout",
+          "observed": "0%",
+          "pass": true
+        },
+        {
+          "description": "the gated advanced diagnostics name the file-selection phase (metadata resolved, files being selected)",
+          "expected": "the 'selecting' session state inside the disclosure",
+          "observed": "selecting",
+          "pass": true
+        },
+        {
+          "description": "the choosing detail is user vocabulary (what is being prepared, not protocol jargon)",
+          "expected": "the files-you-selected sentence",
+          "observed": "Preparing the files you selected.",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j22-metadata-file-selection.png",
+        "evidence/r16-chunks/j21-j27/j22-torrent-metadata-and-file-selection-web-limited-status-surface.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j22-torrent-metadata-and-file-selection-web-limited-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6803
+    },
+    {
+      "id": "J23",
+      "title": "Torrent playback before full completion (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"buffering\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"buffering\"",
+          "observed": "\"buffering\"",
+          "pass": true
+        },
+        {
+          "description": "the \"buffering\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Getting enough of the video ready to play smoothly.\"",
+          "observed": "Getting enough of the video ready to play smoothly.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Buffering",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"playing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"playing\"",
+          "observed": "\"playing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"playing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Playing while the rest of the offline copy is finished in the background.\"",
+          "observed": "Playing while the rest of the offline copy is finished in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Playing",
+          "pass": true
+        },
+        {
+          "description": "the playing state states its truthful buffered runway",
+          "expected": "text of [data-wfx-acquisition-runway] is exactly \"92s buffered ahead\"",
+          "observed": "\"92s buffered ahead\"",
+          "pass": true
+        },
+        {
+          "description": "the playing state states its truthful transfer progress",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"55%\"",
+          "observed": "\"55%\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"buffering\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"buffering\"",
+          "observed": "\"buffering\"",
+          "pass": true
+        },
+        {
+          "description": "the \"buffering\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Playback may pause — the video isn't arriving fast enough to keep up.\"",
+          "observed": "Playback may pause — the video isn't arriving fast enough to keep up.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Buffering",
+          "pass": true
+        },
+        {
+          "description": "a deadline-at-risk playback DEMOTES to buffering truthfully (never false playback success)",
+          "expected": "the buffering state after the risk",
+          "observed": "buffering",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j23-playback-before-completion.png",
+        "evidence/r16-chunks/j21-j27/j23-torrent-playback-before-full-completion-web-status-surface.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j23-torrent-playback-before-full-completion-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 11918
+    },
+    {
+      "id": "J24",
+      "title": "Torrent background completion (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the background completion states its truthful progress",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"80%\"",
+          "observed": "\"80%\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Checking the finished files.\"",
+          "observed": "Checking the finished files.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the verification step states the complete transfer truthfully",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"100%\"",
+          "observed": "\"100%\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"ready-offline\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"ready-offline\"",
+          "observed": "\"ready-offline\"",
+          "pass": true
+        },
+        {
+          "description": "the \"ready-offline\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Verified and available to watch without a connection.\"",
+          "observed": "Verified and available to watch without a connection.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Ready offline",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline verdict states its verified size",
+          "expected": "text of [data-wfx-acquisition-size] is exactly \"87 kB · verified offline\"",
+          "observed": "\"87 kB · verified offline\"",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline state offers its typed play-offline action",
+          "expected": "[data-wfx-acquisition-action='play-offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline state offers its typed re-check action",
+          "expected": "[data-wfx-acquisition-action='reverify-offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline verdict renders no progress bar (completion is earned, not in flight)",
+          "expected": "[data-wfx-acquisition-progress] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j24-background-completion.png",
+        "evidence/r16-chunks/j21-j27/j24-torrent-background-completion-web-status-surface.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j24-torrent-background-completion-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 12707
+    },
+    {
+      "id": "J25",
+      "title": "Torrent interruption / restart / resume (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the interrupted-acquisition item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4C7Q96ETTG0K7YZ2JC1RMYEDT6&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"failed\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"failed\"",
+          "observed": "\"failed\"",
+          "pass": true
+        },
+        {
+          "description": "the \"failed\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"The download source had a problem. You can try again.\"",
+          "observed": "The download source had a problem. You can try again.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Couldn't finish",
+          "pass": true
+        },
+        {
+          "description": "the failure renders its typed cause",
+          "expected": "data-wfx-acquisition-failure of [data-wfx-acquisition-failure] is \"source-problem\"",
+          "observed": "\"source-problem\"",
+          "pass": true
+        },
+        {
+          "description": "the failure is marked recoverable (typed truth)",
+          "expected": "data-wfx-acquisition-recoverable of [data-wfx-acquisition-failure] is \"true\"",
+          "observed": "\"true\"",
+          "pass": true
+        },
+        {
+          "description": "the recoverable failure states the retry truth",
+          "expected": "text of [data-wfx-acquisition-failure] contains \"You can try again.\"",
+          "observed": "\"You can try again.\"",
+          "pass": true
+        },
+        {
+          "description": "the failed state offers its typed retry action",
+          "expected": "[data-wfx-acquisition-action='retry'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failed state offers its typed dismiss action",
+          "expected": "[data-wfx-acquisition-action='dismiss'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the resumed-session item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_7JYP6NQ6KNYZ2YFDHWNTSCKF3C&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background. Resuming where it left off — 55% already saved.\"",
+          "observed": "Finishing the offline copy in the background. Resuming where it left off — 55% already saved.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the resumed session carries its Resuming badge (never presented as a fresh start)",
+          "expected": "text of [data-wfx-acquisition-resuming] is exactly \"Resuming\"",
+          "observed": "\"Resuming\"",
+          "pass": true
+        },
+        {
+          "description": "the resumed session states its truthful retained+progressed transfer (62% — not reset, not falsely complete)",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"62%\"",
+          "observed": "\"62%\"",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session does NOT claim completion (the honest in-progress truth)",
+          "expected": "an in-progress state (not ready-offline)",
+          "observed": "completing",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j25-interruption-recovery.png",
+        "evidence/r16-chunks/j21-j27/j25-torrent-interruption-restart-resume-web-status-surface.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 10170
+    },
+    {
+      "id": "J26",
+      "title": "Verified local asset appears in Library (web status/read surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the library renders the offline-and-verified section",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section lists the earned offline copies (the seed's verified Harbor Lights + the J24-earned Asteroid Drift)",
+          "expected": "2 offline entries",
+          "observed": "2 entries",
+          "pass": true
+        },
+        {
+          "description": "every offline entry states its Ready-offline verified status",
+          "expected": "verified ready-offline statuses",
+          "observed": "Ready offline · 87 kB · watchable without a connection | Ready offline · 1.5 MB · 2 files · watchable without a connection",
+          "pass": true
+        },
+        {
+          "description": "the offline entries link their canonical items (replay from the library)",
+          "expected": "item links on the entries",
+          "observed": "2 links",
+          "pass": true
+        },
+        {
+          "description": "the verified item's detail renders the ready-offline state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"ready-offline\"",
+          "observed": "\"ready-offline\"",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline item states its verified size",
+          "expected": "text of [data-wfx-acquisition-size] is exactly \"1.5 MB · verified offline\"",
+          "observed": "\"1.5 MB · verified offline\"",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline detail states the verified truth",
+          "expected": "text of [data-wfx-acquisition-detail] is exactly \"Verified and available to watch without a connection.\"",
+          "observed": "\"Verified and available to watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "the verified item offers its typed play-offline action",
+          "expected": "[data-wfx-acquisition-action='play-offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j26-verified-asset-in-library.png",
+        "evidence/r16-chunks/j21-j27/j26-verified-local-asset-appears-in-library-web-status-read-surface.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j26-verified-local-asset-appears-in-library-web-status-read-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5636
+    },
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings capability table declares the native media area (the truth table is complete)",
+          "expected": "the native media & torrent acquisition row",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the web adapter declares native media NOT available on Web (capability honesty, never a fake native path)",
+          "expected": "the native row renders the Not-available-on-Web chip",
+          "observed": "declared not available",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers an unscripted item (no acquisition session)",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_29BWK3EHXCGJ1WJMJ57ZQHQGNN&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy panel renders its no-session state",
+          "expected": "[data-wfx-acquisition-none] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy note states where native acquisition runs (the honest desktop truth)",
+          "expected": "text of [data-wfx-acquisition-elsewhere] contains \"WebFlix desktop app\"",
+          "observed": "\"You can make this title available offline in the WebFlix desktop app — it downloads and verifies a copy you can watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "no acquisition lifecycle state is fabricated for the web (the constrained truth)",
+          "expected": "[data-wfx-acquisition-state] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16-chunks/j21-j27/j27-native-playback.png",
+        "evidence/r16-chunks/j21-j27/j27-native-local-media-playback-web-constrained-truth.snapshot.txt",
+        "evidence/r16-chunks/j21-j27/j27-native-local-media-playback-web-constrained-truth.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6400
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J21",
+      "kind": "desktop-procedure",
+      "note": "The native ACQUISITION protocol path (real magnet/.torrent ingestion through the torrent engine) is the Desktop native-media lane. The web journey encodes the limited-status lifecycle UX over the deterministic scripted feed (the R14 surface); the native protocol path is the Desktop equivalent procedure.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): run the Desktop app with the native-media engine against an authorized source, drive the real acquisition lifecycle, and capture per-state screenshots + the same manifest format via agent-browser attached to the desktop webview (or the platform's instrumentation)."
+    },
+    {
+      "journeyId": "J23",
+      "kind": "desktop-procedure",
+      "note": "Native playback-before-completion (real verified-range streaming from an in-progress torrent session) is the Desktop path. The web encodes the honest status sequence (buffering → playing with runway → deadline-risk demotion).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): start an authorized acquisition, begin playback before completion, and capture the buffering/playing/rebuffer states with the real scheduler evidence."
+    },
+    {
+      "journeyId": "J24",
+      "kind": "desktop-procedure",
+      "note": "Native background completion with real integrity verification is the Desktop path. The web encodes the completing/verifying/ready-offline status sequence and the earned-verdict grammar.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): let the acquisition complete in the background (app unfocused), capture the verification and Ready-offline states, and the Library exposure."
+    },
+    {
+      "journeyId": "J25",
+      "kind": "desktop-procedure",
+      "note": "Native interruption/restart with persistent session recovery (crash-safe journals, piece-map reuse) is the Desktop path. The web encodes the recoverable-failure/retry/resuming-status grammar.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): interrupt an in-progress acquisition (kill the engine), restart the app, capture the resumed-not-fresh evidence (retained progress, no false completion), then complete it."
+    },
+    {
+      "journeyId": "J27",
+      "kind": "desktop-procedure",
+      "note": "Native local media playback (the local range gateway + verified asset replay) is the Desktop path. The web encodes the constrained capability truth (settings table + the desktop-elsewhere note).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): play a verified offline asset from the Library through the native media engine, capture the playback + replay states."
+    }
+  ]
+}

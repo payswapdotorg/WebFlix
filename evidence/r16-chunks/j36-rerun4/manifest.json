@@ -1,0 +1,52 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b4cf97be8fae95f92d7aa0c64a9e275425b0b530",
+  "branch": "wfx/r22/integration",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-20T17:20:14.972Z",
+    "finishedAt": "2026-09-20T17:20:35.873Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1789924829162)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J36",
+      "title": "Major user journey completion / no dead-end discovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "harness/browser failure: agent-browser command failed (1): open http://localhost:3101/\n✗ Navigation failed: net::ERR_CONNECTION_REFUSED",
+      "assertions": [],
+      "artifacts": [
+        "evidence/r16-chunks/j36-rerun4/j36-failure.png",
+        "evidence/r16-chunks/j36-rerun4/j36-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 446
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J36",
+      "kind": "configuration-limit",
+      "note": "The R22-G encoding runs the full J36 completion walk over the deterministic fixtures boot: the register round trip uses the scripted dev persona (the loud dev badge — the REAL /api/auth/register transport's email-taken/validation round trips are service-mode, proven at the contract level by packages/client-runtime/tests/account-creation.test.ts); the source chooser's connected truth and the BYOF import ride the fixture connectors (the REAL provider OAuth dance is J14/J28's service-side procedure); the Shorts like/save typed absence is the fixture source's own capability truth (the hydration law is asserted as capability-truth, not blanket presence).",
+      "procedure": "LEAD (the production sweep): deploy the integrated tree, run this journey with --base-url against the deployed service-mode boot (real register transport, a real connectable connector, a source that declares like/save), and capture the evidence under evidence/r22/ — the J35 production-parity sweep covers the same deployment."
+    }
+  ]
+}

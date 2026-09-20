@@ -448,6 +448,19 @@ export interface SourceInfo {
   readonly availabilityNotes: readonly string[];
   /** When the server last checked this source's truth (ISO instant). */
   readonly lastChecked: string;
+  /**
+   * R22-A (ADD-ONLY — the first-connect catalog extension): whether THIS
+   * deployment provisioned the connector's connect flow. The R03 service's
+   * `GET /sources` rows already carry this truth (`SourceView.connectable`
+   * — `authMode: none|local` connect directly; `oauth|device` connect only
+   * when the boot composed the documented flow wiring); the runtime now
+   * SURFACES it so the first-connect catalog can honestly distinguish
+   * "not connected" from "unsupported in the current boot" (the F2
+   * dead-end law). OPTIONAL: a transport that does not classify leaves it
+   * absent — the catalog then offers Connect and the typed `flow-missing`
+   * failure surfaces honestly at action time (never a guessed unsupported).
+   */
+  readonly connectable?: boolean;
 }
 
 /**

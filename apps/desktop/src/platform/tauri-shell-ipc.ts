@@ -21,6 +21,7 @@
  * | `taskSchedule`/…            | `wfx_task_schedule`/…         |
  * | `taskReport`                | `wfx_task_report`             |
  * | `filePickAvailable`/`filePickOpen`/`fileRead` | `wfx_file_pick_available`/`wfx_file_pick_open`/`wfx_file_read` |
+ * | `authStoreSupport`/…        | `wfx_auth_store_support`/…    |
  * | `sharePresent`/…            | `wfx_share_present`/…         |
  * | `engineSpawn`/…             | `wfx_engine_spawn`/…          |
  *
@@ -197,6 +198,11 @@ export function createTauriShellIpc(options: TauriShellIpcOptions = {}): ShellIp
       }
       return Uint8Array.from(answer);
     },
+
+    authStoreSupport: () => call("wfx_auth_store_support"),
+    authStoreSet: (entry) => call("wfx_auth_store_set", { entry }),
+    authStoreGet: () => call("wfx_auth_store_get"),
+    authStoreClear: () => call("wfx_auth_store_clear"),
 
     shareCanPresent: (request) => call("wfx_share_can_present", { request }),
     sharePresent: (request) => call("wfx_share_present", { request }),

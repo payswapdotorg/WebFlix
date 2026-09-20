@@ -48,6 +48,7 @@ import { j31CrossPlatformParity } from "./j31-cross-platform-parity";
 import { j32SourceNeutralIdentity } from "./j32-source-neutral-identity";
 import { j33BringYourOwnFeed } from "./j33-bring-your-own-feed";
 import { j34CapabilityDiscoverability } from "./j34-capability-discoverability";
+import { j36MajorJourneyCompletion } from "./j36-major-journey-completion";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -97,6 +98,7 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // (listed below).
   j33BringYourOwnFeed,
   j34CapabilityDiscoverability,
+  j36MajorJourneyCompletion,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -107,6 +109,12 @@ import type { LimitationRecord } from "../lib/report";
  * — is explicitly listed with its procedure, never silently skipped).
  */
 export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
+  {
+    journeyId: "J36",
+    kind: "configuration-limit",
+    note: "The R22-G encoding runs the full J36 completion walk over the deterministic fixtures boot: the register round trip uses the scripted dev persona (the loud dev badge — the REAL /api/auth/register transport's email-taken/validation round trips are service-mode, proven at the contract level by packages/client-runtime/tests/account-creation.test.ts); the source chooser's connected truth and the BYOF import ride the fixture connectors (the REAL provider OAuth dance is J14/J28's service-side procedure); the Shorts like/save typed absence is the fixture source's own capability truth (the hydration law is asserted as capability-truth, not blanket presence).",
+    procedure: "LEAD (the production sweep): deploy the integrated tree, run this journey with --base-url against the deployed service-mode boot (real register transport, a real connectable connector, a source that declares like/save), and capture the evidence under evidence/r22/ — the J35 production-parity sweep covers the same deployment.",
+  },
   {
     journeyId: "J28",
     kind: "local-only",

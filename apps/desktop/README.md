@@ -67,6 +67,9 @@ const app = createDesktopApp({
 | feed-import       | `feed-import.ts`          | R20-F — the BYOF native file-import binding: pick → read → `FeedPort.previewImport` (the artifact crosses VERBATIM); typed verdicts for every platform outcome (dismissed / unsupported / failed / invalid-input); method-honest offers (a connector that does not declare the file method never reaches the port). |
 | feed-sync         | `feed-sync.ts`            | R20-F — the `sync`-kind background executor: `scheduleSync` (idempotent `wfx-feed-sync/<importId>` task), `runSync` (scheduled → running → completed/failed through the report seam; `FeedPort.syncImport` does the work; NO deletion path — the survival law is structural), `cancelSync` (disconnect truth: stop the task, retain every record). |
 | feed-cache        | `feed-cache.ts`           | R20-G — the richer Desktop feed cache: a PRESENTATION cache over the shell filesystem KV with honest `savedAt`/`capturedAt` age labels (never live); the port stays canonical; explicit eviction; a malformed cache is an honest miss. |
+| auth-transport    | `auth-transport.ts`       | R22-H — the Desktop account/source transport: the typed client of the service's documented `POST /auth/register` / `POST /auth/login` / `GET /auth/me` / `POST /auth/logout` / `PUT /profiles/:id/select` + the source-management routes (`GET /sources`, `POST /sources/:id/connect|reauthorize|disconnect`) + the session-scoped model routes (R22-I). The R22-B `AccountRegistrationPort` binds over it with the SAME failure mapping the Web adapter applies (the parity law). The token rides `Authorization` ONLY — never a URL, never a body. |
+| auth-session-store | `auth-session-store.ts`   | R22-H — the adapter's platform storage law for the one-time session token: the OS KEYCHAIN (the shell's auth-store area — macOS Keychain / Windows Credential Manager / the Linux Secret Service), never plaintext adapter files. `store`/`restore`/`clear` with the structurally-validated payload shape; a corrupt entry answers the typed sign-in-again recovery; a platform with no credential service answers the typed will-not-persist consequence — NEVER a silent downgrade to plaintext. |
+| source-connect-flow | `source-connect-flow.ts` | R22-H — the ADAPTER-OWNED native connect flows (the sources.ts layering law): the contained authorization surface (cookie-isolated, `purpose: "authorization"`, navigation OBSERVED never steered) for provider sign-in; the device instructions + host-driven polls; the direct local/none connects. Every completion VERIFIES through a fresh management read — never an assumed success; the observed rows (mid-flow `authorizing` included) report into `runtime.sources.observe`. |
 | sharing           | `sharing.ts`               | OS share sheet (macOS picker) with `canShare` truthful per request and platform; dismissal ≠ failure; Linux-like platforms answer honest unsupported (never a fake share). |
 | server-port       | `server-port.ts`           | The frozen `WFX_API_BASE` HTTP transport with the R01 typed failures (`ServerResult`/`ServerFailure`; the event-sink law preserved verbatim; identity rides as `x-wfx-*` headers, never URLs). |
 | native-media-binding | `native-media-binding.ts` | **THE R10 SEAM** — see below. |
@@ -86,6 +89,69 @@ semantics as the Web lane — mode truth, freshness, provenance survival,
 idempotent import). An absent optional block answers the honest UNBOUND
 surface (typed verdicts — never a silent empty feed, never a fixture
 fallback).
+
+R22-H adds the FIRST-RUN block (`surface/first-run-surface.ts`, the same
+optional-block doctrine over `DesktopAppOptions.firstRun`): the
+account-creation/sign-in state (the R22-B shared journey over the OS
+keychain, with the boot continuity probe that VERIFIES the stored session
+against the service), the first-connect source catalog (the R22-A shared
+derivation over the runtime's observed rows — the seven state truths,
+the anonymous prerequisite, the honest unsupported truth), the
+adapter-owned native connect/recovery flows, and the BYOF prerequisite
+transition (the F3 bridge: Bring Your Feed opens exactly when a connected
+source declares the `feedImport` capability — never the old dead end).
+ZERO duplicated business rules: the shared read models render VERBATIM.
+
+R22-I adds the MODEL & AI MANAGEMENT surface
+(`surface/model-management-surface.ts`, bound with the first-run block —
+BYOM belongs to the account): the R22-C `byomManagementView` derivation
+VERBATIM over the session-scoped provider/policy truth (the binding
+summary, the derived verify/usable truth that names WHY a bound provider
+is not in use, the per-task privacy truth with the honest null and the
+fail-closed effective class, the single frozen ADD action), the
+add/bind + remove/unbind + per-task policy operations with the R22-C
+recovery mapping, the local-model availability truth (the registry's own
+first-party local rows + the frozen platform note), and the
+Desktop-native local-serving endpoint hints (input suggestions, never
+capability claims). The key is the secret ON ITS WAY IN — after
+submission it never appears in any view (the machine-checked R22-C
+secret law).
+
+R22-J adds the J36 DESKTOP MAJOR-JOURNEY EVIDENCE
+(`tests/j36-major-journey.test.ts`, the J21-J25 doctrine from
+`journeys/desktop/README.md`): the full semantic journey driven through
+the real surface composition — fresh boot (the honest anonymous truth)
+→ create account (the R22-B journey + the keychain persistence + the
+downstream choose-profile) → RESTART (the authenticated profile
+continuity: the keychain → the service-verified session) → the
+first-connect catalog (R22-A) → the adapter-owned OAuth flow (the
+contained, cookie-isolated, purpose-scoped authorization surface; the
+callback OBSERVED, never steered; the completion VERIFIED through the
+fresh management read) → Connected truth → the BYOF prerequisite
+transition (the F3 bridge) → the native import path (OS dialog →
+preview → confirm → the source-native feed + idempotency + the
+background sync task) → the BYOM/local-model management truth (bind →
+the fail-closed truth → the policy flip → the local rows → remove) →
+the authorized acquisition/offline path (the composition-root recipe:
+Preparing with honest null progress → Completing with measured progress)
+→ THE INTERRUPTION (an app restart mid-transfer) → the journaled
+recovery (RESUMING with retained progress, never a fresh start, never a
+false completion; the explicit resume-or-restart choice) → verifying →
+completed → the EARNED Ready-offline (the verified exposure) → the
+Library Offline section + the player's offline truth → sign out (the
+honest anonymous state; the keychain cleared) → the journey-wide
+stale-copy sweep. The journey composes the same surfaces
+`createDesktopApp` composes (with the acquisition source exposed so the
+acquire recipe performs the composition root's ingestion+bind wiring);
+the companion composition-root check proves `createDesktopApp` itself
+binds every block. The evidence record is MACHINE-GENERATED (never
+hand-authored): `WFX_J36_EVIDENCE_DIR=<dir> WFX_J36_COMMIT=<sha> bun
+test apps/desktop/tests/j36-major-journey.test.ts` writes the manifest +
+narration + summary under `evidence/r22/` from the actual run; the
+normal test battery never writes anything. The native halves (the real
+engine binary, the real OS keychain/dialog, the real provider OAuth
+dance) remain the lead's real-toolchain procedure — recorded as explicit
+limitations in the manifest, never silently skipped.
 
 ## THE R10 SEAM (`native-media-binding.ts`)
 

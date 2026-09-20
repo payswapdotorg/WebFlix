@@ -38,6 +38,12 @@ import type {
 } from "@wfx/domain";
 import type { ConnectorContext } from "@wfx/domain";
 import { makeFixturePorts, type Ports } from "@wfx/experience";
+import {
+  bindFixtureByom,
+  readModelFixtureState,
+  unbindFixtureByom,
+  writeModelFixtureState,
+} from "@/host/model-fixtures";
 import { isShortFormCandidate } from "@wfx/experience";
 import type {
   ByomBindingCommand,
@@ -102,14 +108,14 @@ const FIXTURE_FIRST_PARTY_PROVIDER: ModelProviderInfo = {
 /**
  * The fixture persona's OWN model-controls state (the same double law as
  * its library/search data: writes land in the persona's state; reads
- * answer it — the honest unset policy stays null). Per-PORT-INSTANCE
- * state: dev boots one port per process, so this is the dev persona's
- * one truth (documented — the scripted drives need no cross-module file
- * because the surfaces read through the SAME port instance the host
- * booted).
+ * answer it — the honest unset policy stays null). R22-F: the state is
+ * FILE-BACKED (model-fixtures.ts) — the Turbopack dev server compiles
+ * route modules and page modules as separate module graphs, so the bind
+ * route and the settings page's providers read MUST share a file, never
+ * an in-memory Map (the same law the acquisition and source-auth
+ * fixtures follow). The journey runner deletes the file per run for
+ * determinism.
  */
-const modelPolicyState = new Map<ModelTask, ModelPolicy>();
-const byomBindings = new Map<string, string>();
 const transforms = new Map<string, TransformOperation>();
 let transformCounter = 1;
 
@@ -289,27 +295,52 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
     // touches this code.
 
     async readModelPolicy(task: ModelTask): Promise<ServerResult<ModelPolicy | null>> {
-      return { ok: true, value: modelPolicyState.get(task) ?? null };
+      return { ok: true, value: readModelFixtureState().policies[task] ?? null };
     },
 
     async writeModelPolicy(command: ModelPolicyCommand): Promise<ServerResult<void>> {
-      modelPolicyState.set(command.task, {
-        task: command.task,
-        fallbackProviders: [...command.fallbackProviders],
-        privacy: command.privacy,
-        ...(command.preferredProvider !== undefined ? { preferredProvider: command.preferredProvider } : {}),
-        ...(command.maxCostPerOperation !== undefined ? { maxCostPerOperation: command.maxCostPerOperation } : {}),
+      const state = readModelFixtureState();
+      writeModelFixtureState({
+        ...state,
+        policies: {
+          ...state.policies,
+          [command.task]: {
+            task: command.task,
+            fallbackProviders: [...command.fallbackProviders],
+            privacy: command.privacy,
+            ...(command.preferredProvider !== undefined ? { preferredProvider: command.preferredProvider } : {}),
+            ...(command.maxCostPerOperation !== undefined ? { maxCostPerOperation: command.maxCostPerOperation } : {}),
+          },
+        },
       });
       return { ok: true, value: undefined };
     },
 
     async readModelProviders(): Promise<ServerResult<readonly ModelProviderInfo[]>> {
-      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER] };
+      // The first-party truth + the persona's BOUND BYOM rows (the file's
+      // bindings projected into the REAL ModelProviderInfo shape — the
+      // registry a user sees after add/remove is the honest file truth).
+      const state = readModelFixtureState();
+      const bound: readonly ModelProviderInfo[] = Object.entries(state.byomBindings).map(
+        ([providerId, binding]) => ({
+          id: providerId,
+          privacy: "cloud",
+          capabilities: [...binding.capabilities],
+          byomBound: true,
+          costs: {},
+          availability: "available",
+        }),
+      );
+      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER, ...bound] };
     },
 
     async bindByomProvider(command: ByomBindingCommand): Promise<ServerResult<ByomBindingHandle>> {
-      const bindingId = `wfxbyom_${command.providerId}`;
-      byomBindings.set(command.providerId, bindingId);
+      const { bindingId, binding } = bindFixtureByom({
+        providerId: command.providerId,
+        endpointUrl: command.endpointUrl,
+        capabilities: command.capabilities ?? [],
+        now: FIXTURE_NOW,
+      });
       return {
         ok: true,
         value: {
@@ -318,14 +349,14 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
           endpointUrl: command.endpointUrl,
           keyId: "wfxkey_fixture",
           metadata: command.metadata ?? null,
-          createdAt: FIXTURE_NOW,
-          updatedAt: FIXTURE_NOW,
+          createdAt: binding.createdAt,
+          updatedAt: binding.updatedAt,
         },
       };
     },
 
     async unbindByomProvider(providerId: string): Promise<ServerResult<void>> {
-      if (!byomBindings.has(providerId)) {
+      if (!unbindFixtureByom(providerId)) {
         return {
           ok: false,
           failure: {
@@ -334,7 +365,6 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
           },
         };
       }
-      byomBindings.delete(providerId);
       return { ok: true, value: undefined };
     },
 

@@ -263,6 +263,28 @@ pub struct ShellFilePickSupport {
     pub detail: Option<String>,
 }
 
+// — auth store (R22-H: the OS keychain for the session secret) ——————————
+/// The OS-credential-store capability answer (the ShellAuthStoreSupport
+/// shape): `{ available: true }` / `{ available: false, detail }`.
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellAuthStoreSupport {
+    pub available: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub detail: Option<String>,
+}
+
+/// The stored session material (the ShellAuthStoreEntry shape): the
+/// adapter-owned OPAQUE payload + its savedAt truth. The shell carries
+/// the pair verbatim through the OS credential store — it never parses
+/// the payload itself (the secret law at this seam).
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct ShellAuthStoreEntry {
+    pub payload: String,
+    pub saved_at: String,
+}
+
 // — sharing ———————————————————————————————————————————————————————————————
 /// One share request (the ShareRequest shape).
 #[derive(Deserialize, Clone)]

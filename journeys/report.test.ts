@@ -134,12 +134,14 @@ describe("journeys — the encoded catalog's integrity", () => {
     expect(ids).toEqual(sorted);
   });
 
-  it("the encoded set is J01–J34 (34 journeys — R17 encoded J28 over the scripted source-auth feed; R20-E encoded J33 over the real BYOF composition; R21-F encoded J34 over the discoverability walk)", () => {
+  it("the encoded set is J01–J34 + J36 (35 journeys — R17 encoded J28 over the scripted source-auth feed; R20-E encoded J33 over the real BYOF composition; R21-F encoded J34 over the discoverability walk; R22-G encoded J36 over the completion sweep; J35 is the lead's live-production sweep, never encoded)", () => {
     const ids = new Set(WEB_JOURNEYS.map((journey) => journey.id));
     for (let number = 1; number <= 34; number += 1) {
       expect(ids.has(`J${String(number).padStart(2, "0")}`)).toBe(true);
     }
-    expect(WEB_JOURNEYS).toHaveLength(34);
+    expect(ids.has("J36")).toBe(true);
+    expect(ids.has("J35")).toBe(false);
+    expect(WEB_JOURNEYS).toHaveLength(35);
   });
 
   it("every encoded journey is ci-feasible (the CI set is the whole encoded set)", () => {
