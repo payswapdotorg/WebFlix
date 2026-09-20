@@ -68,7 +68,7 @@
 
 import { isIso8601, isRecord } from "@wfx/domain";
 
-import { RuntimeError } from "./errors";
+import { assertNoSecretMaterial } from "./secret-guard";
 
 // ---------------------------------------------------------------------------
 // The typed register command + the shared validation (mirrors the service)
@@ -495,33 +495,8 @@ export interface AccountCreationModel {
 }
 
 // ---------------------------------------------------------------------------
-// The secret-free law (machine check)
+// The secret-free law (machine check — the shared secret-guard module)
 // ---------------------------------------------------------------------------
-
-/** Field names that must NEVER appear on the journey model (the secret law). */
-const FORBIDDEN_SECRET_FIELDS: readonly string[] = [
-  "password",
-  "passwordHash",
-  "token",
-  "secret",
-  "apiKey",
-  "credential",
-];
-
-function walkSecretFree(value: unknown, path: string, problems: string[]): void {
-  if (Array.isArray(value)) {
-    value.forEach((item, index) => walkSecretFree(item, `${path}[${index}]`, problems));
-    return;
-  }
-  if (isRecord(value)) {
-    for (const [key, child] of Object.entries(value)) {
-      if (FORBIDDEN_SECRET_FIELDS.includes(key)) {
-        problems.push(`${path}.${key}: secret material on the account-creation model`);
-      }
-      walkSecretFree(child, `${path}.${key}`, problems);
-    }
-  }
-}
 
 /**
  * Assert the journey model (or any claimed view) carries NO secret
@@ -531,11 +506,7 @@ function walkSecretFree(value: unknown, path: string, problems: string[]): void 
  * every offending path.
  */
 export function assertAccountCreationModelSecretFree(model: AccountCreationModel): void {
-  const problems: string[] = [];
-  walkSecretFree(model, "model", problems);
-  if (problems.length > 0) {
-    throw new RuntimeError("invalid-input", problems.join("; "));
-  }
+  assertNoSecretMaterial(model, "model");
 }
 
 // ---------------------------------------------------------------------------

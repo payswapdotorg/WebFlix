@@ -74,7 +74,7 @@
 
 import type { Capability } from "@wfx/domain";
 
-import type { ModelSectionStatus } from "./models";
+import type { ModelSectionStatus, SemanticStateTone } from "./models";
 import { readySection } from "./models";
 import type { SourceAuthMode, SourceInfo } from "./server-port";
 
@@ -125,9 +125,11 @@ export function isSourceCatalogEntryState(
  * The semantic tone of one catalog state (the frozen design language's
  * state-color families — color ALWAYS paired with the state label, never
  * alone). Web/Desktop map this to the identical color family; the label
- * text is the truth, the tone is the styling hint.
+ * text is the truth, the tone is the styling hint. (The shared
+ * `SemanticStateTone` vocabulary; this alias keeps the catalog's own
+ * readable name.)
  */
-export type SourceCatalogTone = "positive" | "attention" | "negative" | "neutral";
+export type SourceCatalogTone = SemanticStateTone;
 
 /**
  * The frozen tone mapping (deterministic; the one derivation source — a
