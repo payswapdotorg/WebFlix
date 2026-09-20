@@ -117,6 +117,42 @@ capability claims). The key is the secret ON ITS WAY IN — after
 submission it never appears in any view (the machine-checked R22-C
 secret law).
 
+R22-J adds the J36 DESKTOP MAJOR-JOURNEY EVIDENCE
+(`tests/j36-major-journey.test.ts`, the J21-J25 doctrine from
+`journeys/desktop/README.md`): the full semantic journey driven through
+the real surface composition — fresh boot (the honest anonymous truth)
+→ create account (the R22-B journey + the keychain persistence + the
+downstream choose-profile) → RESTART (the authenticated profile
+continuity: the keychain → the service-verified session) → the
+first-connect catalog (R22-A) → the adapter-owned OAuth flow (the
+contained, cookie-isolated, purpose-scoped authorization surface; the
+callback OBSERVED, never steered; the completion VERIFIED through the
+fresh management read) → Connected truth → the BYOF prerequisite
+transition (the F3 bridge) → the native import path (OS dialog →
+preview → confirm → the source-native feed + idempotency + the
+background sync task) → the BYOM/local-model management truth (bind →
+the fail-closed truth → the policy flip → the local rows → remove) →
+the authorized acquisition/offline path (the composition-root recipe:
+Preparing with honest null progress → Completing with measured progress)
+→ THE INTERRUPTION (an app restart mid-transfer) → the journaled
+recovery (RESUMING with retained progress, never a fresh start, never a
+false completion; the explicit resume-or-restart choice) → verifying →
+completed → the EARNED Ready-offline (the verified exposure) → the
+Library Offline section + the player's offline truth → sign out (the
+honest anonymous state; the keychain cleared) → the journey-wide
+stale-copy sweep. The journey composes the same surfaces
+`createDesktopApp` composes (with the acquisition source exposed so the
+acquire recipe performs the composition root's ingestion+bind wiring);
+the companion composition-root check proves `createDesktopApp` itself
+binds every block. The evidence record is MACHINE-GENERATED (never
+hand-authored): `WFX_J36_EVIDENCE_DIR=<dir> WFX_J36_COMMIT=<sha> bun
+test apps/desktop/tests/j36-major-journey.test.ts` writes the manifest +
+narration + summary under `evidence/r22/` from the actual run; the
+normal test battery never writes anything. The native halves (the real
+engine binary, the real OS keychain/dialog, the real provider OAuth
+dance) remain the lead's real-toolchain procedure — recorded as explicit
+limitations in the manifest, never silently skipped.
+
 ## THE R10 SEAM (`native-media-binding.ts`)
 
 A REAL `NativeMediaPort` over the spawned engine process — the frozen
