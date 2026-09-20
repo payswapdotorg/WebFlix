@@ -44,3 +44,4 @@ export * from "./transform/operation-controller"; // R06 — the transform-opera
 export * from "./byom/byom-binding-adapter"; // R06 — the BYOM binding provider adapter (control surface).
 export * from "./wfx-model"; // WFX-031 — the first-party recommendation model adapter (Lane A).
 export * from "./byom"; // WFX-032 — the BYOM (bring-your-own-model) adapter (Lane A).
+export * from "./media-intelligence"; // R23-F — the media intelligence artifact contracts (typed shapes + honest provenance).
