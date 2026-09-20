@@ -426,7 +426,7 @@ export function SettingsSurface({
                 : "kept for this server process (browser storage is not available in this boot context)"}
               . Boot mode: {mode}.
             </p>
-            <p className="wfx-row__reason" data-wfx-profile-path">
+            <p className="wfx-row__reason" data-wfx-profile-path>
               Profiles and sign-in travel with your WebFlix service account — a durable profile
               keeps the same watchlist, history, and personalization on every device.
             </p>
