@@ -36,9 +36,10 @@ import type {
   ModelPolicyModel,
   ModelProvidersModel,
   SourcesModel,
+  SourceCatalogView,
   SourceInfo,
 } from "@wfx/client-runtime";
-import { sourceRecoveryAction } from "@wfx/client-runtime";
+import { sourceCatalogView, sourceRecoveryAction } from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
 import type { PersonalizeView } from "@/host/discoverability";
@@ -47,6 +48,7 @@ import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
 import { ByofPanel } from "@/components/byof/ByofPanel";
 import { SourceActions } from "@/components/settings/SourceActions";
+import { SourceChooser } from "@/components/settings/SourceChooser";
 import { SessionControls } from "@/components/settings/SessionControls";
 
 /** The auth-state chip vocabulary (the honest per-state truth). */
@@ -329,18 +331,42 @@ export function SettingsSurface({
               </span>
               <p className="wfx-state__title">No sources connected</p>
               <p className="wfx-state__detail">
-                Nothing is connected yet. Connect a source to browse its catalog here — or bring
-                your existing feed with the import flow below. Every connected source states its
+                Choose a supported connector below to connect it — every connected source states its
                 authorization truth here (connect, reauthorize, disconnect, per-source
-                capabilities). This host never pretends a source is connected.
+                capabilities). You can also bring your existing feed with the import flow below.
+                This host never pretends a source is connected.
               </p>
               <div className="wfx-state__actions">
-                <a className="wfx-btn" href="/settings?section=sources" data-wfx-sources-connect-cta>
+                <a
+                  className="wfx-btn wfx-btn--sm"
+                  href="#wfx-source-chooser"
+                  data-wfx-sources-connect-cta
+                >
                   Connect a source
                 </a>
               </div>
             </div>
           )}
+          {/* R22-D — the first-connect source chooser (the F2 dead-end
+              killer): the empty state now carries the connector chooser
+              itself — every supported connector the deployment wires, each
+              with its honest state truth + typed action. The CTA above
+              scrolls to the chooser; it never loops to the same empty state.
+              The initial catalog is the SAME R22-A derivation the chooser
+              would fetch (the convergence law: Home and Settings render the
+              SAME shared source state — no second navigation system). */}
+          <SourceChooser
+            mode={mode}
+            {...(sources !== undefined
+              ? {
+                  initialCatalog: sourceCatalogView({
+                    sources: sources.sources,
+                    authenticated: session.signedIn,
+                    status: sources.status,
+                  }) as SourceCatalogView,
+                }
+              : {})}
+          />
           {byof !== undefined ? <ByofPanel view={byof} mode={mode} /> : null}
         </section>
       ) : null}
