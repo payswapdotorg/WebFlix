@@ -1,9 +1,9 @@
 # WebFlix Golden Journey Run — Evidence Summary
 
-- commit: `1d9a7290b75b32b0f721461fcb08e9b64d266e56`
+- commit: `e5e8c6afe5803510ced5a098817acedc835bcfe7`
 - branch: `wfx/r22/web`
 - environment: web-fixtures @ http://localhost:3101
-- window: 2026-09-20T18:36:03.728Z → 2026-09-20T18:41:07.525Z
+- window: 2026-09-20T18:48:25.894Z → 2026-09-20T18:53:26.918Z
 
 **35 passed · 0 failed · 0 not-run (listed with procedures) · 35 total**
 
