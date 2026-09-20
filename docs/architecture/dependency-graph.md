@@ -186,3 +186,22 @@ R24 operating laws:
 - playback startup is not blocked by AI, recommendation, analytics or indexing;
 - torrent remains a first-class realization and participates in the same player/performance contract;
 - no UI branding or proprietary visual structure is copied from YouTube;
+
+
+## R25 — Qwen3.8 LiveTranslate realtime media translation
+
+R23 Model Fabric -> R25-A realtime media-session contract -> R25-B Model Fabric realtime task/capabilities -> R25-C Qwen provider adapter -> R25-D Web realtime bridge + R25-E media-source integration + R25-F visual context -> R25-G/H/I UX/policy -> R25-J/K/L anonymous/cost/performance -> J43 -> affected J01-J42 -> production acceptance
+
+Worker 1 owns the provider-neutral realtime contract, task/capability vocabulary, provenance, routing, usage/cost/privacy contracts and shared tests.
+Worker 2 owns the Web realtime bridge and player/bilingual translation experience.
+Worker 3 owns Desktop/native capture/output, torrent/local/live media integration and recovery.
+Lead owns provider verification, Vercel realtime deployment validation, legal/privacy/consent review, benchmarks, cross-lane integration and J43.
+
+R25 operating laws:
+- Qwen3.8 is a realtime translation/interpretation specialist, not a replacement for R2T2 or batch media intelligence;
+- provider-specific WebSocket protocol must stay inside the Qwen adapter;
+- base playback never waits for translation;
+- Qwen credentials never reach the client;
+- protected/provider media cannot be captured by bypassing security or access controls;
+- voice cloning is off by default and requires explicit consent/rights;
+- anonymous realtime translation remains session-scoped unless durable preferences are requested.
