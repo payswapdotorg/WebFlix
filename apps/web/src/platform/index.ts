@@ -35,3 +35,4 @@ export * from "./notifications";
 export * from "./background-work";
 export * from "./sharing";
 export * from "./server-port";
+export * from "./browser-torrent";
