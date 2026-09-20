@@ -59,78 +59,51 @@ Each run records:
 | J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | Yes | Yes | Future | Worker 1 + 2/3 |
 | J34 | Capability discoverability from normal product surfaces | Yes | Yes | Yes | Lead + 2/3 |
 | J35 | Production capability parity / no stale completion states | Yes | Yes | Future | Lead |
+| J36 | Major user journey completion / no dead-end discovery | Yes | Yes | Future | Lead + 1/2/3 |
 
 ## Core acceptance details
 
 ### J01 — First launch
-
-Expected: user can choose/create the intended profile, understand the primary navigation, optionally configure sources, and land in a useful discovery state without seeing implementation diagnostics.
+Expected: user can choose/create the intended profile, understand primary navigation, optionally configure sources, and land in a useful discovery state without implementation diagnostics.
 
 ### J02 — Home discovery
-
 Expected: hero, Continue Watching when applicable, personalized/discovery rows, Shorts entry, source-neutral cards, and a direct way to state current intent.
 
 ### J04 — Shorts
-
 Expected: vertical feed, stable current card during presentation, forward skip/rerank semantics, like/save/feedback, no fake provider progress, and controls to influence future recommendations.
 
 ### J06 — Item detail
-
 Expected: canonical content identity, metadata, availability, realizations, resume state, save/like, and a simple play decision. Raw connector capability diagnostics remain secondary.
 
 ### J08 — Browser playback
-
 Expected: provider playback remains inside a WebFlix-owned contained browser surface whenever technically and legally permitted. Provider security and DRM are not bypassed.
 
 ### J10 — Actions
-
-Expected: the UI differentiates WebFlix-confirmed state from provider-confirmed synchronization. Unsupported provider actions never appear as successful.
+Expected: UI differentiates WebFlix-confirmed state from provider-confirmed synchronization. Unsupported provider actions never appear as successful.
 
 ### J15 — Recommendation feedback
-
-Expected: `More like this`, `Not interested`, `Don't recommend creator/source`, `Already watched`, and reversible feedback affect future candidate composition.
+Expected: More like this, Not interested, Don't recommend creator/source, Already watched, and reversible feedback affect future candidate composition.
 
 ### J16 — Anti-tunnel
-
-Expected: after watching a concentrated topic, future recommendations remain capable of exploring adjacent and unrelated interests unless the user explicitly requests narrow continuation.
+Expected: after watching a concentrated topic, future recommendations remain capable of exploring adjacent and unrelated interests unless user explicitly requests narrow continuation.
 
 ### J17 — Intent
-
 Expected: intent can be temporary/session-scoped without corrupting long-term preferences.
 
 ### J18 — Attention
-
-Expected: selected attention mode changes policy behavior; the system does not silently optimize for maximum time spent when the user selected another mode.
+Expected: selected attention mode changes policy behavior; system does not silently optimize for maximum time spent when user selected another mode.
 
 ### J21–J25 — Authorized torrent lifecycle
-
 Expected Desktop flow:
-
-```text
-authorized source
--> magnet/.torrent
--> metadata
--> choose file
--> preparing
--> buffering
--> playback
--> background completion
--> integrity verification
--> Ready offline
--> Library
--> replay
-```
+authorized source -> magnet/.torrent -> metadata -> choose file -> preparing -> buffering -> playback -> background completion -> integrity verification -> Ready offline -> Library -> replay
 
 Interruption must preserve sufficient persistent state to recover the session without falsely claiming completion.
 
 ### J28–J30 — Recovery and capability truth
-
-Expected: failures are specific, recoverable where possible, and honest. A missing credential, unavailable provider, unsupported playback mode, interrupted torrent, or network failure must never look like a silent success.
+Expected: failures are specific, recoverable where possible, and honest. A missing credential, unavailable provider, unsupported playback mode, interrupted torrent, or network failure must never look like silent success.
 
 ### J33 — Bring Your Own Feed
-
 Expected:
-
 choose Bring Your Feed
 -> choose supported source or official export
 -> authorize/import
@@ -142,126 +115,42 @@ choose Bring Your Feed
 -> refresh/sync when supported
 -> disconnect/re-authorize without deleting WebFlix-local library/history
 
-The journey must prove that imported feed data does not silently become permanent recommendation identity. At least one authorized connector/import method must be real, not a fixture-only production claim.
+The journey must prove imported feed data does not silently become permanent recommendation identity. At least one authorized connector/import method must be real, not a fixture-only production claim.
 
 ### J31 — Cross-platform parity
-
 The same server-side profile state, library state, intent, and Entertainment Item identity must produce semantically equivalent Web and Desktop outcomes while allowing platform-specific capability differences.
 
 ## Browser-validation protocol
 
 When a dev server is available:
 
-```bash
 agent-browser open <url>
 agent-browser wait --load networkidle
 agent-browser snapshot -i
-```
 
-After every navigation or DOM-changing interaction, obtain a fresh snapshot before using refs. Capture screenshots for the final state and any failure state. Desktop validation uses the platform's running UI plus equivalent browser/automation instrumentation where available.
+After every navigation or DOM-changing interaction, obtain a fresh snapshot before using refs. Capture screenshots for final state and failure state. Desktop validation uses the platform's running UI plus equivalent browser/automation instrumentation where available.
 
 Workers must not mark a journey complete from unit tests alone.
 
 ## Release threshold
 
-Release acceptance requires J01–J20, J26, J28–J32 to pass on the Web adapter and the corresponding applicable Desktop journeys to pass. J21–J25 and J27 must pass on the production Desktop native-media path before the torrent/native-media milestone is accepted.
+Release acceptance requires J01–J20, J26, J28–J32 to pass on the Web adapter and corresponding applicable Desktop journeys to pass. J21–J25 and J27 must pass on the production Desktop native-media path before the torrent/native-media milestone is accepted.
 
 R20 release acceptance additionally requires J33 to pass on Web and the corresponding Desktop procedure.
 
-## Journey automation and evidence procedure (R16, appended 2026-09-18)
+## Journey automation and evidence procedure (R16)
 
-The journey definitions above are FROZEN. This section appends the
-automation/evidence procedure that executes them — it never modifies a
-journey's definition.
+The reusable agent-browser harness lives in journeys/; it imports nothing from any @wfx package and consumes the running product as a user.
 
-### The harness (`journeys/`)
-
-The reusable agent-browser harness lives in `journeys/` (self-contained;
-it imports nothing from any `@wfx` package — journeys consume the running
-product as a user, per the layering law):
-
-- `bun run journeys:web` — boot the product (its documented deterministic
-  fixtures mode: `WFX_DEV_FIXTURES=1`, `next dev -p 3101`) and run every
-  encoded journey; exit code 1 on ANY journey failure (these are checks,
-  not theater — every assertion binds to this document's expected states).
-- `bun run journeys:ci` — the CI configuration (the same encoded set).
-- `bun run journeys:list` — the catalog.
-- `bun journeys/runner.ts --filter J01,J21` — a subset (the scripted
-  acquisition chain J21→J24+J26 is order-dependent: a filter must include
-  the full chain or none of it — the runner enforces this loudly).
-
-Every run: resets the scripted-acquisition drive state (J21–J26 assert the
-lifecycle from step 0), launches one isolated browser session with a fixed
-1280×800 viewport, network-blocks the fixture provider URLs
-(`fixture.invalid` — deterministic instant failure, never DNS flakiness),
-executes the browser-validation protocol per navigation (`open → wait
---load networkidle → snapshot -i`), and captures per-journey screenshots,
-snapshots, narrations, failure evidence, and uncaught page errors.
-
-### Encoded vs. not-run (the honesty law)
-
-The Web journey set is encoded in `journeys/web/` (J01–J27, J29–J32 — the
-journeys the deterministic web-fixture boot can exercise, including the
-J21–J26 limited-status surfaces and the J27 constrained truth). A journey
-this configuration cannot execute — or cannot fully exercise — is
-EXPLICITLY LISTED in the run manifest (`journeys/web/index.ts`'s
-limitations) with its reason and its exact local/Desktop procedure.
-Never a silent skip. As of R16's delivery:
-
-- J28 (credential expiry/recovery) is not-run on the web fixtures boot —
-  the auth flows are the service-side source-management lane; the manifest
-  carries the service-mode procedure.
-- J09's external-rung WIN, J12's cross-device fold, J14's connect round
-  trips, J15–J18's service-side policy surfaces, J19/J20's model/transform
-  operations are configuration-limited or local-only: the reachable truths
-  are encoded; the rest carry procedures.
-- J21/J23/J24/J25/J27's native protocol paths carry the Desktop equivalent
-  evidence procedure (`journeys/desktop/README.md`).
-- J31's desktop-side comparison is the lead's parity procedure; the
-  web-side parity anchors are encoded.
-
-### Evidence
-
-Each run writes, under `evidence/rNN/` (the rNN convention):
-`manifest.json` (schema `wfx-journey-manifest/1` — commit, environment,
-determinism notes, per-journey id/status/assertions/artifacts/page-errors,
-and the explicit limitations listing) plus `summary.md` and the
-screenshots/snapshots/narrations per journey. The evidence is committed
-with the delivery (`evidence/r16/` is R16's run); the CI job uploads the
-same tree as an artifact.
-
-### CI
-
-The `journeys` job in `.github/workflows/ci.yml` runs after `verify`:
-installs agent-browser (+ browser), runs `bun run journeys:ci`, and fails
-on any journey regression. The CI-feasible set is the full encoded set
-(zero external network: the deterministic fixtures boot only; the
-service-mode journeys are local-only and listed as such in every
-manifest).
-
-### Desktop native-only equivalent evidence
-
-`journeys/desktop/README.md` is the binding procedure for the
-native-only journeys (and the native halves of the "Limited status UX"
-web journeys): run the Desktop product with the native-media engine
-(production path — no `stubEngine()`), attach automation where the
-webview allows (`agent-browser connect` on a CDP-capable webview, or the
-platform's instrumentation), drive the real lifecycle, and capture the
-same state grammar (`data-wfx-acquisition-*` / the
-`AcquisitionStatusView` vocabulary) with per-state screenshots and the
-same manifest format. J21–J25 and J27 must pass there before the
-torrent/native-media milestone is accepted (the release threshold
-above).
+Every run records commit, environment, deterministic setup, per-journey status/assertions/artifacts/page-errors and explicit limitations. Workers must not silently skip a journey.
 
 ## R20 Journey automation note
 
 J33 uses the same evidence contract as the existing golden journeys: commit SHA, environment, import method, preconditions, actions, observed/expected state, screenshot/snapshot evidence, errors, and final status.
-If a provider capability is unavailable in deterministic CI, the limitation must be explicit and the real local/service procedure documented; never silently skip J33.
 
 ## J34 — Capability discoverability
 
 Starting from a fresh Home state, the user must be able to discover without documentation:
-
 1. identity/profile entry;
 2. source connection;
 3. Bring Your Own Feed;
@@ -281,14 +170,56 @@ Acceptance is based on the actual visible product path, not a direct URL, test-o
 
 Run the same discoverability sweep against the live production deployment.
 
-The production surface must not show stale “arrives later” copy or expose an accepted capability only through an unavailable transport.
+The production surface must not show stale "arrives later" copy or expose an accepted capability only through an unavailable transport.
 
 At minimum verify R02 identity, R03 source read/connect, R05 recommendation/intent, R06 model/AI, R09 realization choice, R14 native/offline discovery, and R20 BYOF/feed-mode truth.
 
+## J36 — Major user journey completion / no dead-end discovery
+
+Start from fresh Home, with no documentation and no direct route navigation.
+
+Web path:
+Home
+-> create/sign in
+-> connect a source using a supported connector
+-> return to source management with Connected truth
+-> browse source-backed content
+-> Bring Your Feed
+-> preview + confirm an authorized import
+-> switch among available feed modes
+-> set temporary intent
+-> change attention mode
+-> open an item
+-> choose Where to watch
+-> use an AI action
+-> provide recommendation feedback
+-> use Shorts and verify Like/Save/Share after hydration
+-> open Library
+-> verify Watchlist / History / Imported Feeds / Offline truth
+-> open Model & AI management
+-> add/remove BYOM where supported
+-> sign out
+-> verify honest anonymous state
+
+Desktop extension:
+repeat shared semantic steps, then verify local-model truth, authorized acquisition/offline flow, verified asset -> Library, and interruption/recovery where applicable.
+
+J36 blocks release when:
+- Create Account is not visible/functioning;
+- Connect a source loops back to the same empty state;
+- BYOF cannot progress once a supported source is connected;
+- BYOM is API-only/direct-URL-only;
+- hydrated Shorts actions are missing where the source advertises them;
+- an important failure has no useful next action;
+- Web/Desktop diverge in shared semantics;
+- stale accepted-lane completion copy returns.
+
 ## Discoverability law
 
-Existing journeys remain acceptance contracts. J34/J35 are meta-journeys: they verify that the user can actually reach the capabilities those journeys validate. UI work that passes component tests but fails J34 is incomplete.
+Existing journeys remain acceptance contracts. J34/J35 verify reachability. J36 verifies that the user can actually finish the journey after reaching the capability.
+
+UI work that passes component tests but fails J36 is incomplete.
 
 ## ShareNet-inspired visual acceptance
 
-Affected R21 UI journeys must also verify the visual language in `docs/architecture/webflix-design-language.md`: calm warm-light application surfaces where appropriate, clear typography hierarchy, restrained semantic state color, single primary actions, comfortable whitespace, progressive disclosure of diagnostics, mobile touch-target quality, and reduced-motion behavior. Visual review must not treat source/protocol diagnostics as the primary product experience.
+Affected R21/R22 UI journeys must verify the visual language in docs/architecture/webflix-design-language.md: calm warm-light surfaces where appropriate, clear typography hierarchy, restrained semantic state color, single primary actions, comfortable whitespace, progressive disclosure of diagnostics, mobile touch-target quality, and reduced-motion behavior. Visual review must not treat source/protocol diagnostics as the primary entertainment experience.
