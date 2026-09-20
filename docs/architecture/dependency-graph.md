@@ -142,3 +142,25 @@ Lead owns R22-K contract ratification, R22-L integration, production parity, and
 7. R22-M closes governance drift only after production acceptance.
 
 R22 must not add primary navigation routes for conceptual areas such as Feed or BYOF; those capabilities remain contextual/management surfaces under the R21 law.
+
+
+## R23 — Open viewing, first-class torrent, AI media intelligence
+
+R22 -> R23-A -> R23-B -> R23-C
+R23-C -> R23-D + R23-E
+R22 -> R23-F -> R23-G/R23-H/R23-I/R23-J
+R23-A -> R23-K
+R23-G/R23-H/R23-I/R23-J + R23-C/R23-E -> Lead integration -> J37 + J38 + J39 -> affected J01-J36 -> production gate
+
+Worker 1 owns A/B/C/F/G/H/I/J/K shared semantics and Model Fabric.
+Worker 2 owns anonymous Web playback, browser torrent adapter/product surfaces, multimodal Web UX and Web evidence.
+Worker 3 owns Desktop/native torrent realization, recovery/offline continuity and local-model/runtime packaging.
+Lead owns authorization/licensing review, contract ratification, integration, production verification and final journey acceptance.
+
+R23 operating laws:
+- public playback must not require a WebFlix account;
+- provider authorization is distinct from WebFlix account authentication;
+- torrent is a realization/source kind, not a generic Media Surface playback mode;
+- authorized torrent realizations may satisfy native playback on Desktop and a browser rung only where the platform/source actually supports it;
+- model output never authorizes acquisition/playback;
+- open-model licenses and revisions are part of Model Fabric provenance.
