@@ -10,7 +10,7 @@
 
 import { AppShell } from "@/components/shell/AppShell";
 import { SearchSurface } from "@/components/search/SearchSurface";
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRequestHost } from "@/host/request-session";
 import { loadSearchView } from "@/host/view-models";
 import { syncNavigationToRoute } from "@/app/routing";
 
@@ -24,7 +24,7 @@ export default async function SearchPage({
   const params = await searchParams;
   const raw = params.q;
   const query = Array.isArray(raw) ? (raw[0] ?? "") : (raw ?? "");
-  const host = await getWebRuntimeHost();
+  const host = await getWebRequestHost();
   syncNavigationToRoute(host.runtime, "/search", params);
   const view = await loadSearchView(host, query);
   return (

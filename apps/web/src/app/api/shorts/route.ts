@@ -14,13 +14,14 @@
 
 import { NextResponse } from "next/server";
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHostForRequest } from "@/host/web-host";
+import { sessionTokenFromRequest } from "@/host/session-cookie";
 import { loadShortsPayload } from "@/host/shorts";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(): Promise<NextResponse> {
-  const host = await getWebRuntimeHost();
+export async function GET(request: Request): Promise<NextResponse> {
+  const host = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
   try {
     const payload = await loadShortsPayload(host);
     if (payload.loadError !== null) {

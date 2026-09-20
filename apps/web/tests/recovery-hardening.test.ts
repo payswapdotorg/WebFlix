@@ -154,7 +154,7 @@ describe("R17 web — expired credentials (the named state + the re-auth path)",
   it("the /api/sources route drives the lifecycle and observes the post-flow state through the runtime", async () => {
     await bootHost();
 
-    const get = await getSources();
+    const get = await getSources(new Request("http://localhost/api/sources"));
     expect(get.status).toBe(200);
     const getBody = (await get.json()) as { mode: string; sources: { authState: string }[] };
     expect(getBody.mode).toBe("fixtures");

@@ -202,7 +202,18 @@ export function SessionControls({
     // The shared pre-flight (the R22-B `validateRegisterAccountCommand`):
     // the SAME rules the service enforces — the user sees the SAME honest
     // field problems before the round trip (the convergence law).
-    const validation = validateRegisterAccountCommand({ email, password, displayName });
+    // R22-G fix: an EMPTY display-name input is the ABSENT optional field
+    // (`undefined`), never a provided-but-blank string — the shared
+    // validation's own contract (the service route maps the same truth).
+    // Before this fix the create-account form refused every submission
+    // with the display name left empty ("Display name, when provided,
+    // cannot be blank") — an optional field that could never be skipped.
+    const trimmedDisplayName = displayName.trim();
+    const validation = validateRegisterAccountCommand({
+      email,
+      password,
+      ...(trimmedDisplayName.length > 0 ? { displayName: trimmedDisplayName } : {}),
+    });
     if (!validation.ok) {
       setFailure({
         message: "Some fields need your attention.",

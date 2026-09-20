@@ -348,3 +348,66 @@ describe("R22-F — the SettingsSurface Model section integration (the discovera
     expect(markup).toContain("Add your model provider");
   });
 });
+
+describe("R22-G — the BYOM add→observe→remove round trip (the found-and-fixed defect)", () => {
+  it("a successful bind lands the bound provider in the REGISTRY READ (the panel can observe what the route accepted — the J36 fix)", async () => {
+    await withEnv({ WFX_DEV_FIXTURES: "1" }, async () => {
+      const host = await getWebRuntimeHost();
+      driveFixtureLogin("dev@webflix.local", "dev-password-1");
+      // Bind through the REAL route (the same transport the panel uses).
+      const response = await postBind(
+        new Request("http://localhost/api/model/byom/bind", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: `wfx_session=${FIXTURE_AUTH_TOKEN}`,
+          },
+          body: JSON.stringify({
+            providerId: "round-trip-provider",
+            endpointUrl: "https://example.test/v1",
+            key: "secret-key-1",
+            capabilities: ["summary", "translation"],
+          }),
+        }),
+      );
+      expect(response.status).toBe(200);
+
+      // THE DEFECT this test pins: before the R22-G fix, the fixture port's
+      // readModelProviders answered ONLY the first-party row — the provider
+      // the bind route had just accepted NEVER rendered (the add→observe
+      // round trip was broken in the fixtures boot; the J36 evidence walk
+      // found it). The registry read must now answer the bound row too.
+      const before = await host.runtime.modelControls.refreshProviders();
+      const boundRow = before.providers.find(
+        (row) => row.id === "round-trip-provider" && row.byomBound === true,
+      );
+      expect(boundRow).toBeDefined();
+      expect(boundRow?.privacy).toBe("cloud");
+      expect(boundRow?.capabilities).toEqual(["summary", "translation"]);
+      expect(boundRow?.availability).toBe("available");
+
+      // The management VIEW renders the bound entry with its REMOVE action
+      // (the panel's own derivation over the registry read).
+      const view = byomManagementView({ providers: before.providers, status: before.status });
+      const entry = view.bound.find((row) => row.providerId === "round-trip-provider");
+      expect(entry).toBeDefined();
+      expect(entry?.action.kind).toBe("remove");
+
+      // REMOVE: the unbind through the REAL route, then the registry read
+      // answers the provider GONE (the honest removal — never a stale row).
+      const unbind = await postUnbind(
+        new Request("http://localhost/api/model/byom/unbind", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            cookie: `wfx_session=${FIXTURE_AUTH_TOKEN}`,
+          },
+          body: JSON.stringify({ providerId: "round-trip-provider" }),
+        }),
+      );
+      expect(unbind.status).toBe(200);
+      const after = await host.runtime.modelControls.refreshProviders();
+      expect(after.providers.some((row) => row.id === "round-trip-provider")).toBe(false);
+    });
+  });
+});

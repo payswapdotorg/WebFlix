@@ -17,7 +17,7 @@
 
 import { AppShell } from "@/components/shell/AppShell";
 import { LibrarySurface } from "@/components/library/LibrarySurface";
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRequestHost } from "@/host/request-session";
 import { loadByofFeedView, byofHostBinding } from "@/host/byof/byof-host";
 import { loadLibraryView } from "@/host/view-models";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -30,7 +30,7 @@ export default async function LibraryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const host = await getWebRuntimeHost();
+  const host = await getWebRequestHost();
   syncNavigationToRoute(host.runtime, "/library", params);
   const view = await loadLibraryView(host);
   // R20-D/R20-H — the imported feeds region (the "feed appears" step). The

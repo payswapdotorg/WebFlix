@@ -19,7 +19,8 @@ import { NextResponse } from "next/server";
 
 import { isRuntimeError } from "@wfx/client-runtime";
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHostForRequest } from "@/host/web-host";
+import { sessionTokenFromRequest } from "@/host/session-cookie";
 
 export const dynamic = "force-dynamic";
 
@@ -66,7 +67,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: "externalRef: expected a non-empty string" }, { status: 400 });
   }
 
-  const host = await getWebRuntimeHost();
+  const host = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
   try {
     const state = await host.runtime.dispatchAction({
       type: action.type,

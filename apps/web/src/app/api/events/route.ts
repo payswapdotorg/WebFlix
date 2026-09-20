@@ -26,7 +26,8 @@ import { isEntertainmentItemId, isRecord } from "@wfx/domain";
 import type { WatchStateCommand } from "@wfx/client-runtime";
 import { isRuntimeError } from "@wfx/client-runtime";
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHostForRequest } from "@/host/web-host";
+import { sessionTokenFromRequest } from "@/host/session-cookie";
 
 export const dynamic = "force-dynamic";
 
@@ -120,7 +121,7 @@ export async function POST(request: Request): Promise<NextResponse> {
             : {}),
         };
 
-  const host = await getWebRuntimeHost();
+  const host = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
   try {
     // The runtime folds the session state and emits the at-least-once
     // event; a delivery failure THROWS (the EventSink law) → typed 502.

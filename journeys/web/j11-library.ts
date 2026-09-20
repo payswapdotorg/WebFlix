@@ -5,18 +5,20 @@
  * history (+ the R14 offline-and-verified section).
  *
  * Web-fixture-boot encoding: the library destination renders all three
- * sections with typed statuses; the fresh-session watchlist/history are
- * HONESTLY empty (typed empty states with guidance, never fabricated
- * entries); the offline-and-verified section exposes the R14/J26
- * surface (the fixture's verified Harbor Lights copy).
+ * sections with typed statuses; the fresh-session WATCHLIST is honestly
+ * empty (the typed empty state with guidance, never fabricated entries);
+ * the HISTORY carries this run's earlier engagement events — J10's
+ * explicit watch report ("Marked as watched") and the playback/engagement
+ * events of J04/J07/J09 — because the /api/events fold now CROSSES pages
+ * in the dev boot (R22-G fixed the Turbopack module-graph split: the web
+ * host's process state is shared, so the route's fold and the pages'
+ * reads observe ONE runtime — the same single-bundle truth production
+ * always had). The history is therefore the HONEST session fold, never
+ * fabricated: the J10-watched item renders with its watched state.
  *
- * HONEST LIMIT (listed): recording a watch event on the player page and
- * reading it back on the library page requires ONE runtime instance —
- * the Turbopack dev server compiles every route as its own module
- * graph (the documented dev split-module reality in
- * apps/web/src/host/acquisition-fixtures.ts). The single-bundle
- * production/service boot folds it (the app's composition tests cover
- * the fold); the manifest limitation names it.
+ * HONEST LIMIT (listed): cross-DEVICE history continuity (the same profile
+ * on another device/browser) remains the service-mode procedure (the
+ * server-side profile store); the dev-boot fold is one session's truth.
  */
 
 import { describe } from "./journey-description";
@@ -38,7 +40,7 @@ export const j11Library: Journey = {
     await assert.visible("[data-wfx-library-history]", "the history section renders");
     await assert.visible("[data-wfx-library-offline]", "the offline-and-verified section renders (the R14 surface)");
 
-    // Fresh-session honest empty states (typed, with guidance).
+    // Fresh-session honest empty state for the WATCHLIST (typed, with guidance).
     const html = await browser.outerHtml("[data-wfx-surface='library']");
     const library = parseLibrary(html ?? "");
     assert.that(
@@ -47,14 +49,24 @@ export const j11Library: Journey = {
       library.watchlistEmpty ? "the empty state rendered" : "entries present or no empty state",
       library.watchlistEmpty,
     );
-    assert.that(
-      "the history is honestly empty on a fresh session (typed empty state, never fabricated history)",
-      "the typed history empty state",
-      library.historyEmpty ? "the empty state rendered" : "entries present or no empty state",
-      library.historyEmpty,
-    );
     await assert.textContains("[data-wfx-library-watchlist]", "Nothing saved yet", "the watchlist empty state guides the user to save from details pages");
-    await assert.textContains("[data-wfx-library-history]", "No watch history yet", "the history empty state guides the user to watch something");
+    // The HISTORY is the session's honest event fold (R22-G: the dev-boot
+    // fold crosses pages now) — the earlier journeys' real engagement
+    // events render: at minimum J10's explicit watch report (the
+    // WebFlix-confirmed "watched" state, never a fabricated entry).
+    const historyText = (await browser.tryText("[data-wfx-library-history]")) ?? "";
+    assert.that(
+      "the history carries this session's engagement events (the events fold crosses pages in the dev boot — the R22-G fix)",
+      "at least one history entry rendering",
+      historyText.length > 0 ? `${historyText.length} chars of history truth` : "<empty>",
+      !library.historyEmpty,
+    );
+    assert.that(
+      "the history includes J10's explicitly-reported watch (the WebFlix-confirmed fold, stated — never fabricated)",
+      "the Asteroid Drift history entry with its watched state",
+      historyText.includes("Asteroid Drift") ? "the watched entry renders" : "Asteroid Drift absent from the history",
+      historyText.includes("Asteroid Drift"),
+    );
 
     // The offline-and-verified section: the J26 surface (R14's fixture truth).
     assert.that(
@@ -80,6 +92,6 @@ export const j11Library: Journey = {
     await assert.countExactly("[data-wfx-surface='library'] [data-wfx-error]", 0, "no library section renders an error state in this configuration");
 
     await context.screenshot("j11-library");
-    await describe(context, "the library destination rendered watchlist/history/offline-and-verified with honest fresh-session empty states and the verified offline copy exposed");
+    await describe(context, "the library destination rendered watchlist/history/offline-and-verified: the watchlist honestly empty, the history carrying the session's real engagement fold (J10's watched entry — the R22-G dev-boot fold fix), and the verified offline copy exposed");
   },
 };

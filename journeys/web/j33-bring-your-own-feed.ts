@@ -85,6 +85,15 @@ export const j33BringYourOwnFeed: Journey = {
 
     // 1. CHOOSE BRING YOUR FEED — from the EXISTING product IA (the
     //    settings/sources section; no new navigation system).
+    // R22-G: capture the WebFlix-local watchlist/history truth BEFORE the
+    // import from the LIBRARY page (the separation law's honest comparison
+    // — the earlier journeys' engagement events legitimately render in the
+    // history now that the dev-boot events fold crosses pages; what must
+    // NOT change is the import ADDING anything to the WebFlix-local
+    // sections — the confirm's landing is the same library page).
+    await goto(context, "/library");
+    const watchlistBefore = (await browser.tryText("[data-wfx-library-watchlist]")) ?? "";
+    const historyBefore = (await browser.tryText("[data-wfx-library-history]")) ?? "";
     await goto(context, "/settings?section=sources");
     await assert.visible("[data-wfx-byof-panel]", "the Bring your feed panel renders inside the settings sources section (the existing IA)");
     await assert.visible("[data-wfx-byof-source='youtube']", "the feed-import source card renders (the choose-source step)");
@@ -245,16 +254,21 @@ export const j33BringYourOwnFeed: Journey = {
     await assert.countAtLeast("[data-wfx-byof-group='playlist']", 1, "the playlist group renders");
     await assert.countAtLeast("[data-wfx-byof-group='watchlist']", 1, "the watch-later group renders");
     // The WebFlix-local library is UNTOUCHED by the import (the separation
-    // law — visible on the same page).
-    await assert.textContains(
-      "[data-wfx-library-watchlist]",
-      "Nothing saved yet",
-      "the WebFlix watchlist stays untouched by the import",
+    // law — visible on the same page): the watchlist/history truths are
+    // IDENTICAL to their pre-import capture (the import adds nothing).
+    const watchlistAfterImport = (await browser.tryText("[data-wfx-library-watchlist]")) ?? "";
+    const historyAfterImport = (await browser.tryText("[data-wfx-library-history]")) ?? "";
+    assert.that(
+      "the WebFlix watchlist stays untouched by the import (the identical pre-import truth)",
+      "the watchlist unchanged",
+      watchlistAfterImport === watchlistBefore ? "unchanged" : "CHANGED by the import",
+      watchlistAfterImport === watchlistBefore,
     );
-    await assert.textContains(
-      "[data-wfx-library-history]",
-      "No watch history yet",
-      "the WebFlix history stays untouched by the import",
+    assert.that(
+      "the WebFlix history stays untouched by the import (the identical pre-import truth — no BYOF leakage)",
+      "the history unchanged",
+      historyAfterImport === historyBefore ? "unchanged" : "CHANGED by the import",
+      historyAfterImport === historyBefore,
     );
     await context.screenshot("j33-feed-appears");
 
@@ -378,9 +392,23 @@ export const j33BringYourOwnFeed: Journey = {
     // PROVENANCE SURVIVES the disconnect: every record still renders.
     await assert.countAtLeast("[data-wfx-byof-record]", 7, "all seven records still render after the disconnect (provenance survives)");
     await assert.textContains("[data-wfx-byof-import]", "captured ", "the provenance (capture time) still renders after the disconnect");
-    // The WebFlix-local library/history were never touched.
-    await assert.textContains("[data-wfx-library-watchlist]", "Nothing saved yet", "the WebFlix watchlist is untouched by the import AND the disconnect");
-    await assert.textContains("[data-wfx-library-history]", "No watch history yet", "the WebFlix history is untouched by the import AND the disconnect");
+    // The WebFlix-local library/history were never touched (the identical
+    // pre-import truths — the R22-G honest comparison, not a stale
+    // empty-state assumption).
+    const watchlistAfterDisconnect = (await browser.tryText("[data-wfx-library-watchlist]")) ?? "";
+    const historyAfterDisconnect = (await browser.tryText("[data-wfx-library-history]")) ?? "";
+    assert.that(
+      "the WebFlix watchlist is untouched by the import AND the disconnect (the identical pre-import truth)",
+      "the watchlist unchanged",
+      watchlistAfterDisconnect === watchlistBefore ? "unchanged" : "CHANGED",
+      watchlistAfterDisconnect === watchlistBefore,
+    );
+    assert.that(
+      "the WebFlix history is untouched by the import AND the disconnect (the identical pre-import truth)",
+      "the history unchanged",
+      historyAfterDisconnect === historyBefore ? "unchanged" : "CHANGED",
+      historyAfterDisconnect === historyBefore,
+    );
     await context.screenshot("j33-disconnect-retained");
 
     // 10. DELETION IS THE SEPARATE EXPLICIT ACTION — the two-step arm, the

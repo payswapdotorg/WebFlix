@@ -19,13 +19,25 @@ import { NextResponse } from "next/server";
 
 import { isFeedMode, isRuntimeError } from "@wfx/client-runtime";
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHostForRequest } from "@/host/web-host";
+import { sessionTokenFromRequest } from "@/host/session-cookie";
 import { loadFeedModeView } from "@/host/discoverability";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(): Promise<NextResponse> {
-  const host = await getWebRuntimeHost();
+/**
+ * R22-G fix: the route resolves the REQUEST-SCOPED host (the session law
+ * the R22-D/F routes follow). Before, `getWebRuntimeHost()` wrote the
+ * ANONYMOUS singleton's store — an authenticated session's feed-mode set
+ * landed in the wrong host and the page (which resolves the identity's
+ * host) never observed the change.
+ */
+async function hostFor(request: Request) {
+  return getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
+}
+
+export async function GET(request: Request): Promise<NextResponse> {
+  const host = await hostFor(request);
   const view = await loadFeedModeView(host);
   return NextResponse.json({
     mode: view.mode,
@@ -51,7 +63,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const host = await getWebRuntimeHost();
+  const host = await hostFor(request);
   // The availability truth is re-derived before the set (the adapter's
   // honest report — a stale truth never blocks or admits a mode).
   await loadFeedModeView(host);

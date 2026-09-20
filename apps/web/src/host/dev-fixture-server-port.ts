@@ -109,9 +109,53 @@ const FIXTURE_FIRST_PARTY_PROVIDER: ModelProviderInfo = {
  * booted).
  */
 const modelPolicyState = new Map<ModelTask, ModelPolicy>();
-const byomBindings = new Map<string, string>();
 const transforms = new Map<string, TransformOperation>();
 let transformCounter = 1;
+
+// ---------------------------------------------------------------------------
+// R22-G — the BYOM binding store (GLOBAL, cross-module-graph)
+// ---------------------------------------------------------------------------
+
+/**
+ * ONE bound provider record (the dev persona's BYOM truth — the same
+ * secret-free projection the service's registry answers: the KEY itself
+ * never lives here, only the binding handle's material).
+ */
+interface FixtureByomBinding {
+  readonly providerId: string;
+  readonly bindingId: string;
+  readonly endpointUrl: string;
+  readonly capabilities: readonly ModelTask[];
+  readonly costPerCall: number;
+}
+
+/**
+ * THE DEV-SERVER SPLIT-MODULE REALITY (R22-G fix — found by the J36
+ * evidence walk): the Turbopack dev server compiles the settings PAGE's
+ * module graph and the /api/model/byom/* ROUTE's module graph as
+ * SEPARATE module instances. A module-scope `Map` was therefore TWO
+ * stores: the bind route landed the binding in ITS copy and the page's
+ * `readModelProviders()` never saw it (the added provider never rendered
+ * — the honest round trip was broken in the fixtures boot). The fix is
+ * the established law (the BYOF fixtures' own documented precedent): the
+ * store is cached on `globalThis` (process-wide, shared by every module
+ * graph). Production (one server bundle) and the in-process tests share
+ * one module — the same code path works unchanged.
+ */
+const BYOM_STORE_KEY = Symbol.for("wfx.dev-fixture.byom-bindings");
+type ByomStore = Map<string, FixtureByomBinding>;
+const globalStore = globalThis as typeof globalThis & { [BYOM_STORE_KEY]?: ByomStore };
+const byomBindings: ByomStore = globalStore[BYOM_STORE_KEY] ?? new Map<string, FixtureByomBinding>();
+globalStore[BYOM_STORE_KEY] = byomBindings;
+
+/**
+ * Reset the dev persona's BYOM bindings to pristine (TEST-ONLY — the
+ * process-hermeticity law `host/testing.ts` keeps; never called by a
+ * production path).
+ */
+export function resetByomBindingsForTests(): void {
+  byomBindings.clear();
+}
 
 /** Create the DEV-ONLY fixture-backed ServerPort. */
 export function createFixtureBackedServerPort(options: FixtureServerPortOptions): ServerPort {
@@ -304,12 +348,40 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
     },
 
     async readModelProviders(): Promise<ServerResult<readonly ModelProviderInfo[]>> {
-      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER] };
+      // R22-G — the registry answers the BYOM-bound providers too (the
+      // SAME secret-free projection the service's registry answers: one
+      // row per binding, `byomBound: true`, privacy "cloud" (BYOM models
+      // run remotely), the binding's declared capabilities/cost, the id
+      // being the providerId the unbind action targets — see
+      // apps/api's model-controls registry projection). Before this fix
+      // the fixtures boot answered ONLY the first-party row, so the
+      // Settings → Model & AI panel never rendered the provider the
+      // bind route had just accepted (the add→observe round trip was
+      // broken — found by the J36 evidence walk, fixed forward).
+      const boundRows: ModelProviderInfo[] = [...byomBindings.values()].map((binding) => {
+        const costs: Record<string, number> = {};
+        for (const task of binding.capabilities) costs[task] = binding.costPerCall;
+        return {
+          id: binding.providerId,
+          privacy: "cloud",
+          capabilities: [...binding.capabilities],
+          byomBound: true,
+          costs,
+          availability: "available",
+        };
+      });
+      return { ok: true, value: [FIXTURE_FIRST_PARTY_PROVIDER, ...boundRows] };
     },
 
     async bindByomProvider(command: ByomBindingCommand): Promise<ServerResult<ByomBindingHandle>> {
       const bindingId = `wfxbyom_${command.providerId}`;
-      byomBindings.set(command.providerId, bindingId);
+      byomBindings.set(command.providerId, {
+        providerId: command.providerId,
+        bindingId,
+        endpointUrl: command.endpointUrl,
+        capabilities: [...(command.capabilities ?? [])],
+        costPerCall: command.costPerCall ?? 0,
+      });
       return {
         ok: true,
         value: {

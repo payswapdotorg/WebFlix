@@ -122,7 +122,44 @@ export interface WebRuntimeHostOverrides {
 // The singleton (the "one runtime at boot" law)
 // ---------------------------------------------------------------------------
 
-let bootPromise: Promise<WebRuntimeHost> | null = null;
+/**
+ * R22-G — THE DEV-SERVER SPLIT-MODULE REALITY (found by the J36 evidence
+ * walk, fixed forward): the Turbopack dev server compiles every route as
+ * its own module graph — the settings PAGE's module instance and an API
+ * ROUTE's module instance are SEPARATE copies of this file, each with its
+ * own module-scope `bootPromise`/`authenticatedHosts`. The consequence
+ * (observed live): a state write through an API route (feed-mode set,
+ * personalize intent/policy, …) landed in the ROUTE graph's runtime
+ * instance, and the page's reload read the PAGE graph's runtime instance
+ * — the user's change silently NEVER rendered. The fix is the established
+ * law (the BYOF fixtures' own documented precedent): the process-lifetime
+ * host state is cached on `globalThis` (process-wide, shared by every
+ * module graph). Production (one server bundle) and the in-process tests
+ * share one module — the same code path works unchanged; the reset seam
+ * clears the shared holder IN PLACE so every graph observes the reset.
+ */
+interface WebHostProcessState {
+  /** The anonymous singleton's boot promise (the "one runtime at boot" law). */
+  bootPromise: Promise<WebRuntimeHost> | null;
+  /** The per-identity host map (R21-B). */
+  authenticatedHosts: Map<string, Promise<WebRuntimeHost>>;
+  /** The per-process canonical-identity join (the R04 seam). */
+  canonicalJoin: Map<string, string>;
+  /** The join's mint counter (deterministic canonical ids). */
+  joinCounter: number;
+}
+
+const WEB_HOST_STATE_KEY = Symbol.for("wfx.web-host.process-state");
+const globalHolder = globalThis as typeof globalThis & {
+  [WEB_HOST_STATE_KEY]?: WebHostProcessState;
+};
+const processState: WebHostProcessState = globalHolder[WEB_HOST_STATE_KEY] ?? {
+  bootPromise: null,
+  authenticatedHosts: new Map(),
+  canonicalJoin: new Map(),
+  joinCounter: 0,
+};
+globalHolder[WEB_HOST_STATE_KEY] = processState;
 
 /**
  * Boot (or return the already-booting/booted) web runtime host for this
@@ -139,10 +176,10 @@ export function getWebRuntimeHost(
   env: HostEnv = process.env,
   overrides: WebRuntimeHostOverrides = {},
 ): Promise<WebRuntimeHost> {
-  if (bootPromise === null) {
-    bootPromise = bootWebRuntimeHost(env, overrides);
+  if (processState.bootPromise === null) {
+    processState.bootPromise = bootWebRuntimeHost(env, overrides);
   }
-  return bootPromise;
+  return processState.bootPromise;
 }
 
 // ---------------------------------------------------------------------------
@@ -154,9 +191,10 @@ export function getWebRuntimeHost(
  * IDENTITY per process — the singleton law's spirit: shared canonical
  * registry/watch/library state per identity). Profile switches boot the
  * new identity's host; the map is bounded by the account×profile pairs a
- * process actually serves.
+ * process actually serves. R22-G: the map lives on the shared process
+ * state (the module-graph-split fix — see the WebHostProcessState doc).
  */
-const authenticatedHosts = new Map<string, Promise<WebRuntimeHost>>();
+const authenticatedHosts = processState.authenticatedHosts;
 
 /**
  * R21-B: the request-scoped host — the seam every surface consumes.
@@ -325,8 +363,8 @@ export async function bootWebRuntimeHost(
 // The per-process canonical-identity join (the R04 seam — see module doc)
 // ---------------------------------------------------------------------------
 
-const canonicalJoin = new Map<string, string>();
-let joinCounter = 0;
+/** R22-G: the join lives on the shared process state (module-graph-split fix). */
+const canonicalJoin = processState.canonicalJoin;
 
 /**
  * The canonical `wfxitm_` id for a deep-linked source identity — minted on
@@ -338,10 +376,10 @@ export function canonicalIdFor(connectorId: string, externalRef: string): string
   const key = `${connectorId}\u0000${externalRef}`;
   const existing = canonicalJoin.get(key);
   if (existing !== undefined) return existing;
-  joinCounter += 1;
+  processState.joinCounter += 1;
   // Decimal digits are a subset of Crockford Base32; first char stays in
   // [0-7] — the same valid canonical grammar the legacy join used.
-  const id = `wfxitm_${String(joinCounter).padStart(26, "0")}`;
+  const id = `wfxitm_${String(processState.joinCounter).padStart(26, "0")}`;
   if (!isEntertainmentItemId(id)) {
     throw new Error(`web-host canonical join: minted invalid item id '${id}'`);
   }
@@ -356,13 +394,15 @@ export function canonicalIdFor(connectorId: string, externalRef: string): string
 /**
  * TEST-ONLY: clear the boot promise and the canonical join so the next
  * `getWebRuntimeHost` boots pristine. Consumed exclusively by
- * `host/testing.ts` (the loud test-seam law).
+ * `host/testing.ts` (the loud test-seam law). R22-G: the shared process
+ * state is cleared IN PLACE (object identity kept) so every module graph
+ * holding the same holder observes the reset.
  */
 export function resetWebRuntimeHostForTests(): void {
-  bootPromise = null;
-  authenticatedHosts.clear();
-  canonicalJoin.clear();
-  joinCounter = 0;
+  processState.bootPromise = null;
+  processState.authenticatedHosts.clear();
+  processState.canonicalJoin.clear();
+  processState.joinCounter = 0;
   resetAcquisitionFixturesForTests();
   resetFixtureAuthStateForTests();
 }

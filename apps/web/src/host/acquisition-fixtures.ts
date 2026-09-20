@@ -473,33 +473,84 @@ function writeDriveState(byRef: Map<string, FixtureDriveState>): void {
 
 let seeded = false;
 
-/** Whether the fixture feed is active (fixtures mode, post-seed). */
-export function acquisitionFixturesActive(): boolean {
-  return seeded;
+/**
+ * R22-G — THE SHARED SCRIPTED-ID STATE (the module-graph-split fix, found
+ * by the J36 evidence walk): the Turbopack dev server compiles the settings
+ * PAGE's module graph and the /api/acquisition ROUTE's module graph as
+ * SEPARATE module instances of this file. Previously every graph booted
+ * its OWN host, so every instance ran `learnItemIds` at ITS boot and its
+ * `SCRIPTED` array carried the ids. Now the web host's process state is
+ * SHARED (the same fix's web-host half): only the FIRST graph's instance
+ * seeds — the other instances' `SCRIPTED[i].itemId` stayed `null`, so the
+ * route's typed drive answered 404 ("no acquisition is known") and the
+ * per-render refresh was a no-op. The fix is the established law: the
+ * learned ids + the seeded flag live on `globalThis` (process-wide, every
+ * module graph), and each instance HYDRATES its `SCRIPTED` array from the
+ * shared map before resolving ids. Production (one server bundle) and the
+ * in-process tests share one module — the same code path works unchanged.
+ */
+const SCRIPTED_SHARED_KEY = Symbol.for("wfx.dev-fixture.acquisition-scripted-ids");
+interface ScriptedSharedState {
+  seeded: boolean;
+  /** The learned canonical ids, keyed by the STABLE external ref. */
+  readonly learned: Map<string, string>;
+}
+const scriptedSharedHolder = globalThis as typeof globalThis & {
+  [SCRIPTED_SHARED_KEY]?: ScriptedSharedState;
+};
+const scriptedShared: ScriptedSharedState =
+  scriptedSharedHolder[SCRIPTED_SHARED_KEY] ?? { seeded: false, learned: new Map() };
+scriptedSharedHolder[SCRIPTED_SHARED_KEY] = scriptedShared;
+
+/** Hydrate THIS instance's SCRIPTED ids from the shared learned map (idempotent). */
+function hydrateScriptedIds(): void {
+  for (const item of SCRIPTED) {
+    if (item.itemId === null) {
+      const learned = scriptedShared.learned.get(item.externalRef);
+      if (learned !== undefined) item.itemId = learned;
+    }
+  }
 }
 
-/** The scripted item of an item id (null when not scripted — per instance). */
+/** Whether the fixture feed is active (fixtures mode, post-seed). */
+export function acquisitionFixturesActive(): boolean {
+  return seeded || scriptedShared.seeded;
+}
+
+/** The scripted item of an item id (null when not scripted — hydrated from the shared map). */
 function scriptedOf(itemId: string): ScriptedAcquisition | undefined {
+  hydrateScriptedIds();
   return SCRIPTED.find((item) => item.itemId === itemId);
 }
 
 /** The scripted item of a stable external ref (the cross-module key). */
 function scriptedByRef(ref: string): ScriptedAcquisition | undefined {
+  hydrateScriptedIds();
   return SCRIPTED.find((item) => item.externalRef === ref);
 }
 
 /**
  * Learn each scripted item's canonical id through the runtime's own search
  * (the registry's per-instance mint — deterministic within the module).
- * Idempotent per module instance.
+ * Idempotent per module instance; the learned ids land in the SHARED map
+ * so every module graph's instance hydrates the same truth (R22-G).
  */
 async function learnItemIds(runtime: ClientRuntime): Promise<void> {
   for (const item of SCRIPTED) {
-    if (item.itemId !== null) continue;
+    const sharedLearned = scriptedShared.learned.get(item.externalRef);
+    if (sharedLearned !== undefined) {
+      item.itemId = sharedLearned;
+      continue;
+    }
+    if (item.itemId !== null) {
+      scriptedShared.learned.set(item.externalRef, item.itemId);
+      continue;
+    }
     const model = await runtime.search({ query: item.searchQuery });
     const hit = model.hits[0];
     if (hit === undefined) continue; // the fixture catalog is fixed; cannot happen
     item.itemId = hit.canonicalItemId;
+    scriptedShared.learned.set(item.externalRef, hit.canonicalItemId);
   }
 }
 
@@ -523,7 +574,10 @@ export function reportAcquisitionFixtures(host: {
   readonly runtime: ClientRuntime;
 }): void {
   if (host.mode !== "fixtures") return;
-  if (!seeded) return;
+  // R22-G: the SHARED seeded flag (the module-graph-split fix) — any
+  // instance's report works once ANY graph's boot seeded the feed.
+  if (!scriptedShared.seeded) return;
+  hydrateScriptedIds();
   const byRef = readDriveState();
   for (const item of SCRIPTED) {
     if (item.itemId === null) continue;
@@ -552,8 +606,16 @@ export async function seedAcquisitionFixtures(host: {
   if (host.mode !== "fixtures") {
     throw new Error("seedAcquisitionFixtures: fixtures mode only (the 050 environment law)");
   }
-  if (seeded) return;
+  // R22-G: another module graph's boot already seeded the shared feed —
+  // hydrate THIS instance's ids and refresh the report (idempotent).
+  if (scriptedShared.seeded) {
+    seeded = true;
+    hydrateScriptedIds();
+    reportAcquisitionFixtures(host);
+    return;
+  }
   await learnItemIds(host.runtime);
+  scriptedShared.seeded = true;
   seeded = true;
   reportAcquisitionFixtures(host);
 }
@@ -747,6 +809,10 @@ export function resetAcquisitionFixturesForTests(): void {
     item.itemId = null;
   }
   seeded = false;
+  // R22-G: the SHARED scripted-id state resets too (the process-hermeticity
+  // law — every module graph observes the reset through the shared holder).
+  scriptedShared.seeded = false;
+  scriptedShared.learned.clear();
   try {
     rmSync(FIXTURE_STATE_PATH, { force: true });
   } catch {

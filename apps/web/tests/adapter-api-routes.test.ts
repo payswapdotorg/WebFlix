@@ -233,7 +233,7 @@ describe("R07 POST /api/actions — receipts are the truth", () => {
 describe("R07 GET /api/shorts — the fresh page", () => {
   it("answers the projected OS page from the runtime's shorts model", async () => {
     await bootFixtureRuntime();
-    const response = await getShorts();
+    const response = await getShorts(new Request("http://localhost/api/shorts"));
     expect(response.status).toBe(200);
     const body = (await response.json()) as { page: { cards: unknown[]; surface: string } };
     expect(body.page.surface).toBe("short");
@@ -246,7 +246,7 @@ describe("R07 GET /api/shorts — the fresh page", () => {
         () => Promise.reject(new TypeError("offline")),
         async () => {
           await getWebRuntimeHost();
-          const response = await getShorts();
+          const response = await getShorts(new Request("http://localhost/api/shorts"));
           expect(response.status).toBe(502);
           const body = (await response.json()) as { error: string };
           expect(body.error).toContain("network");

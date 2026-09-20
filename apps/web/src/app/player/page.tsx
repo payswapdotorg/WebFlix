@@ -13,7 +13,7 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { PlayerSurface } from "@/components/player/PlayerSurface";
 import { EmptyState } from "@/components/ui/StateViews";
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRequestHost } from "@/host/request-session";
 import { canonicalIdFor } from "@/host/web-host";
 import { loadPlayerView } from "@/host/view-models";
 
@@ -36,7 +36,7 @@ export default async function PlayerPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const host = await getWebRuntimeHost();
+  const host = await getWebRequestHost();
   const connectorId = firstParam(params.connector);
   const externalRef = firstParam(params.ref);
   const title = firstParam(params.title);

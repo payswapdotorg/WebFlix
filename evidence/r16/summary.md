@@ -1,11 +1,11 @@
 # WebFlix Golden Journey Run — Evidence Summary
 
-- commit: `d168f6038e5d7f326e774c816185fe405408ac6e`
-- branch: `wfx/r21/discoverability-web`
+- commit: `fdcb197f522357660d1fbbe0e2c0e8768e1d9583`
+- branch: `wfx/r22/web`
 - environment: web-fixtures @ http://localhost:3101
-- window: 2026-09-20T03:19:16.284Z → 2026-09-20T03:24:19.803Z
+- window: 2026-09-20T16:35:38.940Z → 2026-09-20T16:40:46.061Z
 
-**34 passed · 0 failed · 0 not-run (listed with procedures) · 34 total**
+**35 passed · 0 failed · 0 not-run (listed with procedures) · 35 total**
 
 | Journey | Title | Status | Assertions | Artifacts |
 |---|---|---|---:|---:|
@@ -27,7 +27,7 @@
 | J16 | Anti-tunnel / exploration after a single watched topic | PASS | 4 | 3 |
 | J17 | Explicit intent: learn / happier / surprise / tonight / friend taste | PASS | 6 | 3 |
 | J18 | Attention modes: mindful / balanced / immersive / custom | PASS | 4 | 3 |
-| J19 | WebFlix model / BYOM / local model policy | PASS | 8 | 3 |
+| J19 | WebFlix model / BYOM / local model policy | PASS | 9 | 3 |
 | J20 | AI subtitles / translation / transcription / dubbing / commentary | PASS | 18 | 3 |
 | J21 | Authorized torrent acquisition (web limited-status surface) | PASS | 14 | 3 |
 | J22 | Torrent metadata and file selection (web limited-status surface) | PASS | 7 | 3 |
@@ -43,6 +43,7 @@
 | J32 | Source-neutral identity: same item, multiple realizations | PASS | 9 | 3 |
 | J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | PASS | 62 | 9 |
 | J34 | Capability discoverability from normal product surfaces | PASS | 42 | 3 |
+| J36 | Major user journey completion / no dead-end discovery | PASS | 68 | 15 |
 
 ## Explicit limitations (never silent skips)
 
@@ -50,7 +51,7 @@
   - procedure: LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot.
 - **J09** (configuration-limit): The external-rung WIN (the visible external handoff with its return-context link) requires an item whose only realization is external — the fixture catalog carries none (every item resolves embed or browser first). The fallback DECISION trace and the typed failure states are encoded; the handoff itself is not reachable in this configuration.
   - procedure: LOCAL-ONLY: boot the service-mode configuration with a source that declares an external-only realization (or a realization whose embed/browser URLs the provider restricts), open its player, and capture the data-wfx-player-mode="external" handoff + the return-context link under evidence/<run>/.
-- **J12** (configuration-limit): Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).
+- **J12** (configuration-limit): Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one scripted persona. (The dev-server module-graph split that previously kept the /api/events watch-state fold from crossing pages was FIXED in R22-G — the web host's process state is now shared across module graphs, so the fold crosses in the dev boot too.)
   - procedure: LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes).
 - **J14** (local-only): The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.
   - procedure: LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state.

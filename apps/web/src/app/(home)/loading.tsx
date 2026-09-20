@@ -9,10 +9,10 @@
 
 import { AppShell } from "@/components/shell/AppShell";
 import { PageSkeleton } from "@/components/ui/StateViews";
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRequestHost } from "@/host/request-session";
 
 export default async function Loading() {
-  const host = await getWebRuntimeHost();
+  const host = await getWebRequestHost();
   return (
     <AppShell mode={host.mode} session={host.session.state} active="home">
       <PageSkeleton />

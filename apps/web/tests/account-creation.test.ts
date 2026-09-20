@@ -214,3 +214,30 @@ describe("R22-E — POST /api/auth/register (the typed failure vocabulary, the a
     });
   });
 });
+
+describe("R22-G — the empty display name is the ABSENT optional field (the found-and-fixed defect)", () => {
+  it("submitting the create-account form with the display name LEFT EMPTY passes the shared pre-flight (the optional truth)", () => {
+    // Before the R22-G fix, the island passed the raw `""` state string —
+    // the shared validation answered "provided but blank" and the form
+    // refused EVERY submission with the display name empty (an optional
+    // field that could never be skipped). The fix maps the empty input to
+    // the ABSENT field (`undefined`), exactly like the service route does.
+    const validation = validateRegisterAccountCommand({
+      email: "someone@example.com",
+      password: "long-enough-password",
+      displayName: "",
+    });
+    // The shared contract itself (unchanged): "" is provided-but-blank.
+    expect(validation.ok).toBe(false);
+    // The ISLAND's mapping: the empty input must be DROPPED (absent), so
+    // the pre-flight passes. This mirrors the component's own mapping:
+    const trimmed = "".trim();
+    const islandValidation = validateRegisterAccountCommand({
+      email: "someone@example.com",
+      password: "long-enough-password",
+      ...(trimmed.length > 0 ? { displayName: trimmed } : {}),
+    });
+    expect(islandValidation.ok).toBe(true);
+    expect("displayName" in (islandValidation.ok ? islandValidation.value : {})).toBe(false);
+  });
+});

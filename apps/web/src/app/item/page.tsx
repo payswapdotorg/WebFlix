@@ -13,7 +13,7 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { ItemDetailSurface } from "@/components/item/ItemDetailSurface";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRequestHost } from "@/host/request-session";
 import { canonicalIdFor } from "@/host/web-host";
 import { DetailLoadError, loadDetailView } from "@/host/view-models";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -30,7 +30,7 @@ export default async function ItemPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const host = await getWebRuntimeHost();
+  const host = await getWebRequestHost();
   const { invalidReason } = syncNavigationToRoute(host.runtime, "/item", params);
   const connectorId = firstParam(params.connector);
   const externalRef = firstParam(params.ref);

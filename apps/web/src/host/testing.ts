@@ -28,16 +28,19 @@ import { resetWebRuntimeHostForTests } from "./web-host";
 import { resetItemJoinForTests } from "./view-models";
 import { resetAcquisitionFixturesForTests } from "./acquisition-fixtures";
 import { resetSourceAuthFixturesForTests } from "./source-auth-fixtures";
+import { resetByomBindingsForTests } from "./dev-fixture-server-port";
 
 /**
  * Reset the web host's PROCESS-LIFETIME state to pristine: the runtime
  * boot promise (the next `getWebRuntimeHost` boots fresh), the canonical
- * join, the item join, the R14 acquisition fixture feed, and the R17
- * source-auth fixture state. TEST-ONLY — see the module doc.
+ * join, the item join, the R14 acquisition fixture feed, the R17
+ * source-auth fixture state, and the R22-G global BYOM binding store.
+ * TEST-ONLY — see the module doc.
  */
 export function resetWebHostProcessState(): void {
   resetWebRuntimeHostForTests();
   resetItemJoinForTests();
   resetAcquisitionFixturesForTests();
   resetSourceAuthFixturesForTests();
+  resetByomBindingsForTests();
 }

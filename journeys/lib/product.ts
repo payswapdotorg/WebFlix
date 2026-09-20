@@ -50,6 +50,19 @@ export const SOURCE_AUTH_FIXTURE_STATE_FILE = join(
   "wfx-dev-source-auth-fixtures.json",
 );
 
+/**
+ * The shared auth fixture state file (R21-B — the scripted identity
+ * persona). R22-G: J36 drives the register/login/logout lifecycle, so the
+ * runner resets the persona to the pristine signed-out default before
+ * every run (the same determinism law the acquisition/source-auth
+ * fixtures follow — no journey inherits a stale authenticated identity
+ * from a failed prior run).
+ */
+export const AUTH_FIXTURE_STATE_FILE = join(
+  tmpdir(),
+  "wfx-dev-auth-fixtures.json",
+);
+
 /** A running product handle. */
 export interface ProductHandle {
   /** The base URL journeys navigate (http://localhost:3101). */
@@ -101,6 +114,20 @@ export function resetSourceAuthFixtureState(): void {
   }
 }
 
+/**
+ * R22-G — delete the shared auth fixture state so every run starts the
+ * scripted persona SIGNED OUT (determinism — J36 drives the full
+ * register → authenticated → sign-out lifecycle itself; no run inherits
+ * a stale authenticated identity from a failed prior run).
+ */
+export function resetAuthFixtureState(): void {
+  try {
+    rmSync(AUTH_FIXTURE_STATE_FILE, { force: true });
+  } catch {
+    // An absent file is already pristine (the signed-out default).
+  }
+}
+
 /** Whether anything is already listening on the port (a loud pre-flight). */
 async function portIsTaken(port: number): Promise<boolean> {
   try {
@@ -132,9 +159,11 @@ export async function bootWebFixturesProduct(
   }
 
   // Determinism: the scripted acquisition journeys start from step 0,
-  // and the scripted source-auth lifecycle starts signed in (R17/J28).
+  // the scripted source-auth lifecycle starts signed in (R17/J28), and
+  // the scripted identity persona starts signed out (R22-G/J36).
   resetAcquisitionFixtureState();
   resetSourceAuthFixtureState();
+  resetAuthFixtureState();
 
   const server: BackgroundProc = startBackgroundProc(
     "bun",

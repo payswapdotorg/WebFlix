@@ -401,7 +401,7 @@ describe("R14 web — the typed actions wire through the route", () => {
 
   it("GET answers the honest current views", async () => {
     await bootHost();
-    const response = await getAcquisition();
+    const response = await getAcquisition(new Request("http://localhost/api/acquisition"));
     expect(response.status).toBe(200);
     const body = (await response.json()) as { mode: string; views: AcquisitionStatusView[] };
     expect(body.mode).toBe("fixtures");

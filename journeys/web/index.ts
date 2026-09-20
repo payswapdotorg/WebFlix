@@ -48,6 +48,7 @@ import { j31CrossPlatformParity } from "./j31-cross-platform-parity";
 import { j32SourceNeutralIdentity } from "./j32-source-neutral-identity";
 import { j33BringYourOwnFeed } from "./j33-bring-your-own-feed";
 import { j34CapabilityDiscoverability } from "./j34-capability-discoverability";
+import { j36MajorJourneyCompletion } from "./j36-major-journey-completion";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -97,6 +98,13 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // (listed below).
   j33BringYourOwnFeed,
   j34CapabilityDiscoverability,
+  // R22-G — J36 (major user-journey completion) runs LAST by design: it
+  // walks the full first-run lane (create account → connect a source →
+  // BYOF → feed modes → personalize → item/player → Shorts → Library →
+  // BYOM add/remove → sign out) over the state the earlier journeys
+  // leave behind, resetting its own scripted phases (the BYOF dev-reset
+  // drive) and restoring the honest signed-out identity at its end.
+  j36MajorJourneyCompletion,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -122,7 +130,7 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
   {
     journeyId: "J12",
     kind: "configuration-limit",
-    note: "Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).",
+    note: "Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one scripted persona. (The dev-server module-graph split that previously kept the /api/events watch-state fold from crossing pages was FIXED in R22-G — the web host's process state is now shared across module graphs, so the fold crosses in the dev boot too.)",
     procedure: "LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes).",
   },
   {

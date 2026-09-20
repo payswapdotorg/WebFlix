@@ -17,7 +17,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { ShortsFeed } from "@/components/shorts/ShortsFeed";
 import { CompactDiscoveryControls } from "@/components/discovery/DiscoveryHeader";
 import { ErrorState } from "@/components/ui/StateViews";
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRequestHost } from "@/host/request-session";
 import { loadShortsPayload } from "@/host/shorts";
 import { loadDiscoveryBundle } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -25,7 +25,7 @@ import { syncNavigationToRoute } from "@/app/routing";
 export const dynamic = "force-dynamic";
 
 export default async function ShortsPage() {
-  const host = await getWebRuntimeHost();
+  const host = await getWebRequestHost();
   syncNavigationToRoute(host.runtime, "/shorts", {});
   const [payload, discovery] = await Promise.all([loadShortsPayload(host), loadDiscoveryBundle(host)]);
   return (

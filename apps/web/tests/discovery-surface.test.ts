@@ -298,7 +298,7 @@ describe("R21-D the feed-mode route", () => {
   it("GET answers the current mode + the adapter-reported availability", async () => {
     const host = await bootHost();
     void host;
-    const response = await getFeedMode();
+    const response = await getFeedMode(new Request("http://localhost/api/feed-mode"));
     expect(response.status).toBe(200);
     const body = (await response.json()) as { mode: string; options: { id: string; available: boolean }[] };
     expect(body.mode).toBe("foryou");
@@ -357,7 +357,7 @@ describe("R21-D the personalize route", () => {
       host.runtime.intents.intents().some((intent) => intent.objective === "cozy documentaries tonight"),
     ).toBe(true);
     // GET answers the same truth (one law, two reads).
-    const read = await getPersonalize();
+    const read = await getPersonalize(new Request("http://localhost/api/personalize"));
     const afterRead = (await read.json()) as { intents: { objective: string; expiryLabel: string }[] };
     expect(afterRead.intents[0]!.expiryLabel).toBe("ends with this session");
     // Clear: the recovery path (the runtime's end-session law).

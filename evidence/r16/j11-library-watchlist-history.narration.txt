@@ -1,1 +1,1 @@
-- the library destination rendered watchlist/history/offline-and-verified with honest fresh-session empty states and the verified offline copy exposed
+- the library destination rendered watchlist/history/offline-and-verified: the watchlist honestly empty, the history carrying the session's real engagement fold (J10's watched entry — the R22-G dev-boot fold fix), and the verified offline copy exposed

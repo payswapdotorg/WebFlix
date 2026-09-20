@@ -35,6 +35,7 @@ import type { Journey, JourneyContext } from "./lib/journeys";
 import {
   bootWebFixturesProduct,
   resetAcquisitionFixtureState,
+  resetAuthFixtureState,
   resetSourceAuthFixtureState,
   type ProductHandle,
 } from "./lib/product";
@@ -137,10 +138,12 @@ async function main(): Promise<number> {
     baseUrl = options.baseUrl;
     // Determinism even against an existing server: reset the scripted
     // acquisition drive state so J21–J26 assert the sequence from step 0,
-    // and the scripted source-auth state so J28 starts from signed-in.
+    // the scripted source-auth state so J28 starts from signed-in, and
+    // the scripted identity persona so J36 starts from signed-out.
     resetAcquisitionFixtureState();
     resetSourceAuthFixtureState();
-    console.log(`journeys: consuming the running product at ${baseUrl} (acquisition + source-auth drive state reset)`);
+    resetAuthFixtureState();
+    console.log(`journeys: consuming the running product at ${baseUrl} (acquisition + source-auth + identity drive state reset)`);
   } else {
     product = await bootWebFixturesProduct({
       repoRoot: REPO_ROOT,
@@ -213,6 +216,7 @@ async function main(): Promise<number> {
       determinism: [
         "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
         "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+        "the scripted identity persona was reset before the run (J36 drives register → authenticated → sign-out from the signed-out start)",
         `one isolated agent-browser session per run (${sessionId})`,
         "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
         "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",

@@ -20,20 +20,21 @@
  * it (the acquisition-drive law).
  */
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHostForRequest } from "@/host/web-host";
+import { sessionTokenFromRequest } from "@/host/session-cookie";
 import { driveSourceAuthFixture } from "@/host/source-auth-fixtures";
 
 /** The closed action vocabulary the POST accepts. */
 const ACTIONS = new Set(["expire", "reauthorize", "connect", "disconnect"]);
 
-export async function GET(): Promise<Response> {
-  const host = await getWebRuntimeHost();
+export async function GET(request: Request): Promise<Response> {
+  const host = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
   const model = await host.runtime.sources.refresh();
   return Response.json({ mode: host.mode, status: model.status, sources: model.sources });
 }
 
 export async function POST(request: Request): Promise<Response> {
-  const host = await getWebRuntimeHost();
+  const host = await getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
   const body: unknown = await request.json().catch(() => null);
   const connectorId =
     typeof body === "object" && body !== null

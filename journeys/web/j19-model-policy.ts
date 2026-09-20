@@ -68,17 +68,27 @@ export const j19ModelPolicy: Journey = {
       text !== null && text.includes("BYOM") && text.includes("policy"),
     );
 
-    // No placeholder model controls (never fake capability) — the section
-    // is the real read model; the detailed management controls are the
-    // R21-D settings-hub surface.
-    const buttons = await browser.eval<number>(
-      `(() => { const section = document.querySelector('[data-wfx-settings-model]'); return section === null ? 0 : section.querySelectorAll('button, select, input').length; })()`,
+    // No placeholder model controls (never fake capability) — the R22-F
+    // update: the section's interactive controls are the REAL BYOM
+    // management surface (the F8 closer: the Add action + the per-entry
+    // Remove, over the typed bind/unbind routes — the R22-C contract).
+    // The law this assertion keeps: every interactive control in the
+    // section belongs to that REAL management panel (no placeholder
+    // capability fabrication outside it).
+    const controls = await browser.eval<readonly string[]>(
+      `(() => { const section = document.querySelector('[data-wfx-settings-model]'); if (section === null) return []; return [...section.querySelectorAll('button, select, input')].map((el) => el.getAttribute('data-wfx-byom-action') ?? (el.closest('[data-wfx-byom-management]') !== null ? 'byom-form-control' : 'UNMARKED')); })()`,
     );
+    const unmarked = (controls ?? []).filter((marker) => marker === "UNMARKED");
     assert.that(
-      "no placeholder model controls render (a fixture is never presented as capability)",
-      "zero interactive model controls",
-      `${buttons} interactive controls`,
-      buttons === 0,
+      "every interactive model control belongs to the REAL BYOM management surface (no placeholder capability fabrication)",
+      "zero unmarked controls outside the byom management panel",
+      unmarked.length === 0 ? "all controls are the byom management surface" : `${unmarked.length} unmarked control(s)`,
+      unmarked.length === 0,
+    );
+    await assert.countAtLeast(
+      "[data-wfx-byom-management] [data-wfx-byom-action='add']",
+      1,
+      "the BYOM management panel offers its real Add action (the F8 closer — a working control, never a placeholder)",
     );
 
     // No fabricated model state: the honest unset policies render "Not

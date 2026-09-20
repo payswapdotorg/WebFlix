@@ -30,16 +30,28 @@ import { ATTENTION_MODES } from "@wfx/domain";
 import type { AttentionMode } from "@wfx/client-runtime";
 import { isRuntimeError } from "@wfx/client-runtime";
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHostForRequest } from "@/host/web-host";
+import { sessionTokenFromRequest } from "@/host/session-cookie";
 import { loadPersonalizeView } from "@/host/discoverability";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * R22-G fix: the route resolves the REQUEST-SCOPED host (the session law
+ * the R22-D/F routes follow). Before, `getWebRuntimeHost()` wrote the
+ * ANONYMOUS singleton's runtime — an authenticated session's intent /
+ * attention-mode changes landed in the wrong host and the page (which
+ * resolves the identity's host) never observed them.
+ */
+async function hostFor(request: Request) {
+  return getWebRuntimeHostForRequest(sessionTokenFromRequest(request) ?? undefined);
+}
+
 /** The closed action vocabulary the POST accepts. */
 const KINDS = new Set(["intent", "clear-intent", "attention", "exploration"]);
 
-export async function GET(): Promise<NextResponse> {
-  const host = await getWebRuntimeHost();
+export async function GET(request: Request): Promise<NextResponse> {
+  const host = await hostFor(request);
   return NextResponse.json(loadPersonalizeView(host));
 }
 
@@ -59,7 +71,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
 
-  const host = await getWebRuntimeHost();
+  const host = await hostFor(request);
   const runtime = host.runtime;
   try {
     if (kind === "intent") {
