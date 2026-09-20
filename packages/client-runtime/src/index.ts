@@ -52,6 +52,12 @@
  *                               shared For you / Following / imported /
  *                               Blend presentation state with honest
  *                               availability truth + typed recovery hints)
+ * - `source-catalog.ts`      — R22-A: the first-connect source catalog —
+ *                               the typed chooser read model (the seven
+ *                               state truths, the real connector id + the
+ *                               typed connect action + the user-vocabulary
+ *                               connection method, the anonymous sign-in
+ *                               prerequisite, the honest unsupported truth)
  * - `testing.ts`              — ⚠️ TEST DOUBLES — production code never imports it
  */
 
@@ -74,6 +80,7 @@ export * from "./discoverability";
 export * from "./feed-mode";
 export * from "./model-controls";
 export * from "./control-views";
+export * from "./source-catalog";
 export { createRuntime, type ClientRuntime, type RuntimeSession, type RuntimeOptions } from "./runtime";
 
 // Test doubles — clearly marked, testing-only (see testing.ts module doc).
