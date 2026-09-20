@@ -88,6 +88,30 @@ import {
 import { createDesktopAcquisitionSource } from "./platform/acquisition-source";
 import { createDesktopAuthTransport, type DesktopAuthFetchLike } from "./platform/auth-transport";
 import { createShellAuthSessionStore } from "./platform/auth-session-store";
+import {
+  createDesktopTorrentPlaybackBinding,
+  type DesktopTorrentPlaybackBinding,
+  type DesktopTorrentRealizationSource,
+  type DesktopProvenanceMint,
+} from "./platform/torrent-playback";
+import {
+  createDesktopWhereToWatchSurface,
+  type DesktopWhereToWatchSurface,
+} from "./surface/where-to-watch-surface";
+import {
+  createDesktopOpenViewingSurface,
+  type DesktopOpenViewingSurface,
+  type DesktopViewerSessionOf,
+} from "./surface/open-viewing-surface";
+import {
+  createUnavailableModelRuntimeProbe,
+  type DesktopModelRuntimeProbe,
+} from "./platform/model-runtime";
+import {
+  createDesktopLocalAiSurface,
+  type DesktopLocalAiSurface,
+  type DesktopMediaIntelligenceSource,
+} from "./surface/local-ai-surface";
 
 // ---------------------------------------------------------------------------
 // Options
@@ -192,6 +216,61 @@ export interface DesktopAppOptions {
     /** The adapter's platform-truth map (R22-A `unsupportedOnPlatform`). */
     readonly unsupportedOnPlatform?: ReadonlyMap<string, string>;
   };
+  /**
+   * R23-W3 — the first-class torrent realization block (OPTIONAL, the
+   * R14 seam precedent): the composition's authorized peer-copy truth
+   * (`realizationOf` — e.g. the user's media vault) + the
+   * authorized-provenance mint (the authorized-source registry's own
+   * `authorizeProvenance` — the ONLY lawful construction path) + the
+   * acquiring identity's effective-profile key derivation (authenticated:
+   * the effective profile; anonymous: the SESSION-scoped key — the R23-B
+   * progress law). When bound TOGETHER with `acquisition`, the app
+   * composes the R23-C binding (an authorized torrent realization
+   * satisfying the NATIVE rung) and the R23-E Where-to-watch surface
+   * ("Authorized peer copy" as a first-class way to watch). Absent ⇒ the
+   * honest absent truth (no peer-copy entry is offered — never a fake
+   * one).
+   */
+  readonly torrentPlayback?: {
+    /** The composition's authorized-realization truth per canonical item. */
+    readonly realizationOf: DesktopTorrentRealizationSource;
+    /** The authorized-provenance mint (the authorized-source registry). */
+    readonly mintProvenance: DesktopProvenanceMint;
+    /** The acquiring identity's effective-profile key (the R04 composition). */
+    readonly profileKeyOf: () => string;
+  };
+  /**
+   * R23-W3 — the open-viewing block (OPTIONAL): the R23-A/B Desktop
+   * semantics over the composition's viewer-session truth (the R22-H
+   * keychain law — authenticated iff a VERIFIED session is active).
+   * Absent ⇒ the honest anonymous default (the surface still renders
+   * the accountless truths — public viewing never depends on this
+   * block; the block only carries the composition's real session).
+   */
+  readonly openViewing?: {
+    /** The viewer-session derivation (the keychain truth). */
+    readonly viewerSessionOf: DesktopViewerSessionOf;
+  };
+  /**
+   * R23-W3 — the local AI block (OPTIONAL): the packaged local model
+   * runtime's probe (the availability truth — DEFAULT: the honestly
+   * unavailable probe when this build packages no runtime, NEVER a
+   * fake-ready one) + the composition's media-intelligence truth seam
+   * (null = not derived — the honest absence). When bound, the app
+   * composes the local AI surface (the R23-J catalog truth, the runtime
+   * packaging status, the R23-G live-caption gate/routing, the R23-I
+   * local-helper route, and the J39 artifacts/moment-jump consumption).
+   */
+  readonly localAi?: {
+    /** The packaged runtime's probe (default: honestly unavailable). */
+    readonly runtimeProbe?: DesktopModelRuntimeProbe;
+    /** The composition's media-intelligence truth per item. */
+    readonly mediaIntelligenceOf: DesktopMediaIntelligenceSource;
+    /** The ASR-capable provider ids REGISTERED in Model Fabric (the registration truth). */
+    readonly registeredAsrProviderIds?: () => readonly string[];
+    /** The model-policy preferred ASR provider (the alternative policy choice). */
+    readonly preferredAsrProviderId?: () => string | undefined;
+  };
 }
 
 /** A booted Desktop application: the runtime over the native adapter. */
@@ -246,6 +325,41 @@ export interface DesktopApp {
    * typed verdicts.
    */
   readonly modelManagement: DesktopModelManagementSurface;
+  /**
+   * R23-W3: the Where-to-watch surface — the R23-E first-class torrent
+   * play surface ("Authorized peer copy" in the frozen grouping,
+   * eligible for the primary play decision) over the R23-C binding.
+   * Present iff BOTH the `acquisition` and `torrentPlayback` blocks are
+   * bound; absent ⇒ the honest absent truth (the surface answers the
+   * typed not-wired verdict — never a fake peer-copy entry).
+   */
+  readonly whereToWatch: DesktopWhereToWatchSurface | null;
+  /**
+   * R23-W3: the R23-C binding — the authorized torrent realization
+   * integrated with native media (the NATIVE rung: ingest → file choice
+   * → session → canonical-identity bind → native playback → recovery
+   * continuity). Present iff BOTH the `acquisition` and `torrentPlayback`
+   * blocks are bound.
+   */
+  readonly torrentPlayback: DesktopTorrentPlaybackBinding | null;
+  /**
+   * R23-W3: the open-viewing surface — the R23-A/B Desktop semantics
+   * (accountless public viewing, the no-login-wall law, session-scoped
+   * anonymous progress). ALWAYS present (public viewing is a platform
+   * law, not an optional block); the optional `openViewing` block only
+   * carries the composition's real viewer-session truth (absent ⇒ the
+   * honest anonymous default).
+   */
+  readonly openViewing: DesktopOpenViewingSurface;
+  /**
+   * R23-W3: the local AI surface — the R23-J catalog truth, the model
+   * runtime packaging status (never faked), the R23-G live-caption
+   * gate/routing, the R23-I local-helper route, and the J39
+   * artifacts/moment-jump consumption. Present iff the `localAi` block
+   * is bound; absent ⇒ null (the Model & AI management surface stays
+   * the standing truth for models).
+   */
+  readonly localAi: DesktopLocalAiSurface | null;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -315,17 +429,20 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
   // R14 — the acquisition facts source + surface projection. The block is
   // OPTIONAL (the R10 seam precedent): absent ⇒ the honest UNBOUND surface
   // (capability truth, never a fixture fallback); present ⇒ the real
-  // derivation over the engine's public surfaces.
-  const acquisition: DesktopAcquisitionSurface =
+  // derivation over the engine's public surfaces. The SOURCE is created
+  // ONCE and shared with the R23-W3 torrent playback binding (the same
+  // bindSession truth — one acquisition identity map, never two).
+  const acquisitionSource =
     options.acquisition !== undefined
-      ? createDesktopAcquisitionSurface(
+      ? createDesktopAcquisitionSource({
+          engine: options.acquisition.engine,
+          adapter: options.acquisition.adapter,
           runtime,
-          createDesktopAcquisitionSource({
-            engine: options.acquisition.engine,
-            adapter: options.acquisition.adapter,
-            runtime,
-          }),
-        )
+        })
+      : null;
+  const acquisition: DesktopAcquisitionSurface =
+    acquisitionSource !== null
+      ? createDesktopAcquisitionSurface(runtime, acquisitionSource)
       : createUnboundAcquisitionSurface(runtime);
 
   // R20-G — the BYOF feed surface over the frozen shared FeedPort. The
@@ -408,6 +525,63 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
         })
       : createUnboundModelManagementSurface();
 
+  // R23-W3 — the R23-C torrent realization binding + the R23-E
+  // Where-to-watch surface. The blocks are OPTIONAL (the R14 seam
+  // precedent) AND composed honestly: the binding needs BOTH the
+  // acquisition block (the engine + the R14 source) AND the composition's
+  // authorized-realization truth; absent ⇒ null (no peer-copy entry is
+  // offered — never a fake one).
+  const torrentPlayback: DesktopTorrentPlaybackBinding | null =
+    options.acquisition !== undefined && options.torrentPlayback !== undefined
+      ? createDesktopTorrentPlaybackBinding({
+          runtime,
+          capabilities: capabilities as PlatformCapabilities,
+          engine: options.acquisition.engine,
+          adapter: options.acquisition.adapter,
+          source: acquisitionSource!,
+          realizationOf: options.torrentPlayback.realizationOf,
+          mintProvenance: options.torrentPlayback.mintProvenance,
+          profileKeyOf: options.torrentPlayback.profileKeyOf,
+        })
+      : null;
+  const whereToWatch: DesktopWhereToWatchSurface | null =
+    torrentPlayback !== null
+      ? createDesktopWhereToWatchSurface({
+          capabilities: capabilities as PlatformCapabilities,
+          acquisition,
+          torrentPlayback,
+        })
+      : null;
+
+  // R23-W3 — the open-viewing surface (ALWAYS composed: public viewing is
+  // a platform law; the optional block only carries the composition's
+  // real viewer-session truth — absent ⇒ the honest anonymous default).
+  const openViewing: DesktopOpenViewingSurface = createDesktopOpenViewingSurface({
+    runtime,
+    viewerSessionOf:
+      options.openViewing?.viewerSessionOf ??
+      (() => ({ viewer: "anonymous" as const })), // the honest default (no verified session truth was bound)
+    sessionIdOf: () => options.session.context.sessionId,
+    nowOf: () => new Date(options.session.clock.now()).toISOString(),
+  });
+
+  // R23-W3 — the local AI surface (OPTIONAL; the runtime probe defaults
+  // to the HONESTLY-UNAVAILABLE truth — never a fake-ready runtime).
+  const localAi: DesktopLocalAiSurface | null =
+    options.localAi !== undefined
+      ? createDesktopLocalAiSurface({
+          runtime,
+          runtimeProbe: options.localAi.runtimeProbe ?? createUnavailableModelRuntimeProbe(),
+          mediaIntelligenceOf: options.localAi.mediaIntelligenceOf,
+          ...(options.localAi.registeredAsrProviderIds !== undefined
+            ? { registeredAsrProviderIds: options.localAi.registeredAsrProviderIds }
+            : {}),
+          ...(options.localAi.preferredAsrProviderId !== undefined
+            ? { preferredAsrProviderId: options.localAi.preferredAsrProviderId }
+            : {}),
+        })
+      : null;
+
   let disposed = false;
   return {
     platform: "desktop",
@@ -423,6 +597,10 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     offlineDiscovery,
     firstRun,
     modelManagement,
+    whereToWatch,
+    torrentPlayback,
+    openViewing,
+    localAi,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -576,3 +754,72 @@ export type {
   DesktopAcquisitionSource,
   DesktopAcquisitionSourceOptions,
 } from "./platform/acquisition-source";
+
+// R23-W3 — the first-class torrent realization + open viewing + local AI.
+export {
+  createDesktopTorrentPlaybackBinding,
+  desktopTorrentRungSatisfaction,
+  torrentRealizationDeclarationOf,
+  peerCopyPlaybackRealization,
+  torrentFileCandidates,
+  resolvePeerCopySelection,
+  isPlayableTorrentFilePath,
+  isDesktopTorrentRealization,
+  AUTHORIZED_PEER_COPY_CONNECTOR_ID,
+} from "./platform/torrent-playback";
+export type {
+  DesktopTorrentPlaybackBinding,
+  DesktopTorrentPlaybackOptions,
+  DesktopTorrentRealization,
+  DesktopTorrentRealizationSource,
+  DesktopProvenanceMint,
+  DesktopPeerCopyPlayOutcome,
+  DesktopTorrentFileCandidate,
+} from "./platform/torrent-playback";
+export { createDesktopWhereToWatchSurface, whereToWatchCopyStrings } from "./surface/where-to-watch-surface";
+export type {
+  DesktopWhereToWatchSurface,
+  DesktopWhereToWatchOptions,
+  DesktopWhereToWatchView,
+  DesktopWhereToWatchEntryView,
+  DesktopWhereToWatchGroupView,
+  DesktopPrimaryPlayView,
+} from "./surface/where-to-watch-surface";
+export { createDesktopOpenViewingSurface } from "./surface/open-viewing-surface";
+export type {
+  DesktopOpenViewingSurface,
+  DesktopOpenViewingOptions,
+  DesktopOpenViewingView,
+  DesktopSurfaceOpennessView,
+  DesktopViewerSessionOf,
+  DesktopPlaybackAuthorizationQuery,
+} from "./surface/open-viewing-surface";
+export {
+  createUnavailableModelRuntimeProbe,
+  createScriptedModelRuntimeProbe,
+  DESKTOP_MODEL_RUNTIME,
+} from "./platform/model-runtime";
+export type {
+  DesktopModelRuntimeDescriptor,
+  DesktopModelRuntimeStatus,
+  DesktopModelRuntimeProbe,
+} from "./platform/model-runtime";
+export {
+  createDesktopLocalAiSurface,
+  localAiCopyStrings,
+  openModelRowView,
+} from "./surface/local-ai-surface";
+export type {
+  DesktopLocalAiSurface,
+  DesktopLocalAiOptions,
+  DesktopOpenModelRowView,
+  DesktopLiveCaptionView,
+  DesktopLocalHelperRoute,
+  DesktopMediaIntelligenceView,
+  DesktopMediaIntelligenceSource,
+  DesktopProvenanceView,
+  DesktopTranscriptSegmentView,
+  DesktopChapterView,
+  DesktopMomentView,
+  DesktopMomentJumpOutcome,
+} from "./surface/local-ai-surface";
