@@ -80,8 +80,15 @@ export const j19ModelPolicy: Journey = {
       "the R22-F BYOM management surface renders inside the Model & AI section (the normal-path management panel)",
     );
     await assert.visible(
-      "[data-wfx-byom-add-form]",
-      "the add-provider form renders (discover → configure is a real control, never a hidden API)",
+      "[data-wfx-byom-action='add']",
+      "the add-provider entry control renders (discover → configure is a real control, never a hidden API)",
+    );
+    // The anonymous truth: the add FORM is auth-gated (providers belong to
+    // an account); the honest prerequisite note renders — never a dead end.
+    // (The authenticated add→bind→remove round trip is J36's encoding.)
+    await assert.visible(
+      "[data-wfx-byom-anonymous-note]",
+      "the anonymous state names the sign-in prerequisite honestly (the no-dead-end law)",
     );
     const strayControls = await browser.eval<number>(
       `(() => { const section = document.querySelector('[data-wfx-settings-model]'); if (section === null) return -1; const panel = section.querySelector('[data-wfx-byom-management]'); if (panel === null) return -1; return [...section.querySelectorAll('button, select, input')].filter((el) => panel.contains(el) === false).length; })()`,
