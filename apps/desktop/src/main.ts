@@ -62,6 +62,10 @@ import {
   type DesktopAcquisitionSurface,
 } from "./surface/acquisition-surface";
 import {
+  createDesktopDiscoverabilitySurface,
+  type DesktopDiscoverabilitySurface,
+} from "./surface/discoverability-surface";
+import {
   createDesktopFeedSurface,
   createUnboundFeedSurface,
   type DesktopFeedSurface,
@@ -160,6 +164,12 @@ export interface DesktopApp {
   readonly acquisition: DesktopAcquisitionSurface;
   /** R20-G: the BYOF feed surface (import + sync + cache over the frozen FeedPort). */
   readonly feed: DesktopFeedSurface;
+  /**
+   * R21-G: the discoverability surface — the frozen R21-A capability
+   * matrix + the R21-C shared control views bound to the Desktop
+   * platform (parity-projected, with the honest standing verdicts).
+   */
+  readonly discoverability: DesktopDiscoverabilitySurface;
   /** Tear the adapter down (terminates the engine binding; idempotent). */
   dispose(): void;
 }
@@ -257,6 +267,16 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
         })
       : createUnboundFeedSurface();
 
+  // R21-G — the Desktop discoverability surface: the frozen capability
+  // matrix + the shared control views bound to THIS composition (the
+  // standing verdicts derive from the bound flags above — never guessed).
+  const discoverability: DesktopDiscoverabilitySurface = createDesktopDiscoverabilitySurface({
+    runtime,
+    capabilities: capabilities as PlatformCapabilities,
+    acquisition,
+    feed,
+  });
+
   let disposed = false;
   return {
     platform: "desktop",
@@ -268,6 +288,7 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     surface,
     acquisition,
     feed,
+    discoverability,
     dispose(): void {
       if (disposed) return;
       disposed = true;
@@ -286,6 +307,25 @@ export {
   createUnboundAcquisitionSurface,
 } from "./surface/acquisition-surface";
 export type { DesktopAcquisitionSurface } from "./surface/acquisition-surface";
+export { createDesktopDiscoverabilitySurface } from "./surface/discoverability-surface";
+export type {
+  DesktopDiscoverabilitySurface,
+  DesktopCapabilityView,
+  DesktopCapabilityStanding,
+  DesktopJ34TaskView,
+  DesktopPlatformDifferenceView,
+  DesktopPlatformTruthProjection,
+  DesktopAiActionSpec,
+  DesktopAiActionView,
+  DesktopAiActionTrayView,
+} from "./surface/discoverability-surface";
+export {
+  DESKTOP_AI_ACTIONS,
+  AI_TRAY_TASKS,
+  desktopCapabilityParityIssues,
+  discoverabilityCopyStrings,
+  isStaleDesktopDiscoverabilityCopy,
+} from "./surface/discoverability-surface";
 export {
   createDesktopFeedSurface,
   createUnboundFeedSurface,
