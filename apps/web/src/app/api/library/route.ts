@@ -34,6 +34,58 @@ interface LibraryRequestBody {
   readonly itemId?: string;
   /** The list name (optional; the default watchlist when absent). */
   readonly listName?: string;
+  /**
+   * The item's SOURCE identity (the dev-boot bridge's input — see the
+   * bridge note below; the client controls already carry it).
+   */
+  readonly title?: string;
+  readonly connectorId?: string;
+  readonly externalRef?: string;
+}
+
+/**
+ * R24-W2 — THE DEV-BOOT BRIDGE (the documented per-route module-graph
+ * doctrine — the same law the playback session bridge records): the
+ * PAGE's runtime learned this item through the viewer's own
+ * browse/search; THIS module's runtime instance resolves the item
+ * through the SAME seam (the runtime's own search, matched by the
+ * source key) so the canonical write lands in a runtime that knows the
+ * item. In the single-bundle production boot the runtimes are ONE —
+ * the resolution finds the same registered item (the registry is
+ * idempotent), never a second code path.
+ */
+async function resolveItemIdForThisRuntime(
+  host: Awaited<ReturnType<typeof getWebRuntimeHost>>,
+  input: Partial<LibraryRequestBody>,
+): Promise<string> {
+  const posted = input.itemId ?? "";
+  if (
+    typeof input.connectorId !== "string" ||
+    input.connectorId.length === 0 ||
+    typeof input.externalRef !== "string" ||
+    input.externalRef.length === 0 ||
+    typeof input.title !== "string" ||
+    input.title.length === 0
+  ) {
+    // No source identity: the posted id is the truth (the in-process
+    // consumers whose host already knows the item).
+    return posted;
+  }
+  try {
+    const model = await host.runtime.search({ query: input.title });
+    for (const hit of model.hits) {
+      if (
+        hit.result.connectorId === input.connectorId &&
+        hit.result.externalRef === input.externalRef
+      ) {
+        return hit.canonicalItemId;
+      }
+    }
+  } catch {
+    // The resolution failed: fall through to the posted id (the save's
+    // own typed refusal names the truth — never a fabricated success).
+  }
+  return posted;
 }
 
 /** POST /api/library — the WebFlix-native watchlist/playlist write. */
@@ -62,13 +114,17 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const host = await getWebRuntimeHost();
+  // R24-W2 — the dev-boot bridge: resolve the item through THIS
+  // module's runtime before the canonical write (see the bridge note
+  // at resolveItemIdForThisRuntime).
+  const itemId = await resolveItemIdForThisRuntime(host, input);
   const result =
     input.op === "save"
       ? await host.runtime.libraryOps.save({
-          itemId: input.itemId,
+          itemId,
           ...(input.listName !== undefined ? { listName: input.listName } : {}),
         })
-      : await host.runtime.libraryOps.remove(input.itemId);
+      : await host.runtime.libraryOps.remove(itemId);
   if (result.ok) {
     return NextResponse.json(
       {

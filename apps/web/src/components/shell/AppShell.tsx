@@ -33,6 +33,9 @@ import { Icon, type IconName } from "./Icon";
 import { SearchBox } from "./SearchBox";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdatePrompt } from "./UpdatePrompt";
+// R24-E — the play-intent recorder (the document-level listener that
+// records the user's real play/switch clicks for the startup traces).
+import { PlayIntentRecorder } from "./PlayIntentRecorder";
 
 /** One shell navigation icon per surface (item surfaces are not in the shell nav). */
 const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
@@ -145,6 +148,9 @@ export function AppShell({
         </nav>
         <main className={`wfx-main${mainClass !== undefined ? ` ${mainClass}` : ""}`} id="wfx-main">
           {children}
+          {/* R24-E — the play-intent recorder: the real play actions on
+              every surface feed the startup telemetry (renders nothing). */}
+          <PlayIntentRecorder />
         </main>
       </div>
       <nav className="wfx-bottomnav" aria-label="Primary mobile">

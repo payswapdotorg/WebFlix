@@ -38,9 +38,12 @@
  *   C captions, T transcript.
  */
 
-import { useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, use, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
+// R24-E — the startup/interaction telemetry recorder (the seek/control
+// marker pairs wrap the REAL command round trips).
+import { recordPlaybackMarker } from "@/host/playback-telemetry";
 
 /** One chapter mark on the scrub bar (the intelligence artifact's chapter). */
 export interface ChromeChapter {
@@ -56,6 +59,37 @@ export interface ChromeTranscriptSegment {
   readonly text: string;
 }
 
+/** The scrub bar's chapter-mark / caption-overlay inputs (the transcript-derived features — R24-E's deferred lane). */
+export interface ChromeTranscriptFeatures {
+  readonly chapters: readonly ChromeChapter[];
+  readonly transcript: readonly ChromeTranscriptSegment[];
+}
+
+/**
+ * The features' USABLE shape: the streaming promise OR React's
+ * sync-fulfilled promise (a promise with the `status: "fulfilled"` +
+ * `value` fields attached — React's `use()` FAST PATH returns it
+ * synchronously, so the composed render's layers never suspend).
+ */
+export type ChromeTranscriptFeaturesUsable = Promise<ChromeTranscriptFeatures | null>;
+
+/**
+ * Build React's sync-fulfilled usable (the `use()` fast path — the
+ * promise carries the fulfilled status/value fields React reads
+ * synchronously; the composed/test render never suspends).
+ */
+export function fulfilledTranscriptFeatures(
+  features: ChromeTranscriptFeatures | null,
+): ChromeTranscriptFeaturesUsable {
+  const promise = Promise.resolve(features) as ChromeTranscriptFeaturesUsable & {
+    status?: "fulfilled";
+    value?: ChromeTranscriptFeatures | null;
+  };
+  promise.status = "fulfilled";
+  promise.value = features;
+  return promise;
+}
+
 /** The chrome's serialized view input (server-computed per render). */
 export interface PlayerChromeProps {
   readonly sessionId: string;
@@ -65,10 +99,16 @@ export interface PlayerChromeProps {
   readonly initialBufferedMs: number;
   /** The known duration (ms); null when unknown — the scrub bar stays honest. */
   readonly durationMs: number | null;
-  /** The chapters (from the item's derived intelligence). */
-  readonly chapters: readonly ChromeChapter[];
-  /** The transcript segments (the caption overlay's source). */
-  readonly transcript: readonly ChromeTranscriptSegment[];
+  /**
+   * R24-E — the transcript-derived features (the chapters + the caption
+   * source). The intelligence artifact is the DEFERRED lane: the shell
+   * passes either the sync-resolved usable (the composed render) or the
+   * streaming PROMISE (the page's split — the features arrive behind the
+   * shell and the marks/overlay layers suspend locally, NEVER the
+   * transport bar: the chrome stays stable during init while the
+   * nonessential artifact streams in).
+   */
+  readonly transcriptFeatures: ChromeTranscriptFeaturesUsable;
   /**
    * Whether WebFlix owns THIS stage's media path (the authorized peer
    * copy's browser rung) — the volume/mute cluster and the media-rate
@@ -107,6 +147,92 @@ interface CommandStatus {
 }
 
 /**
+ * The transcript-derived CHAPTER MARKS layer (the suspended features:
+ * the marks render when the intelligence artifact streams in — the
+ * transport bar itself NEVER suspends, R24-E's stable-chrome law).
+ */
+function ChapterMarksLayer({
+  features,
+  duration,
+}: {
+  readonly features: ChromeTranscriptFeaturesUsable;
+  readonly duration: number | null;
+}): JSX.Element | null {
+  const resolved = use<ChromeTranscriptFeatures | null>(features);
+  if (resolved === null || duration === null || duration <= 0) return null;
+  const marks = resolved.chapters
+    .filter((chapter) => chapter.startMs > 0 && chapter.startMs < duration)
+    .map((chapter) => ({
+      title: chapter.title,
+      left: `${(chapter.startMs / duration) * 100}%`,
+    }));
+  if (marks.length === 0) return null;
+  return (
+    <>
+      {marks.map((mark) => (
+        <span key={mark.left} className="wfx-chrome__chaptermark" style={{ left: mark.left }} title={mark.title} />
+      ))}
+    </>
+  );
+}
+
+/**
+ * The CAPTIONS layer (the suspended features): the captions CONTROL
+ * (in the transport bar) and the position-synced OVERLAY (at the stage
+ * root) — two PARTS of one features-derived truth. The control's
+ * PRESENCE derives from the RESOLVED features (a transcript exists or
+ * not) — inside the boundary, never from the parent's
+ * promise-status-dependent conditional (the stable-hydration law: the
+ * same resolved truth answers at SSR and at hydration). The overlay
+ * renders the current segment when captions are on — no ticker, no
+ * fabricated text.
+ */
+function CaptionsLayer({
+  features,
+  part,
+  captionsOn,
+  positionMs,
+  onToggle,
+}: {
+  readonly features: ChromeTranscriptFeaturesUsable;
+  readonly part: "control" | "overlay";
+  readonly captionsOn: boolean;
+  readonly positionMs: number;
+  readonly onToggle: () => void;
+}): JSX.Element | null {
+  const resolved = use<ChromeTranscriptFeatures | null>(features);
+  if (resolved === null || resolved.transcript.length === 0) return null;
+  if (part === "control") {
+    return (
+      <button
+        type="button"
+        className={`wfx-chrome__btn${captionsOn ? " wfx-chrome__btn--active" : ""}`}
+        onClick={onToggle}
+        aria-label={captionsOn ? "Turn captions off (c)" : "Turn captions on (c)"}
+        aria-pressed={captionsOn}
+        data-wfx-chrome-captions
+      >
+        <Icon name="captions" size={20} />
+      </button>
+    );
+  }
+  if (!captionsOn) return null;
+  const segment =
+    resolved.transcript.find(
+      (candidate) => positionMs >= candidate.startMs && positionMs < candidate.endMs,
+    ) ?? null;
+  if (segment === null) return null;
+  return (
+    <div className="wfx-chrome__caption" data-wfx-caption-line aria-live="polite">
+      {segment.speaker !== undefined && segment.speaker.length > 0 ? (
+        <span className="wfx-chrome__captionspeaker">{segment.speaker}: </span>
+      ) : null}
+      {segment.text}
+    </div>
+  );
+}
+
+/**
  * The WebFlix player chrome — the transport bar + the settings cluster
  * + the caption overlay + the keyboard grammar, wired to the runtime's
  * real commands.
@@ -133,6 +259,14 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
       if (props.sessionId === "none" || props.sessionId === "") {
         setCommand({ ok: false, detail: "no playback session on this surface" });
         return;
+      }
+      // R24-E — the seek/control marker pairs wrap the real round trip:
+      // the request at invocation, the confirmation at the VISIBLE effect
+      // (the accepted state read — the only progress truth).
+      if (kind === "seek") {
+        recordPlaybackMarker("seek-requested", `seek → ${positionMs ?? 0}ms`);
+      } else {
+        recordPlaybackMarker("control-invoked", kind);
       }
       try {
         const response = await fetch("/api/playback", {
@@ -163,6 +297,13 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
             setPhase(stateBody.state.phase);
             setPositionMs(stateBody.state.positionMs);
             setBufferedMs(stateBody.state.bufferedMs);
+            // R24-E — the confirmation at the visible effect: the state
+            // rendered is the effect the metric measures.
+            if (kind === "seek") {
+              recordPlaybackMarker("seek-confirmed", `position ${stateBody.state.positionMs}ms accepted`);
+            } else {
+              recordPlaybackMarker("control-confirmed", `${kind} → phase ${stateBody.state.phase}`);
+            }
           } else if (kind === "seek" && positionMs !== undefined) {
             // Seek acceptance IS position evidence (the runtime's law) —
             // optimistic truth even if the state read failed.
@@ -374,16 +515,6 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
   const bufferedRatio =
     duration !== null && duration > 0 ? Math.min(1, Math.max(0, bufferedMs / duration)) : 0;
 
-  /** The current caption segment (position-synced, no ticker). */
-  const captionSegment = useMemo(() => {
-    if (!captionsOn) return null;
-    return (
-      props.transcript.find(
-        (segment) => positionMs >= segment.startMs && positionMs < segment.endMs,
-      ) ?? null
-    );
-  }, [captionsOn, positionMs, props.transcript]);
-
   /** The scrub bar's seek-from-event (direct manipulation). */
   const seekFromEvent = useCallback(
     (clientX: number): void => {
@@ -395,16 +526,6 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
     },
     [duration, seekTo],
   );
-
-  const chapterMarks = useMemo(() => {
-    if (duration === null || duration <= 0) return [];
-    return props.chapters
-      .filter((chapter) => chapter.startMs > 0 && chapter.startMs < duration)
-      .map((chapter) => ({
-        title: chapter.title,
-        left: `${(chapter.startMs / duration) * 100}%`,
-      }));
-  }, [duration, props.chapters]);
 
   return (
     <div className="wfx-chrome" data-wfx-chrome data-wfx-chrome-phase={phase}>
@@ -437,9 +558,11 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
             <span className="wfx-chrome__buffered" style={{ width: `${bufferedRatio * 100}%` }} />
           ) : null}
           <span className="wfx-chrome__played" style={{ width: `${ratio * 100}%` }} />
-          {chapterMarks.map((mark) => (
-            <span key={mark.left} className="wfx-chrome__chaptermark" style={{ left: mark.left }} title={mark.title} />
-          ))}
+          {/* R24-E — the chapter marks ride the streamed features layer
+              (a LOCAL suspension — the transport bar never suspends). */}
+          <Suspense fallback={null}>
+            <ChapterMarksLayer features={props.transcriptFeatures} duration={duration} />
+          </Suspense>
           <span className="wfx-chrome__thumb" style={{ left: `${ratio * 100}%` }} />
         </span>
         <span className="wfx-chrome__readout" aria-hidden="true">
@@ -505,20 +628,21 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         </div>
 
         <div className="wfx-chrome__cluster">
-          {props.transcript.length > 0 ? (
-            <button
-              type="button"
-              className={`wfx-chrome__btn${captionsOn ? " wfx-chrome__btn--active" : ""}`}
-              onClick={() => {
+          {/* R24-E — the captions CONTROL rides the suspended features
+              layer (the presence derives from the RESOLVED transcript
+              truth inside the boundary — the stable-hydration law; the
+              transport bar itself never suspends). */}
+          <Suspense fallback={null}>
+            <CaptionsLayer
+              features={props.transcriptFeatures}
+              part="control"
+              captionsOn={captionsOn}
+              positionMs={positionMs}
+              onToggle={() => {
                 setCaptionsOn((current) => !current);
               }}
-              aria-label={captionsOn ? "Turn captions off (c)" : "Turn captions on (c)"}
-              aria-pressed={captionsOn}
-              data-wfx-chrome-captions
-            >
-              <Icon name="captions" size={20} />
-            </button>
-          ) : null}
+            />
+          </Suspense>
           {/* THE SETTINGS CLUSTER (a native disclosure — the honest
               per-rung truths render in the markup, closed by default,
               keyboard-operable for free). */}
@@ -637,15 +761,19 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         </dl>
       </details>
 
-      {/* THE CAPTION OVERLAY (the transcript artifact, position-synced) */}
-      {captionSegment !== null ? (
-        <div className="wfx-chrome__caption" data-wfx-caption-line aria-live="polite">
-          {captionSegment.speaker !== undefined && captionSegment.speaker.length > 0 ? (
-            <span className="wfx-chrome__captionspeaker">{captionSegment.speaker}: </span>
-          ) : null}
-          {captionSegment.text}
-        </div>
-      ) : null}
+      {/* THE CAPTION OVERLAY (the transcript artifact, position-synced —
+          the streamed features layer's overlay part; a LOCAL suspension). */}
+      <Suspense fallback={null}>
+        <CaptionsLayer
+          features={props.transcriptFeatures}
+          part="overlay"
+          captionsOn={captionsOn}
+          positionMs={positionMs}
+          onToggle={() => {
+            setCaptionsOn((current) => !current);
+          }}
+        />
+      </Suspense>
     </div>
   );
 }

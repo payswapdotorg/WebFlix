@@ -29,8 +29,30 @@ import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost, canonicalIdFor } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadPlayerView } from "../src/host/view-models";
+import type { PlayerView } from "../src/host/view-models";
 import { PlayerSurface } from "../src/components/player/PlayerSurface";
-import { PlayerChrome } from "../src/components/player/PlayerChrome";
+import { PlayerChrome, fulfilledTranscriptFeatures } from "../src/components/player/PlayerChrome";
+import type { PlayerEnrichments, PlayerShellView } from "../src/host/view-models";
+
+/**
+ * The surface's render props from the composed view (the shell fields +
+ * the resolved enrichments — the composed render's sync-fulfilled path:
+ * the enrichment sections render inline, no suspension).
+ */
+function playerSurfaceProps(view: PlayerView): {
+  view: PlayerShellView;
+  enrichments: PlayerEnrichments;
+} {
+  return {
+    view,
+    enrichments: {
+      aiTray: view.aiTray,
+      intelligence: view.intelligence,
+      liveAsr: view.liveAsr,
+      related: view.related,
+    },
+  };
+}
 import { POST as postPlayback, GET as getPlayback } from "../src/app/api/playback/route";
 import { withEnv } from "./fake-web";
 
@@ -81,7 +103,7 @@ describe("R24-W2 — the player chrome renders over the real composition", () =>
   it("the transport bar + scrub bar + settings cluster + fullscreen render with the truthful phase", async () => {
     const host = await bootHost();
     const view = await loadPlayerView(host, DIARY);
-    const markup = renderToStaticMarkup(createElement(PlayerSurface, { view }));
+    const markup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceProps(view)));
     for (const present of [
       "data-wfx-chrome",
       "data-wfx-chrome-play",
@@ -100,7 +122,7 @@ describe("R24-W2 — the player chrome renders over the real composition", () =>
   it("the scrub bar renders the chapter marks from the intelligence artifact + the honest duration", async () => {
     const host = await bootHost();
     const view = await loadPlayerView(host, DIARY);
-    const markup = renderToStaticMarkup(createElement(PlayerSurface, { view }));
+    const markup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceProps(view)));
     // Deep Field Diary's transcript artifact provides the duration bound;
     // the chapters render as marks on the same scrub bar.
     expect(markup).toContain("wfx-chrome__chaptermark");
@@ -111,7 +133,7 @@ describe("R24-W2 — the player chrome renders over the real composition", () =>
   it("the captions toggle renders where the transcript artifact exists (the shared subtitle path)", async () => {
     const host = await bootHost();
     const view = await loadPlayerView(host, DIARY);
-    const markup = renderToStaticMarkup(createElement(PlayerSurface, { view }));
+    const markup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceProps(view)));
     expect(markup).toContain("data-wfx-chrome-captions");
   });
 
@@ -121,7 +143,7 @@ describe("R24-W2 — the player chrome renders over the real composition", () =>
     // The provider (browser) rung: no WebFlix volume cluster renders (the
     // settings cluster carries the realization-exposed volume TRUTH row
     // instead — the honest disclosure, never a fabricated control).
-    const markup = renderToStaticMarkup(createElement(PlayerSurface, { view }));
+    const markup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceProps(view)));
     expect(markup).not.toContain('data-wfx-chrome-volume="');
     expect(markup).not.toContain('data-wfx-chrome-mute="');
     expect(markup).toContain("data-wfx-chrome-volume-truth");
@@ -130,7 +152,7 @@ describe("R24-W2 — the player chrome renders over the real composition", () =>
   it("the up-next rail + the queue panel render beside the player with the autoplay policy sentence", async () => {
     const host = await bootHost();
     const view = await loadPlayerView(host, DIARY);
-    const markup = renderToStaticMarkup(createElement(PlayerSurface, { view }));
+    const markup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceProps(view)));
     expect(markup).toContain("data-wfx-up-next");
     expect(markup).toContain("data-wfx-queue-list");
     expect(markup).toContain("data-wfx-autoplay-toggle");
@@ -238,8 +260,7 @@ describe("R24-W2 — the chrome's honest per-rung backing truths", () => {
         initialPositionMs: 0,
         initialBufferedMs: 0,
         durationMs: 60_000,
-        chapters: [],
-        transcript: [],
+        transcriptFeatures: fulfilledTranscriptFeatures({ chapters: [], transcript: [] }),
         webflixOwnsStage: false,
         surfaceMode: "browser",
         qualityTruth: "This way of watching carries its own quality selection — the provider's player answers it.",
@@ -261,8 +282,7 @@ describe("R24-W2 — the chrome's honest per-rung backing truths", () => {
         initialPositionMs: 0,
         initialBufferedMs: 0,
         durationMs: 60_000,
-        chapters: [],
-        transcript: [],
+        transcriptFeatures: fulfilledTranscriptFeatures({ chapters: [], transcript: [] }),
         webflixOwnsStage: true,
         surfaceMode: "browser",
         qualityTruth: "For a peer copy, the file you chose IS the quality decision.",
@@ -284,11 +304,13 @@ describe("R24-W2 — the chrome's honest per-rung backing truths", () => {
       initialPositionMs: 20_000,
       initialBufferedMs: 0,
       durationMs: 60_000,
-      chapters: [],
-      transcript: [
-        { startMs: 0, endMs: 15_000, text: "first segment" },
-        { startMs: 15_000, endMs: 30_000, speaker: "Dr. Amara Osei", text: "the current segment" },
-      ],
+      transcriptFeatures: fulfilledTranscriptFeatures({
+        chapters: [],
+        transcript: [
+          { startMs: 0, endMs: 15_000, text: "first segment" },
+          { startMs: 15_000, endMs: 30_000, speaker: "Dr. Amara Osei", text: "the current segment" },
+        ],
+      }),
       webflixOwnsStage: false,
       surfaceMode: "browser",
       qualityTruth: "quality truth",

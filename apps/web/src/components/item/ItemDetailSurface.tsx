@@ -172,6 +172,8 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
         <WatchlistSave
           itemId={view.itemId}
           title={view.title}
+          connectorId={view.connectorId}
+          externalRef={view.externalRef}
           initiallySaved={view.watchlistSaved}
           offerPlaylist
         />

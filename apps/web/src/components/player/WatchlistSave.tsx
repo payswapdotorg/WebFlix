@@ -25,6 +25,15 @@ import { Icon } from "@/components/shell/Icon";
 export interface WatchlistSaveProps {
   readonly itemId: string;
   readonly title: string;
+  /**
+   * The item's SOURCE identity (the dev-boot bridge's input): the route
+   * resolves the item through the runtime's own search seam when THIS
+   * module's runtime instance has not seen it (the single-bundle
+   * production boot shares one runtime — the fields are the same truth
+   * there, never a second code path).
+   */
+  readonly connectorId: string;
+  readonly externalRef: string;
   /** The initial saved state (the runtime's own watchlist truth at render). */
   readonly initiallySaved: boolean;
   /** The compact variant (cards) vs the standard variant (item/player). */
@@ -56,6 +65,13 @@ export function WatchlistSave(props: WatchlistSaveProps): JSX.Element {
           body: JSON.stringify({
             op,
             itemId: props.itemId,
+            // The item's SOURCE identity (the dev-boot bridge's input —
+            // the route's runtime resolves the item through the same
+            // search seam the page's runtime learned it from; the
+            // single-bundle production boot shares one runtime).
+            title: props.title,
+            connectorId: props.connectorId,
+            externalRef: props.externalRef,
             ...(name !== undefined && name.trim().length > 0 ? { listName: name.trim() } : {}),
           }),
         });

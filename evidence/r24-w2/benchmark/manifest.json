@@ -1,0 +1,541 @@
+{
+  "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+  "generatedAt": "2026-09-21T16:09:40.847Z",
+  "platform": "web",
+  "environment": {
+    "platform": "web",
+    "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+    "browser": "Chrome 153.0.0.0",
+    "osDevice": "unknown OS",
+    "viewport": "1280x800",
+    "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+  },
+  "benchmarkTitles": [
+    {
+      "contentId": "search:Deep Field Diary",
+      "title": "Deep Field Diary",
+      "realization": "browser",
+      "samePublicContentOnYouTube": false
+    },
+    {
+      "contentId": "search:Desert Rain Doc",
+      "title": "Desert Rain Doc",
+      "realization": "embed",
+      "samePublicContentOnYouTube": false
+    },
+    {
+      "contentId": "search:Signal Fade",
+      "title": "Signal Fade",
+      "realization": "browser",
+      "samePublicContentOnYouTube": false
+    }
+  ],
+  "runs": [
+    {
+      "runId": "Deep Field Diary-cold",
+      "cachePass": "cold",
+      "environment": {
+        "platform": "web",
+        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "browser": "Chrome 153.0.0.0",
+        "osDevice": "unknown OS",
+        "viewport": "1280x800",
+        "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+      },
+      "content": {
+        "contentId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+        "title": "Deep Field Diary",
+        "realization": "browser",
+        "samePublicContentOnYouTube": false
+      },
+      "durationMetrics": [
+        {
+          "metric": "navigation-to-player-visible",
+          "valuesMs": [
+            0
+          ]
+        },
+        {
+          "metric": "click-to-first-frame",
+          "valuesMs": [
+            772.9000000003725
+          ]
+        },
+        {
+          "metric": "time-to-playable",
+          "valuesMs": [
+            253.20000000018624
+          ]
+        },
+        {
+          "metric": "seek-response-latency",
+          "valuesMs": [
+            75.1000000000929
+          ]
+        },
+        {
+          "metric": "control-responsiveness",
+          "valuesMs": [
+            65
+          ]
+        }
+      ],
+      "ratioMetrics": [
+        {
+          "metric": "startup-failure-rate",
+          "attempts": 1,
+          "occurrences": 0
+        },
+        {
+          "metric": "first-60s-rebuffer-ratio",
+          "attempts": 0,
+          "occurrences": 0
+        }
+      ],
+      "qualitative": {
+        "oneObviousPrimaryPlayAction": true,
+        "nonessentialWorkBlockedFirstFrame": false,
+        "fakeBufferingProgressObserved": false
+      },
+      "notes": "the contained browser rung (the provider's opaque page — the iframe load event is the honest first-frame boundary); the intelligence-heavy title (the enrichment-law probe: transcript/chapters stream behind the shell); the cold-cache pass over the real user flow (search → item → play → first frame → seek → control)"
+    },
+    {
+      "runId": "Deep Field Diary-warm",
+      "cachePass": "warm",
+      "environment": {
+        "platform": "web",
+        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "browser": "Chrome 153.0.0.0",
+        "osDevice": "unknown OS",
+        "viewport": "1280x800",
+        "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+      },
+      "content": {
+        "contentId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+        "title": "Deep Field Diary",
+        "realization": "browser",
+        "samePublicContentOnYouTube": false
+      },
+      "durationMetrics": [
+        {
+          "metric": "navigation-to-player-visible",
+          "valuesMs": [
+            0
+          ]
+        },
+        {
+          "metric": "click-to-first-frame",
+          "valuesMs": [
+            728.2000000001863
+          ]
+        },
+        {
+          "metric": "time-to-playable",
+          "valuesMs": [
+            299.20000000018626
+          ]
+        },
+        {
+          "metric": "seek-response-latency",
+          "valuesMs": [
+            45.799999999813735
+          ]
+        },
+        {
+          "metric": "control-responsiveness",
+          "valuesMs": [
+            31.200000000186265
+          ]
+        }
+      ],
+      "ratioMetrics": [
+        {
+          "metric": "startup-failure-rate",
+          "attempts": 1,
+          "occurrences": 0
+        },
+        {
+          "metric": "first-60s-rebuffer-ratio",
+          "attempts": 0,
+          "occurrences": 0
+        }
+      ],
+      "qualitative": {
+        "oneObviousPrimaryPlayAction": true,
+        "nonessentialWorkBlockedFirstFrame": false,
+        "fakeBufferingProgressObserved": false
+      },
+      "notes": "the contained browser rung (the provider's opaque page — the iframe load event is the honest first-frame boundary); the intelligence-heavy title (the enrichment-law probe: transcript/chapters stream behind the shell); the warm-cache pass over the real user flow (search → item → play → first frame → seek → control)"
+    },
+    {
+      "runId": "Desert Rain Doc-cold",
+      "cachePass": "cold",
+      "environment": {
+        "platform": "web",
+        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "browser": "Chrome 153.0.0.0",
+        "osDevice": "unknown OS",
+        "viewport": "1280x800",
+        "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+      },
+      "content": {
+        "contentId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+        "title": "Desert Rain Doc",
+        "realization": "embed",
+        "samePublicContentOnYouTube": false
+      },
+      "durationMetrics": [
+        {
+          "metric": "navigation-to-player-visible",
+          "valuesMs": [
+            0
+          ]
+        },
+        {
+          "metric": "click-to-first-frame",
+          "valuesMs": [
+            956.199951171875
+          ]
+        },
+        {
+          "metric": "time-to-playable",
+          "valuesMs": [
+            363.29995117196813
+          ]
+        },
+        {
+          "metric": "seek-response-latency",
+          "valuesMs": [
+            33.39999999990687
+          ]
+        },
+        {
+          "metric": "control-responsiveness",
+          "valuesMs": [
+            50.59999999962747
+          ]
+        }
+      ],
+      "ratioMetrics": [
+        {
+          "metric": "startup-failure-rate",
+          "attempts": 1,
+          "occurrences": 0
+        },
+        {
+          "metric": "first-60s-rebuffer-ratio",
+          "attempts": 0,
+          "occurrences": 0
+        }
+      ],
+      "qualitative": {
+        "oneObviousPrimaryPlayAction": true,
+        "nonessentialWorkBlockedFirstFrame": false,
+        "fakeBufferingProgressObserved": false
+      },
+      "notes": "the contained embed rung (the official provider embed — the same opaque-boundary law); the embed-attested path the J07 journey exercises; the cold-cache pass over the real user flow (search → item → play → first frame → seek → control)"
+    },
+    {
+      "runId": "Desert Rain Doc-warm",
+      "cachePass": "warm",
+      "environment": {
+        "platform": "web",
+        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "browser": "Chrome 153.0.0.0",
+        "osDevice": "unknown OS",
+        "viewport": "1280x800",
+        "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+      },
+      "content": {
+        "contentId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+        "title": "Desert Rain Doc",
+        "realization": "embed",
+        "samePublicContentOnYouTube": false
+      },
+      "durationMetrics": [
+        {
+          "metric": "navigation-to-player-visible",
+          "valuesMs": [
+            0
+          ]
+        },
+        {
+          "metric": "click-to-first-frame",
+          "valuesMs": [
+            655.7000000001863
+          ]
+        },
+        {
+          "metric": "time-to-playable",
+          "valuesMs": [
+            268.3000000002794
+          ]
+        },
+        {
+          "metric": "seek-response-latency",
+          "valuesMs": [
+            36.20000000018649
+          ]
+        },
+        {
+          "metric": "control-responsiveness",
+          "valuesMs": [
+            36.89999999990687
+          ]
+        }
+      ],
+      "ratioMetrics": [
+        {
+          "metric": "startup-failure-rate",
+          "attempts": 1,
+          "occurrences": 0
+        },
+        {
+          "metric": "first-60s-rebuffer-ratio",
+          "attempts": 0,
+          "occurrences": 0
+        }
+      ],
+      "qualitative": {
+        "oneObviousPrimaryPlayAction": true,
+        "nonessentialWorkBlockedFirstFrame": false,
+        "fakeBufferingProgressObserved": false
+      },
+      "notes": "the contained embed rung (the official provider embed — the same opaque-boundary law); the embed-attested path the J07 journey exercises; the warm-cache pass over the real user flow (search → item → play → first frame → seek → control)"
+    },
+    {
+      "runId": "Signal Fade-cold",
+      "cachePass": "cold",
+      "environment": {
+        "platform": "web",
+        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "browser": "Chrome 153.0.0.0",
+        "osDevice": "unknown OS",
+        "viewport": "1280x800",
+        "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+      },
+      "content": {
+        "contentId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+        "title": "Signal Fade",
+        "realization": "browser",
+        "samePublicContentOnYouTube": false
+      },
+      "durationMetrics": [
+        {
+          "metric": "navigation-to-player-visible",
+          "valuesMs": [
+            0
+          ]
+        },
+        {
+          "metric": "click-to-first-frame",
+          "valuesMs": [
+            941.9999511716888
+          ]
+        },
+        {
+          "metric": "time-to-playable",
+          "valuesMs": [
+            305.199951171875
+          ]
+        },
+        {
+          "metric": "seek-response-latency",
+          "valuesMs": [
+            44.70000000018263
+          ]
+        },
+        {
+          "metric": "control-responsiveness",
+          "valuesMs": [
+            31.899999999906868
+          ]
+        }
+      ],
+      "ratioMetrics": [
+        {
+          "metric": "startup-failure-rate",
+          "attempts": 1,
+          "occurrences": 0
+        },
+        {
+          "metric": "first-60s-rebuffer-ratio",
+          "attempts": 0,
+          "occurrences": 0
+        }
+      ],
+      "qualitative": {
+        "oneObviousPrimaryPlayAction": true,
+        "nonessentialWorkBlockedFirstFrame": false,
+        "fakeBufferingProgressObserved": false
+      },
+      "notes": "the browser rung + the acquisition-capable item (the R17 scripted network-loss drive — the recovery-lane probe); the metadata-bearing fixture entry; the cold-cache pass over the real user flow (search → item → play → first frame → seek → control)"
+    },
+    {
+      "runId": "Signal Fade-warm",
+      "cachePass": "warm",
+      "environment": {
+        "platform": "web",
+        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "browser": "Chrome 153.0.0.0",
+        "osDevice": "unknown OS",
+        "viewport": "1280x800",
+        "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+      },
+      "content": {
+        "contentId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+        "title": "Signal Fade",
+        "realization": "browser",
+        "samePublicContentOnYouTube": false
+      },
+      "durationMetrics": [
+        {
+          "metric": "navigation-to-player-visible",
+          "valuesMs": [
+            0
+          ]
+        },
+        {
+          "metric": "click-to-first-frame",
+          "valuesMs": [
+            1087.0999023439365
+          ]
+        },
+        {
+          "metric": "time-to-playable",
+          "valuesMs": [
+            568.0999023439363
+          ]
+        },
+        {
+          "metric": "seek-response-latency",
+          "valuesMs": [
+            40.5
+          ]
+        },
+        {
+          "metric": "control-responsiveness",
+          "valuesMs": [
+            31.5
+          ]
+        }
+      ],
+      "ratioMetrics": [
+        {
+          "metric": "startup-failure-rate",
+          "attempts": 1,
+          "occurrences": 0
+        },
+        {
+          "metric": "first-60s-rebuffer-ratio",
+          "attempts": 0,
+          "occurrences": 0
+        }
+      ],
+      "qualitative": {
+        "oneObviousPrimaryPlayAction": true,
+        "nonessentialWorkBlockedFirstFrame": false,
+        "fakeBufferingProgressObserved": false
+      },
+      "notes": "the browser rung + the acquisition-capable item (the R17 scripted network-loss drive — the recovery-lane probe); the metadata-bearing fixture entry; the warm-cache pass over the real user flow (search → item → play → first frame → seek → control)"
+    }
+  ],
+  "aggregateRun": {
+    "runId": "r24-w2-web-benchmark-aggregate",
+    "cachePass": "cold",
+    "environment": {
+      "platform": "web",
+      "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+      "browser": "Chrome 153.0.0.0",
+      "osDevice": "unknown OS",
+      "viewport": "1280x800",
+      "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
+    },
+    "content": {
+      "contentId": "r24-w2-web-benchmark-set",
+      "title": "the benchmark title set (aggregate)",
+      "realization": "mixed (browser + embed rungs)",
+      "samePublicContentOnYouTube": false
+    },
+    "durationMetrics": [
+      {
+        "metric": "navigation-to-player-visible",
+        "valuesMs": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "metric": "click-to-first-frame",
+        "valuesMs": [
+          772.9000000003725,
+          728.2000000001863,
+          956.199951171875,
+          655.7000000001863,
+          941.9999511716888,
+          1087.0999023439365
+        ]
+      },
+      {
+        "metric": "time-to-playable",
+        "valuesMs": [
+          253.20000000018624,
+          299.20000000018626,
+          363.29995117196813,
+          268.3000000002794,
+          305.199951171875,
+          568.0999023439363
+        ]
+      },
+      {
+        "metric": "seek-response-latency",
+        "valuesMs": [
+          75.1000000000929,
+          45.799999999813735,
+          33.39999999990687,
+          36.20000000018649,
+          44.70000000018263,
+          40.5
+        ]
+      },
+      {
+        "metric": "control-responsiveness",
+        "valuesMs": [
+          65,
+          31.200000000186265,
+          50.59999999962747,
+          36.89999999990687,
+          31.899999999906868,
+          31.5
+        ]
+      }
+    ],
+    "ratioMetrics": [
+      {
+        "metric": "startup-failure-rate",
+        "attempts": 6,
+        "occurrences": 0
+      },
+      {
+        "metric": "first-60s-rebuffer-ratio",
+        "attempts": 0,
+        "occurrences": 0
+      }
+    ],
+    "qualitative": {
+      "oneObviousPrimaryPlayAction": true,
+      "nonessentialWorkBlockedFirstFrame": false,
+      "fakeBufferingProgressObserved": false
+    },
+    "notes": "the aggregate over the benchmark title set (every title, cold + warm); the internal-benchmark laws (the R24-E startup architecture) measured over the running product"
+  },
+  "youtubeBaseline": null,
+  "youtubeBaselineNote": "no identical public YouTube content exists for the fixture catalog's titles (WebFlix-internal content): the same-content law answers samePublicContentOnYouTube=false and the threshold evaluation records the typed no-youtube-baseline blocker — the comparative baseline is the LEAD's protocol (the plan's 'Lead owns the comparative performance test protocol') over real same-content on both systems",
+  "architectureFindings": [],
+  "internalVerdict": true,
+  "internalVerdictNote": "the WebFlix-internal benchmark laws (one obvious play action; no nonessential work blocking the first frame; no fake buffering progress; zero startup failures over the complete battery) — NOT the YouTube-delta thresholds (those require the same-content baseline)"
+}

@@ -34,7 +34,30 @@ import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadPlayerView, loadLibraryView, loadDetailView } from "../src/host/view-models";
+import type { PlayerEnrichments, PlayerShellView, PlayerView } from "../src/host/view-models";
 import { PlayerSurface } from "../src/components/player/PlayerSurface";
+
+/**
+ * The surface's render props from a composed view (the shell fields +
+ * the RESOLVED enrichments — the composed render path: the sections
+ * render inline, no suspension, no streaming).
+ */
+function playerSurfaceRenderProps(
+  view: PlayerView,
+): {
+  view: PlayerShellView;
+  enrichments: PlayerEnrichments;
+} {
+  return {
+    view,
+    enrichments: {
+      aiTray: view.aiTray,
+      intelligence: view.intelligence,
+      liveAsr: view.liveAsr,
+      related: view.related,
+    },
+  };
+}
 import { ItemDetailSurface } from "../src/components/item/ItemDetailSurface";
 import { LibrarySurface } from "../src/components/library/LibrarySurface";
 import { GET as getQueue, POST as postQueue } from "../src/app/api/queue/route";
@@ -185,7 +208,7 @@ describe("R24-W2 — the session queue (the session-scoped ordering store)", () 
     await post(postQueue, { action: "add", entry: DIARY });
     await post(postQueue, { action: "add", entry: BLOOM });
     const view = await loadPlayerView(host, BLOOM);
-    const markup = renderToStaticMarkup(createElement(PlayerSurface, { view }));
+    const markup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceRenderProps(view)));
     // The queue head is the up-next card; the queue list renders below it.
     expect(markup).toContain("data-wfx-up-next-card");
     expect(markup).toContain("From your queue");
@@ -306,7 +329,7 @@ describe("R24-W2 — the WebFlix-native watchlist save (independent of provider 
     const host = await bootHost();
     const DIARY = await fixtureItem(host, DIARY_FIELDS);
     const playerView = await loadPlayerView(host, DIARY);
-    const playerMarkup = renderToStaticMarkup(createElement(PlayerSurface, { view: playerView }));
+    const playerMarkup = renderToStaticMarkup(createElement(PlayerSurface, playerSurfaceRenderProps(playerView)));
     expect(playerMarkup).toContain("data-wfx-watchlist-save");
     expect(playerMarkup).toContain("data-wfx-watchlist-toggle");
     expect(playerMarkup).toContain("data-wfx-share");

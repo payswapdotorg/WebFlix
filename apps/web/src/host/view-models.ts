@@ -610,8 +610,19 @@ export class DetailLoadError extends Error {
 // Player view
 // ---------------------------------------------------------------------------
 
-/** The player view model: the runtime session + the resolved surface mode. */
-export interface PlayerView {
+/**
+ * The player SHELL view (R24-E): the media-critical fields the page
+ * renders FIRST — the media path (the resolved session + engaged
+ * surface + phase truth), the startup-critical Where-to-watch row (the
+ * taxonomy's own classification), the session truths (progress scope,
+ * queue, attention mode, watchlist), and the peer-copy rung decision.
+ * The page awaits ONLY this before its first flush: the nonessential
+ * enrichments (the AI tray, the intelligence artifacts, the live-ASR
+ * route, the related projection) stream in behind it (see
+ * {@link PlayerEnrichments}) — the R24-E startup architecture law,
+ * enforced structurally: playback NEVER waits on the deferred lane.
+ */
+export interface PlayerShellView {
   readonly mode: "fixtures" | "service";
   readonly kind: "session";
   readonly itemId: string;
@@ -627,6 +638,13 @@ export interface PlayerView {
   /** The realization's declared capabilities (the source's truth). */
   readonly realizationCapabilities: readonly string[];
   readonly resumePositionMs: number;
+  /**
+   * R24-E — the canonical duration (ms) the surfaces carry (the input's
+   * duration truth — the play hrefs' own parameter); null when unknown
+   * (the scrub bar stays honest). The transcript-derived refinement is
+   * the intelligence artifact's own truth (the deferred lane).
+   */
+  readonly durationMs: number | null;
   /** The runtime's truthful playback phase at render time. */
   readonly phase: PlaybackState["phase"];
   /** The realizations the platform CANNOT play, named (capability honesty). */
@@ -650,8 +668,8 @@ export interface PlayerView {
   readonly embedAttestation: "official" | "unofficial" | null;
   /**
    * R09 (J09): the external handoff's RETURN CONTEXT — the durable
-   * continuation (item + position at handoff) so the journey can return to
-   * the same place. Present iff the external rung won.
+   * continuation (item + position at handoff) so the journey can return
+   * to the same place. Present iff the external rung won.
    */
   readonly externalReturn: {
     readonly itemId: string;
@@ -662,8 +680,6 @@ export interface PlayerView {
   } | null;
   /** R21-E — the Where-to-watch view (the player's source switch row). */
   readonly whereToWatch: WhereToWatchView;
-  /** R21-E — the AI action tray's view (the same tray as the item hub). */
-  readonly aiTray: AiTrayView;
   /**
    * R23 web-A — the progress-scope truth of THIS surface's session
    * binding (anonymous sessions keep progress session-local with
@@ -689,6 +705,25 @@ export interface PlayerView {
    * never consults a provider realization).
    */
   readonly torrent: TorrentPlayerView | null;
+  /** R24-W2 — the session queue's honest initial state (the rail's own). */
+  readonly queue: { readonly entries: readonly QueueEntry[]; readonly autoplay: boolean };
+  /** R24-W2 — the session's attention mode (the autoplay/preview policy derivation). */
+  readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
+  /** R24-W2 — whether the canonical item is already in the watchlist (the runtime's truth). */
+  readonly watchlistSaved: boolean;
+}
+
+/**
+ * The player's NONESSENTIAL enrichments (R24-E's deferred lane): the AI
+ * action tray, the derived intelligence artifacts, the live-ASR route,
+ * and the related/up-next projection. These render as they resolve —
+ * streamed behind the shell — and NEVER block the first frame (the
+ * startup architecture law; the page starts this work only after the
+ * media path resolved, and flushes the shell without awaiting it).
+ */
+export interface PlayerEnrichments {
+  /** R21-E — the AI action tray's view (the same tray as the item hub). */
+  readonly aiTray: AiTrayView;
   /** R23 (J39) — the item's derived intelligence view (the parity surface). */
   readonly intelligence: ItemIntelligenceView;
   /** R23-G — the live-ASR route view (the live captions surface's truth). */
@@ -699,13 +734,10 @@ export interface PlayerView {
    * renders). The Up-next rail composes it with the session queue.
    */
   readonly related: readonly CardView[];
-  /** R24-W2 — the session queue's honest initial state (the rail's own). */
-  readonly queue: { readonly entries: readonly QueueEntry[]; readonly autoplay: boolean };
-  /** R24-W2 — the session's attention mode (the autoplay/preview policy derivation). */
-  readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
-  /** R24-W2 — whether the canonical item is already in the watchlist (the runtime's truth). */
-  readonly watchlistSaved: boolean;
 }
+
+/** The complete composed player view (the shell + the enrichments). */
+export interface PlayerView extends PlayerShellView, PlayerEnrichments {}
 
 /**
  * R23-E — the authorized peer copy's PLAYER view: the first-class
@@ -740,27 +772,44 @@ export interface TorrentPlayerView {
   readonly implementation: string;
 }
 
-/** Load the player view: resolve + prepare one playback session through the runtime. */
-export async function loadPlayerView(
+/** The player view's input (the shared shape of the shell + enrichment loaders). */
+export interface PlayerViewInput {
+  readonly itemId: string;
+  readonly connectorId: string;
+  readonly externalRef: string;
+  readonly title: string;
+  readonly canonicalType: string;
+  readonly durationMs?: number;
+  readonly resumePositionMs?: number;
+  /** R21-E: the preferred realization mode (the Where-to-watch switch). */
+  readonly preferredMode?: PlaybackRealization["mode"];
+  /**
+   * R23-E: the preferred realization TRANSPORT (the authorized peer
+   * copy — the first-class torrent realization; a transport kind,
+   * never a playback mode).
+   */
+  readonly preferredRealization?: "torrent";
+}
+
+/**
+ * Load the player SHELL (R24-E): the media path + the startup-critical
+ * rows ONLY — the preferred-mode resolve, the playback session
+ * resolution + surface preparation (or the authorized-peer-copy rung
+ * decision), the resume/watch-state start, the Where-to-watch switch
+ * row (the taxonomy's startup-critical classification), and the
+ * session truths (progress scope, queue, attention mode, watchlist).
+ *
+ * The NONESSENTIAL enrichments (the AI tray, the intelligence
+ * artifacts, the live-ASR route, the related projection) are NOT
+ * loaded here — they ride the deferred lane (loadPlayerEnrichments),
+ * which the page starts only AFTER this resolves and streams in behind
+ * the shell (the R24-E startup architecture law, enforced
+ * structurally: the shell's flush never waits on them).
+ */
+export async function loadPlayerViewShell(
   host: WebRuntimeHost,
-  input: {
-    readonly itemId: string;
-    readonly connectorId: string;
-    readonly externalRef: string;
-    readonly title: string;
-    readonly canonicalType: string;
-    readonly durationMs?: number;
-    readonly resumePositionMs?: number;
-    /** R21-E: the preferred realization mode (the Where-to-watch switch). */
-    readonly preferredMode?: PlaybackRealization["mode"];
-    /**
-     * R23-E: the preferred realization TRANSPORT (the authorized peer
-     * copy — the first-class torrent realization; a transport kind,
-     * never a playback mode).
-     */
-    readonly preferredRealization?: "torrent";
-  },
-): Promise<PlayerView> {
+  input: PlayerViewInput,
+): Promise<PlayerShellView> {
   learnJoinedItem(input.connectorId, input.externalRef, input.title, input.canonicalType, input.durationMs);
   // R23 web-A: the session truth of THIS surface's binding — the
   // progress-scope sentence (session-local for anonymous sessions, with
@@ -814,26 +863,20 @@ export async function loadPlayerView(
   // realization.
   if (input.preferredRealization === "torrent") {
     const peerCopy = torrentRealizationOf(host, input.externalRef);
-    // THE ENRICHMENTS (after the media-path decision — never before it).
-    const [whereToWatch, aiTray, intelligence, liveAsr, related] = await Promise.all([
-      loadWhereToWatchView(host, {
-        itemId: input.itemId,
-        connectorId: input.connectorId,
-        externalRef: input.externalRef,
-        title: input.title,
-        canonicalType: input.canonicalType,
-        ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-      }),
-      loadAiTrayView(host, {
-        connectorId: input.connectorId,
-        externalRef: input.externalRef,
-        title: input.title,
-        ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-      }),
-      loadItemIntelligence(host, input.externalRef),
-      loadLiveAsrRoute(host, input.externalRef),
-      relatedCardsOf(host, input.itemId),
-    ]);
+    // The STARTUP-CRITICAL row (the taxonomy's own classification):
+    // the Where-to-watch switch composes with the rung decision (the
+    // play decision's own surface — R24-E's essential lane). The
+    // nonessential enrichments ride the deferred lane
+    // (loadPlayerEnrichments — streamed behind the shell, never
+    // awaited here).
+    const whereToWatch = await loadWhereToWatchView(host, {
+      itemId: input.itemId,
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      title: input.title,
+      canonicalType: input.canonicalType,
+      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+    });
     if (peerCopy === null) {
       return {
         mode: host.mode,
@@ -848,6 +891,7 @@ export async function loadPlayerView(
         surfaceUrl: null,
         realizationCapabilities: [],
         resumePositionMs: 0,
+        durationMs: input.durationMs ?? null,
         phase: "failed",
         skippedForCapability: [],
         browserSurface: null,
@@ -860,13 +904,9 @@ export async function loadPlayerView(
         embedAttestation: null,
         externalReturn: null,
         whereToWatch,
-        aiTray,
         progressScope,
         providerAuthorization: null,
         torrent: null,
-        intelligence,
-        liveAsr,
-        related,
         queue: sessionQueue().state(),
         attentionMode,
         watchlistSaved,
@@ -913,6 +953,7 @@ export async function loadPlayerView(
       surfaceUrl: null,
       realizationCapabilities: [],
       resumePositionMs: input.resumePositionMs ?? 0,
+      durationMs: input.durationMs ?? null,
       phase: rung.kind === "satisfies-browser-rung" ? "buffering" : "failed",
       skippedForCapability:
         rung.kind === "desktop-next-step"
@@ -929,13 +970,9 @@ export async function loadPlayerView(
       embedAttestation: null,
       externalReturn: null,
       whereToWatch,
-      aiTray,
       progressScope,
       providerAuthorization: null,
       torrent: torrentView,
-      intelligence,
-      liveAsr,
-      related,
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
@@ -1073,29 +1110,23 @@ export async function loadPlayerView(
     };
   }
 
-  // THE ENRICHMENTS (R24-E: parallel, AFTER the media path — the
-  // where-to-watch rows, the AI tray, the intelligence artifacts, the
-  // live-ASR route, and the related/up-next projection never block the
-  // player's startup).
-  const [whereToWatch, aiTray, intelligence, liveAsr, related] = await Promise.all([
-    loadWhereToWatchView(host, {
-      itemId: input.itemId,
-      connectorId: input.connectorId,
-      externalRef: input.externalRef,
-      title: input.title,
-      canonicalType: input.canonicalType,
-      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-    }),
-    loadAiTrayView(host, {
-      connectorId: input.connectorId,
-      externalRef: input.externalRef,
-      title: input.title,
-      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-    }),
-    loadItemIntelligence(host, input.externalRef),
-    loadLiveAsrRoute(host, input.externalRef),
-    relatedCardsOf(host, input.itemId),
-  ]);
+  // THE STARTUP-CRITICAL ROW (R24-E's essential lane): the
+  // Where-to-watch switch composes after the media path (the play
+  // decision's own surface — the taxonomy's startup-critical
+  // classification). The NONESSENTIAL enrichments (the AI tray, the
+  // intelligence artifacts, the live-ASR route, the related/up-next
+  // projection) are NOT loaded here: they ride the deferred lane
+  // (loadPlayerEnrichments), which the page starts only after this
+  // shell resolves and streams in behind it — never blocking the
+  // player's startup.
+  const whereToWatch = await loadWhereToWatchView(host, {
+    itemId: input.itemId,
+    connectorId: input.connectorId,
+    externalRef: input.externalRef,
+    title: input.title,
+    canonicalType: input.canonicalType,
+    ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+  });
 
   if (media.kind === "resolve-failed") {
     return {
@@ -1111,6 +1142,7 @@ export async function loadPlayerView(
       surfaceUrl: null,
       realizationCapabilities: [],
       resumePositionMs: 0,
+      durationMs: input.durationMs ?? null,
       phase: "failed",
       skippedForCapability: [],
       browserSurface: null,
@@ -1119,13 +1151,9 @@ export async function loadPlayerView(
       embedAttestation: null,
       externalReturn: null,
       whereToWatch,
-      aiTray,
       progressScope,
       providerAuthorization: providerAuthorizationOf_(media.failureKind),
       torrent: null,
-      intelligence,
-      liveAsr,
-      related,
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
@@ -1145,6 +1173,7 @@ export async function loadPlayerView(
       surfaceUrl: media.surfaceUrl,
       realizationCapabilities: [...media.realizationCapabilities],
       resumePositionMs: media.resumePositionMs,
+      durationMs: input.durationMs ?? null,
       phase: "failed",
       skippedForCapability: [],
       browserSurface: null,
@@ -1153,13 +1182,9 @@ export async function loadPlayerView(
       embedAttestation: null,
       externalReturn: null,
       whereToWatch,
-      aiTray,
       progressScope,
       providerAuthorization: providerAuthorizationOf_("not-found"),
       torrent: null,
-      intelligence,
-      liveAsr,
-      related,
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
@@ -1179,6 +1204,7 @@ export async function loadPlayerView(
       surfaceUrl: media.session.realization.url ?? null,
       realizationCapabilities: [...media.session.realization.capabilities],
       resumePositionMs: media.session.resumePositionMs,
+      durationMs: input.durationMs ?? null,
       phase: "failed",
       skippedForCapability: [{ mode: media.session.realization.mode, reason: media.detail }],
       browserSurface: null,
@@ -1187,13 +1213,9 @@ export async function loadPlayerView(
       embedAttestation: null,
       externalReturn: null,
       whereToWatch,
-      aiTray,
       progressScope,
       providerAuthorization: null,
       torrent: null,
-      intelligence,
-      liveAsr,
-      related,
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
@@ -1212,6 +1234,7 @@ export async function loadPlayerView(
     surfaceUrl: media.session.realization.url ?? null,
     realizationCapabilities: [...media.session.realization.capabilities],
     resumePositionMs: media.session.resumePositionMs,
+    durationMs: input.durationMs ?? null,
     phase: media.state.phase,
     skippedForCapability: [],
     browserSurface: media.browserSurface,
@@ -1220,17 +1243,64 @@ export async function loadPlayerView(
     embedAttestation: media.embedAttestation,
     externalReturn: media.externalReturn,
     whereToWatch,
-    aiTray,
     progressScope,
     providerAuthorization: null,
     torrent: null,
-    intelligence,
-    liveAsr,
-    related,
     queue: sessionQueue().state(),
     attentionMode,
     watchlistSaved,
   };
+}
+
+/**
+ * Load the player's NONESSENTIAL enrichments (R24-E's deferred lane):
+ * the AI action tray, the derived intelligence artifacts, the live-ASR
+ * route, and the related/up-next projection. Each degrades to its own
+ * honest section state — a typed failure in any of them answers its
+ * own section, never a blank page and never a blocked player.
+ *
+ * THE START LAW: the page starts this work only AFTER the media path
+ * resolved (the audit's order finding — the enrichment reads fire
+ * after `resolvePlayback`/prepare), then streams the sections in as
+ * they resolve (Suspense) WITHOUT awaiting them for the shell's flush:
+ * playback never waits on the deferred lane.
+ */
+export async function loadPlayerEnrichments(
+  host: WebRuntimeHost,
+  input: PlayerViewInput,
+): Promise<PlayerEnrichments> {
+  const [aiTray, intelligence, liveAsr, related] = await Promise.all([
+    loadAiTrayView(host, {
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      title: input.title,
+      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+    }),
+    loadItemIntelligence(host, input.externalRef),
+    loadLiveAsrRoute(host, input.externalRef),
+    relatedCardsOf(host, input.itemId),
+  ]);
+  return { aiTray, intelligence, liveAsr, related };
+}
+
+/**
+ * Load the COMPLETE composed player view (the shell + the enrichments):
+ * the composed API for the consumers that await everything (the tests'
+ * view-model assertions, the non-page surfaces). The PAGE uses the
+ * split (loadPlayerViewShell awaited + loadPlayerEnrichments streamed)
+ * — this composed path preserves the same order law (the shell's media
+ * path resolves BEFORE any enrichment read fires).
+ */
+export async function loadPlayerView(
+  host: WebRuntimeHost,
+  input: PlayerViewInput,
+): Promise<PlayerView> {
+  const shell = await loadPlayerViewShell(host, input);
+  // The deferred lane starts only AFTER the media path resolved (the
+  // R24-E order law — the audit's original finding stays fixed in both
+  // the split AND the composed path).
+  const enrichments = await loadPlayerEnrichments(host, input);
+  return { ...shell, ...enrichments };
 }
 
 // ---------------------------------------------------------------------------

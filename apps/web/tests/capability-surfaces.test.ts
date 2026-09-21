@@ -47,6 +47,7 @@ import { getWebRuntimeHost } from "../src/host/web-host";
 import { canonicalIdFor } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadDetailView, loadPlayerView, loadSearchView, cardAvailabilitySummary } from "../src/host/view-models";
+import type { PlayerEnrichments, PlayerShellView, PlayerView } from "../src/host/view-models";
 import {
   loadAiTrayView,
   loadWhereToWatchView,
@@ -62,6 +63,28 @@ import {
 import { AppShell } from "../src/components/shell/AppShell";
 import { ItemDetailSurface } from "../src/components/item/ItemDetailSurface";
 import { PlayerSurface } from "../src/components/player/PlayerSurface";
+
+/**
+ * The surface's render props from a composed view (the shell fields +
+ * the RESOLVED enrichments — the composed render path: the sections
+ * render inline, no suspension, no streaming).
+ */
+function playerSurfaceRenderProps(
+  view: PlayerView,
+): {
+  view: PlayerShellView;
+  enrichments: PlayerEnrichments;
+} {
+  return {
+    view,
+    enrichments: {
+      aiTray: view.aiTray,
+      intelligence: view.intelligence,
+      liveAsr: view.liveAsr,
+      related: view.related,
+    },
+  };
+}
 import { WhereToWatch } from "../src/components/item/WhereToWatch";
 import { AiActionTray } from "../src/components/discovery/AiActionTray";
 import { FeedbackControls } from "../src/components/discovery/FeedbackControls";
@@ -472,7 +495,7 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
       createElement(AppShell, {
         mode: host.mode,
         session: host.session.state,
-        children: createElement(PlayerSurface, { view }),
+        children: createElement(PlayerSurface, playerSurfaceRenderProps(view)),
       }),
     );
     expect(markup).toContain("data-wfx-player-mode=\"browser\"");
@@ -500,7 +523,7 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
       createElement(AppShell, {
         mode: host.mode,
         session: host.session.state,
-        children: createElement(PlayerSurface, { view }),
+        children: createElement(PlayerSurface, playerSurfaceRenderProps(view)),
       }),
     );
     expect(markup).toContain("data-wfx-player-recovery");
@@ -520,7 +543,7 @@ describe("R21-E — the player (the switch, the recovery, the diagnostics)", () 
       createElement(AppShell, {
         mode: host.mode,
         session: host.session.state,
-        children: createElement(PlayerSurface, { view }),
+        children: createElement(PlayerSurface, playerSurfaceRenderProps(view)),
       }),
     );
     expect(markup).toContain("data-wfx-playback-diagnostics");

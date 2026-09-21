@@ -1,5 +1,5 @@
 /**
- * @wfx/app-web — the player surface (R07 + R09).
+ * @wfx/app-web — the player surface (R07 + R09 + R24-E).
  *
  * Renders the RUNTIME's resolved playback session — the frozen Media
  * Surface precedence made visible:
@@ -21,24 +21,31 @@
  *   declares `nativeMedia: "none"` — the runtime's capability filter
  *   names the limitation).
  *
- * The runtime's playback phase renders truthfully (buffering until the
- * surface reports evidence — no fake progress). The precedence trace
- * (present when the runtime resolved through the injected Media Surface
- * seam) renders under the stage — the answer NAMES what was chosen and
- * why. The interactive controls (watch-state reports, like/save) are the
- * client islands `WatchStateReporter` and `ActionButtons`. Server component.
+ * R24-E — THE STREAMED PLAYER SHELL (the startup architecture law):
+ * the surface renders the SHELL (the stage + the chrome + the title/meta
+ * + the actions + the Where-to-watch row + the session truths) from the
+ * resolved media path, and the NONESSENTIAL enrichments (the AI tray,
+ * the live-captions route, the intelligence artifacts, the up-next rail)
+ * stream in behind it under Suspense — the shell's flush NEVER waits on
+ * the deferred lane (the enrichment promise is passed UNAWAITED to the
+ * sections; each renders its honest pending state until it resolves).
+ * The runtime's playback phase renders truthfully throughout (no fake
+ * progress), and the boot marker + the stage observer record the real
+ * startup path's markers (the R24-E telemetry).
  */
 
-import type { JSX } from "react";
+import { Suspense, type JSX } from "react";
 
-import type { PlayerView } from "@/host/view-models";
+import type { PlayerEnrichments, PlayerShellView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
-import { PlayerChrome, type ChromeChapter, type ChromeTranscriptSegment } from "@/components/player/PlayerChrome";
+import { PlayerChrome, type ChromeChapter, type ChromeTranscriptFeatures, type ChromeTranscriptSegment, fulfilledTranscriptFeatures } from "@/components/player/PlayerChrome";
 import { UpNextRail, type UpNextCard } from "@/components/player/UpNextRail";
 import { ShareControl } from "@/components/player/ShareControl";
 import { WatchlistSave } from "@/components/player/WatchlistSave";
 import { WatchStateReporter } from "@/components/player/WatchStateReporter";
 import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
+import { PlaybackTelemetryObserver } from "@/components/player/PlaybackTelemetryObserver";
+import { PlayerBootMarker } from "@/components/player/PlayerBootMarker";
 import { TorrentPlaybackStage, TorrentAcquisitionLifecycle } from "@/components/player/TorrentPlaybackStage";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
@@ -51,7 +58,7 @@ import { formatPosition } from "@/components/ui/format";
 import { itemDetailHref } from "@/app/routing";
 
 /** The mode's user sentence (the R21-C label vocabulary — one source). */
-function modeSentenceOf(mode: PlayerView["surfaceMode"]): string {
+function modeSentenceOf(mode: PlayerShellView["surfaceMode"]): string {
   switch (mode) {
     case "embed":
       return "plays inside WebFlix (the provider's contained embed)";
@@ -65,7 +72,7 @@ function modeSentenceOf(mode: PlayerView["surfaceMode"]): string {
 }
 
 /** The realization sentence for the peer-copy render (R23-E). */
-function torrentSentenceOf(view: PlayerView): string {
+function torrentSentenceOf(view: PlayerShellView): string {
   const torrent = view.torrent;
   if (torrent === null) return "";
   if (torrent.rungKind === "satisfies-browser-rung") {
@@ -77,8 +84,209 @@ function torrentSentenceOf(view: PlayerView): string {
   return "this peer copy is not authorized";
 }
 
+/** The realization label the telemetry binds to the trace. */
+function realizationLabelOf(view: PlayerShellView): string {
+  return view.torrent !== null ? "authorized-peer-copy" : view.surfaceMode;
+}
+
+/** The up-next rail's serialized cards (from the enrichment's related projection). */
+function relatedCardsOf(related: PlayerEnrichments["related"]): readonly UpNextCard[] {
+  return related.map((card) => ({
+    itemId: card.itemId,
+    connectorId: card.connectorId,
+    externalRef: card.externalRef,
+    title: card.title,
+    canonicalType: card.canonicalType,
+    ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+    href: itemDetailHref({
+      itemId: card.itemId,
+      connectorId: card.connectorId,
+      externalRef: card.externalRef,
+      title: card.title,
+      canonicalType: card.canonicalType,
+      ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+    }),
+  }));
+}
+
+/** The chrome's transcript-derived features (from the enrichment's intelligence artifact). */
+function chromeFeaturesOf(enrichments: PlayerEnrichments): ChromeTranscriptFeatures {
+  const chapters: readonly ChromeChapter[] = (enrichments.intelligence.chapters ?? [])
+    .filter((chapter) => chapter.title !== null)
+    .map((chapter) => ({
+      title: chapter.title as string,
+      startMs: chapter.startMs,
+    }));
+  const transcript: readonly ChromeTranscriptSegment[] = (enrichments.intelligence.transcript ?? []).map((segment) => ({
+    startMs: segment.startMs,
+    endMs: segment.endMs,
+    ...(segment.speakerLabel !== null ? { speaker: segment.speakerLabel } : {}),
+    text: segment.text,
+  }));
+  return { chapters, transcript };
+}
+
+/** The resolved-or-streaming enrichment input (the dual honest shape). */
+type EnrichmentInput = PlayerEnrichments | Promise<PlayerEnrichments>;
+
+/**
+ * The attention-policy autoplay sentence (the policy derivation — the
+ * same seam the Personalize control renders, never a second policy).
+ */
+function autoplaySentenceOf(view: PlayerShellView): string {
+  if (view.attentionMode === "mindful") {
+    return "Autoplay stays off in Mindful mode — the next thing never starts on its own.";
+  }
+  if (view.attentionMode === "immersive") {
+    return "Immersive mode lets the next thing start when this one ends, if autoplay is on.";
+  }
+  if (view.attentionMode === "custom") {
+    return "Your custom attention policy governs autoplay — this toggle is your session choice on top of it.";
+  }
+  return "Balanced mode lets the next thing start when this one ends, if autoplay is on.";
+}
+
+/**
+ * The honest PENDING state of a streamed enrichment section (the
+ * design language's law: skeletons mirror the final layout — the
+ * section's shell renders, the content arrives).
+ */
+function EnrichmentPending({ label }: { readonly label: string }): JSX.Element {
+  return (
+    <section className="wfx-player__enrichment-pending" data-wfx-enrichment-pending={label} aria-busy="true">
+      <p className="wfx-player__trace">{label}…</p>
+    </section>
+  );
+}
+
+/** A streamed async section: awaits the enrichment (the promise path) and renders its panel. */
+async function AiTraySection({ enrichments }: { readonly enrichments: Promise<PlayerEnrichments> }): Promise<JSX.Element> {
+  const resolved = await enrichments;
+  return <AiActionTray view={resolved.aiTray} surface="player" />;
+}
+
+/** A streamed async section: the live-captions route surface. */
+async function LiveCaptionsSection({
+  enrichments,
+  mode,
+}: {
+  readonly enrichments: Promise<PlayerEnrichments>;
+  readonly mode: PlayerShellView["mode"];
+}): Promise<JSX.Element> {
+  const resolved = await enrichments;
+  return <LiveCaptionsSurface view={resolved.liveAsr} mode={mode} />;
+}
+
+/** A streamed async section: the intelligence surface (transcript/chapters/moments). */
+async function IntelligenceSection({
+  enrichments,
+  target,
+}: {
+  readonly enrichments: Promise<PlayerEnrichments>;
+  readonly target: Parameters<typeof IntelligenceSurface>[0]["target"];
+}): Promise<JSX.Element> {
+  const resolved = await enrichments;
+  return <IntelligenceSurface view={resolved.intelligence} target={target} />;
+}
+
+/** A streamed async section: the up-next rail (the related projection + the shell's queue). */
+async function UpNextSection({
+  enrichments,
+  view,
+  autoplayPolicySentence,
+}: {
+  readonly enrichments: Promise<PlayerEnrichments>;
+  readonly view: PlayerShellView;
+  readonly autoplayPolicySentence: string;
+}): Promise<JSX.Element> {
+  const resolved = await enrichments;
+  return (
+    <UpNextRail
+      currentItemId={view.itemId}
+      related={relatedCardsOf(resolved.related)}
+      initialQueue={view.queue.entries}
+      initialAutoplay={view.queue.autoplay}
+      autoplayPolicySentence={autoplayPolicySentence}
+    />
+  );
+}
+
+/**
+ * The AI-tray panel: the composed input renders DIRECTLY (the resolved
+ * panels — the static/composed render path); the streaming promise
+ * renders the async section under Suspense (the page's split).
+ */
+function AiTrayPanel({ enrichments }: { readonly enrichments: EnrichmentInput }): JSX.Element {
+  return enrichments instanceof Promise ? (
+    <Suspense fallback={<EnrichmentPending label="AI actions" />}>
+      <AiTraySection enrichments={enrichments} />
+    </Suspense>
+  ) : (
+    <AiActionTray view={enrichments.aiTray} surface="player" />
+  );
+}
+
+/** The live-captions panel (the same composed/streaming split). */
+function LiveCaptionsPanel({
+  enrichments,
+  mode,
+}: {
+  readonly enrichments: EnrichmentInput;
+  readonly mode: PlayerShellView["mode"];
+}): JSX.Element {
+  return enrichments instanceof Promise ? (
+    <Suspense fallback={<EnrichmentPending label="Live captions" />}>
+      <LiveCaptionsSection enrichments={enrichments} mode={mode} />
+    </Suspense>
+  ) : (
+    <LiveCaptionsSurface view={enrichments.liveAsr} mode={mode} />
+  );
+}
+
+/** The intelligence panel (the same composed/streaming split). */
+function IntelligencePanel({
+  enrichments,
+  target,
+}: {
+  readonly enrichments: EnrichmentInput;
+  readonly target: Parameters<typeof IntelligenceSurface>[0]["target"];
+}): JSX.Element {
+  return enrichments instanceof Promise ? (
+    <Suspense fallback={<EnrichmentPending label="Transcript and chapters" />}>
+      <IntelligenceSection enrichments={enrichments} target={target} />
+    </Suspense>
+  ) : (
+    <IntelligenceSurface view={enrichments.intelligence} target={target} />
+  );
+}
+
+/** The up-next rail panel (the same composed/streaming split). */
+function UpNextPanel({
+  enrichments,
+  view,
+  autoplayPolicySentence,
+}: {
+  readonly enrichments: EnrichmentInput;
+  readonly view: PlayerShellView;
+  readonly autoplayPolicySentence: string;
+}): JSX.Element {
+  return enrichments instanceof Promise ? (
+    <Suspense fallback={<EnrichmentPending label="Up next" />}>
+      <UpNextSection enrichments={enrichments} view={view} autoplayPolicySentence={autoplayPolicySentence} />
+    </Suspense>
+  ) : (
+    <UpNextRail
+      currentItemId={view.itemId}
+      related={relatedCardsOf(enrichments.related)}
+      initialQueue={view.queue.entries}
+      initialAutoplay={view.queue.autoplay}
+      autoplayPolicySentence={autoplayPolicySentence}
+    />
+  );
+}
+
 /** The resolved stage — one branch per Media Surface mode. */
-function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
+function Stage({ view }: { readonly view: PlayerShellView }): JSX.Element {
   // R23-E — the authorized peer copy (the first-class torrent
   // realization): the torrent stage owns this render when the view plays
   // through the peer copy (the browser rung / the honest Desktop next
@@ -249,23 +457,22 @@ function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
   );
 }
 
-/** The player surface. */
-export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Element {
-  // R24-W2 — the chrome's serialized inputs: the chapters/transcript
-  // from the item's derived intelligence (one source of truth), the
-  // per-rung capability truths, and the autoplay policy derivation.
-  const chapters: readonly ChromeChapter[] = (view.intelligence.chapters ?? [])
-    .filter((chapter) => chapter.title !== null)
-    .map((chapter) => ({
-      title: chapter.title as string,
-      startMs: chapter.startMs,
-    }));
-  const transcript: readonly ChromeTranscriptSegment[] = (view.intelligence.transcript ?? []).map((segment) => ({
-    startMs: segment.startMs,
-    endMs: segment.endMs,
-    ...(segment.speakerLabel !== null ? { speaker: segment.speakerLabel } : {}),
-    text: segment.text,
-  }));
+/**
+ * The player surface — the streamed shell + the deferred enrichment
+ * sections. `view` is the SHELL (the media path's own fields — awaited
+ * before the first flush); `enrichments` is the deferred lane (the
+ * promise the page started AFTER the media path resolved, or the
+ * resolved object for the composed render) — passed UNAWAITED into the
+ * Suspense sections (each streams in when ready; the shell's flush
+ * never waits on them).
+ */
+export function PlayerSurface({
+  view,
+  enrichments,
+}: {
+  readonly view: PlayerShellView;
+  readonly enrichments: EnrichmentInput;
+}): JSX.Element {
   const webflixOwnsStage =
     view.torrent !== null && view.torrent.rungKind === "satisfies-browser-rung";
   const qualityTruth =
@@ -276,39 +483,26 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
       : view.surfaceMode === "external"
         ? "The source's own player carries quality for this way of watching."
         : "This way of watching carries its own quality selection — the provider's player answers it.";
-  const autoplaySentence =
-    view.attentionMode === "mindful"
-      ? "Autoplay stays off in Mindful mode — the next thing never starts on its own."
-      : view.attentionMode === "immersive"
-        ? "Immersive mode lets the next thing start when this one ends, if autoplay is on."
-        : view.attentionMode === "custom"
-          ? "Your custom attention policy governs autoplay — this toggle is your session choice on top of it."
-          : "Balanced mode lets the next thing start when this one ends, if autoplay is on.";
-  // R24-W2 — the Up-next rail's serialized cards (the related projection
-  // with their item-hub hrefs — the same navigation every card uses).
-  const relatedCards: readonly UpNextCard[] = view.related.map((card) => ({
-    itemId: card.itemId,
-    connectorId: card.connectorId,
-    externalRef: card.externalRef,
-    title: card.title,
-    canonicalType: card.canonicalType,
-    ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
-    href: itemDetailHref({
-      itemId: card.itemId,
-      connectorId: card.connectorId,
-      externalRef: card.externalRef,
-      title: card.title,
-      canonicalType: card.canonicalType,
-      ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
-    }),
-  }));
+  const autoplaySentence = autoplaySentenceOf(view);
   const shareHref = `/item?id=${encodeURIComponent(view.itemId)}&connector=${encodeURIComponent(view.connectorId)}&ref=${encodeURIComponent(view.externalRef)}&title=${encodeURIComponent(view.title)}&type=${encodeURIComponent(view.canonicalType)}`;
+  // The chrome's transcript-derived features: the sync-fulfilled usable
+  // (composed render — React's use() fast path, no suspension) or the
+  // STREAMED promise (the deferred artifact — the chrome's marks/overlay
+  // layers suspend locally; the transport bar never suspends: the
+  // stable-chrome law).
+  const transcriptFeatures =
+    enrichments instanceof Promise
+      ? enrichments
+          .then((resolved) => chromeFeaturesOf(resolved))
+          .catch(() => null)
+      : fulfilledTranscriptFeatures(chromeFeaturesOf(enrichments));
 
   if (view.failure !== null) {
     // R21-E — the playback RECOVERY path: the typed failure renders with
     // the NEXT supported way to watch as the primary action (the matrix's
     // "Try the next way to watch"), and the Where-to-watch row names every
-    // remaining option. Never a dead end.
+    // remaining option. Never a dead end. The boot marker + observer still
+    // record the honest startup-failed trace (the R24-E observation).
     const nextWay = view.whereToWatch.options.find(
       (option) => option.usable && option.switchHref !== undefined,
     );
@@ -360,6 +554,10 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
           </p>
         ))}
         <PlaybackDiagnostics view={view} />
+        {/* R24-E — the honest startup-failure trace records too (the
+            boot marker reads the failed phase; the observer flushes). */}
+        <PlaybackTelemetryObserver />
+        <PlayerBootMarker itemId={view.itemId} realization={realizationLabelOf(view)} />
       </div>
     );
   }
@@ -368,26 +566,28 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
       <div className="wfx-player__layout">
         <div className="wfx-player__main">
           {/* R24-W2 — the stage WRAPPER (the chrome's fullscreen target +
-              the player shell the loading/recovery states preserve). */}
+              the player shell the loading/recovery states preserve) + the
+              R24-E stage observer (the real startup path's markers). */}
           <div className="wfx-player__stagewrap" data-wfx-player-stagewrap>
             <Stage view={view} />
+            <PlaybackTelemetryObserver />
           </div>
           {/* R24-W2 — THE WEBFLIX PLAYER CHROME: the familiar transport bar
               (play/pause + Space/K, the scrub bar + J/L/arrows/0-9, the
               settings cluster, fullscreen + F/Escape, the captions overlay +
               C) wired to the runtime's real commands through /api/playback.
               The honest per-rung truths render inside (volume where WebFlix
-              owns the stage; the realization-exposed sentences otherwise). */}
+              owns the stage; the realization-exposed sentences otherwise).
+              R24-E: the chrome renders IN THE SHELL (stable during init);
+              the transcript-derived features (chapter marks + the caption
+              overlay) stream in through their own local suspensions. */}
           <PlayerChrome
             sessionId={view.sessionId}
             initialPhase={view.phase}
             initialPositionMs={view.resumePositionMs}
             initialBufferedMs={0}
-            durationMs={view.intelligence.transcript !== undefined && view.intelligence.transcript.length > 0
-              ? view.intelligence.transcript[view.intelligence.transcript.length - 1]!.endMs
-              : null}
-            chapters={chapters}
-            transcript={transcript}
+            durationMs={view.durationMs}
+            transcriptFeatures={transcriptFeatures}
             webflixOwnsStage={webflixOwnsStage}
             surfaceMode={view.surfaceMode}
             qualityTruth={qualityTruth}
@@ -448,6 +648,8 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
               <WatchlistSave
                 itemId={view.itemId}
                 title={view.title}
+                connectorId={view.connectorId}
+                externalRef={view.externalRef}
                 initiallySaved={view.watchlistSaved}
                 offerPlaylist
               />
@@ -467,18 +669,23 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
               progress).
             </p>
             {/* R21-E — the player's capability surfaces: the switch row (the
-                active realization understandable + the alternates), the AI
-                action tray, the feedback controls, and the engineering truth
-                behind ONE progressive disclosure. */}
+                active realization understandable + the alternates), the
+                session-scoped feedback controls, and the engineering truth
+                behind ONE progressive disclosure. R24-E: the
+                Where-to-watch row is STARTUP-CRITICAL (the taxonomy's own
+                classification — it renders in the shell). */}
             <WhereToWatch view={view.whereToWatch} variant="player" />
-            <AiActionTray view={view.aiTray} surface="player" />
-            {/* R23-G — the live captions surface: the legal-audio gate + the
-                R2T2 route truth (progressively disclosed on the player). */}
-            <LiveCaptionsSurface view={view.liveAsr} mode={view.mode} />
-            {/* R23 (J39) — the transcript/chapters/moment navigation (the same
-                intelligence surface as the item hub — the parity law). */}
-            <IntelligenceSurface
-              view={view.intelligence}
+            <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="player" />
+            {/* R24-E — THE STREAMED ENRICHMENT SECTIONS (the deferred
+                lane): the AI action tray, the live-captions route, and the
+                intelligence artifacts render under Suspense as the
+                enrichment resolves (the composed input renders them
+                directly) — honest pending states, never a blocked shell,
+                never a blank section. */}
+            <AiTrayPanel enrichments={enrichments} />
+            <LiveCaptionsPanel enrichments={enrichments} mode={view.mode} />
+            <IntelligencePanel
+              enrichments={enrichments}
               target={{
                 itemId: view.itemId,
                 connectorId: view.connectorId,
@@ -487,7 +694,6 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
                 canonicalType: view.canonicalType,
               }}
             />
-            <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="player" />
             {view.torrent !== null ? <TorrentAcquisitionLifecycle view={view} /> : null}
             <PlaybackDiagnostics view={view} />
           </div>
@@ -495,15 +701,17 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         {/* R24-W2 — THE UP-NEXT RAIL: the next thing to watch (queue-first,
             the related projection otherwise) + the session queue panel +
             the attention-policy-derived autoplay toggle + the save-queue
-            action — the familiar adjacent-content grammar. */}
-        <UpNextRail
-          currentItemId={view.itemId}
-          related={relatedCards}
-          initialQueue={view.queue.entries}
-          initialAutoplay={view.queue.autoplay}
-          autoplayPolicySentence={autoplaySentence}
-        />
+            action — the familiar adjacent-content grammar. R24-E: the
+            rail is startup-ADJACENT (the taxonomy's classification) — it
+            STREAMS in behind the shell (the queue state rides the shell's
+            own session truth; the related projection is the deferred
+            recommendation work). */}
+        <UpNextPanel enrichments={enrichments} view={view} autoplayPolicySentence={autoplaySentence} />
       </div>
+      {/* R24-E — the parse-time boot marker (the inline script at the
+          shell's end: navigation-start + player-surface-visible + the
+          phase truth). */}
+      <PlayerBootMarker itemId={view.itemId} realization={realizationLabelOf(view)} />
     </div>
   );
 }

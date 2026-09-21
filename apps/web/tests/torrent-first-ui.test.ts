@@ -36,9 +36,32 @@ import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadDetailView, loadPlayerView } from "../src/host/view-models";
+import type { PlayerEnrichments, PlayerShellView, PlayerView } from "../src/host/view-models";
 import { driveAcquisitionFixture } from "../src/host/acquisition-fixtures";
 import { ItemDetailSurface } from "../src/components/item/ItemDetailSurface";
 import { PlayerSurface } from "../src/components/player/PlayerSurface";
+
+/**
+ * The surface's render props from a composed view (the shell fields +
+ * the RESOLVED enrichments — the composed render path: the sections
+ * render inline, no suspension, no streaming).
+ */
+function playerSurfaceRenderProps(
+  view: PlayerView,
+): {
+  view: PlayerShellView;
+  enrichments: PlayerEnrichments;
+} {
+  return {
+    view,
+    enrichments: {
+      aiTray: view.aiTray,
+      intelligence: view.intelligence,
+      liveAsr: view.liveAsr,
+      related: view.related,
+    },
+  };
+}
 import { AppShell } from "../src/components/shell/AppShell";
 import { withEnv } from "./fake-web";
 
@@ -206,7 +229,7 @@ describe("R23-E — the player's torrent stage (the browser rung)", () => {
     expect(view.torrent).not.toBeNull();
     expect(view.torrent?.rungKind).toBe("satisfies-browser-rung");
     expect(view.torrent?.label).toBe("Authorized peer copy");
-    const markup = surfaceMarkup(host, createElement(PlayerSurface, { view }));
+    const markup = surfaceMarkup(host, createElement(PlayerSurface, playerSurfaceRenderProps(view)));
     expect(markup).toContain('data-wfx-player-mode="torrent"');
     // The play-language primary copy (the design language: another way
     // to watch, not a download workflow).
@@ -234,7 +257,7 @@ describe("R23-E — the player's torrent stage (the browser rung)", () => {
     });
     expect(view.torrent?.rungKind).toBe("desktop-next-step");
     expect(view.torrent?.desktopNextStep?.label).toBe("Play this in the Desktop app");
-    const markup = surfaceMarkup(host, createElement(PlayerSurface, { view }));
+    const markup = surfaceMarkup(host, createElement(PlayerSurface, playerSurfaceRenderProps(view)));
     expect(markup).toContain('data-wfx-player-mode="torrent-desktop-next-step"');
     expect(markup).toContain("Play this in the Desktop app");
     // The same canonical item stays presented (the back-to-details path).
@@ -256,7 +279,7 @@ describe("R23-E — the player's torrent stage (the browser rung)", () => {
     expect(view.failure?.kind).toBe("not-found");
     expect(view.failure?.detail).toContain("no authorized peer copy is known");
     // The recovery: the Where-to-watch row still renders.
-    const markup = surfaceMarkup(host, createElement(PlayerSurface, { view }));
+    const markup = surfaceMarkup(host, createElement(PlayerSurface, playerSurfaceRenderProps(view)));
     expect(markup).toContain('data-wfx-where-to-watch');
   });
 
@@ -279,7 +302,7 @@ describe("R23-E — the player's torrent stage (the browser rung)", () => {
       preferredRealization: "torrent",
     });
     expect(view.torrent?.acquisition.view?.state).toBe("playing");
-    const markup = surfaceMarkup(host, createElement(PlayerSurface, { view }));
+    const markup = surfaceMarkup(host, createElement(PlayerSurface, playerSurfaceRenderProps(view)));
     expect(markup).toContain('data-wfx-acquisition-state="playing"');
     expect(markup).toContain("buffered ahead");
   });

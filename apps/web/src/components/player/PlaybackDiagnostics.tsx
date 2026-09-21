@@ -12,10 +12,10 @@
 
 import type { JSX } from "react";
 
-import type { PlayerView } from "@/host/view-models";
+import type { PlayerShellView } from "@/host/view-models";
 
 /** The playback diagnostics disclosure (one per player render). */
-export function PlaybackDiagnostics({ view }: { readonly view: PlayerView }): JSX.Element {
+export function PlaybackDiagnostics({ view }: { readonly view: PlayerShellView }): JSX.Element {
   const hasTrace = view.precedenceTrace.length > 0 || view.skippedForCapability.length > 0;
   if (!hasTrace && view.embedAttestation === null) {
     return (

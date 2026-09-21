@@ -136,7 +136,26 @@ export async function POST(request: Request): Promise<NextResponse> {
     const host = await getWebRuntimeHost();
     const outcomes: { itemId: string; ok: boolean; detail?: string }[] = [];
     for (const entry of entries) {
-      const result = await host.runtime.libraryOps.save({ itemId: entry.itemId, listName });
+      // R24-W2 — THE DEV-BOOT BRIDGE (the documented per-route
+      // module-graph doctrine): THIS module's runtime instance resolves
+      // the entry through the same search seam the page's runtime
+      // learned it from, matched by the entry's own source key (the
+      // single-bundle production boot shares one runtime — the
+      // resolution is an idempotent no-op there).
+      let itemId = entry.itemId;
+      try {
+        const model = await host.runtime.search({ query: entry.title });
+        const hit = model.hits.find(
+          (candidate) =>
+            candidate.result.connectorId === entry.connectorId &&
+            candidate.result.externalRef === entry.externalRef,
+        );
+        if (hit !== undefined) itemId = hit.canonicalItemId;
+      } catch {
+        // The resolution failed: the entry's own id stands (the save's
+        // typed refusal names the truth — never a fabricated success).
+      }
+      const result = await host.runtime.libraryOps.save({ itemId, listName });
       outcomes.push(
         result.ok
           ? { itemId: entry.itemId, ok: true }

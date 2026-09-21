@@ -23,7 +23,7 @@
 
 import type { JSX } from "react";
 
-import type { PlayerView } from "@/host/view-models";
+import type { PlayerShellView } from "@/host/view-models";
 import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { TorrentStageProbe } from "@/components/player/TorrentStageProbe";
 import { Icon } from "@/components/shell/Icon";
@@ -31,7 +31,7 @@ import { ErrorState } from "@/components/ui/StateViews";
 import { formatPosition } from "@/components/ui/format";
 
 /** The authorized peer copy's stage (the browser rung). */
-export function TorrentPlaybackStage({ view }: { readonly view: PlayerView }): JSX.Element {
+export function TorrentPlaybackStage({ view }: { readonly view: PlayerShellView }): JSX.Element {
   const torrent = view.torrent;
   if (torrent === null) {
     // The provider stage owns this render (the torrent view is absent).
@@ -124,7 +124,7 @@ export function TorrentPlaybackStage({ view }: { readonly view: PlayerView }): J
 }
 
 /** The peer copy's lifecycle surface, rendered under the player stage. */
-export function TorrentAcquisitionLifecycle({ view }: { readonly view: PlayerView }): JSX.Element {
+export function TorrentAcquisitionLifecycle({ view }: { readonly view: PlayerShellView }): JSX.Element {
   const torrent = view.torrent;
   if (torrent === null) return <></>;
   return (

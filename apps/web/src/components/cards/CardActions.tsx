@@ -101,6 +101,8 @@ export function CardActions({ target }: { readonly target: CardActionTarget }): 
       <WatchlistSave
         itemId={target.itemId}
         title={target.title}
+        connectorId={target.connectorId}
+        externalRef={target.externalRef}
         initiallySaved={target.initiallySaved === true}
         variant="compact"
       />
