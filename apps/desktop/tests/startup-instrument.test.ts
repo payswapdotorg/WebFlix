@@ -245,7 +245,7 @@ describe("R24 startup instrument — the startup architecture laws", () => {
       realization: "provider-embed",
       cacheMode: "cold",
     });
-    expect(measurement.verifiedRangesPrioritizedOverCompletion).toBe(false); // runway 0 → not verified-data-first for this rung's observation
+    expect(measurement.verifiedRangesPrioritizedOverCompletion).toBe(null); // R24-L SEAM-2: provider pass → the law cannot apply → null (n/a), never a false "VIOLATED"
     expect(measurement.firstFrameRunwayMs).toBe(0);
   });
 });

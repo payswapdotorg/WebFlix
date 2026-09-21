@@ -226,12 +226,20 @@ export const j41PlaybackStartup: Journey = {
       );
 
       // ---- THE SEEK PAIR (the J keyboard seek through the real route).
+      // The confirm marker rides the async command round trip — a bounded
+      // poll (the R24-W2 play-click hardening pattern), never a single
+      // fixed-settle read (which races on loaded boxes).
       await browser.clickInteractive("[data-wfx-chrome]");
       await browser.press("j");
-      await browser.settle(800);
-      const seekConfirmed = await browser.eval<boolean>(
-        `(window.__wfxPlaybackTelemetry?.markers ?? []).some((m) => m.marker === 'seek-confirmed')`,
-      );
+      let seekConfirmed = false;
+      try {
+        await browser.pollEvalTruthy(
+          `(window.__wfxPlaybackTelemetry?.markers ?? []).some((m) => m.marker === 'seek-confirmed')`,
+        );
+        seekConfirmed = true;
+      } catch {
+        seekConfirmed = false;
+      }
       assert.that(
         `${benchmark.titleFragment}: the keyboard seek records its request/confirm pair (the real command round trip)`,
         "seek-confirmed present",
@@ -240,11 +248,17 @@ export const j41PlaybackStartup: Journey = {
       );
 
       // ---- THE CONTROL PAIR (the transport's play/pause round trip).
+      // Same bounded-poll hardening as the seek pair.
       await browser.clickInteractive("[data-wfx-chrome-play]");
-      await browser.settle(600);
-      const controlConfirmed = await browser.eval<boolean>(
-        `(window.__wfxPlaybackTelemetry?.markers ?? []).some((m) => m.marker === 'control-confirmed')`,
-      );
+      let controlConfirmed = false;
+      try {
+        await browser.pollEvalTruthy(
+          `(window.__wfxPlaybackTelemetry?.markers ?? []).some((m) => m.marker === 'control-confirmed')`,
+        );
+        controlConfirmed = true;
+      } catch {
+        controlConfirmed = false;
+      }
       assert.that(
         `${benchmark.titleFragment}: the play/pause control records its invoked/confirm pair`,
         "control-confirmed present",
@@ -261,9 +275,17 @@ export const j41PlaybackStartup: Journey = {
         `void fetch('/api/playback/telemetry').then((response) => response.json()).then((body) => { window.__wfxRetentionCheck = body; }).catch(() => { window.__wfxRetentionCheck = null; })`,
       );
       await browser.settle(500);
-      const retained = await browser.eval<{ ok: boolean; count: number } | null>(
-        `window.__wfxRetentionCheck ?? null`,
-      );
+      let retained: { ok: boolean; count: number } | null = null;
+      try {
+        await browser.pollEvalTruthy(`window.__wfxRetentionCheck?.ok === true`, 15_000);
+        retained = await browser.eval<{ ok: boolean; count: number } | null>(
+          `window.__wfxRetentionCheck ?? null`,
+        );
+      } catch {
+        retained = await browser.eval<{ ok: boolean; count: number } | null>(
+          `window.__wfxRetentionCheck ?? null`,
+        );
+      }
       assert.that(
         "the flushed traces retain on the server seam (the raw observations readable back)",
         "the store answers with the retained count",

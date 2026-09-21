@@ -295,9 +295,13 @@ export function createPlaybackStartupInstrument(
       // a verified runway > 0 while the verified fraction was still < 1
       // (the ranges needed for immediate playback prioritized over full
       // completion). Only derivable for a pass that observed a first frame
-      // with its torrent truth.
+      // with its torrent truth — a PROVIDER pass has no torrent truth to
+      // evaluate, so the law answers null (n/a), never a false "VIOLATED"
+      // (R24-L SEAM-2: the derivation used to compute false for provider
+      // passes because it never checked the realization — the evidence
+      // summary marked provider passes VIOLATED where the law cannot apply).
       let verifiedRangesPrioritizedOverCompletion: boolean | null = null;
-      if (firstFrame !== undefined) {
+      if (firstFrame !== undefined && input.realization === "authorized-peer-copy") {
         const runway = firstFrame.runwayMs ?? 0;
         const fraction = firstFrame.verifiedFraction ?? 1;
         verifiedRangesPrioritizedOverCompletion = runway > 0 && fraction < 1;

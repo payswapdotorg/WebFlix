@@ -1,12 +1,12 @@
 {
   "schema": "wfx-j41-benchmark-manifest/1",
-  "commit": "c6e954276cc10a1bf1fda24cc5585ece441f314a",
+  "commit": "uncommitted",
   "branch": "wfx/r24/desktop",
   "environment": {
     "mode": "desktop-composition-simulator",
     "clock": "performance.now (real elapsed, sub-ms resolution)",
-    "startedAt": "2026-09-21T04:36:40.657Z",
-    "finishedAt": "2026-09-21T04:36:40.668Z"
+    "startedAt": "2026-09-21T17:52:15.443Z",
+    "finishedAt": "2026-09-21T17:52:15.455Z"
   },
   "benchmark": {
     "titles": [
@@ -33,9 +33,9 @@
     "measurements": 7
   },
   "aggregate": {
-    "p50": 0.0746340000000032,
-    "p75": 0.24644899999999836,
-    "p95": 2.4811810000000065,
+    "p50": 0.0998960000000011,
+    "p75": 0.27009499999999775,
+    "p95": 2.7676430000000067,
     "thresholdVerdict": {
       "comparable": false,
       "p50WithinThreshold": null,
@@ -52,90 +52,90 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 98.398991
+          "atMs": 124.224593
         },
         {
           "kind": "player-visible",
-          "atMs": 98.972753
+          "atMs": 124.867376
         },
         {
           "kind": "play-click",
-          "atMs": 98.989245
+          "atMs": 124.883788
         },
         {
           "kind": "torrent-metadata",
-          "atMs": 101.285229
+          "atMs": 127.454924
         },
         {
           "kind": "file-selected",
-          "atMs": 101.286263
+          "atMs": 127.455998
         },
         {
           "kind": "first-verified-playable-range",
-          "atMs": 101.300297
+          "atMs": 127.467817
         },
         {
           "kind": "first-frame",
-          "atMs": 101.470426,
+          "atMs": 127.651431,
           "runwayMs": 25000,
           "verifiedFraction": 0.4444444444444444
         },
         {
           "kind": "audible",
-          "atMs": 101.473033
+          "atMs": 127.654217
         },
         {
           "kind": "seek-issued",
-          "atMs": 101.473691
+          "atMs": 127.654971
         },
         {
           "kind": "seek-accepted",
-          "atMs": 101.634337
+          "atMs": 127.852268
         },
         {
           "kind": "control-issued",
-          "atMs": 101.635366
+          "atMs": 127.853353
         },
         {
           "kind": "control-settled",
-          "atMs": 101.779821
+          "atMs": 127.995133
         },
         {
           "kind": "transient-failure",
-          "atMs": 101.789056
+          "atMs": 128.004702
         },
         {
           "kind": "recovery-complete",
-          "atMs": 101.902165
+          "atMs": 128.141244
         },
         {
           "kind": "background-completion",
-          "atMs": 101.911968
+          "atMs": 128.151997
         },
         {
           "kind": "integrity-verified",
-          "atMs": 101.912633
+          "atMs": 128.152577
         },
         {
           "kind": "ready-offline",
-          "atMs": 101.925493
+          "atMs": 128.170189
         }
       ],
-      "navigationToPlayerVisibleMs": 0.5737620000000021,
-      "clickToFirstFrameMs": 2.4811810000000065,
-      "clickToAudibleMs": 2.483788000000004,
-      "timeToPlayableMs": 2.3110520000000037,
+      "navigationToPlayerVisibleMs": 0.6427829999999943,
+      "clickToFirstFrameMs": 2.7676430000000067,
+      "clickToAudibleMs": 2.770429000000007,
+      "timeToPlayableMs": 2.584029000000001,
       "startupFailed": false,
       "startupFailureDetail": null,
-      "seekResponseMs": 0.16064599999999984,
-      "controlResponseMs": 0.14445499999999356,
-      "recoveryAfterTransientFailureMs": 0.11310899999999435,
-      "timeToTorrentMetadataMs": 2.2959840000000042,
-      "timeToSelectedFileMs": 2.2970180000000084,
-      "timeToFirstVerifiedPlayableRangeMs": 2.3110520000000037,
-      "backgroundCompletionMs": 2.922723000000005,
-      "integrityVerificationMs": 0.0006649999999979173,
-      "readyOfflineTransitionMs": 2.936248000000006,
+      "seekResponseMs": 0.19729699999999184,
+      "controlResponseMs": 0.14177999999999713,
+      "recoveryAfterTransientFailureMs": 0.1365419999999915,
+      "timeToTorrentMetadataMs": 2.57113600000001,
+      "timeToSelectedFileMs": 2.5722099999999983,
+      "timeToFirstVerifiedPlayableRangeMs": 2.584029000000001,
+      "backgroundCompletionMs": 3.268208999999999,
+      "integrityVerificationMs": 0.0005800000000135697,
+      "readyOfflineTransitionMs": 3.286400999999998,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
       "verifiedRangesPrioritizedOverCompletion": true,
@@ -149,39 +149,39 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 102.507601
+          "atMs": 128.780108
         },
         {
           "kind": "player-visible",
-          "atMs": 102.520785
+          "atMs": 128.802395
         },
         {
           "kind": "play-click",
-          "atMs": 102.521461
+          "atMs": 128.803187
         },
         {
           "kind": "first-frame",
-          "atMs": 102.76791,
+          "atMs": 129.073282,
           "runwayMs": 0,
           "verifiedFraction": 1
         },
         {
           "kind": "control-issued",
-          "atMs": 102.76944
+          "atMs": 129.074902
         },
         {
           "kind": "control-settled",
-          "atMs": 102.77532
+          "atMs": 129.080954
         }
       ],
-      "navigationToPlayerVisibleMs": 0.013184000000009632,
-      "clickToFirstFrameMs": 0.24644899999999836,
+      "navigationToPlayerVisibleMs": 0.022286999999977297,
+      "clickToFirstFrameMs": 0.27009499999999775,
       "clickToAudibleMs": null,
       "timeToPlayableMs": null,
       "startupFailed": false,
       "startupFailureDetail": null,
       "seekResponseMs": null,
-      "controlResponseMs": 0.0058799999999905594,
+      "controlResponseMs": 0.006051999999982627,
       "recoveryAfterTransientFailureMs": null,
       "timeToTorrentMetadataMs": null,
       "timeToSelectedFileMs": null,
@@ -191,7 +191,7 @@
       "readyOfflineTransitionMs": null,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
-      "verifiedRangesPrioritizedOverCompletion": false,
+      "verifiedRangesPrioritizedOverCompletion": null,
       "firstFrameRunwayMs": 0,
       "firstFrameVerifiedFraction": 1
     },
@@ -202,39 +202,39 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 102.877974
+          "atMs": 129.238441
         },
         {
           "kind": "player-visible",
-          "atMs": 102.884709
+          "atMs": 129.246098
         },
         {
           "kind": "play-click",
-          "atMs": 102.885222
+          "atMs": 129.246588
         },
         {
           "kind": "first-frame",
-          "atMs": 102.928803,
+          "atMs": 129.290666,
           "runwayMs": 0,
           "verifiedFraction": 1
         },
         {
           "kind": "control-issued",
-          "atMs": 102.929866
+          "atMs": 129.291732
         },
         {
           "kind": "control-settled",
-          "atMs": 102.935504
+          "atMs": 129.298244
         }
       ],
-      "navigationToPlayerVisibleMs": 0.006735000000006153,
-      "clickToFirstFrameMs": 0.0435810000000032,
+      "navigationToPlayerVisibleMs": 0.007656999999994696,
+      "clickToFirstFrameMs": 0.04407799999998474,
       "clickToAudibleMs": null,
       "timeToPlayableMs": null,
       "startupFailed": false,
       "startupFailureDetail": null,
       "seekResponseMs": null,
-      "controlResponseMs": 0.005637999999990484,
+      "controlResponseMs": 0.00651200000001495,
       "recoveryAfterTransientFailureMs": null,
       "timeToTorrentMetadataMs": null,
       "timeToSelectedFileMs": null,
@@ -244,7 +244,7 @@
       "readyOfflineTransitionMs": null,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
-      "verifiedRangesPrioritizedOverCompletion": false,
+      "verifiedRangesPrioritizedOverCompletion": null,
       "firstFrameRunwayMs": 0,
       "firstFrameVerifiedFraction": 1
     },
@@ -255,90 +255,90 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 103.298498
+          "atMs": 129.592949
         },
         {
           "kind": "player-visible",
-          "atMs": 103.432542
+          "atMs": 129.772956
         },
         {
           "kind": "play-click",
-          "atMs": 103.433386
+          "atMs": 129.775041
         },
         {
           "kind": "torrent-metadata",
-          "atMs": 103.494512
+          "atMs": 129.863192
         },
         {
           "kind": "file-selected",
-          "atMs": 103.494775
+          "atMs": 129.878784
         },
         {
           "kind": "first-verified-playable-range",
-          "atMs": 103.499015
+          "atMs": 129.887815
         },
         {
           "kind": "first-frame",
-          "atMs": 103.507145,
+          "atMs": 129.900092,
           "runwayMs": 25000,
           "verifiedFraction": 0.4444444444444444
         },
         {
           "kind": "audible",
-          "atMs": 103.508994
+          "atMs": 129.901679
         },
         {
           "kind": "seek-issued",
-          "atMs": 103.509252
+          "atMs": 129.901937
         },
         {
           "kind": "seek-accepted",
-          "atMs": 103.516481
+          "atMs": 129.910027
         },
         {
           "kind": "control-issued",
-          "atMs": 103.516823
+          "atMs": 129.912766
         },
         {
           "kind": "control-settled",
-          "atMs": 103.522671
+          "atMs": 129.918817
         },
         {
           "kind": "transient-failure",
-          "atMs": 103.531664
+          "atMs": 129.926098
         },
         {
           "kind": "recovery-complete",
-          "atMs": 103.539173
+          "atMs": 129.934318
         },
         {
           "kind": "background-completion",
-          "atMs": 103.542351
+          "atMs": 129.939173
         },
         {
           "kind": "integrity-verified",
-          "atMs": 103.542614
+          "atMs": 129.939411
         },
         {
           "kind": "ready-offline",
-          "atMs": 103.543739
+          "atMs": 129.940573
         }
       ],
-      "navigationToPlayerVisibleMs": 0.13404400000000294,
-      "clickToFirstFrameMs": 0.07375899999999547,
-      "clickToAudibleMs": 0.07560800000000256,
-      "timeToPlayableMs": 0.06562900000000127,
+      "navigationToPlayerVisibleMs": 0.18000699999998915,
+      "clickToFirstFrameMs": 0.12505100000001335,
+      "clickToAudibleMs": 0.12663800000001402,
+      "timeToPlayableMs": 0.1127740000000017,
       "startupFailed": false,
       "startupFailureDetail": null,
-      "seekResponseMs": 0.007228999999995267,
-      "controlResponseMs": 0.005848000000000297,
-      "recoveryAfterTransientFailureMs": 0.007508999999998878,
-      "timeToTorrentMetadataMs": 0.06112600000000157,
-      "timeToSelectedFileMs": 0.06138900000000547,
-      "timeToFirstVerifiedPlayableRangeMs": 0.06562900000000127,
-      "backgroundCompletionMs": 0.10896499999999776,
-      "integrityVerificationMs": 0.000263000000003899,
-      "readyOfflineTransitionMs": 0.11035300000000348,
+      "seekResponseMs": 0.008090000000009923,
+      "controlResponseMs": 0.006050999999985152,
+      "recoveryAfterTransientFailureMs": 0.008219999999994343,
+      "timeToTorrentMetadataMs": 0.08815100000001053,
+      "timeToSelectedFileMs": 0.10374300000000858,
+      "timeToFirstVerifiedPlayableRangeMs": 0.1127740000000017,
+      "backgroundCompletionMs": 0.16413200000002348,
+      "integrityVerificationMs": 0.00023799999999596366,
+      "readyOfflineTransitionMs": 0.1655320000000131,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
       "verifiedRangesPrioritizedOverCompletion": true,
@@ -352,90 +352,90 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 103.003467
+          "atMs": 129.377451
         },
         {
           "kind": "player-visible",
-          "atMs": 103.033486
+          "atMs": 129.410307
         },
         {
           "kind": "play-click",
-          "atMs": 103.0347
+          "atMs": 129.411214
         },
         {
           "kind": "torrent-metadata",
-          "atMs": 103.130009
+          "atMs": 129.48983
         },
         {
           "kind": "file-selected",
-          "atMs": 103.132422
+          "atMs": 129.491359
         },
         {
           "kind": "first-verified-playable-range",
-          "atMs": 103.140662
+          "atMs": 129.496969
         },
         {
           "kind": "first-frame",
-          "atMs": 103.148342,
+          "atMs": 129.51111,
           "runwayMs": 25000,
           "verifiedFraction": 0.4444444444444444
         },
         {
           "kind": "audible",
-          "atMs": 103.149898
+          "atMs": 129.512679
         },
         {
           "kind": "seek-issued",
-          "atMs": 103.150864
+          "atMs": 129.513553
         },
         {
           "kind": "seek-accepted",
-          "atMs": 103.180861
+          "atMs": 129.522703
         },
         {
           "kind": "control-issued",
-          "atMs": 103.182854
+          "atMs": 129.523674
         },
         {
           "kind": "control-settled",
-          "atMs": 103.208997
+          "atMs": 129.534602
         },
         {
           "kind": "transient-failure",
-          "atMs": 103.214588
+          "atMs": 129.540607
         },
         {
           "kind": "recovery-complete",
-          "atMs": 103.226381
+          "atMs": 129.549894
         },
         {
           "kind": "background-completion",
-          "atMs": 103.238135
+          "atMs": 129.554651
         },
         {
           "kind": "integrity-verified",
-          "atMs": 103.25047
+          "atMs": 129.555456
         },
         {
           "kind": "ready-offline",
-          "atMs": 103.259361
+          "atMs": 129.561661
         }
       ],
-      "navigationToPlayerVisibleMs": 0.0300189999999958,
-      "clickToFirstFrameMs": 0.11364199999999869,
-      "clickToAudibleMs": 0.11519799999999236,
-      "timeToPlayableMs": 0.10596200000000522,
+      "navigationToPlayerVisibleMs": 0.03285599999998112,
+      "clickToFirstFrameMs": 0.0998960000000011,
+      "clickToAudibleMs": 0.10146499999999037,
+      "timeToPlayableMs": 0.08575500000000602,
       "startupFailed": false,
       "startupFailureDetail": null,
-      "seekResponseMs": 0.0299969999999945,
-      "controlResponseMs": 0.02614299999999048,
-      "recoveryAfterTransientFailureMs": 0.011792999999997278,
-      "timeToTorrentMetadataMs": 0.09530900000000031,
-      "timeToSelectedFileMs": 0.09772200000000453,
-      "timeToFirstVerifiedPlayableRangeMs": 0.10596200000000522,
-      "backgroundCompletionMs": 0.20343499999999892,
-      "integrityVerificationMs": 0.012335000000007312,
-      "readyOfflineTransitionMs": 0.22466099999999756,
+      "seekResponseMs": 0.00915000000000532,
+      "controlResponseMs": 0.010928000000006932,
+      "recoveryAfterTransientFailureMs": 0.00928700000000049,
+      "timeToTorrentMetadataMs": 0.0786160000000109,
+      "timeToSelectedFileMs": 0.08014499999998748,
+      "timeToFirstVerifiedPlayableRangeMs": 0.08575500000000602,
+      "backgroundCompletionMs": 0.1434370000000058,
+      "integrityVerificationMs": 0.0008049999999855117,
+      "readyOfflineTransitionMs": 0.15044699999998556,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
       "verifiedRangesPrioritizedOverCompletion": true,
@@ -449,39 +449,39 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 103.609462
+          "atMs": 130.022411
         },
         {
           "kind": "player-visible",
-          "atMs": 103.614095
+          "atMs": 130.027318
         },
         {
           "kind": "play-click",
-          "atMs": 103.614355
+          "atMs": 130.027568
         },
         {
           "kind": "first-frame",
-          "atMs": 103.688989,
+          "atMs": 130.056983,
           "runwayMs": 0,
           "verifiedFraction": 1
         },
         {
           "kind": "control-issued",
-          "atMs": 103.692724
+          "atMs": 130.060913
         },
         {
           "kind": "control-settled",
-          "atMs": 103.696106
+          "atMs": 130.063993
         }
       ],
-      "navigationToPlayerVisibleMs": 0.004633000000012544,
-      "clickToFirstFrameMs": 0.0746340000000032,
+      "navigationToPlayerVisibleMs": 0.004907000000002881,
+      "clickToFirstFrameMs": 0.02941500000000019,
       "clickToAudibleMs": null,
       "timeToPlayableMs": null,
       "startupFailed": false,
       "startupFailureDetail": null,
       "seekResponseMs": null,
-      "controlResponseMs": 0.0033820000000019945,
+      "controlResponseMs": 0.003080000000011296,
       "recoveryAfterTransientFailureMs": null,
       "timeToTorrentMetadataMs": null,
       "timeToSelectedFileMs": null,
@@ -491,7 +491,7 @@
       "readyOfflineTransitionMs": null,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
-      "verifiedRangesPrioritizedOverCompletion": false,
+      "verifiedRangesPrioritizedOverCompletion": null,
       "firstFrameRunwayMs": 0,
       "firstFrameVerifiedFraction": 1
     },
@@ -502,39 +502,39 @@
       "observations": [
         {
           "kind": "navigation-start",
-          "atMs": 103.771401
+          "atMs": 130.12798
         },
         {
           "kind": "player-visible",
-          "atMs": 103.782385
+          "atMs": 130.132562
         },
         {
           "kind": "play-click",
-          "atMs": 103.782783
+          "atMs": 130.132807
         },
         {
           "kind": "first-frame",
-          "atMs": 103.815965,
+          "atMs": 130.16014,
           "runwayMs": 0,
           "verifiedFraction": 1
         },
         {
           "kind": "control-issued",
-          "atMs": 103.816497
+          "atMs": 130.160669
         },
         {
           "kind": "control-settled",
-          "atMs": 103.824819
+          "atMs": 130.163539
         }
       ],
-      "navigationToPlayerVisibleMs": 0.010984000000007654,
-      "clickToFirstFrameMs": 0.0331820000000107,
+      "navigationToPlayerVisibleMs": 0.004581999999999198,
+      "clickToFirstFrameMs": 0.02733299999999872,
       "clickToAudibleMs": null,
       "timeToPlayableMs": null,
       "startupFailed": false,
       "startupFailureDetail": null,
       "seekResponseMs": null,
-      "controlResponseMs": 0.008322000000006824,
+      "controlResponseMs": 0.0028699999999730608,
       "recoveryAfterTransientFailureMs": null,
       "timeToTorrentMetadataMs": null,
       "timeToSelectedFileMs": null,
@@ -544,7 +544,7 @@
       "readyOfflineTransitionMs": null,
       "playbackBlockedOnNonessentialWork": false,
       "nonessentialCallsInWindow": [],
-      "verifiedRangesPrioritizedOverCompletion": false,
+      "verifiedRangesPrioritizedOverCompletion": null,
       "firstFrameRunwayMs": 0,
       "firstFrameVerifiedFraction": 1
     }
@@ -572,11 +572,11 @@
     },
     {
       "step": "B6",
-      "observed": "TTFF over 7 passes: p50=0.075ms, p75=0.246ms, p95=2.481ms (REAL measurements of the composition executing; the same-content YouTube comparison + the R24-E thresholds are the lead's real-device procedure — recorded as pending, never silently passed)."
+      "observed": "TTFF over 7 passes: p50=0.100ms, p75=0.270ms, p95=2.768ms (REAL measurements of the composition executing; the same-content YouTube comparison + the R24-E thresholds are the lead's real-device procedure — recorded as pending, never silently passed)."
     },
     {
       "step": "B7",
-      "observed": "Realization switch (provider embed → authorized peer copy): click-to-first-frame 0.066ms, window clean."
+      "observed": "Realization switch (provider embed → authorized peer copy): click-to-first-frame 0.067ms, window clean."
     }
   ],
   "assertions": [

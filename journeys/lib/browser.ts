@@ -239,6 +239,38 @@ export class Browser {
     await this.exec(["wait", String(ms)], ms + this.timeoutMs);
   }
 
+  /**
+   * Navigation-SAFE truthy-eval wait: poll a JS expression with FRESH
+   * evaluations until it answers truthy (bounded). The telemetry trace
+   * reads race the command round trip on loaded boxes — a single read
+   * after a fixed settle flakes exactly like the play-click race the
+   * R24-W2 lane hardened (the deterministic ready-wait); a bounded poll
+   * observes the marker whenever the round trip completes. Throws the
+   * typed BrowserError with the last observed value on timeout.
+   */
+  async pollEvalTruthy(expression: string, timeoutMs = 20_000): Promise<true> {
+    const deadline = Date.now() + timeoutMs;
+    let lastObserved: unknown = null;
+    let lastError: string | null = null;
+    while (Date.now() < deadline) {
+      try {
+        const observed = await this.eval<boolean>(expression);
+        if (observed === true) {
+          return true;
+        }
+        lastObserved = observed;
+      } catch (thrown) {
+        lastError = thrown instanceof Error ? thrown.message : String(thrown);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 300));
+    }
+    throw new BrowserError(
+      `pollEvalTruthy ${expression.slice(0, 80)}`,
+      -1,
+      `timed out after ${timeoutMs}ms; last observed: ${String(lastObserved)}${lastError === null ? "" : `; last poll error: ${lastError}`}`,
+    );
+  }
+
   // -- Reading -------------------------------------------------------------
 
   /** The visible text of an element (null when absent). */
