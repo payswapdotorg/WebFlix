@@ -319,7 +319,8 @@ describe("R24-W3 — the J42 Desktop journey (WebFlix extension parity)", () => 
       ok(
         "X10",
         `the '${placement.capability}' placement is a FAMILIAR surface ('${placement.placementSurface}')`,
-        row?.entryPoint.includes("Home") ||
+        row !== undefined &&
+        (row.entryPoint.includes("Home") ||
           row?.entryPoint.includes("Search") ||
           row?.entryPoint.includes("Watch") ||
           row?.entryPoint.includes("Library") ||
@@ -329,10 +330,10 @@ describe("R24-W3 — the J42 Desktop journey (WebFlix extension parity)", () => 
           row?.entryPoint.includes("card") ||
           row?.entryPoint.includes("action row") ||
           row?.entryPoint.includes("settings cluster") ||
-          row?.entryPoint.includes("Up-next") ||
-          row?.entryPoint.includes("N/A") ||
-          row?.entryPoint.includes("OS notification") ||
-          row?.entryPoint.includes("provider"),
+          row.entryPoint.includes("Up-next") ||
+          row.entryPoint.includes("N/A") ||
+          row.entryPoint.includes("OS notification") ||
+          row.entryPoint.includes("provider")),
       );
       ok(
         "X10",

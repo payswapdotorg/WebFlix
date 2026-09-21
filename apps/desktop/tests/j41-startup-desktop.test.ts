@@ -56,7 +56,7 @@ import {
   ttffThresholdVerdict,
   type PlaybackStartupMeasurement,
 } from "../src/platform/playback-startup-instrument";
-import { bootR23, lastNativeSessionId, nativeEvent, R23_ITEM, R23_PROVENANCE, R23_TITLE } from "./r23-harness";
+import { bootR23, lastNativeSessionId, nativeEvent, R23_ITEM, R23_PROVENANCE, R23_T0, R23_TITLE } from "./r23-harness";
 import type { R23Boot } from "./r23-harness";
 import { engineStatus, engineTruth } from "./discoverability-harness";
 
@@ -216,7 +216,19 @@ async function torrentPass(cacheMode: "cold" | "warm", boot: R23Boot): Promise<P
       sessionId,
       infoHash: "0123456789abcdef0123456789abcdef01234567",
       provenance: R23_PROVENANCE,
-      assets: [{ assetId: "asset-j41", contentPath: "/vault/feature-presentation.mkv", integrity: "verified" }],
+      assets: [
+        {
+          assetId: "asset-j41",
+          sourcePath: "feature-presentation.mkv",
+          contentPath: "/vault/feature-presentation.mkv",
+          sizeBytes: 88_912,
+          sha256: "a".repeat(64),
+          contentType: "video/x-matroska",
+          integrity: "verified",
+          sizeOnDisk: 88_912,
+        },
+      ],
+      exposedAt: R23_T0,
     },
   ]);
   instrument.observe({ kind: "ready-offline" });

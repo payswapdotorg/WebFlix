@@ -57,6 +57,7 @@ import {
   nativeEvent,
   R23_ITEM,
   R23_PROVENANCE,
+  R23_T0,
   R23_TITLE,
 } from "./r23-harness";
 import type { R23Boot } from "./r23-harness";
@@ -268,8 +269,19 @@ describe("R24-D — the torrent-first Where-to-watch parity walk", () => {
       "steady",
       {
         sessionId: outcome.sessionId,
-        deadlinesAtRisk: [{ offset: 49_152, length: 16_384, deadlineMs: 0 }],
-        stall: { kind: "starved", connectedPeers: 2, downloadBytesPerSec: 512, sessionStalled: true, detail: "the transfer is starved" },
+        deadlinesAtRisk: [
+          {
+            kind: "runway",
+            fromByte: 49_152,
+            toByte: 65_536,
+            remainingBytes: 16_384,
+            consumptionBytesPerSec: 16_384,
+            downloadBytesPerSec: 512,
+            secondsUntilDepletion: 1,
+            reason: "the runway cannot be sustained at the current rate",
+          },
+        ],
+        stall: { kind: "slow-swarm", connectedPeers: 2, downloadBytesPerSec: 512, sessionStalled: true, detail: "the transfer is starved" },
       },
     );
     nativeEvent(boot.nativeMedia, lastNativeSessionId(boot.nativeMedia), "buffering", 30_000, 8_000);
@@ -414,10 +426,16 @@ describe("R24-D — the torrent-first Where-to-watch parity walk", () => {
         assets: [
           {
             assetId: "asset-r24-1",
+            sourcePath: "feature-presentation.mkv",
             contentPath: "/vault/feature-presentation.mkv",
+            sizeBytes: 88_912,
+            sha256: "a".repeat(64),
+            contentType: "video/x-matroska",
             integrity: "verified",
+            sizeOnDisk: 88_912,
           },
         ],
+        exposedAt: R23_T0,
       },
     ]);
     const after = await bootAfter.whereToWatch.playPeerCopy(R23_ITEM);

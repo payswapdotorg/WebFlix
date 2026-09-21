@@ -433,7 +433,7 @@ describe("R24 Desktop parity audit — the composition walk (the backing claims 
     ok(
       "watch-cast",
       "no cast affordance exists in the control grammar (no dead button)",
-      surface.affordances("native").every((view) => view.kind !== "cast"),
+      surface.affordances("native").every((view) => (view.kind as string) !== "cast"),
     );
     record("watch-cast", "Cast honestly absent: no dead button, the honest device-capability truth rendered.");
   });

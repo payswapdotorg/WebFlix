@@ -123,7 +123,7 @@ describe("R24 native player affordance parity — the affordance map", () => {
     expect(PLAYER_AFFORDANCE_KINDS as readonly string[]).not.toContain("cast");
     for (const mode of ["native", "embed", "browser", "external"] as const) {
       const map = playerAffordanceMap(mode);
-      expect(map.find((view) => view.kind === "cast")).toBeUndefined();
+      expect(map.find((view) => (view.kind as string) === "cast")).toBeUndefined();
     }
   });
 });
@@ -600,8 +600,8 @@ describe("R24 native player affordance parity — the session queue", () => {
 
     // The watchlist carries the entries (the runtime's own local view).
     const entryIds = boot.runtime.libraryOps.entries().map((entry) => entry.itemId);
-    expect(entryIds).toContain(queuedOne);
-    expect(entryIds).toContain(queuedTwo);
+    expect(entryIds).toContain(queuedOne!);
+    expect(entryIds).toContain(queuedTwo!);
 
     // The queue itself stays (saving is additive, the session keeps its order).
     expect(queue.view().length).toBe(2);
