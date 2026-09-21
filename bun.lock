@@ -42,6 +42,7 @@
         "@wfx/client-runtime": "workspace:*",
         "@wfx/domain": "workspace:*",
         "@wfx/experience": "workspace:*",
+        "@wfx/model-fabric": "workspace:*",
         "@wfx/native-media": "workspace:*",
         "@wfx/persistence": "workspace:*",
         "@wfx/platform-contracts": "workspace:*",

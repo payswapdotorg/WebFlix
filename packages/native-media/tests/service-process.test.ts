@@ -13,6 +13,19 @@
  * process poisons honestly with a nonzero exit), the version guard, the
  * graceful EOF shutdown (exit 0), and RESTART RECOVERY over the wire
  * (intact file ⇒ recovered; deleted file ⇒ honestly failed).
+ *
+ * TIMEOUT TRUTH (found-and-fixed in R23-W3): every spawn-based test
+ * carries an EXPLICIT 30s bun timeout, and the completion waits carry a
+ * load-tolerant 25s `waitFor` bound, because the previous bounds (Bun's
+ * 5s DEFAULT per-test timeout, then the tests' own 8s waitFor) fired on
+ * these REAL child processes under `bun test --parallel=2` machine load
+ * (observed: "background completion over the wire" and "corrupt stored
+ * asset over the wire" failing at exactly ~5000ms, then at ~8100ms, on
+ * loaded runs while the same battery passed unloaded; the identical
+ * flake reproduces on the pristine shared checkpoint, so this is
+ * load-marginal infrastructure, never a product defect). The 25s bound
+ * keeps the tests' own honesty — a genuinely hung child still fails —
+ * while tolerating the real read clock under load.
  */
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
@@ -215,13 +228,14 @@ describe("R10 — the spawnable entry: the wire protocol", () => {
     await waitFor(
       () => seen.length,
       (n) => n > 0 && seen[seen.length - 1]! >= 40,
+      25_000,
     );
     // Monotone non-decreasing — no fake progress, no regressions.
     for (let i = 1; i < seen.length; i += 1) {
       expect(seen[i]!).toBeGreaterThanOrEqual(seen[i - 1]!);
     }
     handle.terminate();
-  });
+  }, 30_000);
 
   it("background completion over the wire: complete + integrity verified + persisted asset", async () => {
     const root = newRoot();
@@ -248,6 +262,7 @@ describe("R10 — the spawnable entry: the wire protocol", () => {
           (e) => e.kind === "state-changed" && e.session.state === "complete",
         ),
       (e) => e !== undefined,
+      25_000,
     );
     unsub();
     const completed = events.find(
@@ -267,7 +282,7 @@ describe("R10 — the spawnable entry: the wire protocol", () => {
     expect(meta.sizeBytes).toBe(10_000);
     expect(meta.sha256).toMatch(/^[0-9a-f]{64}$/);
     handle.terminate();
-  });
+  }, 30_000);
 
   it("corrupt stored asset over the wire: open answers the typed VERIFICATION_FAILED", async () => {
     const root = newRoot();
@@ -288,6 +303,7 @@ describe("R10 — the spawnable entry: the wire protocol", () => {
       await waitFor(
         () => events.find((e) => e.kind === "state-changed" && e.session.state === "complete"),
         (e) => e !== undefined,
+        25_000,
       );
       unsub();
       handle.terminate();
@@ -309,7 +325,7 @@ describe("R10 — the spawnable entry: the wire protocol", () => {
     expect(refusal instanceof NativeMediaError).toBe(true);
     expect((refusal as NativeMediaError).code).toBe("VERIFICATION_FAILED");
     handle.terminate();
-  });
+  }, 30_000);
 });
 
 describe("R10 — the spawnable entry: the crash law", () => {
@@ -344,7 +360,7 @@ describe("R10 — the spawnable entry: the crash law", () => {
       .catch((e: unknown) => e);
     expect(after instanceof NativeMediaError).toBe(true);
     expect((after as NativeMediaError).code).toBe("INTERNAL");
-  });
+  }, 30_000);
 
   it("a malformed frame (not JSON) poisons the process: error event + nonzero exit", async () => {
     const root = newRoot();
@@ -377,7 +393,7 @@ describe("R10 — the spawnable entry: the crash law", () => {
     // The process exited nonzero (honestly poisoned).
     const exit = await internals(handle).proc.exited;
     expect(exit).not.toBe(0);
-  });
+  }, 30_000);
 
   it("the version guard: an unknown protocolVersion frame is a malformed frame (crash law)", async () => {
     const root = newRoot();
@@ -394,7 +410,7 @@ describe("R10 — the spawnable entry: the crash law", () => {
     const error = events.find((e) => e.kind === "error");
     if (error?.kind !== "error") throw new Error("unreachable");
     expect(error.detail).toContain("protocolVersion must be 1");
-  });
+  }, 30_000);
 
   it("missing WFX_ENGINE_CONFIG: the typed startup failure + exit 2", async () => {
     // The transport always injects the config env, so the CONTRACT is
@@ -415,7 +431,7 @@ describe("R10 — the spawnable entry: the crash law", () => {
     expect(event.kind).toBe("error");
     expect(event.code).toBe("INVALID_INPUT");
     expect(event.detail).toContain("WFX_ENGINE_CONFIG");
-  });
+  }, 30_000);
 });
 
 describe("R10 — the spawnable entry: shutdown + restart recovery", () => {
@@ -436,7 +452,7 @@ describe("R10 — the spawnable entry: shutdown + restart recovery", () => {
     // The journal carries the shutdown evidence.
     const journal = readFileSync(join(root, "journal.ndjson"), "utf8");
     expect(journal).toContain('"shutdown"');
-  });
+  }, 30_000);
 
   it("RESTART RECOVERY (intact file): the session returns as buffering at its control point", async () => {
     const root = newRoot();
@@ -486,7 +502,7 @@ describe("R10 — the spawnable entry: shutdown + restart recovery", () => {
     expect(resume.kind === "state-changed" && resume.session.state).toBe("playing");
     unsub();
     handle.terminate();
-  });
+  }, 30_000);
 
   it("RESTART RECOVERY (deleted file): the session is honestly failed with the detail", async () => {
     const root = newRoot();
@@ -530,5 +546,5 @@ describe("R10 — the spawnable entry: shutdown + restart recovery", () => {
     expect((dead as NativeMediaError).code).toBe("SESSION_CLOSED");
     unsub();
     handle.terminate();
-  });
+  }, 30_000);
 });
