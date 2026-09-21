@@ -54,6 +54,8 @@ import type { PlaybackMode } from "@wfx/domain";
  * One affordance of the familiar player grammar. The union is CLOSED: a
  * new affordance is a parity-lab decision (a new row), never a silent
  * addition. `cast` is deliberately NOT a member — the honest-absence law.
+ * `translate` joined the grammar with R25 (the plan's R25-G player-local
+ * language control) — the parity-lab decision that added the row.
  */
 export type PlayerAffordanceKind =
   | "play-pause"
@@ -72,7 +74,8 @@ export type PlayerAffordanceKind =
   | "queue"
   | "watchlist-save"
   | "share"
-  | "feedback";
+  | "feedback"
+  | "translate";
 
 /** Every affordance kind, in the control bar's familiar order. */
 export const PLAYER_AFFORDANCE_KINDS: readonly PlayerAffordanceKind[] = [
@@ -93,6 +96,7 @@ export const PLAYER_AFFORDANCE_KINDS: readonly PlayerAffordanceKind[] = [
   "watchlist-save",
   "share",
   "feedback",
+  "translate",
 ] as const;
 
 /** The honest backing vocabulary (the surface's own truth discipline). */
@@ -300,7 +304,30 @@ export function playerAffordanceMap(mode: PlaybackMode): readonly PlayerAffordan
         "The recommendation feedback you already know — More like this, Not interested, and the rest of the same vocabulary.",
     },
   ];
-  return [...transport, ...rungSettings, ...shared];
+  // THE TRANSLATE ROW (R25-G — the player-local language control, added
+  // with the R25 parity decision): the honest per-rung truth. The
+  // WebFlix-owned rungs (native + browser) offer the realtime session
+  // through the authorized capture paths; the provider's contained
+  // surfaces keep their own captions — never a capture, never a bypass.
+  const translateRow: PlayerAffordanceView =
+    mode === "native" || mode === "browser"
+      ? {
+          kind: "translate",
+          placement: "the settings cluster's language group",
+          backing: "shared-surface",
+          label: "Translate",
+          detail:
+            "Realtime translation through the shared session seam — the authorized capture paths (local files, authorized torrent copies, controlled live input); the original audio always stays available.",
+        }
+      : {
+          kind: "translate",
+          placement: "the settings cluster's language group",
+          backing: "realization-exposed",
+          label: "Translate",
+          detail:
+            "This way of watching plays inside the provider's own player — prefer its own captions/transcripts, or translate a subtitle file you provide; WebFlix never captures protected provider media. On WebFlix-owned ways of watching (local, torrent, live) the Translate control runs the realtime session.",
+        };
+  return [...transport, ...rungSettings, ...shared, translateRow];
 }
 
 /**

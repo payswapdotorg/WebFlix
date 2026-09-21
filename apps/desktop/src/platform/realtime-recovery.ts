@@ -100,19 +100,25 @@ export interface RealtimeRecoverySupervisorOptions {
    * The backoff schedule, ms per attempt index (attempt 1 waits
    * schedule[0], attempt 2 schedule[1], ...). Default: [250, 1000, 4000].
    */
-  readonly backoffMs?: readonly number[];
+  readonly backoffMs?: readonly number[] | undefined;
   /**
    * The reconnect driver — the async seam that calls
    * `session.reconnect()`. Injectable for deterministic tests; the
    * production default drives the session's own operation.
    */
-  readonly reconnectDriver?: (session: RealtimeTranslationSession) => Promise<void>;
+  readonly reconnectDriver?: ((session: RealtimeTranslationSession) => Promise<void>) | undefined;
   /**
    * TEST/EDGE SEAM — the scheduler that runs a callback after `ms`. The
    * production default uses setTimeout; deterministic tests inject a
    * manual pump.
    */
-  readonly schedule?: (callback: () => void, ms: number) => void;
+  readonly schedule?: ((callback: () => void, ms: number) => void) | undefined;
+  /**
+   * The transition observer — the composition wires its instrument here
+   * (the reconnected/failed transitions are the R25-L reconnect-time and
+   * fallback evidence).
+   */
+  readonly onTransition?: ((transition: RecoveryTransition) => void) | undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -180,7 +186,9 @@ export function createRealtimeRecoverySupervisor(
     const from = state;
     if (from === next) return;
     state = next;
-    transitions.push({ from, to: next, atMs: options.nowMs(), detail });
+    const transition: RecoveryTransition = { from, to: next, atMs: options.nowMs(), detail };
+    transitions.push(transition);
+    options.onTransition?.(transition);
   }
 
   function enterInterrupted(detail: string): void {

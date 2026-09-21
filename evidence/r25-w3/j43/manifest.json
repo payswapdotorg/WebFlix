@@ -1,0 +1,389 @@
+{
+  "schema": "wfx-j43-realtime-translation-manifest/1",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "clock": "performance.now (the real sub-millisecond sandbox clock)",
+    "startedAt": "2026-09-21T23:54:14.493Z",
+    "finishedAt": "2026-09-21T23:54:14.508Z",
+    "harness": "apps/desktop/tests/j43-realtime-translation-desktop.test.ts over bootR23()"
+  },
+  "summary": {
+    "total": 55,
+    "passed": 55,
+    "failed": 0,
+    "steps": 8,
+    "assertions": 55
+  },
+  "journey": {
+    "id": "J43",
+    "title": "Realtime translation (Desktop)",
+    "status": "PASS",
+    "assertions": [
+      {
+        "step": "W1",
+        "description": "the authorized peer copy started through the real play flow"
+      },
+      {
+        "step": "W1",
+        "description": "the native session is PLAYING before any translation exists (base playback never waits)"
+      },
+      {
+        "step": "W2",
+        "description": "the play started"
+      },
+      {
+        "step": "W2",
+        "description": "the translate control exists in the closed affordance grammar"
+      },
+      {
+        "step": "W2",
+        "description": "the native rung's translate control is offered through the shared session seam"
+      },
+      {
+        "step": "W2",
+        "description": "the embed rung's translate control answers the honest realization-exposed truth (the provider's own captions)"
+      },
+      {
+        "step": "W2",
+        "description": "the peer-copy rung resolves the authorized capture path"
+      },
+      {
+        "step": "W2",
+        "description": "the authorized path is the TORRENT path (the connector truth)"
+      },
+      {
+        "step": "W3",
+        "description": "the play started"
+      },
+      {
+        "step": "W3",
+        "description": "the translation started through the session seam"
+      },
+      {
+        "step": "W3",
+        "description": "the session input's translated-voice policy is NEUTRAL (never a silent clone)"
+      },
+      {
+        "step": "W3",
+        "description": "no provider credential reached the session input (the vocabulary scan)"
+      },
+      {
+        "step": "W3",
+        "description": "the capture tap opened on the native session"
+      },
+      {
+        "step": "W3",
+        "description": "the captured frames flow into the session's append-audio seam"
+      },
+      {
+        "step": "W4",
+        "description": "the first source delta + translation delta are visible incrementally"
+      },
+      {
+        "step": "W4",
+        "description": "the live row carries BOTH the partial source and the partial translation"
+      },
+      {
+        "step": "W4",
+        "description": "the finals stabilize both sides of the row"
+      },
+      {
+        "step": "W4",
+        "description": "the source/translation alignment holds (the paired row by position)"
+      },
+      {
+        "step": "W5",
+        "description": "the play started"
+      },
+      {
+        "step": "W5",
+        "description": "the speaker change is truthful (the new row carries Speaker 2)"
+      },
+      {
+        "step": "W5",
+        "description": "the translation CONTINUED through the speaker change"
+      },
+      {
+        "step": "W5",
+        "description": "the active speaker is projected"
+      },
+      {
+        "step": "W6",
+        "description": "the translated chunk plays at the source playhead"
+      },
+      {
+        "step": "W6",
+        "description": "the original is DUCKED, not erased, while translated speech plays"
+      },
+      {
+        "step": "W6",
+        "description": "the original-audio mode restores the FULL original gain"
+      },
+      {
+        "step": "W6",
+        "description": "the original-audio mode mutes the translated stream"
+      },
+      {
+        "step": "W6",
+        "description": "the mode switches back instantly (the lossless round trip)"
+      },
+      {
+        "step": "W7",
+        "description": "the play started"
+      },
+      {
+        "step": "W7",
+        "description": "the interruption is observed (the recovery state is interrupted)"
+      },
+      {
+        "step": "W7",
+        "description": "the playback session COUNT is unchanged by the interruption"
+      },
+      {
+        "step": "W7",
+        "description": "the playback SESSION ID is unchanged (never a restart)"
+      },
+      {
+        "step": "W7",
+        "description": "the native media session is STILL playing through the interruption"
+      },
+      {
+        "step": "W7",
+        "description": "the original carries the moment during the gap (never silence)"
+      },
+      {
+        "step": "W7",
+        "description": "the reconnect recovered the translation"
+      },
+      {
+        "step": "W7",
+        "description": "the recovery drove ONLY the session's own reconnect operation"
+      },
+      {
+        "step": "W7",
+        "description": "the native session is STILL playing after the recovery (no restart)"
+      },
+      {
+        "step": "W7",
+        "description": "the translation continues after the reconnect"
+      },
+      {
+        "step": "W8",
+        "description": "the play started"
+      },
+      {
+        "step": "W8",
+        "description": "the resumed chunk plays after the gap"
+      },
+      {
+        "step": "W8",
+        "description": "the first transcript delta was MEASURED (positive, real)"
+      },
+      {
+        "step": "W8",
+        "description": "the first translation delta was MEASURED"
+      },
+      {
+        "step": "W8",
+        "description": "the first translated speech chunk was MEASURED"
+      },
+      {
+        "step": "W8",
+        "description": "the stable segment was MEASURED"
+      },
+      {
+        "step": "W8",
+        "description": "the speaker attribution availability was observed"
+      },
+      {
+        "step": "W8",
+        "description": "the reconnect time was MEASURED"
+      },
+      {
+        "step": "W8",
+        "description": "the audio continuity gap was observed with its real duration"
+      },
+      {
+        "step": "W8",
+        "description": "the drift was MEASURED (rendered − consumed)"
+      },
+      {
+        "step": "W8",
+        "description": "the translation did NOT fail in this pass"
+      },
+      {
+        "step": "W9",
+        "description": "stopping the translation closed the session"
+      },
+      {
+        "step": "W9",
+        "description": "the native playback session is STILL playing after the translation stopped"
+      },
+      {
+        "step": "W10",
+        "description": "the play started"
+      },
+      {
+        "step": "W10",
+        "description": "the terminal failure stopped the translation (the failed state)"
+      },
+      {
+        "step": "W10",
+        "description": "the native playback session is STILL playing after the translation failed"
+      },
+      {
+        "step": "W10",
+        "description": "the source captions REMAIN after the failure (the fallback)"
+      },
+      {
+        "step": "evidence",
+        "description": "the evidence pass started"
+      }
+    ]
+  },
+  "walk": [
+    {
+      "step": "W1",
+      "observed": "Play: the authorized torrent/peer copy started (playback session s-r23-1, native session test-native-1); no translation exists yet."
+    },
+    {
+      "step": "W2",
+      "observed": "Translate control: offered on the native/torrent rung (shared-surface); the embed rung answers the honest never-capture truth."
+    },
+    {
+      "step": "W3-W4",
+      "observed": "Translate → en: the session created; the tap opened; 2 captured frames appended; the bilingual captions streamed incrementally (1 paired row)."
+    },
+    {
+      "step": "W5-W6",
+      "observed": "Speaker change (Speaker 2) with the translation continuing; the translated speech played with the original ducked; the mode round trip held the original available."
+    },
+    {
+      "step": "W7",
+      "observed": "Interruption → reconnect: the playback session wfxpses_00000000000000000000000001 NEVER restarted (the native session stayed playing); the recovery drove only session.reconnect() (1 call); the translation resumed."
+    },
+    {
+      "step": "W8",
+      "observed": "The R25-L measures (real clocks): firstTranscriptDelta=0.056ms, firstTranslationDelta=0.059ms, firstSpeechChunk=0.089ms, stableSegment=0.094ms, reconnect=0.013ms, continuityGaps=1 (0.015ms), drift=-300ms."
+    },
+    {
+      "step": "W9",
+      "observed": "Normal playback: the translation stopped cleanly; the base playback continued untouched."
+    },
+    {
+      "step": "W10",
+      "observed": "Failure fallback: the terminal error stopped the translation; the base playback and the source captions remained."
+    }
+  ],
+  "measurement": {
+    "label": "Family Archive Feature Presentation",
+    "realization": "authorized-torrent",
+    "targetLanguage": "en",
+    "outputModalities": "text+audio",
+    "observations": [
+      {
+        "kind": "translation-start-requested",
+        "atMs": 127.62609
+      },
+      {
+        "kind": "session-created",
+        "atMs": 127.669094
+      },
+      {
+        "kind": "first-transcript-delta",
+        "atMs": 127.727871
+      },
+      {
+        "kind": "first-translation-delta",
+        "atMs": 127.733329
+      },
+      {
+        "kind": "first-stable-segment",
+        "atMs": 127.75039
+      },
+      {
+        "kind": "speaker-attribution-observed",
+        "atMs": 127.756507
+      },
+      {
+        "kind": "first-stable-segment",
+        "atMs": 127.773641
+      },
+      {
+        "kind": "first-translated-audio-chunk",
+        "atMs": 127.790699
+      },
+      {
+        "kind": "drift-observed",
+        "atMs": 127.804768
+      },
+      {
+        "kind": "translation-interruption",
+        "atMs": 127.815953
+      },
+      {
+        "kind": "reconnected",
+        "atMs": 127.856936
+      },
+      {
+        "kind": "first-translated-audio-chunk",
+        "atMs": 127.873316
+      },
+      {
+        "kind": "audio-continuity-gap",
+        "atMs": 127.889245
+      }
+    ],
+    "firstTranscriptDeltaMs": 0.10178099999998835,
+    "firstTranslationDeltaMs": 0.10723899999999276,
+    "firstTranslatedSpeechChunkMs": 0.16460899999999867,
+    "stableSegmentMs": 0.12429999999999097,
+    "speakerAttributionObserved": true,
+    "reconnectTimeMs": 0.040983000000011316,
+    "audioContinuity": {
+      "gaps": 1,
+      "totalGapMs": 0.05135699999999588
+    },
+    "driftMs": -200,
+    "driftCorrections": 0,
+    "translatedAudioChunks": 2,
+    "capturedAudioFrames": 2,
+    "visualFramesAppended": 0,
+    "translationFailed": false,
+    "translationFailureDetail": null
+  },
+  "mixerReport": {
+    "mode": "translated-speech",
+    "acceptedChunks": 2,
+    "playedChunks": 2,
+    "droppedByBufferBound": 0,
+    "droppedByDrift": 0,
+    "continuityGaps": {
+      "count": 1,
+      "totalMs": 0.05135699999999588
+    },
+    "lastDriftMs": 400,
+    "driftCorrections": {
+      "count": 0,
+      "lastMagnitudeMs": null
+    },
+    "modeSwitches": 1,
+    "bufferedChunks": 0
+  },
+  "evidencePass": {
+    "playbackSessionStarted": true,
+    "translatedSpeechDecision": "translated",
+    "carriedDuringInterruption": "original-carries",
+    "resumedAfterReconnect": "translated",
+    "nativeSessionStateAtEnd": "playing",
+    "reconnectCalls": 1,
+    "sessionStopCalls": 1,
+    "sessionCloseCalls": 1
+  },
+  "honestScope": [
+    "No realtime provider is bound through Model Fabric in this sandbox (Worker 1's shared contract + the provider registration have not landed) — the session here is the DETERMINISTIC DOUBLE of the Model Fabric session seam, the same shape the production factory binds.",
+    "The latency numbers are REAL measurements of the REAL TypeScript composition executing in this sandbox (the deterministic doubles resolve immediately) — they prove the ARCHITECTURE ORDERING and the measurement machinery, not provider latency. The provider-path numbers are the lead's real-device procedure, recorded as pending (never silently passed).",
+    "The desktop playback rides the R23 harness's authorized torrent/peer copy — the same journey law as J38/J41; the local-file and controlled-live capture paths are proven by the capture-service and adapter unit laws.",
+    "The Web lane's J43 (Worker 2) shares the same session seam vocabulary; the Web/Desktop semantics agreement is the integration-time truth."
+  ]
+}

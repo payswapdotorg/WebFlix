@@ -203,6 +203,12 @@ export interface RealtimeCaptureFeed {
   readonly samplerReport: () => ReturnType<AdaptiveVisualSampler["samplerReport"]>;
   /** The captured-frames accounting (live). */
   readonly captureStats: () => { readonly appendedAudioFrames: number; readonly appendedImageFrames: number };
+  /**
+   * An out-of-band speaker change (the session's speaker-attribution
+   * event): primes the sampler's NEXT frame with the speaker-change
+   * trigger (R25-F trigger 3b — the sampler belongs to this adapter).
+   */
+  notifySpeakerChanged(): void;
   /** Stop the feed (unsubscribes the tap; the session stays open — the composition owns close). */
   stop(): void;
 }
@@ -239,8 +245,14 @@ export interface DesktopRealtimeMediaAdapter {
     readonly subtitleMode: "source" | "translated" | "bilingual";
     readonly speakerAttribution: "labeled" | "off";
     readonly visualContextPolicy: RealtimeVisualContextPolicy;
-    readonly hotwords?: readonly { readonly term: string; readonly translation: string }[];
-    readonly translatedVoice?: RealtimeTranslationSessionInput["translatedVoice"];
+    readonly hotwords?: readonly { readonly term: string; readonly translation: string }[] | undefined;
+    readonly translatedVoice?: RealtimeTranslationSessionInput["translatedVoice"] | undefined;
+    /**
+     * The pre-start hook: invoked with the created session AFTER the tap
+     * opens and BEFORE session.start() — the composition subscribes its
+     * event projection here so the session-created ack is never missed.
+     */
+    readonly onSession?: ((session: RealtimeTranslationSession) => void) | undefined;
   }): Promise<RealtimeCaptureFeed | RealtimeFeedStartFailure>;
 }
 
@@ -364,6 +376,9 @@ export function createDesktopRealtimeMediaAdapter(
           detail: `${subscription.kind}: ${subscription.detail}`,
         };
       }
+      // The pre-start hook: the composition subscribes BEFORE the session
+      // starts (the session-created ack must never be missed).
+      input.onSession?.(session);
       const started = await session.start().catch(
         (thrown: unknown): Error =>
           thrown instanceof Error ? thrown : new Error(String(thrown)),
@@ -376,6 +391,8 @@ export function createDesktopRealtimeMediaAdapter(
           detail: `session.start failed: ${started.message}`,
         };
       }
+      // The pre-start hook fired before start() — the composition's
+      // projection saw the session-created ack.
 
       return {
         session,
@@ -384,6 +401,9 @@ export function createDesktopRealtimeMediaAdapter(
           appendedAudioFrames,
           appendedImageFrames,
         }),
+        notifySpeakerChanged: (): void => {
+          sampler.notifySpeakerChanged();
+        },
         stop(): void {
           if (stopped) return;
           stopped = true;
