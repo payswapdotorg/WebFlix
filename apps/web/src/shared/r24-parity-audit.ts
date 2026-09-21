@@ -1,0 +1,966 @@
+/**
+ * @wfx/app-web — the R24 Web YouTube-parity audit (R24-W2 lane, the
+ * R24-C pairing matrix walked against the LIVE Web product).
+ *
+ * THE LAW THIS RECORD KEEPS (docs/plans/
+ * 2026-09-20-webflix-youtube-parity-performance-plan.md — R24-C + the
+ * Worker 2 lane): every reference row of the plan's feature pairing
+ * matrix, walked against the RUNNING Web adapter (the fixtures boot,
+ * agent-browser — the live surfaces, never a mockup), classified with
+ * the HONEST current state. The classification vocabulary is the frozen
+ * lab contract's (docs/validation/youtube-parity-lab.md) and every
+ * row's classification is MACHINE-ALIGNED to Worker 1's shared
+ * lead-ratified taxonomy (`@wfx/client-runtime`'s `PARITY_TAXONOMY`):
+ * this module is the WEB WALK, not a second taxonomy.
+ *
+ * THE HONESTY LAW: a gap is recorded as a gap — never papered over.
+ * Each row carries three truths:
+ * - `finding`  — what the live walk found BEFORE the R24-W2
+ *   corrections (the audit-time state, immutable once recorded);
+ * - `correction` — the R24-W2 decision: the WebFlix pairing that
+ *   lands per the matrix (`""` when the pairing already holds);
+ * - `currentState` — the state AFTER the corrections landed (the
+ *   walking test verifies this mechanically against the real
+ *   composition; the audit evidence records both states).
+ *
+ * WHAT THIS MODULE IS NOT: a UI, a second parity taxonomy, or a
+ * YouTube visual clone (interaction GRAMMAR only — the frozen law).
+ */
+
+import { PARITY_TAXONOMY, parityTaxonomyRowOf } from "@wfx/client-runtime";
+
+// ---------------------------------------------------------------------------
+// The classification vocabulary (the frozen lab contract, verbatim)
+// ---------------------------------------------------------------------------
+
+/** The frozen parity classification vocabulary (youtube-parity-lab.md). */
+export type WebParityClassification =
+  | "parity"
+  | "native-equivalent"
+  | "platform-variant"
+  | "intentionally-out-of-scope";
+
+/** Every classification value, in frozen order. */
+export const WEB_PARITY_CLASSIFICATIONS: readonly WebParityClassification[] = [
+  "parity",
+  "native-equivalent",
+  "platform-variant",
+  "intentionally-out-of-scope",
+] as const;
+
+/** Runtime membership check against the classification union. */
+export function isWebParityClassification(x: unknown): x is WebParityClassification {
+  return typeof x === "string" && (WEB_PARITY_CLASSIFICATIONS as readonly string[]).includes(x);
+}
+
+/** The four R24-C matrix sections (the plan's own grouping). */
+export type WebParitySection = "discovery" | "watch-player" | "shorts" | "identity-continuity";
+
+// ---------------------------------------------------------------------------
+// The audit row shape
+// ---------------------------------------------------------------------------
+
+/**
+ * One walked row of the R24-C pairing matrix against the LIVE Web
+ * product: the YouTube reference behavior, the plan's WebFlix pairing
+ * (verbatim), the lead-ratified classification (machine-aligned to the
+ * shared taxonomy), and the three honest truths (finding / correction /
+ * current state).
+ */
+export interface WebParityAuditRow {
+  /** The stable row id — MUST resolve in the shared taxonomy (the seam). */
+  readonly id: string;
+  /** The R24-C section the row belongs to. */
+  readonly section: WebParitySection;
+  /** The YouTube reference behavior (the plan's left column, verbatim). */
+  readonly referenceCapability: string;
+  /** The plan's WebFlix pairing (the right column, verbatim). */
+  readonly webflixTreatment: string;
+  /** The lead-ratified classification. NEVER blank. */
+  readonly classification: WebParityClassification;
+  /** What the live walk found at audit time (the immutable pre-correction truth). */
+  readonly finding: string;
+  /** The R24-W2 correction decision; "" when the pairing already holds. */
+  readonly correction: string;
+  /** The honest current state AFTER the corrections landed (walking-test-verified). */
+  readonly currentState: string;
+  /** Where a Web viewer meets the capability (the familiar entry point). */
+  readonly entryPoint: string;
+  /** The Web module/surface that backs the row (the walking test's target). */
+  readonly webBacking: string;
+  /** The journey/test id that evidences the row. */
+  readonly evidence: string;
+}
+
+// ---------------------------------------------------------------------------
+// The walked matrix (the plan's R24-C reference rows, in the plan's order)
+// ---------------------------------------------------------------------------
+
+/**
+ * THE AUDIT: every R24-C reference row walked against the LIVE Web
+ * product. 51 rows — Discovery (10), Watch/player (26), Shorts (7),
+ * Identity and continuity (8) — exactly the shared taxonomy's reference
+ * rows (the 14 R24-B WebFlix-only extensions are J42's walk, not this
+ * audit's), each with the honest finding, the correction decision, and
+ * the landed current state.
+ */
+export const WEB_PARITY_AUDIT_ROWS: readonly WebParityAuditRow[] = [
+  // ——— Discovery ———
+  {
+    id: "home-feed",
+    section: "discovery",
+    referenceCapability: "Home feed",
+    webflixTreatment: "Home discovery with source-neutral cards and explicit intent controls",
+    classification: "native-equivalent",
+    finding:
+      "Home renders the hero, Continue watching (when entries exist), For you + Trending rows, the Shorts rail, the feed-mode control and the Personalize disclosure — the pairing held at audit time.",
+    correction: "",
+    currentState:
+      "The Home discovery composition holds: source-neutral cards, explicit intent controls, feed modes and the Shorts entry — unchanged by the R24-W2 corrections except the cards' quiet action row (queue/save/share near the content decision).",
+    entryPoint: "Home rows + Personalize",
+    webBacking: "apps/web/src/components/home/HomeSurface.tsx",
+    evidence: "J02/J40 (live screenshots: evidence/r24-w2/audit/live-home.png)",
+  },
+  {
+    id: "search",
+    section: "discovery",
+    referenceCapability: "Search",
+    webflixTreatment: "Unified source-neutral Search with exact, semantic and moment retrieval",
+    classification: "native-equivalent",
+    finding:
+      "Unified Search answers title hits, matches-by-meaning and findable moments from one box — the pairing held at audit time.",
+    correction: "",
+    currentState:
+      "The unified search surface holds; the R24-W2 corrections add the suggestion lane under the same box (the search-suggestions row) without changing the result composition.",
+    entryPoint: "The search box (top bar + the Search surface)",
+    webBacking: "apps/web/src/components/search/SearchSurface.tsx",
+    evidence: "J05/J39/J40",
+  },
+  {
+    id: "search-suggestions",
+    section: "discovery",
+    referenceCapability: "Search suggestions",
+    webflixTreatment: "WebFlix suggestions plus optional voice/AI query",
+    classification: "native-equivalent",
+    finding:
+      "GAP — the search box was a plain form submit: no suggestion list appeared under the box while typing (no suggestion seam, no suggestion UI).",
+    correction:
+      "A source-neutral suggestion seam (/api/search/suggest over the joined catalog + the semantic lane) + the suggestion island under the search box (keyboard-navigable, progressively disclosed, never a required step).",
+    currentState:
+      "The search box offers a live suggestion list while typing (title completions + matches-by-meaning), keyboard-navigable, submitted or dismissed explicitly — the same box, one more familiar lane.",
+    entryPoint: "The search box (suggestions appear under it while typing)",
+    webBacking: "apps/web/src/app/api/search/suggest/route.ts + apps/web/src/components/shell/SearchBox.tsx",
+    evidence: "J40 (apps/web/tests/search-suggestions.test.ts)",
+  },
+  {
+    id: "natural-language-search",
+    section: "discovery",
+    referenceCapability: "Conversational/natural-language discovery",
+    webflixTreatment: "Semantic search + AI query path",
+    classification: "native-equivalent",
+    finding:
+      "Natural-language queries answer matches-by-meaning with provenance and the ownership law (J39's lane) — the pairing held at audit time.",
+    correction: "",
+    currentState: "The semantic lane holds; suggestions now surface the same by-meaning matches under the box pre-submit.",
+    entryPoint: "The same search box (natural-language queries accepted)",
+    webBacking: "apps/web/src/components/search/SearchSurface.tsx (the semantic region)",
+    evidence: "J39/J40",
+  },
+  {
+    id: "related-next-videos",
+    section: "discovery",
+    referenceCapability: "Related/next videos",
+    webflixTreatment: "WebFlix recommendation policy + source-neutral realizations",
+    classification: "native-equivalent",
+    finding:
+      "PARTIAL GAP — the item hub rendered a related rail ('More to explore') but the PLAYER surface rendered NO adjacent content: nothing beside the player named what could play next.",
+    correction:
+      "The Up-next rail beside the player (the same card grammar as discovery) composing the related-content projection with the session queue — the familiar 'what plays next' answer at the point of intent.",
+    currentState:
+      "The player renders the Up-next rail beside the stage: the next thing to watch (queue head, else the related projection) plus the queue list below it — the same card grammar as Home.",
+    entryPoint: "The rail beside the player",
+    webBacking: "apps/web/src/components/player/UpNextRail.tsx",
+    evidence: "J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "inline-playback",
+    section: "discovery",
+    referenceCapability: "Inline playback in feeds/search",
+    webflixTreatment: "Inline previews where platform capability and user attention policy allow",
+    classification: "native-equivalent",
+    finding:
+      "GAP (policy+capability-gated row) — no inline preview behavior existed on any card: hovering/focusing a card showed nothing beyond the static card.",
+    correction:
+      "The attention-policy-gated card preview: hovering/focusing a card opens the preview mount whose behavior derives from the session's attention mode (Mindful keeps previews off; Balanced delays; Immersive previews immediately) with the honest per-realization capability truth (a source that provides no previewable media says so — never a fabricated preview).",
+    currentState:
+      "Cards carry the policy-gated preview mount: the hover/focus preview states render per attention mode with the honest capability sentence where the realization provides no previewable media — the control is the policy, the truth is per realization.",
+    entryPoint: "Hover/focus any content card (Home/Watch/Search rows)",
+    webBacking: "apps/web/src/components/cards/CardPreview.tsx",
+    evidence: "J40 (apps/web/tests/card-preview.test.ts)",
+  },
+  {
+    id: "subscriptions",
+    section: "discovery",
+    referenceCapability: "Subscriptions",
+    webflixTreatment: "Following plus native/BYOF relationship semantics",
+    classification: "native-equivalent",
+    finding:
+      "The Following feed mode + the BYOF import path carried the relationship semantics (J33's lane); no per-card follow toggle exists — the relationship arrives through the authorized import, which is the frozen multi-source semantics.",
+    correction: "",
+    currentState:
+      "The Following feed mode + BYOF import remain the relationship seam (the per-card follow toggle stays out: the frozen law keeps imported relationships authorized-side, never a silent follow write).",
+    entryPoint: "The Following feed mode on Home/Watch + Bring your feed",
+    webBacking: "apps/web/src/components/discovery/FeedModeControl.tsx",
+    evidence: "J33/J40",
+  },
+  {
+    id: "shorts-surface",
+    section: "discovery",
+    referenceCapability: "Shorts surface",
+    webflixTreatment: "Shorts",
+    classification: "parity",
+    finding: "Shorts is a primary navigation entry with the vertical feed — the pairing held at audit time.",
+    correction: "",
+    currentState:
+      "Shorts holds in the primary navigation; the R24-W2 corrections add the familiar per-card controls (speed, clear screen, feedback, the source link) without changing the feed.",
+    entryPoint: "Shorts in the primary navigation",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx",
+    evidence: "J04/J40",
+  },
+  {
+    id: "channel-profile-pages",
+    section: "discovery",
+    referenceCapability: "Channel/profile pages",
+    webflixTreatment: "Source-aware creator/source detail within canonical identity",
+    classification: "native-equivalent",
+    finding:
+      "PARTIAL GAP — the source name rendered inside Where-to-watch sentences on the item hub, but the card and item surfaces carried no explicit source link row (the source identity was sentence-embedded only).",
+    correction:
+      "The compact source chip on cards + the item hub's source row (the canonical source identity, linking the source's own page where the source declares one — honest absence where it does not).",
+    currentState:
+      "Cards carry the source chip beside the capability chip; the item hub renders the source row naming the connected source of this item's realization.",
+    entryPoint: "The source chip on cards + the item hub's source row",
+    webBacking: "apps/web/src/components/cards/ItemCard.tsx + apps/web/src/components/item/ItemDetailSurface.tsx",
+    evidence: "J40 (apps/web/tests/r24-parity-audit.test.ts)",
+  },
+  {
+    id: "watch-later",
+    section: "discovery",
+    referenceCapability: "Watch Later",
+    webflixTreatment: "Watchlist",
+    classification: "native-equivalent",
+    finding:
+      "GAP — the Library Watchlist section existed, but the only save write was tied to the PROVIDER's save capability (the /api/actions bridge wrote libraryOps.save only after a provider 'save' action): a source without the save capability left NO way to save to the WebFlix watchlist at all (the fixture source is exactly this case).",
+    correction:
+      "The WebFlix-native watchlist save — a Save control on cards, the item hub and the player that writes the runtime's LibraryOperations.save directly (the durable canonical-keyed write, independent of any provider capability), with the typed sync state rendered honestly.",
+    currentState:
+      "Save on cards/item/player performs the WebFlix watchlist write (local-first, typed sync states) regardless of provider capability; the Library Watchlist section reflects it; the provider's own save action (where a source has it) remains a separate truth beside it.",
+    entryPoint: "Save on cards, item detail and the player",
+    webBacking: "apps/web/src/app/api/library/route.ts + apps/web/src/components/player/WatchlistSave.tsx",
+    evidence: "J11/J40 (apps/web/tests/watchlist-save.test.ts)",
+  },
+
+  // ——— Watch/player ———
+  {
+    id: "play-pause",
+    section: "watch-player",
+    referenceCapability: "Play/pause",
+    webflixTreatment: "Same familiar control placement and keyboard behavior",
+    classification: "parity",
+    finding:
+      "GAP — the Web player rendered NO WebFlix playback controls at all: no play/pause control, no Space/K behavior (the provider iframes carry their own hidden players; the WebFlix-owned torrent stage had no transport).",
+    correction:
+      "The WebFlix player chrome: the transport bar's play/pause control + the Space/K keyboard behavior, wired to the runtime's REAL PlaybackController commands (/api/playback) — the same transport every way of watching uses; the phase renders truthfully from the session state (never a fabricated playing state).",
+    currentState:
+      "The player chrome's play/pause control + Space/K issue the runtime controller's typed commands; the phase chip renders the session's truthful phase; the keyboard grammar is the familiar one.",
+    entryPoint: "The transport bar's left cluster + Space/K",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx + apps/web/src/app/api/playback/route.ts",
+    evidence: "J40/J41 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "seek-scrub",
+    section: "watch-player",
+    referenceCapability: "Seek/scrub",
+    webflixTreatment: "Same direct manipulation model",
+    classification: "parity",
+    finding:
+      "GAP — no timeline, no scrubber, no arrow-key seeks existed anywhere on the Web player (the moment-jump links landed resume positions, but the player itself had no direct-manipulation seek).",
+    correction:
+      "The timeline scrubber on the transport bar (direct manipulation: click/drag to seek through the controller's typed seek command; acceptance IS position evidence — the runtime's own law) + the J/L ten-second and arrow five-second seeks + the 0-9 percent jumps, with chapter marks where the intelligence artifact provides chapters.",
+    currentState:
+      "The scrub bar renders the session's truthful position (resume + accepted seeks — never a ticker), the known duration, the buffered-ahead truth and the chapter marks; clicking/dragging seeks through the typed command; J/L/arrows/0-9 work.",
+    entryPoint: "The transport bar's progress bar + J/L/arrow keys",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the scrub bar) + apps/web/src/app/api/playback/route.ts",
+    evidence: "J40/J41 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "volume-mute",
+    section: "watch-player",
+    referenceCapability: "Volume/mute",
+    webflixTreatment: "Same player-local control",
+    classification: "parity",
+    finding:
+      "GAP — no volume or mute control existed on any WebFlix Web surface (provider iframes own their own volume; the WebFlix-owned stages had no volume control either).",
+    correction:
+      "The player-local volume cluster where WebFlix owns the audio path (the authorized-peer-copy stage: the adapter's own media element answers volume/mute) with the M keyboard behavior; on provider-contained rungs the honest capability truth renders in the settings cluster ('this way of watching carries its own volume control') — never a disabled slider pretending.",
+    currentState:
+      "The volume cluster renders on WebFlix-owned rungs (slider + mute + M key over the stage's media element); provider rungs disclose the realization-exposed truth in the settings cluster — the honest-absence law.",
+    entryPoint: "The transport bar's player-local cluster + M",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the volume cluster)",
+    evidence: "J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "fullscreen",
+    section: "watch-player",
+    referenceCapability: "Fullscreen",
+    webflixTreatment: "Same player affordance",
+    classification: "platform-variant",
+    finding:
+      "GAP — the embed iframes declared allow=\"fullscreen\" but the WebFlix player offered NO fullscreen control of its own (no F/Escape behavior; the user had to find the provider's own button inside the iframe, if any).",
+    correction:
+      "The stage-level fullscreen control (F enters, Escape leaves) over the WebFlix player stage wrapper — the web platform's own Fullscreen API affordance; the contained iframes keep their own provider fullscreen too (both truths coexist).",
+    currentState:
+      "The fullscreen control + F/Escape drive the stage wrapper's Fullscreen API transitions with the typed fallback where the platform refuses; the phase/stage truth renders throughout.",
+    entryPoint: "The transport bar's right cluster + F/Escape",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the fullscreen control)",
+    evidence: "J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "miniplayer-pip",
+    section: "watch-player",
+    referenceCapability: "Miniplayer/PiP where supported",
+    webflixTreatment: "Platform capability equivalent",
+    classification: "platform-variant",
+    finding:
+      "GAP (capability-dependent row) — no miniplayer/PiP control existed; the browser platform does support Document Picture-in-Picture for WebFlix-owned stages, but nothing exposed it.",
+    correction:
+      "The miniplayer control on WebFlix-owned stages (the Document Picture-in-Picture API where the browser exposes it, carrying the stage + chrome) with the honest capability truth elsewhere (provider iframes carry their own PiP button; a browser without the API answers the typed not-here sentence) — never a dead button.",
+    currentState:
+      "The miniplayer control renders with its per-platform truth: where documentPictureInPicture is exposed the stage docks into the always-on-top window; otherwise the honest capability sentence answers (the control discloses, never pretends).",
+    entryPoint: "The transport bar's right cluster (WebFlix-owned stages)",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the miniplayer control)",
+    evidence: "J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "playback-speed",
+    section: "watch-player",
+    referenceCapability: "Playback speed",
+    webflixTreatment: "Player settings",
+    classification: "parity",
+    finding: "GAP — no playback-speed control existed anywhere on the Web player (no settings cluster at all).",
+    correction:
+      "The settings cluster's speed control: the session's playback-rate preference (applied wherever WebFlix owns the media path — the peer-copy stage's media element) with the honest per-rung disclosure on provider rungs ('this way of watching carries its own speed control'); the preference persists for the session and renders its state.",
+    currentState:
+      "The settings cluster offers the familiar speed steps; the choice applies on WebFlix-owned rungs and renders its state everywhere; provider rungs carry the realization-exposed sentence.",
+    entryPoint: "The settings cluster (the gear) on the transport bar",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the settings cluster)",
+    evidence: "J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "quality",
+    section: "watch-player",
+    referenceCapability: "Quality",
+    webflixTreatment: "Source/player quality selection where exposed",
+    classification: "platform-variant",
+    finding:
+      "GAP — no quality selection existed on the Web player (no settings cluster); the plan's pairing is explicitly 'where exposed'.",
+    correction:
+      "The settings cluster's quality row with the honest per-realization truth: a peer copy's chosen file IS the quality decision (made in Where to watch); provider ways carry their own quality menu; WebFlix applies adaptive selection where a realization exposes choices — the row discloses which truth applies HERE.",
+    currentState:
+      "The settings cluster's quality row names the active realization's quality truth (peer-copy file decision / provider-owned menu / not exposed here) — capability truth, never a fabricated selector.",
+    entryPoint: "The settings cluster (the gear) on the transport bar",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the settings cluster)",
+    evidence: "J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "captions",
+    section: "watch-player",
+    referenceCapability: "Captions",
+    webflixTreatment: "AI/provider/local subtitle paths",
+    classification: "native-equivalent",
+    finding:
+      "PARTIAL — the live-ASR surface (R23-G) and the transcript artifact existed, but the player had NO captions toggle and no caption rendering over the stage (the C keyboard behavior did not exist).",
+    correction:
+      "The captions toggle (C) over the WebFlix-owned subtitle paths: the transcript-driven caption line rendered over the stage (position-synced to the session's truthful position — no ticker), plus the live-captions surface's own lane where registered.",
+    currentState:
+      "The C key + the settings cluster toggle the caption overlay: the current transcript segment renders over the stage at the session's truthful position, with the honest no-transcript state where the item has none.",
+    entryPoint: "The settings cluster + the C key",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (the captions overlay)",
+    evidence: "J20/J39/J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "transcript",
+    section: "watch-player",
+    referenceCapability: "Transcript",
+    webflixTreatment: "Timestamped transcript",
+    classification: "native-equivalent",
+    finding:
+      "The intelligence surface rendered the timestamped transcript (speaker labels) on the player and the item hub — the pairing held at audit time.",
+    correction: "",
+    currentState:
+      "The transcript surface holds (the same intelligence artifact); the R24-W2 corrections add the T-key transcript disclosure + the caption overlay consuming the same artifact — one source of truth.",
+    entryPoint: "Show transcript (the player's intelligence surface + T)",
+    webBacking: "apps/web/src/components/item/IntelligenceSurface.tsx",
+    evidence: "J20/J39/J40",
+  },
+  {
+    id: "chapters",
+    section: "watch-player",
+    referenceCapability: "Chapters",
+    webflixTreatment: "Chapter rail/list + semantic chapter fallback",
+    classification: "native-equivalent",
+    finding:
+      "PARTIAL GAP — the chapter LIST rendered (the intelligence surface's chapter section with jump paths) but the timeline carried no chapter marks (no timeline existed at all).",
+    correction:
+      "Chapter marks on the scrub bar (the intelligence artifact's chapters projected onto the timeline at their timestamps) + the chapter list's jumps route through the same typed seek — the direct-manipulation model extended to chapters.",
+    currentState:
+      "The scrub bar renders the chapter marks at their timestamps (hover discloses the chapter title); the chapter list jumps through the same typed seek.",
+    entryPoint: "The scrub bar's chapter marks + the chapter list",
+    webBacking: "apps/web/src/components/player/PlayerChrome.tsx (chapter marks)",
+    evidence: "J39/J40 (apps/web/tests/player-chrome.test.ts)",
+  },
+  {
+    id: "autoplay",
+    section: "watch-player",
+    referenceCapability: "Autoplay",
+    webflixTreatment: "Attention-policy-aware autoplay",
+    classification: "native-equivalent",
+    finding:
+      "GAP — no autoplay control or behavior existed on the Web player (the attention policy existed in Personalize but nothing derived an autoplay decision from it on the player).",
+    correction:
+      "The attention-policy-derived autoplay toggle on the Up-next card: the session's autoplay choice renders WITH the policy sentence that derives it (Mindful keeps autoplay off; Balanced/Immersive honor the toggle) — never a raw always-on switch divorced from the attention mode.",
+    currentState:
+      "The Up-next card carries the autoplay toggle with its policy derivation sentence; the session choice + the attention mode together answer whether the next thing starts.",
+    entryPoint: "The autoplay toggle on the Up-next card",
+    webBacking: "apps/web/src/components/player/UpNextRail.tsx (the autoplay toggle)",
+    evidence: "J18/J40 (apps/web/tests/up-next-queue.test.ts)",
+  },
+  {
+    id: "up-next",
+    section: "watch-player",
+    referenceCapability: "Up next",
+    webflixTreatment: "Source-neutral next content",
+    classification: "native-equivalent",
+    finding: "GAP — the player had no Up-next surface (nothing named what plays next; the item hub's related rail was the only adjacent-content answer).",
+    correction:
+      "The Up-next card beside the player: the queue head when a queue exists, else the related-content projection — the same source-neutral card grammar, with the autoplay toggle on it.",
+    currentState:
+      "The Up-next card renders beside the player naming the next thing (queue-first, related projection otherwise) with its autoplay toggle — the familiar next-video answer.",
+    entryPoint: "The Up-next card beside the player",
+    webBacking: "apps/web/src/components/player/UpNextRail.tsx",
+    evidence: "J40 (apps/web/tests/up-next-queue.test.ts)",
+  },
+  {
+    id: "queue",
+    section: "watch-player",
+    referenceCapability: "Queue",
+    webflixTreatment: "Session queue + save queue to Library/playlist where supported",
+    classification: "native-equivalent",
+    finding:
+      "GAP — no session queue existed (the CSS classes were present; the feature was absent: no add-to-queue control on any surface, no queue panel, no queue ordering).",
+    correction:
+      "The session queue: add-to-queue on cards, the item hub and the player (a session-scoped store over the runtime's item identity), the queue list on the Up-next rail (reorder/remove), and playback advancing through the queue head — session-scoped ordering composing runtime operations only.",
+    currentState:
+      "Add to queue works from cards/item/player; the queue renders on the rail with remove; the Up-next projection answers the queue head; the queue is session-scoped (never a hidden persistent profile write).",
+    entryPoint: "Add to queue on cards/item/player + the rail's queue list",
+    webBacking: "apps/web/src/host/queue.ts + apps/web/src/app/api/queue/route.ts + apps/web/src/components/player/UpNextRail.tsx",
+    evidence: "J40 (apps/web/tests/up-next-queue.test.ts)",
+  },
+  {
+    id: "save-queue",
+    section: "watch-player",
+    referenceCapability: "Save queue",
+    webflixTreatment: "WebFlix playlist/library collection",
+    classification: "native-equivalent",
+    finding: "GAP — no queue existed to save, and no playlist write path existed on any surface.",
+    correction:
+      "Save queue as a playlist: the queue panel's save action writes each queued item through the runtime's LibraryOperations.save({itemId, listName}) — the same canonical-keyed write the watchlist uses, named as its own list; the Library renders playlists.",
+    currentState:
+      "The queue panel's 'Save queue to a playlist' writes the queued items into a named Library list (typed sync states); the Library's Playlists section renders the saved lists.",
+    entryPoint: "The save action in the queue panel + Library's Playlists section",
+    webBacking: "apps/web/src/app/api/queue/route.ts (the save action) + apps/web/src/components/library/LibrarySurface.tsx",
+    evidence: "J40 (apps/web/tests/up-next-queue.test.ts + apps/web/tests/library-playlists.test.ts)",
+  },
+  {
+    id: "share",
+    section: "watch-player",
+    referenceCapability: "Share",
+    webflixTreatment: "Canonical WebFlix link + source link when appropriate",
+    classification: "native-equivalent",
+    finding:
+      "PARTIAL GAP — Share existed on the Shorts card (the engagement event) but NOT on the player, the item hub or content cards: no way to copy/share a canonical link from the long-form surfaces.",
+    correction:
+      "The share control on cards, the item hub and the player: the canonical WebFlix link (the item/player href — clipboard copy + the platform share port) with the source link offered beside it where a source URL exists.",
+    currentState:
+      "Share on cards/item/player copies the canonical link (and offers the OS share sheet where the platform provides one) with the source link beside it — the same control at every content decision.",
+    entryPoint: "Share on cards/item/player",
+    webBacking: "apps/web/src/components/player/ShareControl.tsx",
+    evidence: "J40 (apps/web/tests/share-control.test.ts)",
+  },
+  {
+    id: "like-save",
+    section: "watch-player",
+    referenceCapability: "Like/save",
+    webflixTreatment: "Existing action model",
+    classification: "parity",
+    finding:
+      "The provider like/save actions rendered with the honest typed-absent states on sources without the capability (J10's action-sync truth) — the pairing held at audit time.",
+    correction: "",
+    currentState:
+      "The provider action model holds (capability-gated, receipt-truthful); the WebFlix-native watchlist save now sits beside it as the durable always-available save (the watch-later row's correction).",
+    entryPoint: "The action row on the player/item",
+    webBacking: "apps/web/src/components/player/ActionButtons.tsx",
+    evidence: "J10/J40",
+  },
+  {
+    id: "negative-feedback",
+    section: "watch-player",
+    referenceCapability: "Feedback",
+    webflixTreatment: "Existing recommendation feedback",
+    classification: "native-equivalent",
+    finding:
+      "The J15 feedback vocabulary rendered on the item hub and the player; the Shorts card and content cards carried no feedback entry (the vocabulary lived on the decision surfaces only).",
+    correction:
+      "The inline feedback entry on the Shorts card (the same vocabulary through the same seam) — the card-level entry for long-form cards stays intentionally quiet (the frozen card grammar keeps cards clean; the decision surfaces carry the full menu).",
+    currentState:
+      "Feedback lives on item/player + the Shorts card's inline entry; the long-form card grammar stays clean by design (the decision surfaces are one click away).",
+    entryPoint: "The feedback menu on item/player + the Shorts card's inline feedback",
+    webBacking: "apps/web/src/components/discovery/FeedbackControls.tsx + apps/web/src/components/shorts/ShortsFeed.tsx",
+    evidence: "J15/J40",
+  },
+  {
+    id: "comments-reactions",
+    section: "watch-player",
+    referenceCapability: "Comments/reactions",
+    webflixTreatment: "Provider/social actions where authorized",
+    classification: "platform-variant",
+    finding:
+      "Honest absence — no connected source declares a comment capability; the fixtures carry no comments. The pairing is explicitly capability-gated ('where authorized').",
+    correction: "",
+    currentState:
+      "The honest absence holds: no provider comment capability is declared, so no comments section renders (a fabricated comment surface would violate the action-sync truth law).",
+    entryPoint: "(capability-gated: appears where a source declares it)",
+    webBacking: "apps/web/src/components/player/ActionButtons.tsx (the capability gate pattern)",
+    evidence: "J10/J30",
+  },
+  {
+    id: "description-links",
+    section: "watch-player",
+    referenceCapability: "Description/links",
+    webflixTreatment: "Item detail/content metadata",
+    classification: "native-equivalent",
+    finding: "The item hub rendered the canonical metadata (type, duration, availability, the source's truth) — the pairing held at audit time.",
+    correction: "",
+    currentState: "The item metadata holds; the source row correction (channel-profile-pages) adds the explicit source identity beside it.",
+    entryPoint: "The item hub's metadata region",
+    webBacking: "apps/web/src/components/item/ItemDetailSurface.tsx",
+    evidence: "J06/J40",
+  },
+  {
+    id: "continue-watching",
+    section: "watch-player",
+    referenceCapability: "Continue watching",
+    webflixTreatment: "Library/history/resume",
+    classification: "native-equivalent",
+    finding:
+      "The Home Continue row + the resume seam (positions honored through the player route, session-scoped for anonymous viewers) held at audit time.",
+    correction: "",
+    currentState:
+      "The continue-watching composition holds (Home row + resume positions + the watch-state fold); the R24-W2 chrome seeks respect the same position truth.",
+    entryPoint: "The Continue watching row on Home + resume on open",
+    webBacking: "apps/web/src/components/home/HomeSurface.tsx (the continue row)",
+    evidence: "J11/J12/J37/J40",
+  },
+  {
+    id: "watch-history",
+    section: "watch-player",
+    referenceCapability: "Watch history",
+    webflixTreatment: "WebFlix History",
+    classification: "parity",
+    finding: "The Library History section rendered with the typed empty state + the watch-state fold — the pairing held at audit time.",
+    correction: "",
+    currentState:
+      "History holds; the chrome's play/pause/seek commands feed the same watch-state engine (the runtime's at-least-once fold), so the history truth deepens without a second system.",
+    entryPoint: "The History section in Library",
+    webBacking: "apps/web/src/components/library/LibrarySurface.tsx",
+    evidence: "J11/J40",
+  },
+  {
+    id: "playlists",
+    section: "watch-player",
+    referenceCapability: "Playlists",
+    webflixTreatment: "WebFlix playlists/library collections",
+    classification: "native-equivalent",
+    finding:
+      "GAP — no playlist surface existed: the Library had no Playlists section, and no save-to-playlist control existed anywhere (the runtime's listName seam existed unused).",
+    correction:
+      "Playlists as Library collections: the Playlists section in Library (grouping the canonical watchlist writes by list name) + save-to-playlist from the queue panel and the item hub — the runtime's LibraryOperations.save({itemId, listName}) is the one write path.",
+    currentState:
+      "The Library renders the Playlists section (the named lists with their items); save-to-playlist writes the canonical keyed entries; the queue's save action lands here too.",
+    entryPoint: "The Playlists section in Library + save-to-playlist on item/queue",
+    webBacking: "apps/web/src/components/library/LibrarySurface.tsx + apps/web/src/app/api/library/route.ts",
+    evidence: "J11/J40 (apps/web/tests/library-playlists.test.ts)",
+  },
+  {
+    id: "external-handoff",
+    section: "watch-player",
+    referenceCapability: "External handoff",
+    webflixTreatment: "Return-context-preserving source handoff",
+    classification: "native-equivalent",
+    finding: "The external rung rendered the visible handoff + the return context (J09's lane) — the pairing held at audit time.",
+    correction: "",
+    currentState: "The external handoff holds; the chrome honestly answers the typed unsupported seek on the external rung (the OS player owns it).",
+    entryPoint: "The player's external stage (when a realization is external)",
+    webBacking: "apps/web/src/components/player/PlayerSurface.tsx (the external branch)",
+    evidence: "J09/J40",
+  },
+  {
+    id: "live-playback",
+    section: "watch-player",
+    referenceCapability: "Live playback",
+    webflixTreatment: "Supported live realization",
+    classification: "platform-variant",
+    finding:
+      "Honest absence in this configuration — the fixtures declare no live realization; the typed capability truth governs (a live realization would render through Where to watch).",
+    correction: "",
+    currentState:
+      "The honest capability truth holds: live renders only where a realization declares it (Where to watch's group vocabulary); nothing fabricates a live lane.",
+    entryPoint: "(capability-gated: a live realization in Where to watch)",
+    webBacking: "apps/web/src/components/item/WhereToWatch.tsx (the realization grouping)",
+    evidence: "J30",
+  },
+  {
+    id: "live-chat",
+    section: "watch-player",
+    referenceCapability: "Live chat",
+    webflixTreatment: "Provider/realization-specific live interaction when supported",
+    classification: "platform-variant",
+    finding: "Honest absence — no live realization exists in this configuration; the pairing is explicitly 'when supported'.",
+    correction: "",
+    currentState: "The honest absence holds (no fabricated chat surface).",
+    entryPoint: "(capability-gated: beside a supported live realization)",
+    webBacking: "(capability-gated row — no surface absent a declaring realization)",
+    evidence: "J30",
+  },
+  {
+    id: "live-replay",
+    section: "watch-player",
+    referenceCapability: "Replay",
+    webflixTreatment: "Canonical replay/history path",
+    classification: "native-equivalent",
+    finding: "The replay path (History entries re-open the player through the resume seam) held at audit time.",
+    correction: "",
+    currentState: "The replay path holds — History/related entries re-open the canonical player with the resume truth.",
+    entryPoint: "Replay from History / the related rail",
+    webBacking: "apps/web/src/components/library/LibrarySurface.tsx",
+    evidence: "J11/J40",
+  },
+
+  // ——— Shorts ———
+  {
+    id: "shorts-vertical-swipe",
+    section: "shorts",
+    referenceCapability: "Vertical swipe/binge",
+    webflixTreatment: "ShortsFeed",
+    classification: "parity",
+    finding:
+      "The vertical feed held (swipe + the bounded next/prev controls + the re-rank semantics) at audit time.",
+    correction: "",
+    currentState: "The ShortsFeed holds unchanged by the R24-W2 corrections.",
+    entryPoint: "Shorts (swipe / arrow keys / the next-prev controls)",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx",
+    evidence: "J04/J40",
+  },
+  {
+    id: "shorts-like-save-share",
+    section: "shorts",
+    referenceCapability: "Like/save/share",
+    webflixTreatment: "Existing hydrated Shorts actions",
+    classification: "parity",
+    finding:
+      "The hydrated actions rendered (Share always; Like/Save with the source's own capability truth — the fixture source declares neither, honestly) at audit time.",
+    correction: "",
+    currentState: "The hydrated actions hold; the WebFlix-native save (the watch-later correction) now answers on the Shorts card too where the source lacks its own.",
+    entryPoint: "The action rail on the Shorts card",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx",
+    evidence: "J04/J36/J40",
+  },
+  {
+    id: "shorts-sound-related",
+    section: "shorts",
+    referenceCapability: "Sound / related content",
+    webflixTreatment: "Canonical audio/source links where available",
+    classification: "native-equivalent",
+    finding:
+      "PARTIAL GAP — the card carried no sound/source link (no canonical audio relation or source chip rendered on the Shorts card).",
+    correction:
+      "The source link chip on the Shorts card (the canonical source identity, the same chip grammar as content cards) with the honest absence where no audio/source relation exists.",
+    currentState:
+      "The Shorts card carries the source chip (the same canonical-source grammar as long-form cards); the honest no-relation state renders where the artifact carries none.",
+    entryPoint: "The source chip on the Shorts card",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx",
+    evidence: "J04/J40",
+  },
+  {
+    id: "shorts-remix-attribution",
+    section: "shorts",
+    referenceCapability: "Remix/source attribution",
+    webflixTreatment: "Authorized source-aware remix/reference path",
+    classification: "platform-variant",
+    finding:
+      "Honest absence — no authorized remix path exists on any connected source; the pairing is explicitly capability-gated.",
+    correction: "",
+    currentState:
+      "The honest absence holds (an unauthorized remix path would violate the authorization law); the source chip's attribution carries the reference truth.",
+    entryPoint: "(capability-gated: where a source authorizes remix/reference)",
+    webBacking: "(capability-gated row — no surface absent an authorizing source)",
+    evidence: "J04",
+  },
+  {
+    id: "shorts-clear-screen",
+    section: "shorts",
+    referenceCapability: "Clear-screen style viewing",
+    webflixTreatment: "WebFlix distraction-free presentation under attention policy",
+    classification: "native-equivalent",
+    finding: "GAP — no clear-screen/distraction-free toggle existed on the Shorts card (the overlay always rendered).",
+    correction:
+      "The clear-screen toggle on the Shorts card: one tap hides the overlay chrome (title/meta/actions) for distraction-free viewing — the attention-policy-consistent presentation, reduced-motion-respecting, with the same toggle bringing it back.",
+    currentState:
+      "The clear-screen toggle renders on the card; the distraction-free state hides the overlay honestly (the state is view-local; the feed controls stay reachable).",
+    entryPoint: "The clear-screen toggle on the Shorts card",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx (the clear-screen toggle)",
+    evidence: "J18/J40 (apps/web/tests/shorts-parity.test.ts)",
+  },
+  {
+    id: "shorts-speed-controls",
+    section: "shorts",
+    referenceCapability: "Speed controls",
+    webflixTreatment: "Shorts player controls",
+    classification: "parity",
+    finding: "GAP — no speed control existed on the Shorts card.",
+    correction:
+      "The speed control on the Shorts card (the same session rate preference + the honest per-stage application as the long-form settings cluster) — the same grammar, the Shorts placement.",
+    currentState:
+      "The Shorts card offers the speed control with its per-stage truth — the same session rate seam as the player chrome, one vocabulary.",
+    entryPoint: "The speed control on the Shorts card",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx (the speed control)",
+    evidence: "J40 (apps/web/tests/shorts-parity.test.ts)",
+  },
+  {
+    id: "shorts-inline-feedback",
+    section: "shorts",
+    referenceCapability: "Recommendation feedback",
+    webflixTreatment: "Inline Shorts feedback",
+    classification: "native-equivalent",
+    finding: "GAP — the Shorts card carried no feedback entry (the feed-level re-rank hint existed, but no per-card feedback control).",
+    correction:
+      "The inline feedback entry on the Shorts card: the same J15 vocabulary through the same /api/feedback seam (Not interested / More like this), disclosed from the card's action area — the same records, the same undo.",
+    currentState:
+      "The Shorts card carries the inline feedback control; submissions answer the same reversible record store (the J15 seam), with the honest typed states.",
+    entryPoint: "The feedback control on the Shorts card",
+    webBacking: "apps/web/src/components/shorts/ShortsFeed.tsx (the inline feedback) + apps/web/src/app/api/feedback/route.ts",
+    evidence: "J15/J40 (apps/web/tests/shorts-parity.test.ts)",
+  },
+
+  // ——— Identity and continuity ———
+  {
+    id: "anonymous-public-viewing",
+    section: "identity-continuity",
+    referenceCapability: "Anonymous public viewing",
+    webflixTreatment: "WebFlix accountless public viewing",
+    classification: "native-equivalent",
+    finding: "The accountless walk held (J37's lane: public surfaces + playback with no login wall) at audit time.",
+    correction: "",
+    currentState:
+      "Anonymous viewing holds; the R24-W2 corrections (chrome/queue/save/share) never gate on identity — the session-scoped truths render for every viewer.",
+    entryPoint: "Every public surface — no account needed",
+    webBacking: "apps/web/src/host/anonymous-truth.ts",
+    evidence: "J37/J40/J41",
+  },
+  {
+    id: "account-history",
+    section: "identity-continuity",
+    referenceCapability: "Account-based history",
+    webflixTreatment: "Account history",
+    classification: "parity",
+    finding: "The account history path held (Library History + the durable-identity sign-in seam) at audit time.",
+    correction: "",
+    currentState: "Account history holds; the chrome's watch-state fold feeds the same engine for every viewer kind.",
+    entryPoint: "The History section in Library (when signed in)",
+    webBacking: "apps/web/src/components/library/LibrarySurface.tsx",
+    evidence: "J11/J12",
+  },
+  {
+    id: "cross-device-continuity",
+    section: "identity-continuity",
+    referenceCapability: "Cross-device continuity",
+    webflixTreatment: "Shared server-side profile/library state",
+    classification: "native-equivalent",
+    finding:
+      "The seam held (the durable-identity sign-in; the service-mode continuity is J12's local-only procedure — the fixtures boot is one session, honestly noted).",
+    correction: "",
+    currentState: "The continuity seam holds unchanged by the R24-W2 corrections.",
+    entryPoint: "Sign in (the durable-identity entry)",
+    webBacking: "apps/web/src/host/session.ts",
+    evidence: "J12/J31",
+  },
+  {
+    id: "source-subscription-relationships",
+    section: "identity-continuity",
+    referenceCapability: "Source subscription relationships",
+    webflixTreatment: "Following + BYOF",
+    classification: "native-equivalent",
+    finding: "The BYOF import + the Following feed mode held (J33's lane) at audit time.",
+    correction: "",
+    currentState: "The relationship lane holds unchanged.",
+    entryPoint: "Bring Your Feed from the feed-mode control + Sources in Settings",
+    webBacking: "apps/web/src/components/byof/ByofPanel.tsx",
+    evidence: "J33/J40",
+  },
+  {
+    id: "notifications",
+    section: "identity-continuity",
+    referenceCapability: "Notifications",
+    webflixTreatment: "Web/desktop notification adapter when supported",
+    classification: "platform-variant",
+    finding:
+      "The web notification adapter existed (the platform seam with its tests) but NO settings entry exposed it on the visible Settings surface — the adapter was wired, the entry point was not.",
+    correction:
+      "The notifications row in Settings (the platform capability truth + the permission state, rendered through the adapter's own seam — the honest not-supported sentence where the browser lacks the API).",
+    currentState:
+      "The Settings surface carries the notifications row: the platform truth + the permission state through the real adapter seam (never a fabricated toggle).",
+    entryPoint: "Settings (the notifications row)",
+    webBacking: "apps/web/src/components/settings/SettingsSurface.tsx (the notifications row)",
+    evidence: "J40 (apps/web/tests/platform-notifications.test.ts + apps/web/tests/r24-parity-audit.test.ts)",
+  },
+  {
+    id: "tv-second-screen-continuation",
+    section: "identity-continuity",
+    referenceCapability: "TV/second-screen continuation",
+    webflixTreatment: "Platform adapter capability, not fake universal support",
+    classification: "platform-variant",
+    finding:
+      "Honest absence — the web platform truthfully declares no cast sink (webDeviceCapabilities().casting === false); no cast control rendered (the honest-absence law: no button that cannot cast).",
+    correction: "",
+    currentState:
+      "The honest absence holds: no cast control renders on the web adapter (casting: false is the declared truth); continuation flows through Continue Watching/resume instead.",
+    entryPoint: "(capability-gated: where a platform declares a cast sink)",
+    webBacking: "apps/web/src/host/media-surface.ts (the casting: false declaration)",
+    evidence: "J31/J40",
+  },
+  {
+    id: "device-handoff",
+    section: "identity-continuity",
+    referenceCapability: "Cross-device handoff",
+    webflixTreatment: "Return-context + platform capability",
+    classification: "native-equivalent",
+    finding: "The device-handoff lane held (the return context + the resume seam; J09/J31) at audit time.",
+    correction: "",
+    currentState: "The device-handoff lane holds unchanged.",
+    entryPoint: "Continue Watching (cross-device)",
+    webBacking: "apps/web/src/components/player/PlayerSurface.tsx (the return context)",
+    evidence: "J09/J31",
+  },
+  {
+    id: "offline-viewing",
+    section: "identity-continuity",
+    referenceCapability: "Offline viewing",
+    webflixTreatment: "Verified local asset/offline Library",
+    classification: "native-equivalent",
+    finding:
+      "The honest web truth held (the Offline and verified Library section + the Desktop next-step truths — the web adapter cannot verify local assets, and says so) at audit time.",
+    correction: "",
+    currentState:
+      "The honest offline truth holds (the Library section + the acquisition lifecycle's Ready-offline landing where the browser rung supports it — J38's lane).",
+    entryPoint: "The Offline section in Library + available-offline truth on items",
+    webBacking: "apps/web/src/components/library/LibrarySurface.tsx (the offline section)",
+    evidence: "J21/J26/J38",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// The audit's machine-checked invariants
+// ---------------------------------------------------------------------------
+
+/** Every audit row id, in walk order. */
+export const WEB_PARITY_AUDIT_ROW_IDS: readonly string[] = WEB_PARITY_AUDIT_ROWS.map((row) => row.id);
+
+/** The walked sections' row counts (the plan's R24-C matrix shape). */
+export const WEB_PARITY_SECTION_COUNTS: Readonly<Record<WebParitySection, number>> = {
+  discovery: WEB_PARITY_AUDIT_ROWS.filter((row) => row.section === "discovery").length,
+  "watch-player": WEB_PARITY_AUDIT_ROWS.filter((row) => row.section === "watch-player").length,
+  shorts: WEB_PARITY_AUDIT_ROWS.filter((row) => row.section === "shorts").length,
+  "identity-continuity": WEB_PARITY_AUDIT_ROWS.filter((row) => row.section === "identity-continuity").length,
+};
+
+/** The classification distribution over the walked rows. */
+export function webParityAuditDistribution(): Readonly<Record<WebParityClassification, number>> {
+  const counts: Record<WebParityClassification, number> = {
+    parity: 0,
+    "native-equivalent": 0,
+    "platform-variant": 0,
+    "intentionally-out-of-scope": 0,
+  };
+  for (const row of WEB_PARITY_AUDIT_ROWS) counts[row.classification] += 1;
+  return counts;
+}
+
+/** The rows whose R24-W2 correction landed (the gap rows). */
+export function webParityCorrectedRows(): readonly WebParityAuditRow[] {
+  return WEB_PARITY_AUDIT_ROWS.filter((row) => row.correction.length > 0);
+}
+
+/**
+ * MACHINE ALIGNMENT: every audit row must resolve in Worker 1's shared
+ * lead-ratified taxonomy AND carry the same classification. A row that
+ * drifted from the shared record is a lab failure (this module is the
+ * WEB WALK of the shared matrix, never a second taxonomy).
+ */
+export function webParityAuditAlignmentProblems(): readonly string[] {
+  const problems: string[] = [];
+  for (const row of WEB_PARITY_AUDIT_ROWS) {
+    const shared = parityTaxonomyRowOf(row.id as Parameters<typeof parityTaxonomyRowOf>[0]);
+    if (shared === undefined) {
+      problems.push(`${row.id}: not a shared taxonomy row (the web walk drifted from the shared matrix)`);
+      continue;
+    }
+    if (shared.classification !== row.classification) {
+      problems.push(
+        `${row.id}: classification '${row.classification}' disagrees with the shared taxonomy's '${shared.classification}'`,
+      );
+    }
+  }
+  return problems;
+}
+
+/**
+ * COVERAGE: the walked rows must be exactly the shared taxonomy's
+ * REFERENCE rows (the 14 R24-B WebFlix-only extensions are J42's walk).
+ * A missing reference row is an unaudited capability; an extra row is a
+ * drift from the plan's matrix.
+ */
+export function webParityAuditCoverageProblems(): readonly string[] {
+  const problems: string[] = [];
+  const walked = new Set(WEB_PARITY_AUDIT_ROW_IDS);
+  for (const row of SHARED_REFERENCE_ROWS) {
+    if (!walked.has(row.id)) {
+      problems.push(`${row.id}: a reference row the web walk did not audit`);
+    }
+  }
+  for (const id of walked) {
+    if (!SHARED_REFERENCE_IDS.has(id)) {
+      problems.push(`${id}: audited but not a reference row of the shared taxonomy`);
+    }
+  }
+  return problems;
+}
+
+/** The shared taxonomy's reference rows (the non-extension areas). */
+const SHARED_REFERENCE_ROWS: readonly { readonly id: string; readonly area: string }[] = (
+  PARITY_TAXONOMY as readonly { readonly id: string; readonly area: string }[]
+).filter((row) => row.area !== "webflix-extension");
+
+/** The shared taxonomy's reference-row ids. */
+const SHARED_REFERENCE_IDS: ReadonlySet<string> = new Set(
+  SHARED_REFERENCE_ROWS.map((row) => row.id),
+);
