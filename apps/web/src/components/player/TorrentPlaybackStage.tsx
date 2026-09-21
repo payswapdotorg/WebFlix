@@ -113,7 +113,7 @@ export function TorrentPlaybackStage({ view }: { readonly view: PlayerView }): J
           readout): the wired adapter identity + the viewer's WebRTC
           environment truth render behind one closed disclosure. */}
       <details className="wfx-playback-diagnostics" data-wfx-torrent-diagnostics>
-        <summary>How this copy reaches you</summary>
+        <summary data-wfx-torrent-diagnostics-toggle>How this copy reaches you</summary>
         <p className="wfx-player__trace" data-wfx-torrent-implementation>
           Wired adapter: {torrent.implementation}.
         </p>

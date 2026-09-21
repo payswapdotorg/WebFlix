@@ -162,8 +162,9 @@ describe("R14 web — every lifecycle state renders truthfully", () => {
     const views = host.runtime.acquisition.views();
     // Asteroid (available), Harbor (ready), DeepField (resuming), Desert
     // (failed), Static Bloom + Midnight Scoop (R17's network-loss and
-    // metadata-failure scripted items — both start available).
-    expect(views.length).toBe(6);
+    // metadata-failure scripted items — both start available), and Rain
+    // Check (R23-E/J38's browser-rung full-lifecycle item — available).
+    expect(views.length).toBe(7);
     const byTitle = new Map(views.map((view) => [view.title, view]));
     expect(byTitle.get("Asteroid Drift")?.state).toBe("available");
     expect(byTitle.get("Harbor Lights")?.state).toBe("ready-offline");
@@ -455,7 +456,7 @@ describe("R14 web — the typed actions wire through the route", () => {
     expect(response.status).toBe(200);
     const body = (await response.json()) as { mode: string; views: AcquisitionStatusView[] };
     expect(body.mode).toBe("fixtures");
-    expect(body.views.length).toBe(6);
+    expect(body.views.length).toBe(7);
     expect(body.views.every((view) => typeof view.state === "string")).toBe(true);
   });
 

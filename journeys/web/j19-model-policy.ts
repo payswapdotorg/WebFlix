@@ -90,12 +90,18 @@ export const j19ModelPolicy: Journey = {
       "[data-wfx-byom-anonymous-note]",
       "the anonymous state names the sign-in prerequisite honestly (the no-dead-end law)",
     );
+    // R23 update: the Model & AI section now also carries the R23-J
+    // open-model registration drives and the R23-I local-inference probe
+    // (both TYPED surfaces with real actions). The no-placeholder INTENT
+    // is preserved: every interactive control outside the BYOM panel must
+    // belong to one of the typed surfaces (BYOM, open-model registration,
+    // the local-inference probe) — no stray placeholder controls anywhere.
     const strayControls = await browser.eval<number>(
-      `(() => { const section = document.querySelector('[data-wfx-settings-model]'); if (section === null) return -1; const panel = section.querySelector('[data-wfx-byom-management]'); if (panel === null) return -1; return [...section.querySelectorAll('button, select, input')].filter((el) => panel.contains(el) === false).length; })()`,
+      `(() => { const section = document.querySelector('[data-wfx-settings-model]'); if (section === null) return -1; const typed = [...section.querySelectorAll('[data-wfx-byom-management], [data-wfx-openmodel-actions], [data-wfx-local-inference-probe]')]; return [...section.querySelectorAll('button, select, input')].filter((el) => !typed.some((surface) => surface.contains(el))).length; })()`,
     );
     assert.that(
-      "no placeholder model controls render outside the BYOM management panel (a fixture is never presented as capability)",
-      "zero interactive controls outside the typed BYOM panel",
+      "no placeholder model controls render outside the typed surfaces (BYOM, open-model registration, the local-inference probe — a fixture is never presented as capability)",
+      "zero interactive controls outside the typed surfaces",
       `${strayControls} stray controls`,
       strayControls === 0,
     );

@@ -179,6 +179,29 @@ export const j36MajorJourneyCompletion: Journey = {
       "[data-wfx-byof-source='youtube']",
       "the feed-import source card renders (the choose-source step of the import journey)",
     );
+    // Determinism (J33's own law): the BYOF dev-reset restores the
+    // pristine import state (no imported records, the feed source's
+    // wiring not-connected, the initial capture phase) — in a FULL
+    // battery J33 has already walked this wiring to its connected end,
+    // so this journey asserts its own precondition the same way J33
+    // does rather than depending on journey ordering.
+    const byofReset = await fetch(`${context.baseUrl}/api/byof`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "dev-reset" }),
+    });
+    assert.that(
+      "the BYOF dev-reset answers (the pristine import state — the journey's own precondition)",
+      "HTTP 200 from the dev-reset drive",
+      `HTTP ${byofReset.status}`,
+      byofReset.status === 200,
+    );
+    await goto(context, "/settings?section=sources");
+    await assert.visible(
+      "[data-wfx-byof-source-auth-state='not-connected']",
+      "the feed source starts not-connected (the reset state — the connect step's honest precondition)",
+    );
+
     // Connect the source (the prerequisite completion), then the import.
     await browser.clickInteractive("[data-wfx-byof-action='connect']");
     await browser.pollTextContains(

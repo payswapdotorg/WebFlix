@@ -159,6 +159,65 @@ const asteriodScript: readonly AcquisitionFacts[] = [
   },
 ];
 
+/**
+ * R23-E/J38 — the BROWSER-RUNG full lifecycle (Rain Check): the same
+ * lawful stepwise shape as the asteroid walk, on an item whose drive
+ * cursor no other journey touches (the J21–J26 chain owns Asteroid
+ * Drift's cursor in a full battery; this item's authorized peer copy is
+ * browser-capable, so the web-side J38 walks its whole lifecycle here).
+ */
+const rainCheckScript: readonly AcquisitionFacts[] = [
+  { itemId: "PENDING", title: "Rain Check" },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "locating", paused: false, progressFraction: null },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "choosing-files", paused: false, progressFraction: 0 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.3 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.42 },
+    playback: { activity: "starting", runwaySeconds: 0, deadlineAtRisk: false, playableNow: false },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.6 },
+    playback: { activity: "playing", runwaySeconds: 38, deadlineAtRisk: false, playableNow: true },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.75 },
+    playback: { activity: "completing-in-background", runwaySeconds: null, deadlineAtRisk: false, playableNow: true },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "verifying", paused: false, progressFraction: 1 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "completed", paused: false, progressFraction: 1 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    offlineReady: { verified: true, degraded: false, assetCount: 1, sizeBytes: 314_572, exposedAtMs: T0 },
+  },
+];
+
 /** J26 — an already-verified offline copy (Harbor Lights). */
 const harborScript: readonly AcquisitionFacts[] = [
   {
@@ -412,6 +471,26 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
       sourceId: "vault:family-media",
       basis: "user-owned",
       dataDir: "<app-data>/webflix/native-media/sessions/wfx-ts-5/data",
+    },
+    itemId: null,
+  },
+  {
+    // R23-E/J38: the browser-capable full-lifecycle item (its own drive
+    // cursor — the J21-J26 chain's Asteroid cursor is untouched).
+    externalRef: "fake:short-3",
+    torrent: { authorized: true, browserCapable: true },
+    searchQuery: "Rain Check",
+    script: rainCheckScript,
+    protocol: {
+      infoHash: "7777777777777777777777777777777777777777",
+      peersConnected: 4,
+      piecesVerified: 12,
+      piecesTotal: 32,
+      downloadBytesPerSec: 131_072,
+      uploadBytesPerSec: 16_384,
+      sourceId: "vault:family-media",
+      basis: "user-owned",
+      dataDir: "<app-data>/webflix/native-media/sessions/wfx-ts-7/data",
     },
     itemId: null,
   },

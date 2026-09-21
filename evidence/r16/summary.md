@@ -1,11 +1,11 @@
 # WebFlix Golden Journey Run — Evidence Summary
 
-- commit: `d168f6038e5d7f326e774c816185fe405408ac6e`
-- branch: `wfx/r21/discoverability-web`
+- commit: `6e12f667f2778996152bf862e3102b8a0790a729`
+- branch: `wfx/r23/web`
 - environment: web-fixtures @ http://localhost:3101
-- window: 2026-09-20T03:19:16.284Z → 2026-09-20T03:24:19.803Z
+- window: 2026-09-21T00:49:40.005Z → 2026-09-21T00:56:50.584Z
 
-**34 passed · 0 failed · 0 not-run (listed with procedures) · 34 total**
+**38 passed · 0 failed · 0 not-run (listed with procedures) · 38 total**
 
 | Journey | Title | Status | Assertions | Artifacts |
 |---|---|---|---:|---:|
@@ -13,7 +13,7 @@
 | J02 | Home discovery / hero / rows / intent entry | PASS | 13 | 3 |
 | J03 | Long-form Watch browsing | PASS | 6 | 3 |
 | J04 | Shorts vertical discovery | PASS | 13 | 3 |
-| J05 | Unified search | PASS | 6 | 3 |
+| J05 | Unified search | PASS | 7 | 3 |
 | J06 | Item detail / availability / realization choice | PASS | 11 | 3 |
 | J07 | Official embed playback | PASS | 13 | 3 |
 | J08 | Contained Browser playback | PASS | 10 | 3 |
@@ -27,7 +27,7 @@
 | J16 | Anti-tunnel / exploration after a single watched topic | PASS | 4 | 3 |
 | J17 | Explicit intent: learn / happier / surprise / tonight / friend taste | PASS | 6 | 3 |
 | J18 | Attention modes: mindful / balanced / immersive / custom | PASS | 4 | 3 |
-| J19 | WebFlix model / BYOM / local model policy | PASS | 8 | 3 |
+| J19 | WebFlix model / BYOM / local model policy | PASS | 11 | 3 |
 | J20 | AI subtitles / translation / transcription / dubbing / commentary | PASS | 18 | 3 |
 | J21 | Authorized torrent acquisition (web limited-status surface) | PASS | 14 | 3 |
 | J22 | Torrent metadata and file selection (web limited-status surface) | PASS | 7 | 3 |
@@ -43,9 +43,15 @@
 | J32 | Source-neutral identity: same item, multiple realizations | PASS | 9 | 3 |
 | J33 | Bring Your Own Feed: import, preview, confirm, sync, provenance | PASS | 62 | 9 |
 | J34 | Capability discoverability from normal product surfaces | PASS | 42 | 3 |
+| J36 | Major user journey completion / no dead-end discovery | PASS | 50 | 3 |
+| J37 | Anonymous public viewing without WebFlix login | PASS | 18 | 3 |
+| J38 | First-class torrent playback (web: browser-capable + honest fallbacks) | PASS | 42 | 3 |
+| J39 | Multimodal media intelligence / semantic moment discovery | PASS | 29 | 3 |
 
 ## Explicit limitations (never silent skips)
 
+- **J36** (configuration-limit): The R22-G encoding runs the full J36 completion walk over the deterministic fixtures boot: the register round trip uses the scripted dev persona (the loud dev badge — the REAL /api/auth/register transport's email-taken/validation round trips are service-mode, proven at the contract level by packages/client-runtime/tests/account-creation.test.ts); the source chooser's connected truth and the BYOF import ride the fixture connectors (the REAL provider OAuth dance is J14/J28's service-side procedure); the Shorts like/save typed absence is the fixture source's own capability truth (the hydration law is asserted as capability-truth, not blanket presence).
+  - procedure: LEAD (the production sweep): deploy the integrated tree, run this journey with --base-url against the deployed service-mode boot (real register transport, a real connectable connector, a source that declares like/save), and capture the evidence under evidence/r22/ — the J35 production-parity sweep covers the same deployment.
 - **J28** (local-only): The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.
   - procedure: LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot.
 - **J09** (configuration-limit): The external-rung WIN (the visible external handoff with its return-context link) requires an item whose only realization is external — the fixture catalog carries none (every item resolves embed or browser first). The fallback DECISION trace and the typed failure states are encoded; the handoff itself is not reachable in this configuration.
@@ -80,7 +86,7 @@
   - procedure: DESKTOP (journeys/desktop/README.md): play a verified offline asset from the Library through the native media engine, capture the playback + replay states.
 - **J31** (configuration-limit): The parity COMPARISON (Web vs Desktop semantically equivalent outcomes) requires both adapters running against the same server-side state. The web-side parity anchors (canonical identity, library state, intent, session state) are encoded; the desktop-side comparison is the lead's procedure.
   - procedure: LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/.
-- **J05** (known-defect): FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state="empty-query" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.
-  - procedure: FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions.
+- **J38** (configuration-limit): The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.
+  - procedure: LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure.
 - **J33** (local-only): The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.
   - procedure: LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot.
