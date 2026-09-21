@@ -1,11 +1,11 @@
 {
   "schema": "wfx-r24-audit-manifest/1",
-  "commit": "5ce932e77582d3a3a1efa951bbc9f721f9da96fb",
+  "commit": "c6e954276cc10a1bf1fda24cc5585ece441f314a",
   "branch": "wfx/r24/desktop",
   "environment": {
     "mode": "desktop-composition-simulator",
-    "startedAt": "2026-09-21T04:29:03.851Z",
-    "finishedAt": "2026-09-21T04:29:03.865Z"
+    "startedAt": "2026-09-21T04:36:40.420Z",
+    "finishedAt": "2026-09-21T04:36:40.432Z"
   },
   "summary": {
     "rows": 44,

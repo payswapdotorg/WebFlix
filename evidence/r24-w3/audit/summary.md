@@ -1,8 +1,8 @@
 # WebFlix R24-W3 — the Desktop YouTube-parity interaction audit (machine-generated)
 
-- commit: `5ce932e77582d3a3a1efa951bbc9f721f9da96fb`
+- commit: `c6e954276cc10a1bf1fda24cc5585ece441f314a`
 - branch: `wfx/r24/desktop`
-- window: 2026-09-21T04:29:03.851Z → 2026-09-21T04:29:03.865Z
+- window: 2026-09-21T04:36:40.420Z → 2026-09-21T04:36:40.432Z
 - rows walked: 44 (Discovery 7, Watch/player 24, Shorts 7, Identity/continuity 6)
 - classification distribution: parity=8, native-equivalent=22, platform-variant=14, intentionally-out-of-scope=0
 - assertions recorded: 118

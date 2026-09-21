@@ -1,38 +1,38 @@
 # WebFlix J41 Desktop — the startup benchmark evidence (machine-generated)
 
-- commit: `5ce932e77582d3a3a1efa951bbc9f721f9da96fb`
+- commit: `c6e954276cc10a1bf1fda24cc5585ece441f314a`
 - branch: `wfx/r24/desktop`
-- window: 2026-09-21T04:29:04.126Z → 2026-09-21T04:29:04.138Z
+- window: 2026-09-21T04:36:40.657Z → 2026-09-21T04:36:40.668Z
 - benchmark titles: 3 (1 torrent + 2 provider embed) × cold/warm
 - measurements recorded: 7
 - assertions recorded: 84
 
 ## The aggregate TTFF record
 
-- p50: 0.087 ms
-- p75: 0.278 ms
-- p95: 2.616 ms
+- p50: 0.075 ms
+- p75: 0.246 ms
+- p95: 2.481 ms
 - threshold verdict: The same-content reference baseline is not measurable in this environment — the R24-E thresholds (p50 ≤ ref+150ms, p75 ≤ ref+300ms, p95 ≤ ref+750ms) are the real-device lab procedure's verdict, recorded here as pending (never silently passed).
 
 ## The per-pass measurements
 
 ### Family Archive Feature Presentation — authorized-peer-copy (cold)
-- navigation-to-player-visible: 0.635 ms
-- click-to-first-frame (TTFF): 2.616 ms
-- click-to-audible: 2.618 ms
-- time-to-playable: 2.442 ms
+- navigation-to-player-visible: 0.574 ms
+- click-to-first-frame (TTFF): 2.481 ms
+- click-to-audible: 2.484 ms
+- time-to-playable: 2.311 ms
 - startup failed: false
-- seek response: 0.187 ms
-- control response: 0.130 ms
-- transient recovery: 0.141 ms
-- torrent: metadata 2.425 ms, file 2.427 ms, first verified range 2.442 ms, background completion 3.098 ms, integrity 0.001 ms, Ready offline 3.108 ms
+- seek response: 0.161 ms
+- control response: 0.144 ms
+- transient recovery: 0.113 ms
+- torrent: metadata 2.296 ms, file 2.297 ms, first verified range 2.311 ms, background completion 2.923 ms, integrity 0.001 ms, Ready offline 2.936 ms
 - first frame: runway 25000 ms, verified fraction 0.4444444444444444
 - LAW 1 (no nonessential work in the startup window): holds
 - LAW 2 (verified ranges prioritized over completion): holds
 
 ### Backyard Concert (provider embed) — provider-embed (cold)
-- navigation-to-player-visible: 0.024 ms
-- click-to-first-frame (TTFF): 0.278 ms
+- navigation-to-player-visible: 0.013 ms
+- click-to-first-frame (TTFF): 0.246 ms
 - click-to-audible: not observed
 - time-to-playable: not observed
 - startup failed: false
@@ -46,7 +46,7 @@
 
 ### Conference Talk (provider embed) — provider-embed (cold)
 - navigation-to-player-visible: 0.007 ms
-- click-to-first-frame (TTFF): 0.048 ms
+- click-to-first-frame (TTFF): 0.044 ms
 - click-to-audible: not observed
 - time-to-playable: not observed
 - startup failed: false
@@ -59,41 +59,41 @@
 - LAW 2 (verified ranges prioritized over completion): VIOLATED
 
 ### Family Archive Feature Presentation — authorized-peer-copy (warm)
-- navigation-to-player-visible: 0.177 ms
-- click-to-first-frame (TTFF): 0.087 ms
-- click-to-audible: 0.089 ms
-- time-to-playable: 0.071 ms
+- navigation-to-player-visible: 0.134 ms
+- click-to-first-frame (TTFF): 0.074 ms
+- click-to-audible: 0.076 ms
+- time-to-playable: 0.066 ms
 - startup failed: false
-- seek response: 0.008 ms
+- seek response: 0.007 ms
 - control response: 0.006 ms
 - transient recovery: 0.008 ms
-- torrent: metadata 0.067 ms, file 0.067 ms, first verified range 0.071 ms, background completion 0.126 ms, integrity 0.000 ms, Ready offline 0.127 ms
+- torrent: metadata 0.061 ms, file 0.061 ms, first verified range 0.066 ms, background completion 0.109 ms, integrity 0.000 ms, Ready offline 0.110 ms
 - first frame: runway 25000 ms, verified fraction 0.4444444444444444
 - LAW 1 (no nonessential work in the startup window): holds
 - LAW 2 (verified ranges prioritized over completion): holds
 
 ### Family Archive Feature Presentation — authorized-peer-copy (warm)
-- navigation-to-player-visible: 0.034 ms
-- click-to-first-frame (TTFF): 0.130 ms
-- click-to-audible: 0.136 ms
-- time-to-playable: 0.113 ms
+- navigation-to-player-visible: 0.030 ms
+- click-to-first-frame (TTFF): 0.114 ms
+- click-to-audible: 0.115 ms
+- time-to-playable: 0.106 ms
 - startup failed: false
-- seek response: 0.016 ms
-- control response: 0.011 ms
-- transient recovery: 0.028 ms
-- torrent: metadata 0.084 ms, file 0.086 ms, first verified range 0.113 ms, background completion 0.213 ms, integrity 0.000 ms, Ready offline 0.215 ms
+- seek response: 0.030 ms
+- control response: 0.026 ms
+- transient recovery: 0.012 ms
+- torrent: metadata 0.095 ms, file 0.098 ms, first verified range 0.106 ms, background completion 0.203 ms, integrity 0.012 ms, Ready offline 0.225 ms
 - first frame: runway 25000 ms, verified fraction 0.4444444444444444
 - LAW 1 (no nonessential work in the startup window): holds
 - LAW 2 (verified ranges prioritized over completion): holds
 
 ### Backyard Concert (provider embed) — provider-embed (warm)
 - navigation-to-player-visible: 0.005 ms
-- click-to-first-frame (TTFF): 0.071 ms
+- click-to-first-frame (TTFF): 0.075 ms
 - click-to-audible: not observed
 - time-to-playable: not observed
 - startup failed: false
 - seek response: not observed
-- control response: 0.006 ms
+- control response: 0.003 ms
 - transient recovery: not observed
 - torrent: metadata not observed, file not observed, first verified range not observed, background completion not observed, integrity not observed, Ready offline not observed
 - first frame: runway 0 ms, verified fraction 1
@@ -102,12 +102,12 @@
 
 ### Conference Talk (provider embed) — provider-embed (warm)
 - navigation-to-player-visible: 0.011 ms
-- click-to-first-frame (TTFF): 0.047 ms
+- click-to-first-frame (TTFF): 0.033 ms
 - click-to-audible: not observed
 - time-to-playable: not observed
 - startup failed: false
 - seek response: not observed
-- control response: 0.003 ms
+- control response: 0.008 ms
 - transient recovery: not observed
 - torrent: metadata not observed, file not observed, first verified range not observed, background completion not observed, integrity not observed, Ready offline not observed
 - first frame: runway 0 ms, verified fraction 1
@@ -132,10 +132,10 @@ Every pass measured its metric set honestly (the torrent passes carry the full t
 Transient failures recover with a useful next action: the failed view carries the typed retry, and the retry executes through the same surface (a fresh session over the same authorized source).
 
 ### B6
-TTFF over 7 passes: p50=0.087ms, p75=0.278ms, p95=2.616ms (REAL measurements of the composition executing; the same-content YouTube comparison + the R24-E thresholds are the lead's real-device procedure — recorded as pending, never silently passed).
+TTFF over 7 passes: p50=0.075ms, p75=0.246ms, p95=2.481ms (REAL measurements of the composition executing; the same-content YouTube comparison + the R24-E thresholds are the lead's real-device procedure — recorded as pending, never silently passed).
 
 ### B7
-Realization switch (provider embed → authorized peer copy): click-to-first-frame 0.079ms, window clean.
+Realization switch (provider embed → authorized peer copy): click-to-first-frame 0.066ms, window clean.
 
 ## The honest scope (never silent skips)
 

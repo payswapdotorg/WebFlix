@@ -1,8 +1,8 @@
 # WebFlix J42 Desktop — the WebFlix extension parity journey (machine-generated)
 
-- commit: `5ce932e77582d3a3a1efa951bbc9f721f9da96fb`
+- commit: `c6e954276cc10a1bf1fda24cc5585ece441f314a`
 - branch: `wfx/r24/desktop`
-- window: 2026-09-21T04:29:04.318Z → 2026-09-21T04:29:04.328Z
+- window: 2026-09-21T04:36:40.773Z → 2026-09-21T04:36:40.783Z
 - steps recorded: 10
 - assertions recorded: 70
 - WebFlix-only capabilities with placement decisions: 13
