@@ -1,0 +1,920 @@
+{
+  "schema": "wfx-j41-benchmark-manifest/1",
+  "commit": "c6e954276cc10a1bf1fda24cc5585ece441f314a",
+  "branch": "wfx/r24/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "clock": "performance.now (real elapsed, sub-ms resolution)",
+    "startedAt": "2026-09-21T04:36:40.657Z",
+    "finishedAt": "2026-09-21T04:36:40.668Z"
+  },
+  "benchmark": {
+    "titles": [
+      {
+        "itemId": "wfxitm_0000000000000000000000R23W",
+        "title": "Family Archive Feature Presentation",
+        "realization": "authorized-peer-copy"
+      },
+      {
+        "itemId": "wfxitm_0000000000000000000000B402",
+        "title": "Backyard Concert (provider embed)",
+        "realization": "provider-embed"
+      },
+      {
+        "itemId": "wfxitm_0000000000000000000000B403",
+        "title": "Conference Talk (provider embed)",
+        "realization": "provider-embed"
+      }
+    ],
+    "cacheModes": [
+      "cold",
+      "warm"
+    ],
+    "measurements": 7
+  },
+  "aggregate": {
+    "p50": 0.0746340000000032,
+    "p75": 0.24644899999999836,
+    "p95": 2.4811810000000065,
+    "thresholdVerdict": {
+      "comparable": false,
+      "p50WithinThreshold": null,
+      "p75WithinThreshold": null,
+      "p95WithinThreshold": null,
+      "detail": "The same-content reference baseline is not measurable in this environment — the R24-E thresholds (p50 ≤ ref+150ms, p75 ≤ ref+300ms, p95 ≤ ref+750ms) are the real-device lab procedure's verdict, recorded here as pending (never silently passed)."
+    }
+  },
+  "measurements": [
+    {
+      "label": "Family Archive Feature Presentation",
+      "realization": "authorized-peer-copy",
+      "cacheMode": "cold",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 98.398991
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 98.972753
+        },
+        {
+          "kind": "play-click",
+          "atMs": 98.989245
+        },
+        {
+          "kind": "torrent-metadata",
+          "atMs": 101.285229
+        },
+        {
+          "kind": "file-selected",
+          "atMs": 101.286263
+        },
+        {
+          "kind": "first-verified-playable-range",
+          "atMs": 101.300297
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 101.470426,
+          "runwayMs": 25000,
+          "verifiedFraction": 0.4444444444444444
+        },
+        {
+          "kind": "audible",
+          "atMs": 101.473033
+        },
+        {
+          "kind": "seek-issued",
+          "atMs": 101.473691
+        },
+        {
+          "kind": "seek-accepted",
+          "atMs": 101.634337
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 101.635366
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 101.779821
+        },
+        {
+          "kind": "transient-failure",
+          "atMs": 101.789056
+        },
+        {
+          "kind": "recovery-complete",
+          "atMs": 101.902165
+        },
+        {
+          "kind": "background-completion",
+          "atMs": 101.911968
+        },
+        {
+          "kind": "integrity-verified",
+          "atMs": 101.912633
+        },
+        {
+          "kind": "ready-offline",
+          "atMs": 101.925493
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.5737620000000021,
+      "clickToFirstFrameMs": 2.4811810000000065,
+      "clickToAudibleMs": 2.483788000000004,
+      "timeToPlayableMs": 2.3110520000000037,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": 0.16064599999999984,
+      "controlResponseMs": 0.14445499999999356,
+      "recoveryAfterTransientFailureMs": 0.11310899999999435,
+      "timeToTorrentMetadataMs": 2.2959840000000042,
+      "timeToSelectedFileMs": 2.2970180000000084,
+      "timeToFirstVerifiedPlayableRangeMs": 2.3110520000000037,
+      "backgroundCompletionMs": 2.922723000000005,
+      "integrityVerificationMs": 0.0006649999999979173,
+      "readyOfflineTransitionMs": 2.936248000000006,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": true,
+      "firstFrameRunwayMs": 25000,
+      "firstFrameVerifiedFraction": 0.4444444444444444
+    },
+    {
+      "label": "Backyard Concert (provider embed)",
+      "realization": "provider-embed",
+      "cacheMode": "cold",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 102.507601
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 102.520785
+        },
+        {
+          "kind": "play-click",
+          "atMs": 102.521461
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 102.76791,
+          "runwayMs": 0,
+          "verifiedFraction": 1
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 102.76944
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 102.77532
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.013184000000009632,
+      "clickToFirstFrameMs": 0.24644899999999836,
+      "clickToAudibleMs": null,
+      "timeToPlayableMs": null,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": null,
+      "controlResponseMs": 0.0058799999999905594,
+      "recoveryAfterTransientFailureMs": null,
+      "timeToTorrentMetadataMs": null,
+      "timeToSelectedFileMs": null,
+      "timeToFirstVerifiedPlayableRangeMs": null,
+      "backgroundCompletionMs": null,
+      "integrityVerificationMs": null,
+      "readyOfflineTransitionMs": null,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": false,
+      "firstFrameRunwayMs": 0,
+      "firstFrameVerifiedFraction": 1
+    },
+    {
+      "label": "Conference Talk (provider embed)",
+      "realization": "provider-embed",
+      "cacheMode": "cold",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 102.877974
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 102.884709
+        },
+        {
+          "kind": "play-click",
+          "atMs": 102.885222
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 102.928803,
+          "runwayMs": 0,
+          "verifiedFraction": 1
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 102.929866
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 102.935504
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.006735000000006153,
+      "clickToFirstFrameMs": 0.0435810000000032,
+      "clickToAudibleMs": null,
+      "timeToPlayableMs": null,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": null,
+      "controlResponseMs": 0.005637999999990484,
+      "recoveryAfterTransientFailureMs": null,
+      "timeToTorrentMetadataMs": null,
+      "timeToSelectedFileMs": null,
+      "timeToFirstVerifiedPlayableRangeMs": null,
+      "backgroundCompletionMs": null,
+      "integrityVerificationMs": null,
+      "readyOfflineTransitionMs": null,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": false,
+      "firstFrameRunwayMs": 0,
+      "firstFrameVerifiedFraction": 1
+    },
+    {
+      "label": "Family Archive Feature Presentation",
+      "realization": "authorized-peer-copy",
+      "cacheMode": "warm",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 103.298498
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 103.432542
+        },
+        {
+          "kind": "play-click",
+          "atMs": 103.433386
+        },
+        {
+          "kind": "torrent-metadata",
+          "atMs": 103.494512
+        },
+        {
+          "kind": "file-selected",
+          "atMs": 103.494775
+        },
+        {
+          "kind": "first-verified-playable-range",
+          "atMs": 103.499015
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 103.507145,
+          "runwayMs": 25000,
+          "verifiedFraction": 0.4444444444444444
+        },
+        {
+          "kind": "audible",
+          "atMs": 103.508994
+        },
+        {
+          "kind": "seek-issued",
+          "atMs": 103.509252
+        },
+        {
+          "kind": "seek-accepted",
+          "atMs": 103.516481
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 103.516823
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 103.522671
+        },
+        {
+          "kind": "transient-failure",
+          "atMs": 103.531664
+        },
+        {
+          "kind": "recovery-complete",
+          "atMs": 103.539173
+        },
+        {
+          "kind": "background-completion",
+          "atMs": 103.542351
+        },
+        {
+          "kind": "integrity-verified",
+          "atMs": 103.542614
+        },
+        {
+          "kind": "ready-offline",
+          "atMs": 103.543739
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.13404400000000294,
+      "clickToFirstFrameMs": 0.07375899999999547,
+      "clickToAudibleMs": 0.07560800000000256,
+      "timeToPlayableMs": 0.06562900000000127,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": 0.007228999999995267,
+      "controlResponseMs": 0.005848000000000297,
+      "recoveryAfterTransientFailureMs": 0.007508999999998878,
+      "timeToTorrentMetadataMs": 0.06112600000000157,
+      "timeToSelectedFileMs": 0.06138900000000547,
+      "timeToFirstVerifiedPlayableRangeMs": 0.06562900000000127,
+      "backgroundCompletionMs": 0.10896499999999776,
+      "integrityVerificationMs": 0.000263000000003899,
+      "readyOfflineTransitionMs": 0.11035300000000348,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": true,
+      "firstFrameRunwayMs": 25000,
+      "firstFrameVerifiedFraction": 0.4444444444444444
+    },
+    {
+      "label": "Family Archive Feature Presentation",
+      "realization": "authorized-peer-copy",
+      "cacheMode": "warm",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 103.003467
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 103.033486
+        },
+        {
+          "kind": "play-click",
+          "atMs": 103.0347
+        },
+        {
+          "kind": "torrent-metadata",
+          "atMs": 103.130009
+        },
+        {
+          "kind": "file-selected",
+          "atMs": 103.132422
+        },
+        {
+          "kind": "first-verified-playable-range",
+          "atMs": 103.140662
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 103.148342,
+          "runwayMs": 25000,
+          "verifiedFraction": 0.4444444444444444
+        },
+        {
+          "kind": "audible",
+          "atMs": 103.149898
+        },
+        {
+          "kind": "seek-issued",
+          "atMs": 103.150864
+        },
+        {
+          "kind": "seek-accepted",
+          "atMs": 103.180861
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 103.182854
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 103.208997
+        },
+        {
+          "kind": "transient-failure",
+          "atMs": 103.214588
+        },
+        {
+          "kind": "recovery-complete",
+          "atMs": 103.226381
+        },
+        {
+          "kind": "background-completion",
+          "atMs": 103.238135
+        },
+        {
+          "kind": "integrity-verified",
+          "atMs": 103.25047
+        },
+        {
+          "kind": "ready-offline",
+          "atMs": 103.259361
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.0300189999999958,
+      "clickToFirstFrameMs": 0.11364199999999869,
+      "clickToAudibleMs": 0.11519799999999236,
+      "timeToPlayableMs": 0.10596200000000522,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": 0.0299969999999945,
+      "controlResponseMs": 0.02614299999999048,
+      "recoveryAfterTransientFailureMs": 0.011792999999997278,
+      "timeToTorrentMetadataMs": 0.09530900000000031,
+      "timeToSelectedFileMs": 0.09772200000000453,
+      "timeToFirstVerifiedPlayableRangeMs": 0.10596200000000522,
+      "backgroundCompletionMs": 0.20343499999999892,
+      "integrityVerificationMs": 0.012335000000007312,
+      "readyOfflineTransitionMs": 0.22466099999999756,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": true,
+      "firstFrameRunwayMs": 25000,
+      "firstFrameVerifiedFraction": 0.4444444444444444
+    },
+    {
+      "label": "Backyard Concert (provider embed)",
+      "realization": "provider-embed",
+      "cacheMode": "warm",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 103.609462
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 103.614095
+        },
+        {
+          "kind": "play-click",
+          "atMs": 103.614355
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 103.688989,
+          "runwayMs": 0,
+          "verifiedFraction": 1
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 103.692724
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 103.696106
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.004633000000012544,
+      "clickToFirstFrameMs": 0.0746340000000032,
+      "clickToAudibleMs": null,
+      "timeToPlayableMs": null,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": null,
+      "controlResponseMs": 0.0033820000000019945,
+      "recoveryAfterTransientFailureMs": null,
+      "timeToTorrentMetadataMs": null,
+      "timeToSelectedFileMs": null,
+      "timeToFirstVerifiedPlayableRangeMs": null,
+      "backgroundCompletionMs": null,
+      "integrityVerificationMs": null,
+      "readyOfflineTransitionMs": null,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": false,
+      "firstFrameRunwayMs": 0,
+      "firstFrameVerifiedFraction": 1
+    },
+    {
+      "label": "Conference Talk (provider embed)",
+      "realization": "provider-embed",
+      "cacheMode": "warm",
+      "observations": [
+        {
+          "kind": "navigation-start",
+          "atMs": 103.771401
+        },
+        {
+          "kind": "player-visible",
+          "atMs": 103.782385
+        },
+        {
+          "kind": "play-click",
+          "atMs": 103.782783
+        },
+        {
+          "kind": "first-frame",
+          "atMs": 103.815965,
+          "runwayMs": 0,
+          "verifiedFraction": 1
+        },
+        {
+          "kind": "control-issued",
+          "atMs": 103.816497
+        },
+        {
+          "kind": "control-settled",
+          "atMs": 103.824819
+        }
+      ],
+      "navigationToPlayerVisibleMs": 0.010984000000007654,
+      "clickToFirstFrameMs": 0.0331820000000107,
+      "clickToAudibleMs": null,
+      "timeToPlayableMs": null,
+      "startupFailed": false,
+      "startupFailureDetail": null,
+      "seekResponseMs": null,
+      "controlResponseMs": 0.008322000000006824,
+      "recoveryAfterTransientFailureMs": null,
+      "timeToTorrentMetadataMs": null,
+      "timeToSelectedFileMs": null,
+      "timeToFirstVerifiedPlayableRangeMs": null,
+      "backgroundCompletionMs": null,
+      "integrityVerificationMs": null,
+      "readyOfflineTransitionMs": null,
+      "playbackBlockedOnNonessentialWork": false,
+      "nonessentialCallsInWindow": [],
+      "verifiedRangesPrioritizedOverCompletion": false,
+      "firstFrameRunwayMs": 0,
+      "firstFrameVerifiedFraction": 1
+    }
+  ],
+  "walk": [
+    {
+      "step": "B1",
+      "observed": "Benchmark passes recorded: 7 (3 titles × cold/warm; the torrent title's warm mode adds a second play over the same composition)."
+    },
+    {
+      "step": "B2",
+      "observed": "The no-serial-chain law holds on every pass: no recommendation/AI/indexing/analytics call sat between the play click and the first frame."
+    },
+    {
+      "step": "B3",
+      "observed": "The verified-ranges-first law holds on every torrent pass: the first frame arrives with a verified runway while the copy is still in progress."
+    },
+    {
+      "step": "B4",
+      "observed": "Every pass measured its metric set honestly (the torrent passes carry the full track: metadata → file → verified range → first frame → completion → integrity → Ready offline)."
+    },
+    {
+      "step": "B5",
+      "observed": "Transient failures recover with a useful next action: the failed view carries the typed retry, and the retry executes through the same surface (a fresh session over the same authorized source)."
+    },
+    {
+      "step": "B6",
+      "observed": "TTFF over 7 passes: p50=0.075ms, p75=0.246ms, p95=2.481ms (REAL measurements of the composition executing; the same-content YouTube comparison + the R24-E thresholds are the lead's real-device procedure — recorded as pending, never silently passed)."
+    },
+    {
+      "step": "B7",
+      "observed": "Realization switch (provider embed → authorized peer copy): click-to-first-frame 0.066ms, window clean."
+    }
+  ],
+  "assertions": [
+    {
+      "step": "torrent-pass",
+      "description": "the player surface renders the primary play decision before the click"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the seek command was accepted"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the pause command was accepted"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the transient failure recovered through the engine's recovery"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider session resolved with a controller"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the contained surface engagement resolved (the readiness signal)"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider pause command settled"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider session resolved with a controller"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the contained surface engagement resolved (the readiness signal)"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider pause command settled"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the player surface renders the primary play decision before the click"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the seek command was accepted"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the pause command was accepted"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the transient failure recovered through the engine's recovery"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the player surface renders the primary play decision before the click"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the seek command was accepted"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the pause command was accepted"
+    },
+    {
+      "step": "torrent-pass",
+      "description": "the transient failure recovered through the engine's recovery"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider session resolved with a controller"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the contained surface engagement resolved (the readiness signal)"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider pause command settled"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider session resolved with a controller"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the contained surface engagement resolved (the readiness signal)"
+    },
+    {
+      "step": "provider-pass",
+      "description": "the provider pause command settled"
+    },
+    {
+      "step": "B1",
+      "description": "the benchmark recorded its passes (7 measurements: 3 cold + 4 warm)"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/cold) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/cold) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/cold) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/warm) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B2",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/warm) startup window carries ZERO nonessential calls"
+    },
+    {
+      "step": "B3",
+      "description": "the benchmark recorded torrent passes (cold + warm + warm-again)"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (cold) first frame arrived from verified playable data while incomplete"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (cold) first frame carried a verified runway > 0"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (cold) first frame arrived BEFORE full completion (fraction < 1)"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (warm) first frame arrived from verified playable data while incomplete"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (warm) first frame carried a verified runway > 0"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (warm) first frame arrived BEFORE full completion (fraction < 1)"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (warm) first frame arrived from verified playable data while incomplete"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (warm) first frame carried a verified runway > 0"
+    },
+    {
+      "step": "B3",
+      "description": "the 'Family Archive Feature Presentation' (warm) first frame arrived BEFORE full completion (fraction < 1)"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/cold) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/cold) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/cold) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/cold) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/cold) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/cold) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/cold) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/cold) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/cold) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (authorized-peer-copy/warm) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/warm) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/warm) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Backyard Concert (provider embed)' (provider-embed/warm) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/warm) pass started successfully"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/warm) pass measured click-to-first-frame"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Conference Talk (provider embed)' (provider-embed/warm) pass measured the control response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (cold) pass measured the seek response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (cold) pass measured the transient recovery"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (cold) pass measured the full torrent track"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (warm) pass measured the seek response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (warm) pass measured the transient recovery"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (warm) pass measured the full torrent track"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (warm) pass measured the seek response"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (warm) pass measured the transient recovery"
+    },
+    {
+      "step": "B4",
+      "description": "the 'Family Archive Feature Presentation' (warm) pass measured the full torrent track"
+    },
+    {
+      "step": "B5",
+      "description": "the benchmark boot starts a peer copy"
+    },
+    {
+      "step": "B5",
+      "description": "the failed view surfaced honestly"
+    },
+    {
+      "step": "B5",
+      "description": "the failed view carries the typed RETRY action (the useful next action)"
+    },
+    {
+      "step": "B5",
+      "description": "the retry executed through the same surface"
+    },
+    {
+      "step": "B6",
+      "description": "the benchmark measured TTFFs across its passes"
+    },
+    {
+      "step": "B6",
+      "description": "the percentile derivation answered p50/p75/p95"
+    },
+    {
+      "step": "B6",
+      "description": "the threshold verdict is honestly NOT comparable in this sandbox"
+    },
+    {
+      "step": "B6",
+      "description": "the verdict names the pending real-device procedure"
+    },
+    {
+      "step": "B7",
+      "description": "the provider rung engaged first"
+    },
+    {
+      "step": "B7",
+      "description": "the realization switch to the peer copy started"
+    },
+    {
+      "step": "B7",
+      "description": "the realization switch measured click-to-first-frame on the new rung"
+    },
+    {
+      "step": "B7",
+      "description": "the realization switch's startup window stayed clean"
+    }
+  ]
+}
