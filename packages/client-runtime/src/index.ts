@@ -58,6 +58,44 @@
  *                               typed connect action + the user-vocabulary
  *                               connection method, the anonymous sign-in
  *                               prerequisite, the honest unsupported truth)
+ * - `anonymous-viewing.ts`   — R23-A: the anonymous viewing capability
+ *                               MATRIX — the typed three-way auth-class
+ *                               distinction (anonymous read/play /
+ *                               webflix-account mutation+sync /
+ *                               provider-authorized playback), the frozen
+ *                               capability rows with user vocabulary, the
+ *                               per-capability access resolution (open /
+ *                               typed sign-in prerequisite / typed provider
+ *                               authorization prerequisite — never a wall),
+ *                               and the machine-checkable no-login-wall law
+ *                               (J37's forbidden invariant)
+ * - `anonymous-playback-boundary.ts` — R23-B: the anonymous playback
+ *                               boundary — the per-CAPABILITY authorization
+ *                               decision table (anonymous + public =>
+ *                               playback may start; provider authorization
+ *                               independent of the WebFlix account BY
+ *                               CONSTRUCTION — the table never reads the
+ *                               viewer), the playback no-login-wall law
+ *                               (no playback decision may ever route to a
+ *                               WebFlix login), the read-path surface guard,
+ *                               the observed-source access-class/
+ *                               authorization folds, and the session-scoped
+ *                               progress law (anonymous progress is never
+ *                               durable identity until authentication)
+ * - `torrent-realization.ts` — R23-C: the first-class torrent
+ *                               realization contract — the transport-kind
+ *                               declaration (torrent as a realization
+ *                               SOURCE KIND, never a PlaybackMode —
+ *                               compile-time-guarded), the rung-satisfaction
+ *                               model preserving the Media Surface
+ *                               precedence (Desktop native rung / Web
+ *                               browser rung where truly supported / the
+ *                               honest Desktop next step / the
+ *                               authorization gate), the frozen user
+ *                               vocabulary ("Where to watch -> Authorized
+ *                               peer copy", never merely "Offline copy" —
+ *                               machine-checked), and the nine-dimension
+ *                               first-class parity contract
  * - `account-creation.ts`    — R22-B: the account-creation journey —
  *                               the typed register command + shared
  *                               validation (the service's own rules), the
@@ -101,6 +139,9 @@ export * from "./feed-mode";
 export * from "./model-controls";
 export * from "./control-views";
 export * from "./source-catalog";
+export * from "./anonymous-viewing";
+export * from "./anonymous-playback-boundary";
+export * from "./torrent-realization";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
