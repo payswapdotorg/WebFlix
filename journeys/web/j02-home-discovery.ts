@@ -59,12 +59,21 @@ export const j02HomeDiscovery: Journey = {
       `${titledCards} titled cards of ${cardCount}`,
       cardCount === titledCards && cardCount > 0,
     );
-    const firstCardHtml = await browser.tryHtml("a[data-wfx-card]");
+    // R24 (the parity lab's correction): cards MAY carry the compact
+    // secondary source chip (data-wfx-card-source — the design
+    // language's "source/provenance labels are compact" + the R24-C
+    // source-aware cards pairing); source BRANDING (the source's name
+    // in the card's PRIMARY identity — the title line's markup) stays
+    // forbidden (the source identity is secondary to the canonical
+    // item, the frozen law's intent).
+    const titleLine = await browser.tryHtml("[data-wfx-card-title]");
     assert.that(
-      "cards render no source branding (source identity is secondary to the canonical item)",
-      "no connector identity in the card markup",
-      firstCardHtml !== null && firstCardHtml.includes("fake-source") ? "connector id present on the card" : "no connector branding",
-      firstCardHtml === null || !firstCardHtml.includes("fake-source"),
+      "cards keep the source identity SECONDARY (no source branding in the canonical title; the compact provenance chip is the R24-C pairing)",
+      "the title line carries no connector identity (the chip may render below it)",
+      titleLine !== null && titleLine.includes("fake-source")
+        ? "connector id present in the title line"
+        : "no source branding in the primary identity",
+      titleLine === null || !titleLine.includes("fake-source"),
     );
 
     // The direct intent entry: the persistent search box.

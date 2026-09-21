@@ -52,6 +52,8 @@ import { j36MajorJourneyCompletion } from "./j36-major-journey-completion";
 import { j37AnonymousViewing } from "./j37-anonymous-viewing";
 import { j38TorrentPlayback } from "./j38-torrent-playback";
 import { j39MediaIntelligence } from "./j39-media-intelligence";
+import { j40YouTubeParity } from "./j40-youtube-parity";
+import { j41PlaybackStartup } from "./j41-playback-startup";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -105,6 +107,8 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   j37AnonymousViewing,
   j38TorrentPlayback,
   j39MediaIntelligence,
+  j40YouTubeParity,
+  j41PlaybackStartup,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -234,5 +238,17 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
     kind: "local-only",
     note: "The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.",
     procedure: "LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot.",
+  },
+  {
+    journeyId: "J41",
+    kind: "configuration-limit",
+    note: "The R24-W2 web encoding measures the REAL startup path over the fixtures boot (the complete assertable marker set — the click-bridged trace origin, the streamed shell's parse, the phase declaration, the first frame at the contained-surface boundary, the seek/control pairs, the realization-switch pair — plus the MEASURED startup architecture laws: the first frame preceding every enrichment mount, the evidence-anchored position, the retained raw observations). The YouTube COMPARATIVE baseline is honestly out of scope in this configuration: the fixture catalog's content is WebFlix-internal (no identical public YouTube content — the same-content law answers samePublicContentOnYouTube=false), and this sandbox has no route to the public YouTube product. The FRESH-SESSION cold/warm cache battery (a brand-new browser per cold pass, the same browser for the warm pass) is the benchmark harness's own record under evidence/r24-w2/benchmark/ — the journey's session is shared with J01-J40 (its passes are warm by construction, which the journey never claims otherwise).",
+    procedure: "LEAD (the comparative protocol — the plan's lead-owned 'comparative performance test protocol'): select real public content available on BOTH systems, run the same browser/device/network profile over cold and warm cache passes on WebFlix AND YouTube, record the same metric set (the shared telemetry contract's marker pairs), evaluate the frozen R24-E thresholds (p50 +150ms / p75 +300ms / p95 +750ms TTFF deltas, startup failure +0.5pp, first-60s rebuffer +0.25pp), and attach the traces + the evaluation record under evidence/r24-lab/. The WebFlix-internal benchmark record (evidence/r24-w2/benchmark/) is the standing measurement of this lane's startup architecture laws.",
+  },
+  {
+    journeyId: "J40",
+    kind: "configuration-limit",
+    note: "The R24-W2 encoding walks the viewer-parity flow end to end over the fixtures boot: the walk's own watchlist/playlist/queue WRITES answer their typed success at the CONTROLS (the 'Saved' status, the queue-add's outcome state, the write routes' dev-boot bridge resolving the item through the runtime's own search seam), but the cross-PAGE read of those writes (the Library page listing them) is kept apart by the dev boot's per-route module graphs — the same documented doctrine the J12 limitation records for the watch-state fold (the single-bundle production boot shares one runtime instance: the writes are visible there). The Library assertions therefore carry the fresh session's HONEST states (the typed empty states — J11's own law) plus the sections' presence (the pairing laws).",
+    procedure: "LEAD (the production parity sweep — the J35-class run): deploy the integrated tree (the single-bundle production build), drive the same J40 walk against the deployed boot, and capture the Library showing the walk's own watchlist/playlist writes under evidence/<run>/ (the production runtime is one instance: the writes cross pages).",
   },
 ];

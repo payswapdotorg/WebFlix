@@ -13,9 +13,12 @@ import type { JSX } from "react";
 
 import type { DetailView } from "@/host/view-models";
 import { ItemCard } from "@/components/cards/ItemCard";
-import { playerHref } from "@/app/routing";
+import { AddToQueueControl } from "@/components/cards/CardActions";
+import { itemDetailHref, playerHref } from "@/app/routing";
 import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { ActionButtons } from "@/components/player/ActionButtons";
+import { ShareControl } from "@/components/player/ShareControl";
+import { WatchlistSave } from "@/components/player/WatchlistSave";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
 import { IntelligenceSurface } from "@/components/item/IntelligenceSurface";
@@ -74,6 +77,16 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
         : view.watch.positionMs > 0
           ? `Resume from ${formatDuration(view.watch.positionMs)}`
           : null;
+  // R24-W2 — the item hub's canonical href (the share copy's target) +
+  // the add-to-queue target (the same decision-row vocabulary).
+  const itemHref = itemDetailHref({
+    itemId: view.itemId,
+    connectorId: view.connectorId,
+    externalRef: view.externalRef,
+    title: view.title,
+    canonicalType: view.canonicalType,
+    ...(view.durationMs !== undefined ? { durationMs: view.durationMs } : {}),
+  });
   return (
     <div className="wfx-detail" data-wfx-surface="item" data-wfx-item={view.itemId}>
       <div className="wfx-detail__stage" style={{ background: placeholderArt(view.itemId) }}>
@@ -94,6 +107,12 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
               : view.availability === "unavailable"
                 ? "Currently unavailable"
                 : "Availability unknown"}
+          </span>
+          {/* R24-W2 — the SOURCE ROW (the channel-profile-pages row: the
+              canonical source identity on the item hub — the same chip
+              grammar the cards carry). */}
+          <span className="wfx-capchip" data-wfx-item-source>
+            From {view.connectorId}
           </span>
           {view.watch !== null && percentWatched(view.watch.completionRatio) !== null ? (
             <span>{percentWatched(view.watch.completionRatio)}</span>
@@ -145,6 +164,34 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
                 }
               : null
           }
+        />
+        {/* R24-W2 — the WebFlix-native watchlist save + the share control
+            + the add-to-queue entry (the R24-C placement law: the same
+            decision-row vocabulary the player carries — save / share /
+            queue at the point of the content decision). */}
+        <WatchlistSave
+          itemId={view.itemId}
+          title={view.title}
+          connectorId={view.connectorId}
+          externalRef={view.externalRef}
+          initiallySaved={view.watchlistSaved}
+          offerPlaylist
+        />
+        <ShareControl
+          canonicalHref={itemHref}
+          title={view.title}
+          sourceId={view.connectorId}
+        />
+        <AddToQueueControl
+          target={{
+            itemId: view.itemId,
+            connectorId: view.connectorId,
+            externalRef: view.externalRef,
+            title: view.title,
+            canonicalType: view.canonicalType,
+            ...(view.durationMs !== undefined ? { durationMs: view.durationMs } : {}),
+            href: itemHref,
+          }}
         />
       </div>
       {/* R21-E — the DECISION HUB order (the frozen law): one canonical

@@ -39,6 +39,7 @@ import {
   useCallback,
   useReducer,
   useRef,
+  useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type JSX,
   type TouchEvent as ReactTouchEvent,
@@ -678,10 +679,54 @@ export function ShortsFeed({
   const saveState =
     current !== null ? session.actionStates[`action:save:${current.item.id}`] : undefined;
 
+  // R24-W2 — THE SHORTS PARITY CONTROLS (the R24-C Shorts rows: speed
+  // controls / clear-screen viewing / inline feedback / the source link).
+  // View-state + the same seams the long-form surfaces use: the session
+  // rate (applied where a stage media element exists), the distraction-
+  // free presentation, the J15 feedback vocabulary through /api/feedback,
+  // and the canonical source chip.
+  const [shortsRate, setShortsRate] = useState(1);
+  const [clearScreen, setClearScreen] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackOutcome, setFeedbackOutcome] = useState<string | null>(null);
+
+  /** Apply the shorts stage rate (the same session-rate seam as the chrome). */
+  const applyShortsRate = useCallback((nextRate: number): void => {
+    setShortsRate(nextRate);
+    const viewport = document.querySelector<HTMLElement>("[data-wfx-shorts-viewport]");
+    const media = viewport?.querySelectorAll("video, audio");
+    if (media !== undefined && media !== null) {
+      for (const element of Array.from(media)) {
+        (element as HTMLMediaElement).playbackRate = nextRate;
+      }
+    }
+  }, []);
+
+  /** Submit one inline feedback record through the same J15 seam. */
+  const submitShortsFeedback = useCallback(async (kind: "more-like-this" | "not-interested"): Promise<void> => {
+    if (current === null) return;
+    try {
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ kind, target: current.item.id }),
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as { error?: string } | null;
+        setFeedbackOutcome(`Feedback was NOT recorded (${response.status}${body?.error !== undefined ? `: ${body.error}` : ""}).`);
+        return;
+      }
+      setFeedbackOutcome(kind === "not-interested" ? "Recorded — you'll see less like this." : "Recorded — you'll see more like this.");
+      setFeedbackOpen(false);
+    } catch {
+      setFeedbackOutcome("Feedback could not reach the host — nothing was recorded.");
+    }
+  }, [current]);
+
   return (
     <div className="wfx-shorts" data-wfx-surface="shorts" data-wfx-shorts-state={view.state}>
       <div
-        className="wfx-shorts__viewport"
+        className={`wfx-shorts__viewport${clearScreen ? " wfx-shorts__viewport--clear" : ""}`}
         role="region"
         aria-label="Short feed — swipe up for the next short, down to go back"
         tabIndex={0}
@@ -689,6 +734,7 @@ export function ShortsFeed({
         onTouchEnd={onTouchEnd}
         onKeyDown={onKeyDown}
         data-wfx-shorts-viewport
+        data-wfx-shorts-clearscreen={clearScreen ? "true" : "false"}
       >
         {renderElements(shortFeedElementTree(view), {
           onAction: (action) => {
@@ -707,6 +753,100 @@ export function ShortsFeed({
         {position !== null ? (
           <span className="wfx-shorts__position" data-wfx-shorts-position>
             {position}
+          </span>
+        ) : null}
+        {/* R24-W2 — THE SHORTS PARITY CONTROL ROW (speed / clear screen /
+            inline feedback / the source link — the same vocabulary the
+            long-form surfaces carry, at the Shorts card's own placement).
+            The clear-screen state hides the overlay chrome (the controls
+            stay reachable — the toggle brings it back). */}
+        {current !== null ? (
+          <div className="wfx-shorts__controls" data-wfx-shorts-controls>
+            {/* The source chip: the canonical source identity from the boot
+                page's OWN card for this item (the same realization truth the
+                feed composed — never a second source of identity). */}
+            {(() => {
+              const pageCard = payload.page.cards.find(
+                (card) => card.candidate?.itemId === current.item.id,
+              );
+              const sourceId = pageCard?.candidate?.realization?.connectorId;
+              return typeof sourceId === "string" && sourceId.length > 0 ? (
+                <span className="wfx-capchip" data-wfx-shorts-source>
+                  From {sourceId}
+                </span>
+              ) : null;
+            })()}
+            <label className="wfx-shorts__speed" data-wfx-shorts-speed>
+              <span className="wfx-sr-only">Playback speed</span>
+              <select
+                value={shortsRate}
+                onChange={(event) => {
+                  applyShortsRate(Number(event.target.value));
+                }}
+                data-wfx-shorts-speed-select
+              >
+                {[0.5, 0.75, 1, 1.25, 1.5, 2].map((step) => (
+                  <option key={step} value={step}>
+                    {step === 1 ? "Normal" : `${step}×`}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              type="button"
+              className="wfx-chrome__btn"
+              onClick={() => {
+                setClearScreen((currentValue) => !currentValue);
+              }}
+              aria-pressed={clearScreen}
+              aria-label={clearScreen ? "Show the card overlay" : "Clear screen (hide the overlay)"}
+              data-wfx-shorts-clearscreen-toggle
+            >
+              <Icon name="miniplayer" size={18} />
+            </button>
+            <div className="wfx-shorts__feedback" data-wfx-shorts-feedback>
+              <button
+                type="button"
+                className="wfx-chrome__btn"
+                onClick={() => {
+                  setFeedbackOpen((currentValue) => !currentValue);
+                }}
+                aria-expanded={feedbackOpen}
+                aria-label="Recommendation feedback for this short"
+                data-wfx-shorts-feedback-toggle
+              >
+                <Icon name="sparkle" size={18} />
+              </button>
+              {feedbackOpen ? (
+                <div className="wfx-shorts__feedbackmenu" role="menu" data-wfx-shorts-feedback-menu>
+                  <button
+                    type="button"
+                    className="wfx-share__row"
+                    onClick={() => {
+                      void submitShortsFeedback("more-like-this");
+                    }}
+                    data-wfx-shorts-feedback-kind="more-like-this"
+                  >
+                    More like this
+                  </button>
+                  <button
+                    type="button"
+                    className="wfx-share__row"
+                    onClick={() => {
+                      void submitShortsFeedback("not-interested");
+                    }}
+                    data-wfx-shorts-feedback-kind="not-interested"
+                  >
+                    Not interested
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+        {feedbackOutcome !== null ? (
+          <span className="wfx-shorts__hint" role="status" data-wfx-shorts-feedback-status>
+            {feedbackOutcome}
           </span>
         ) : null}
         <span className="wfx-shorts__hint">Swipe, use ↑ ↓, or the buttons</span>

@@ -77,6 +77,7 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
               key={card.itemId}
               card={card}
               {...(availability !== undefined ? { availability } : {})}
+              actions={view.cardActions}
             />
           );
         })}

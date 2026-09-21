@@ -40,7 +40,7 @@ export function WatchBrowseSurface({
       <p className="wfx-page-subtitle">Long-form browsing — your sources&apos; movies, series, and episodes.</p>
       {discovery !== undefined ? <CompactDiscoveryControls bundle={discovery} surface="watch" /> : null}
       {view.rows.map((row) => (
-        <Row key={row.id} row={row} />
+        <Row key={row.id} row={row} actions={view.cardActions} />
       ))}
       {!hasContent && !allFailed ? (
         <EmptyState

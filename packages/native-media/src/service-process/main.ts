@@ -325,10 +325,18 @@ async function main(): Promise<void> {
   }
 
   // 6. Signals → graceful shutdown.
-  process.on("SIGTERM", () => {
+  // (bun-types' `process.on` override declares only the "memoryPressure"
+  // event and hides the inherited signal overloads under the current
+  // @types/node — route through the EventEmitter's own typed binding so
+  // the signal listeners register exactly as before.)
+  const onSignal = process.on.bind(process) as unknown as (
+    event: "SIGTERM" | "SIGINT",
+    listener: () => void,
+  ) => typeof process;
+  onSignal("SIGTERM", () => {
     void gracefulShutdown();
   });
-  process.on("SIGINT", () => {
+  onSignal("SIGINT", () => {
     void gracefulShutdown();
   });
 

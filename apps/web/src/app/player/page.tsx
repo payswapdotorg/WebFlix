@@ -15,7 +15,7 @@ import { PlayerSurface } from "@/components/player/PlayerSurface";
 import { EmptyState } from "@/components/ui/StateViews";
 import { getWebRuntimeHost } from "@/host/web-host";
 import { canonicalIdFor } from "@/host/web-host";
-import { loadPlayerView } from "@/host/view-models";
+import { loadPlayerEnrichments, loadPlayerViewShell } from "@/host/view-models";
 
 export const dynamic = "force-dynamic";
 
@@ -79,7 +79,27 @@ export default async function PlayerPage({
   // is ignored, never guessed.
   const rawRealization = firstParam(params.realization);
   const preferredRealization = rawRealization === "torrent" ? ("torrent" as const) : undefined;
-  const view = await loadPlayerView(host, {
+  // R24-E — THE STREAMED PLAYER SHELL (the startup architecture law):
+  // the page awaits ONLY the shell (the media path — the preferred-mode
+  // resolve, the playback session resolution + surface preparation, the
+  // Where-to-watch switch row, the session truths), flushes it
+  // immediately, and starts the NONESSENTIAL enrichments AFTER the media
+  // path resolved — passing the promise UNAWAITED into the surface (the
+  // sections stream in under Suspense; the first frame never waits on
+  // the AI tray, the intelligence artifacts, the live-ASR route, or the
+  // related projection).
+  const view = await loadPlayerViewShell(host, {
+    itemId,
+    connectorId,
+    externalRef,
+    title,
+    canonicalType,
+    ...(durationMs !== undefined ? { durationMs } : {}),
+    ...(resumePositionMs !== undefined ? { resumePositionMs } : {}),
+    ...(preferredMode !== undefined ? { preferredMode } : {}),
+    ...(preferredRealization !== undefined ? { preferredRealization } : {}),
+  });
+  const enrichments = loadPlayerEnrichments(host, {
     itemId,
     connectorId,
     externalRef,
@@ -93,7 +113,7 @@ export default async function PlayerPage({
 
   return (
     <AppShell mode={host.mode} session={host.session.state}>
-      <PlayerSurface view={view} />
+      <PlayerSurface view={view} enrichments={enrichments} />
     </AppShell>
   );
 }

@@ -16,9 +16,17 @@ import type { JSX } from "react";
 import type { CardView } from "@/host/view-models";
 import { itemDetailHref, playerHref } from "@/app/routing";
 import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
+import { CardActions } from "@/components/cards/CardActions";
+import { CardPreview } from "@/components/cards/CardPreview";
 
 /** The target shape a card link needs (a `CardView` satisfies this). */
 export type CardTarget = CardView;
+
+/** The cards' action context (R24-W2 — the surface's server-side read). */
+export interface CardActionContextInput {
+  readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
+  readonly savedItemIds: readonly string[];
+}
 
 /** The continue-watching progress bar (ratio null ⇒ not rendered). */
 function Progress({ ratio }: { readonly ratio: number | null }): JSX.Element | null {
@@ -39,6 +47,12 @@ function Progress({ ratio }: { readonly ratio: number | null }): JSX.Element | n
  * derives from the REAL resolve answer. An item WITHOUT a joined
  * source identity (the per-process join missed it) renders UNLINKED —
  * the honest state, never a fabricated link.
+ *
+ * R24-W2 — `actions` (optional, the surface's server-side context) adds
+ * the QUIET ACTION ROW under the link (add to queue / save / share —
+ * the same vocabulary the item hub and player carry), the policy-gated
+ * preview mount (hover/focus, the attention mode's derivation), and the
+ * source chip (the canonical source identity — the card grammar's own).
  */
 export function ItemCard({
   card,
@@ -46,6 +60,7 @@ export function ItemCard({
   resume,
   linked = true,
   availability,
+  actions,
 }: {
   readonly card: CardView;
   readonly variant?: "wide" | "short";
@@ -53,6 +68,8 @@ export function ItemCard({
   readonly linked?: boolean;
   /** The compact availability summary (R21-E — the search surface's). */
   readonly availability?: string;
+  /** R24-W2 — the cards' action context (queue/save/share + the preview policy). */
+  readonly actions?: CardActionContextInput;
 }): JSX.Element {
   const href = itemDetailHref({
     itemId: card.itemId,
@@ -100,6 +117,14 @@ export function ItemCard({
           ) : (
             <span className="wfx-capchip">Source unknown in this session</span>
           )}
+          {/* R24-W2 — the SOURCE CHIP (the channel-profile-pages row: the
+              canonical source identity on the card — the same chip grammar
+              the item hub's source row carries). */}
+          {linked && card.connectorId.length > 0 ? (
+            <span className="wfx-capchip" data-wfx-card-source>
+              From {card.connectorId}
+            </span>
+          ) : null}
           {resume !== undefined && resume.resumePositionMs > 0 ? (
             <span data-wfx-resume-position>Resume at {formatDuration(resume.resumePositionMs)}</span>
           ) : null}
@@ -111,6 +136,36 @@ export function ItemCard({
     return (
       <span className="wfx-card" data-wfx-card={card.itemId} aria-label={`${label} (unlinked)`}>
         {body}
+      </span>
+    );
+  }
+  // R24-W2 — the card with its action context: the LINK stays the card
+  // (one obvious primary action), the quiet action row renders BELOW it,
+  // and the policy-gated preview mount wraps the link (hover/focus).
+  if (actions !== undefined) {
+    return (
+      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
+        <CardPreview
+          itemId={card.itemId}
+          title={card.title}
+          attentionMode={actions.attentionMode}
+          previewable={false}
+        />
+        <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label}>
+          {body}
+        </a>
+        <CardActions
+          target={{
+            itemId: card.itemId,
+            connectorId: card.connectorId,
+            externalRef: card.externalRef,
+            title: card.title,
+            canonicalType: card.canonicalType,
+            ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+            href,
+            initiallySaved: actions.savedItemIds.includes(card.itemId),
+          }}
+        />
       </span>
     );
   }

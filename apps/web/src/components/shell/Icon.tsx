@@ -25,7 +25,15 @@ export type IconName =
   | "arrowDown"
   | "check"
   | "skip"
-  | "sparkle";
+  | "sparkle"
+  | "pause"
+  | "volume"
+  | "mute"
+  | "fullscreen"
+  | "fullscreenExit"
+  | "miniplayer"
+  | "captions"
+  | "link";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   home: (
@@ -93,6 +101,49 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   skip: <path d="M6 5v14m2 0 10.5-7L8 5v14Z" />,
   sparkle: (
     <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z" />
+  ),
+  pause: (
+    <>
+      <path d="M8 5v14" />
+      <path d="M16 5v14" />
+    </>
+  ),
+  volume: (
+    <>
+      <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4Z" />
+      <path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" />
+    </>
+  ),
+  mute: (
+    <>
+      <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4Z" />
+      <path d="m16 9.5 5 5m0-5-5 5" />
+    </>
+  ),
+  fullscreen: (
+    <path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" />
+  ),
+  fullscreenExit: (
+    <path d="M9 4v4a1 1 0 0 1-1 1H4M15 4v4a1 1 0 0 0 1 1h4M9 20v-4a1 1 0 0 0-1-1H4M15 20v-4a1 1 0 0 1 1-1h4" />
+  ),
+  miniplayer: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <rect x="12" y="12" width="7" height="5" rx="1" />
+    </>
+  ),
+  captions: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="M7 11.5h3.5M14.5 11.5H17M7 14.5h4M14 14.5h3" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M9.5 14.5 14.5 9.5" />
+      <path d="M8 11l-2.8 2.8a3.8 3.8 0 0 0 5.4 5.4L13.5 16.2" />
+      <path d="M16 13l2.8-2.8a3.8 3.8 0 0 0-5.4-5.4L10.5 7.8" />
+    </>
   ),
 };
 

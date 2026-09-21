@@ -2857,3 +2857,845 @@ body {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   R24-W2 — the WebFlix player chrome + the up-next rail + the cards'
+   quiet action row + the shorts parity controls (the familiar control
+   grammar, the app's own visual language — interaction grammar only).
+   ========================================================================== */
+
+/* — The player layout: the stage column + the up-next rail (stacked on
+   narrow screens — the rail follows the stage, never overlapping it). */
+.wfx-player__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+@media (min-width: 1100px) {
+  .wfx-player__layout {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+
+/* The stage wrapper (the chrome's fullscreen target + the shell the
+   loading/recovery states preserve). */
+.wfx-player__stagewrap {
+  position: relative;
+  background: #000;
+  border-radius: var(--wfx-radius);
+  overflow: hidden;
+  border: 1px solid var(--wfx-border);
+}
+
+.wfx-player__stagewrap:fullscreen {
+  border-radius: 0;
+  border: none;
+}
+
+/* — The chrome: the transport bar under the stage. */
+.wfx-chrome {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.wfx-chrome__scrub {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem;
+  border-radius: var(--wfx-radius-sm);
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.wfx-chrome__scrub:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+.wfx-chrome__track {
+  position: relative;
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--wfx-border);
+  overflow: visible;
+}
+
+.wfx-chrome__buffered {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--wfx-border-strong);
+}
+
+.wfx-chrome__played {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--wfx-accent);
+}
+
+.wfx-chrome__chaptermark {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--wfx-text-faint);
+}
+
+.wfx-chrome__thumb {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--wfx-accent-strong);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25);
+}
+
+.wfx-chrome__readout {
+  font-size: 0.8rem;
+  color: var(--wfx-text-dim);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wfx-chrome__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wfx-chrome__cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.wfx-chrome__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.wfx-chrome__btn:hover {
+  background: var(--wfx-bg-hover);
+  border-color: var(--wfx-border);
+}
+
+.wfx-chrome__btn:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+.wfx-chrome__btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.wfx-chrome__btn--active {
+  color: var(--wfx-accent);
+  border-color: var(--wfx-accent-border);
+  background: var(--wfx-accent-soft);
+}
+
+.wfx-chrome__volume {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.wfx-chrome__volume input[type="range"] {
+  width: 88px;
+  accent-color: var(--wfx-accent);
+}
+
+.wfx-chrome__phase {
+  font-size: 0.8rem;
+  color: var(--wfx-text-dim);
+  text-transform: capitalize;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-surface);
+}
+
+.wfx-chrome__status {
+  font-size: 0.75rem;
+  color: var(--wfx-warn);
+}
+
+/* The settings popover (progressive disclosure). */
+.wfx-chrome__settings {
+  position: relative;
+}
+
+.wfx-chrome__settingspanel {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  z-index: 30;
+  min-width: 300px;
+  max-width: min(92vw, 380px);
+  padding: 0.9rem 1rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.wfx-chrome__settingshead {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-chrome__settingsrow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.wfx-chrome__settingsrow > span:first-child {
+  font-weight: 600;
+}
+
+.wfx-chrome__speedsteps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.wfx-chrome__stepbtn {
+  min-height: 34px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-surface);
+  color: var(--wfx-text-dim);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.wfx-chrome__stepbtn--active {
+  color: var(--wfx-accent);
+  border-color: var(--wfx-accent-border);
+  background: var(--wfx-accent-soft);
+}
+
+.wfx-chrome__settingstruth {
+  font-size: 0.78rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-chrome__keysbtn {
+  align-self: flex-start;
+  min-height: 34px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--wfx-border);
+  background: transparent;
+  color: var(--wfx-text-dim);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+/* The keyboard sheet. */
+.wfx-chrome__keys {
+  margin-top: 0.5rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--wfx-radius-sm);
+  border: 1px dashed var(--wfx-border-strong);
+  font-size: 0.82rem;
+}
+
+.wfx-chrome__keys dl {
+  margin: 0.4rem 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.4rem 1rem;
+}
+
+.wfx-chrome__keys dl div {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+}
+
+.wfx-chrome__keys dt {
+  font-weight: 700;
+  color: var(--wfx-text);
+  min-width: 4.5rem;
+}
+
+.wfx-chrome__keys dd {
+  margin: 0;
+  color: var(--wfx-text-dim);
+}
+
+/* The caption overlay (the transcript artifact, position-synced). */
+.wfx-chrome__caption {
+  position: absolute;
+  left: 50%;
+  bottom: 4.5rem;
+  transform: translateX(-50%);
+  max-width: min(80%, 560px);
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--wfx-radius-sm);
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 0.95rem;
+  text-align: center;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.wfx-chrome__captionspeaker {
+  font-weight: 700;
+  color: var(--wfx-accent);
+}
+
+/* — The up-next rail. */
+.wfx-upnext {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+
+.wfx-upnext__title {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.wfx-upnext__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.9rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-surface);
+}
+
+.wfx-upnext__link {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  text-decoration: none;
+  color: inherit;
+  border-radius: var(--wfx-radius-sm);
+  padding: 0.3rem;
+}
+
+.wfx-upnext__link:hover,
+.wfx-upnext__link:focus-visible {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-upnext__link:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+.wfx-card__thumb--rail {
+  flex: 0 0 120px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--wfx-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.wfx-upnext__itemtitle {
+  display: block;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+}
+
+.wfx-upnext__autoplay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--wfx-text-dim);
+  min-height: 34px;
+}
+
+.wfx-upnext__autoplay input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--wfx-accent);
+}
+
+.wfx-upnext__policy {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-upnext__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-upnext__queuetitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.wfx-upnext__queue {
+  padding: 0.9rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-surface);
+}
+
+.wfx-upnext__queuelist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.wfx-upnext__queueitem {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem;
+  border-radius: var(--wfx-radius-sm);
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-upnext__queueposition {
+  font-size: 0.8rem;
+  color: var(--wfx-text-faint);
+  min-width: 1.2rem;
+}
+
+.wfx-upnext__queuemeta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.88rem;
+}
+
+.wfx-upnext__queueactions {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.wfx-upnext__queueactions .wfx-chrome__btn {
+  width: 34px;
+  height: 34px;
+}
+
+.wfx-upnext__queuefoot {
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wfx-upnext__saved {
+  font-size: 0.8rem;
+  color: var(--wfx-ok);
+}
+
+.wfx-upnext__error {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--wfx-warn);
+}
+
+.wfx-upnext__relatedlist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* — The share control. */
+.wfx-share {
+  position: relative;
+  display: inline-flex;
+}
+
+.wfx-share__panel {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 30;
+  min-width: 260px;
+  max-width: min(92vw, 340px);
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.wfx-share__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 40px;
+  padding: 0 0.6rem;
+  border-radius: var(--wfx-radius-sm);
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wfx-share__row:hover,
+.wfx-share__row:focus-visible {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-share__link {
+  font-size: 0.72rem;
+  color: var(--wfx-text-faint);
+  word-break: break-all;
+}
+
+.wfx-share__status {
+  font-size: 0.78rem;
+  color: var(--wfx-ok);
+}
+
+.wfx-share__status--error {
+  color: var(--wfx-warn);
+}
+
+/* — The watchlist save. */
+.wfx-watchlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wfx-watchlist__playlistform {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.wfx-watchlist__playlistform input {
+  min-height: 38px;
+  padding: 0 0.7rem;
+  border-radius: var(--wfx-radius-sm);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-surface);
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 0.88rem;
+}
+
+.wfx-watchlist__status {
+  font-size: 0.8rem;
+  color: var(--wfx-ok);
+}
+
+.wfx-watchlist__status--error {
+  color: var(--wfx-warn);
+}
+
+/* — The cards' quiet action row + the preview mount. */
+.wfx-cardwrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.wfx-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.wfx-card__actionbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 34px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-surface);
+  color: var(--wfx-text-dim);
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.wfx-card__actionbtn:hover,
+.wfx-card__actionbtn:focus-visible {
+  border-color: var(--wfx-border-strong);
+  color: var(--wfx-text);
+}
+
+.wfx-card__actionbtn:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+.wfx-card__actionlabel {
+  font-weight: 600;
+}
+
+.wfx-card__actionstatus {
+  font-size: 0.72rem;
+  color: var(--wfx-warn);
+}
+
+.wfx-cardpreview {
+  position: relative;
+}
+
+.wfx-cardpreview__mount {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 20;
+  min-width: 240px;
+  max-width: 320px;
+  padding: 0.7rem 0.8rem;
+  border-radius: var(--wfx-radius-sm);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.wfx-cardpreview__truth {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--wfx-text);
+}
+
+.wfx-cardpreview__policy {
+  margin: 0;
+  font-size: 0.74rem;
+  color: var(--wfx-text-faint);
+}
+
+/* — The search suggestions island. */
+.wfx-search {
+  position: relative;
+}
+
+.wfx-search__suggestions {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+}
+
+.wfx-search__suggestion {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 40px;
+  padding: 0 0.6rem;
+  border-radius: var(--wfx-radius-sm);
+  color: var(--wfx-text);
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.wfx-search__suggestion--active,
+.wfx-search__suggestion:hover,
+.wfx-search__suggestion:focus-visible {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-search__suggestion--active {
+  outline: 1px solid var(--wfx-accent-border);
+}
+
+/* — The shorts parity controls. */
+.wfx-shorts__viewport--clear .wfx-shortcard__overlay,
+.wfx-shorts__viewport--clear .wfx-shortcard__actions,
+.wfx-shorts__viewport--clear .wfx-shortcard__monogram {
+  display: none;
+}
+
+.wfx-shorts__controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.wfx-shorts__speed select {
+  min-height: 38px;
+  padding: 0 0.5rem;
+  border-radius: var(--wfx-radius-sm);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.wfx-shorts__feedback {
+  position: relative;
+}
+
+.wfx-shorts__feedbackmenu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 30;
+  min-width: 200px;
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+}
+
+/* — The Library playlists. */
+.wfx-playlist {
+  margin-bottom: 1rem;
+}
+
+.wfx-playlist h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* Screen-reader-only utility (the captioned select's label). */
+.wfx-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reduced motion: the chrome's transitions stay quiet. */
+@media (prefers-reduced-motion: reduce) {
+  .wfx-chrome__btn,
+  .wfx-card__actionbtn,
+  .wfx-search__suggestion,
+  .wfx-share__row {
+    transition: none;
+  }
+}
+
+/* The native-disclosure settings cluster + keyboard sheet (R24-W2):
+   the summary renders as the chrome's own control; the panel anchors
+   above the bar; the truths are always in the markup (closed). */
+.wfx-chrome__settings summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.wfx-chrome__settings summary::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-chrome__keys summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--wfx-border);
+  background: transparent;
+  color: var(--wfx-text-dim);
+  font: inherit;
+  font-size: 0.8rem;
+}
+
+.wfx-chrome__keys summary::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-chrome__keys summary:hover {
+  border-color: var(--wfx-border-strong);
+  color: var(--wfx-text);
+}
+
+.wfx-chrome__keys dl {
+  margin: 0.6rem 0 0;
+}
+
+/* The share control's native disclosure (R24-W2). */
+.wfx-share summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.wfx-share summary::-webkit-details-marker {
+  display: none;
+}

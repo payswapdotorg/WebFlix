@@ -26,11 +26,12 @@ import type {
   AcquisitionStatusView,
   ContinueWatchingEntry,
   ModelSectionStatus,
+  PlaybackController,
   PlaybackState,
   SearchHit,
   SearchModel,
 } from "@wfx/client-runtime";
-import type { PlaybackRealization, SourceItem, UserAction } from "@wfx/domain";
+import type { PlaybackRealization, PlaybackSession, SourceItem, UserAction } from "@wfx/domain";
 import { buildExternalReturnContext, isOfficialEmbed } from "@wfx/experience";
 import { canUsePlaybackMode } from "@wfx/client-runtime";
 
@@ -48,6 +49,8 @@ import type {
 } from "./intelligence";
 import { WEB_BROWSER_TORRENT_IMPLEMENTATION } from "@/platform/browser-torrent-environment";
 import { canonicalIdFor } from "./web-host";
+import { sessionQueue, type QueueEntry } from "./queue";
+import { recordPlaybackSession } from "./playback-bridge";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
 import {
   loadAiTrayView,
@@ -197,6 +200,8 @@ export interface HomeView {
     readonly status: SectionStatusView;
     readonly cards: readonly CardView[];
   };
+  /** R24-W2 \u2014 the cards' action context (queue/save/share + the preview policy). */
+  readonly cardActions: CardActionContext;
 }
 
 /**
@@ -221,6 +226,28 @@ function continueCards(entries: readonly ContinueWatchingEntry[]): ContinueCardV
     status: entry.status,
     joined: joinedItemOf(entry.itemId),
   }));
+}
+
+/**
+ * R24-W2 \u2014 the card action context: the per-surface context the cards'
+ * quiet action row + policy-gated preview consume (the attention mode
+ * from the runtime's OWN policy read \u2014 the same seam the Personalize
+ * control renders \u2014 and the watchlist membership truth). Computed
+ * server-side per surface render; never a second policy.
+ */
+export interface CardActionContext {
+  /** The session's attention mode (the preview policy derivation). */
+  readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
+  /** The canonical item ids already in the watchlist (the save truth). */
+  readonly savedItemIds: readonly string[];
+}
+
+/** Read the card action context from the runtime (pure in-process reads). */
+export function cardActionContextOf(host: WebRuntimeHost): CardActionContext {
+  return {
+    attentionMode: host.runtime.intents.policy().attentionMode,
+    savedItemIds: host.runtime.libraryOps.entries().map((entry) => entry.itemId),
+  };
 }
 
 /** Load the home view from the runtime (Continue Watching + the discovery rows). */
@@ -263,6 +290,7 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
       status: statusView(shortsModel.status),
       cards: shortsCards,
     },
+    cardActions: cardActionContextOf(host),
   };
 }
 
@@ -274,6 +302,8 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
 export interface WatchBrowseView {
   readonly mode: "fixtures" | "service";
   readonly rows: readonly RowView[];
+  /** R24-W2 \u2014 the cards' action context (queue/save/share + the preview policy). */
+  readonly cardActions: CardActionContext;
 }
 
 /** Load the long-form watch browse view from the runtime. */
@@ -303,6 +333,7 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
         cards: cardsFromModel(trendingModel).filter((card) => !seenForYou.has(card.itemId)),
       },
     ],
+    cardActions: cardActionContextOf(host),
   };
 }
 
@@ -324,6 +355,8 @@ export interface SearchView {
    * honest unavailable state when the host serves none.
    */
   readonly semantic: SemanticSearchView;
+  /** R24-W2 \u2014 the cards' action context (queue/save/share + the preview policy). */
+  readonly cardActions: CardActionContext;
 }
 
 /** The compact availability summary of one result card (R21-E, pure). */
@@ -358,6 +391,7 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
         provenance: [],
         meaningSearchAvailable: false,
       },
+      cardActions: cardActionContextOf(host),
     };
   }
   // R23-H: the semantic search runs alongside the title search (search
@@ -398,6 +432,7 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
     cards,
     availability,
     semantic,
+    cardActions: cardActionContextOf(host),
   };
 }
 
@@ -463,6 +498,8 @@ export interface DetailView {
    * honest unavailable state when the host has none.
    */
   readonly intelligence: ItemIntelligenceView;
+  /** R24-W2 - whether the canonical item is already in the watchlist (the runtime's truth). */
+  readonly watchlistSaved: boolean;
 }
 
 /**
@@ -484,6 +521,17 @@ function acquisitionBlockOf(
     diagnostics:
       host.mode === "fixtures" ? fixtureAcquisitionDiagnostics(itemId) : null,
   };
+}
+
+/**
+ * R24-W2 — the related/up-next projection (the trending pool minus this
+ * item — the same composition the item hub's "More to explore" renders,
+ * one source of truth for adjacent content). An enrichment read: NEVER
+ * on the player's media critical path (the R24-E law).
+ */
+async function relatedCardsOf(host: WebRuntimeHost, itemId: string): Promise<readonly CardView[]> {
+  const trending = await host.runtime.search({ query: TRENDING_QUERY });
+  return cardsFromModel(trending).filter((card) => card.itemId !== itemId);
 }
 
 /** Load the detail view: the adapter's transport metadata read + runtime watch state. */
@@ -523,6 +571,8 @@ export async function loadDetailView(
           },
     related: cardsFromModel(trending).filter((card) => card.itemId !== itemId),
     acquisition: acquisitionBlockOf(host, itemId),
+    // R24-W2 - the watchlist membership truth (the runtime's own read).
+    watchlistSaved: host.runtime.libraryOps.entries().some((entry) => entry.itemId === itemId),
     // R21-E: the decision hub's capability views load alongside (a typed
     // failure in either answers its own honest section state — the page
     // renders, never a blank).
@@ -560,8 +610,19 @@ export class DetailLoadError extends Error {
 // Player view
 // ---------------------------------------------------------------------------
 
-/** The player view model: the runtime session + the resolved surface mode. */
-export interface PlayerView {
+/**
+ * The player SHELL view (R24-E): the media-critical fields the page
+ * renders FIRST — the media path (the resolved session + engaged
+ * surface + phase truth), the startup-critical Where-to-watch row (the
+ * taxonomy's own classification), the session truths (progress scope,
+ * queue, attention mode, watchlist), and the peer-copy rung decision.
+ * The page awaits ONLY this before its first flush: the nonessential
+ * enrichments (the AI tray, the intelligence artifacts, the live-ASR
+ * route, the related projection) stream in behind it (see
+ * {@link PlayerEnrichments}) — the R24-E startup architecture law,
+ * enforced structurally: playback NEVER waits on the deferred lane.
+ */
+export interface PlayerShellView {
   readonly mode: "fixtures" | "service";
   readonly kind: "session";
   readonly itemId: string;
@@ -577,6 +638,13 @@ export interface PlayerView {
   /** The realization's declared capabilities (the source's truth). */
   readonly realizationCapabilities: readonly string[];
   readonly resumePositionMs: number;
+  /**
+   * R24-E — the canonical duration (ms) the surfaces carry (the input's
+   * duration truth — the play hrefs' own parameter); null when unknown
+   * (the scrub bar stays honest). The transcript-derived refinement is
+   * the intelligence artifact's own truth (the deferred lane).
+   */
+  readonly durationMs: number | null;
   /** The runtime's truthful playback phase at render time. */
   readonly phase: PlaybackState["phase"];
   /** The realizations the platform CANNOT play, named (capability honesty). */
@@ -600,8 +668,8 @@ export interface PlayerView {
   readonly embedAttestation: "official" | "unofficial" | null;
   /**
    * R09 (J09): the external handoff's RETURN CONTEXT — the durable
-   * continuation (item + position at handoff) so the journey can return to
-   * the same place. Present iff the external rung won.
+   * continuation (item + position at handoff) so the journey can return
+   * to the same place. Present iff the external rung won.
    */
   readonly externalReturn: {
     readonly itemId: string;
@@ -612,8 +680,6 @@ export interface PlayerView {
   } | null;
   /** R21-E — the Where-to-watch view (the player's source switch row). */
   readonly whereToWatch: WhereToWatchView;
-  /** R21-E — the AI action tray's view (the same tray as the item hub). */
-  readonly aiTray: AiTrayView;
   /**
    * R23 web-A — the progress-scope truth of THIS surface's session
    * binding (anonymous sessions keep progress session-local with
@@ -639,11 +705,39 @@ export interface PlayerView {
    * never consults a provider realization).
    */
   readonly torrent: TorrentPlayerView | null;
+  /** R24-W2 — the session queue's honest initial state (the rail's own). */
+  readonly queue: { readonly entries: readonly QueueEntry[]; readonly autoplay: boolean };
+  /** R24-W2 — the session's attention mode (the autoplay/preview policy derivation). */
+  readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
+  /** R24-W2 — whether the canonical item is already in the watchlist (the runtime's truth). */
+  readonly watchlistSaved: boolean;
+}
+
+/**
+ * The player's NONESSENTIAL enrichments (R24-E's deferred lane): the AI
+ * action tray, the derived intelligence artifacts, the live-ASR route,
+ * and the related/up-next projection. These render as they resolve —
+ * streamed behind the shell — and NEVER block the first frame (the
+ * startup architecture law; the page starts this work only after the
+ * media path resolved, and flushes the shell without awaiting it).
+ */
+export interface PlayerEnrichments {
+  /** R21-E — the AI action tray's view (the same tray as the item hub). */
+  readonly aiTray: AiTrayView;
   /** R23 (J39) — the item's derived intelligence view (the parity surface). */
   readonly intelligence: ItemIntelligenceView;
   /** R23-G — the live-ASR route view (the live captions surface's truth). */
   readonly liveAsr: LiveAsrRouteView;
+  /**
+   * R24-W2 — the related/up-next projection (the trending pool minus
+   * this item — the same card grammar the item hub's "More to explore"
+   * renders). The Up-next rail composes it with the session queue.
+   */
+  readonly related: readonly CardView[];
 }
+
+/** The complete composed player view (the shell + the enrichments). */
+export interface PlayerView extends PlayerShellView, PlayerEnrichments {}
 
 /**
  * R23-E — the authorized peer copy's PLAYER view: the first-class
@@ -678,59 +772,58 @@ export interface TorrentPlayerView {
   readonly implementation: string;
 }
 
-/** Load the player view: resolve + prepare one playback session through the runtime. */
-export async function loadPlayerView(
+/** The player view's input (the shared shape of the shell + enrichment loaders). */
+export interface PlayerViewInput {
+  readonly itemId: string;
+  readonly connectorId: string;
+  readonly externalRef: string;
+  readonly title: string;
+  readonly canonicalType: string;
+  readonly durationMs?: number;
+  readonly resumePositionMs?: number;
+  /** R21-E: the preferred realization mode (the Where-to-watch switch). */
+  readonly preferredMode?: PlaybackRealization["mode"];
+  /**
+   * R23-E: the preferred realization TRANSPORT (the authorized peer
+   * copy — the first-class torrent realization; a transport kind,
+   * never a playback mode).
+   */
+  readonly preferredRealization?: "torrent";
+}
+
+/**
+ * Load the player SHELL (R24-E): the media path + the startup-critical
+ * rows ONLY — the preferred-mode resolve, the playback session
+ * resolution + surface preparation (or the authorized-peer-copy rung
+ * decision), the resume/watch-state start, the Where-to-watch switch
+ * row (the taxonomy's startup-critical classification), and the
+ * session truths (progress scope, queue, attention mode, watchlist).
+ *
+ * The NONESSENTIAL enrichments (the AI tray, the intelligence
+ * artifacts, the live-ASR route, the related projection) are NOT
+ * loaded here — they ride the deferred lane (loadPlayerEnrichments),
+ * which the page starts only AFTER this resolves and streams in behind
+ * the shell (the R24-E startup architecture law, enforced
+ * structurally: the shell's flush never waits on them).
+ */
+export async function loadPlayerViewShell(
   host: WebRuntimeHost,
-  input: {
-    readonly itemId: string;
-    readonly connectorId: string;
-    readonly externalRef: string;
-    readonly title: string;
-    readonly canonicalType: string;
-    readonly durationMs?: number;
-    readonly resumePositionMs?: number;
-    /** R21-E: the preferred realization mode (the Where-to-watch switch). */
-    readonly preferredMode?: PlaybackRealization["mode"];
-    /**
-     * R23-E: the preferred realization TRANSPORT (the authorized peer
-     * copy — the first-class torrent realization; a transport kind,
-     * never a playback mode).
-     */
-    readonly preferredRealization?: "torrent";
-  },
-): Promise<PlayerView> {
+  input: PlayerViewInput,
+): Promise<PlayerShellView> {
   learnJoinedItem(input.connectorId, input.externalRef, input.title, input.canonicalType, input.durationMs);
-  // R21-E: the player's capability views (the switch row + the AI tray) —
-  // typed reads that degrade to their own honest section states.
-  const [whereToWatch, aiTray] = await Promise.all([
-    loadWhereToWatchView(host, {
-      itemId: input.itemId,
-      connectorId: input.connectorId,
-      externalRef: input.externalRef,
-      title: input.title,
-      canonicalType: input.canonicalType,
-      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-    }),
-    loadAiTrayView(host, {
-      connectorId: input.connectorId,
-      externalRef: input.externalRef,
-      title: input.title,
-      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
-    }),
-  ]);
-  // R23 (J39 + R23-G): the item's intelligence + live-ASR route views
-  // (the transcript/chapters/moment navigation + the live captions
-  // surface — low-cost local reads serving anonymous viewers too).
-  const [intelligence, liveAsr] = await Promise.all([
-    loadItemIntelligence(host, input.externalRef),
-    loadLiveAsrRoute(host, input.externalRef),
-  ]);
   // R23 web-A: the session truth of THIS surface's binding — the
   // progress-scope sentence (session-local for anonymous sessions, with
   // sign-in as the optional upgrade) and the typed provider-authorization
   // truth when the resolve failed on the source's OWN authorization.
   const viewer = viewerKindOf(host.session.state);
   const progressScope = progressScopeTruthOf(viewer);
+  // R24-W2 — the attention mode (the autoplay/preview policy derivation;
+  // the runtime's own policy read — the same seam the Personalize control
+  // renders, never a second policy) + the watchlist membership truth.
+  const attentionMode = host.runtime.intents.policy().attentionMode;
+  const watchlistSaved = host.runtime.libraryOps
+    .entries()
+    .some((entry) => entry.itemId === input.itemId);
   const providerAuthorizationOf_ = (failureKind: string): PlayerView["providerAuthorization"] => {
     if (failureKind !== "unauthorized") return null;
     return {
@@ -739,6 +832,26 @@ export async function loadPlayerView(
       reconnectHref: "/settings?section=sources",
     };
   };
+
+  // -------------------------------------------------------------------------
+  // R24-E — THE MEDIA PATH LEADS (the startup architecture law).
+  //
+  // The frozen law: "resolve the canonical item and playback realization
+  // without an unnecessary serial chain" + "do not wait for
+  // recommendation or AI enrichment before playback". The audit found
+  // this view serialized the where-to-watch/AI-tray/live-ASR/intelligence
+  // reads BEFORE the playback resolution — the player's first paint
+  // waited on enrichment work. The corrected order:
+  //
+  //   1. THE MEDIA PATH: the preferred-mode realization resolve, the
+  //      playback session resolution + surface preparation (or the
+  //      authorized-peer-copy rung decision — the local path);
+  //   2. THE ENRICHMENTS (parallel, never blocking the media path):
+  //      where-to-watch, the AI tray, the intelligence artifacts, the
+  //      live-ASR route, the related/up-next projection — each degrades
+  //      to its own honest section state (the page renders regardless).
+  // -------------------------------------------------------------------------
+
   // R23-E — the authorized peer copy branch (the first-class torrent
   // realization): the player prefers the peer copy when asked
   // (`&realization=torrent`). The R23-C rung decision (verbatim) answers
@@ -750,6 +863,20 @@ export async function loadPlayerView(
   // realization.
   if (input.preferredRealization === "torrent") {
     const peerCopy = torrentRealizationOf(host, input.externalRef);
+    // The STARTUP-CRITICAL row (the taxonomy's own classification):
+    // the Where-to-watch switch composes with the rung decision (the
+    // play decision's own surface — R24-E's essential lane). The
+    // nonessential enrichments ride the deferred lane
+    // (loadPlayerEnrichments — streamed behind the shell, never
+    // awaited here).
+    const whereToWatch = await loadWhereToWatchView(host, {
+      itemId: input.itemId,
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      title: input.title,
+      canonicalType: input.canonicalType,
+      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+    });
     if (peerCopy === null) {
       return {
         mode: host.mode,
@@ -764,6 +891,7 @@ export async function loadPlayerView(
         surfaceUrl: null,
         realizationCapabilities: [],
         resumePositionMs: 0,
+        durationMs: input.durationMs ?? null,
         phase: "failed",
         skippedForCapability: [],
         browserSurface: null,
@@ -776,12 +904,12 @@ export async function loadPlayerView(
         embedAttestation: null,
         externalReturn: null,
         whereToWatch,
-        aiTray,
         progressScope,
         providerAuthorization: null,
         torrent: null,
-        intelligence,
-        liveAsr,
+        queue: sessionQueue().state(),
+        attentionMode,
+        watchlistSaved,
       };
     }
     const rung = peerCopy.rung;
@@ -825,6 +953,7 @@ export async function loadPlayerView(
       surfaceUrl: null,
       realizationCapabilities: [],
       resumePositionMs: input.resumePositionMs ?? 0,
+      durationMs: input.durationMs ?? null,
       phase: rung.kind === "satisfies-browser-rung" ? "buffering" : "failed",
       skippedForCapability:
         rung.kind === "desktop-next-step"
@@ -841,12 +970,12 @@ export async function loadPlayerView(
       embedAttestation: null,
       externalReturn: null,
       whereToWatch,
-      aiTray,
       progressScope,
       providerAuthorization: null,
       torrent: torrentView,
-      intelligence,
-      liveAsr,
+      queue: sessionQueue().state(),
+      attentionMode,
+      watchlistSaved,
     };
   }
   // R21-E: the Where-to-watch switch — resolve the preferred mode's
@@ -863,6 +992,31 @@ export async function loadPlayerView(
       );
     }
   }
+
+  // THE MEDIA PATH (R24-E: FIRST — the playback resolution + the surface
+  // engagement complete before any enrichment read runs). The typed
+  // outcome carries every media field the view renders; the enrichments
+  // compose AFTER (each degrading to its own honest section state).
+  type ProviderMediaOutcome =
+    | {
+        kind: "session";
+        session: PlaybackSession;
+        state: ReturnType<PlaybackController["state"]>;
+        browserSurface: { id: string; url: string } | null;
+        embedAttestation: PlayerView["embedAttestation"];
+        externalReturn: PlayerView["externalReturn"];
+      }
+    | { kind: "prepare-failed"; session: PlaybackSession; detail: string }
+    | {
+        kind: "no-controller";
+        sessionId: string;
+        surfaceMode: PlaybackRealization["mode"];
+        surfaceUrl: string | null;
+        realizationCapabilities: readonly string[];
+        resumePositionMs: number;
+      }
+    | { kind: "resolve-failed"; failureKind: string; detail: string };
+  let media: ProviderMediaOutcome;
   try {
     const session = await host.runtime.resolvePlayback({
       itemId: input.itemId,
@@ -877,105 +1031,104 @@ export async function loadPlayerView(
     });
     const controller = host.runtime.playback.controller(session.id);
     if (controller === undefined) {
-      return {
-        mode: host.mode,
-        kind: "session",
-        itemId: input.itemId,
-        title: input.title,
-        canonicalType: input.canonicalType,
-        connectorId: input.connectorId,
-        externalRef: input.externalRef,
+      media = {
+        kind: "no-controller",
         sessionId: session.id,
         surfaceMode: session.realization.mode,
         surfaceUrl: session.realization.url ?? null,
         realizationCapabilities: [...session.realization.capabilities],
         resumePositionMs: session.resumePositionMs,
-        phase: "failed",
-        skippedForCapability: [],
-        browserSurface: null,
-        failure: { kind: "not-found", detail: "the runtime does not know this playback session" },
-        precedenceTrace: [],
-        embedAttestation: null,
-        externalReturn: null,
-        whereToWatch,
-        aiTray,
-        progressScope,
-        providerAuthorization: providerAuthorizationOf_("not-found"),
-        torrent: null,
-        intelligence,
-        liveAsr,
       };
+    } else {
+      // Engage the surface for the resolved mode (embed/browser open the
+      // contained surface — the rendered mount records it and the state
+      // carries it; external resolves synchronously as the handoff signal).
+      const prepared = await controller.prepare();
+      const state = controller.state();
+      // The session-scoped contained-surface view (the controller's own
+      // engaged surface — never a process-global sniff).
+      const browserSurface =
+        state.containedSurface !== undefined
+          ? { id: state.containedSurface.id, url: state.containedSurface.url }
+          : null;
+      // R09: the official-embed attestation of the chosen realization
+      // (null for non-embed modes — never fabricated).
+      const embedAttestation: PlayerView["embedAttestation"] =
+        session.realization.mode === "embed"
+          ? isOfficialEmbed(session.realization)
+            ? "official"
+            : "unofficial"
+          : null;
+      // R09 (J09): the external handoff's return context — the durable
+      // continuation (item + position at handoff) so the journey can return.
+      // The handoff instant is the adapter's real clock read (the same law
+      // the web host's boot seams follow).
+      const externalReturn: PlayerView["externalReturn"] =
+        session.realization.mode === "external"
+          ? buildExternalReturnContext(
+              {
+                itemId: input.itemId,
+                connectorId: session.realization.connectorId,
+                externalRef: session.realization.externalRef ?? input.externalRef,
+                positionMs: session.resumePositionMs,
+              },
+              new Date(new WebClock().now()).toISOString(),
+            )
+          : null;
+      media = prepared.ok
+        ? { kind: "session", session, state, browserSurface, embedAttestation, externalReturn }
+        : { kind: "prepare-failed", session, detail: prepared.detail };
+      // R24-W2 — the playback session bridge: record the resolved
+      // session's intent so the /api/playback route's module can re-resolve
+      // the SAME intent when the dev server's split module graphs isolate
+      // the page's runtime from the route's (the documented doctrine; the
+      // single-bundle production boot takes the direct path).
+      if (prepared.ok) {
+        recordPlaybackSession({
+          sessionId: session.id,
+          itemId: input.itemId,
+          externalRef: input.externalRef,
+          connectorId: input.connectorId,
+          ...(input.resumePositionMs !== undefined && input.resumePositionMs > 0
+            ? { resumePositionMs: input.resumePositionMs }
+            : {}),
+          ...(input.preferredMode !== undefined ? { preferredMode: input.preferredMode } : {}),
+          ...(input.preferredRealization !== undefined
+            ? { preferredRealization: input.preferredRealization }
+            : {}),
+        });
+      }
     }
-    // Engage the surface for the resolved mode (embed/browser open the
-    // contained surface — the rendered mount records it and the state
-    // carries it; external resolves synchronously as the handoff signal).
-    const prepared = await controller.prepare();
-    const state = controller.state();
-    // The session-scoped contained-surface view (the controller's own
-    // engaged surface — never a process-global sniff).
-    const browserSurface =
-      state.containedSurface !== undefined
-        ? { id: state.containedSurface.id, url: state.containedSurface.url }
-        : null;
-    // R09: the official-embed attestation of the chosen realization
-    // (null for non-embed modes — never fabricated).
-    const embedAttestation: PlayerView["embedAttestation"] =
-      session.realization.mode === "embed"
-        ? isOfficialEmbed(session.realization)
-          ? "official"
-          : "unofficial"
-        : null;
-    // R09 (J09): the external handoff's return context — the durable
-    // continuation (item + position at handoff) so the journey can return.
-    // The handoff instant is the adapter's real clock read (the same law
-    // the web host's boot seams follow).
-    const externalReturn: PlayerView["externalReturn"] =
-      session.realization.mode === "external"
-        ? buildExternalReturnContext(
-            {
-              itemId: input.itemId,
-              connectorId: session.realization.connectorId,
-              externalRef: session.realization.externalRef ?? input.externalRef,
-              positionMs: session.resumePositionMs,
-            },
-            new Date(new WebClock().now()).toISOString(),
-          )
-        : null;
-    return {
-      mode: host.mode,
-      kind: "session",
-      itemId: input.itemId,
-      title: input.title,
-      canonicalType: input.canonicalType,
-      connectorId: input.connectorId,
-      externalRef: input.externalRef,
-      sessionId: session.id,
-      surfaceMode: session.realization.mode,
-      surfaceUrl: session.realization.url ?? null,
-      realizationCapabilities: [...session.realization.capabilities],
-      resumePositionMs: session.resumePositionMs,
-      phase: state.phase,
-      skippedForCapability: prepared.ok
-        ? []
-        : [{ mode: session.realization.mode, reason: prepared.detail }],
-      browserSurface,
-      failure: prepared.ok ? null : { kind: "unavailable", detail: prepared.detail },
-      precedenceTrace: [...state.precedenceTrace ?? []],
-      embedAttestation,
-      externalReturn,
-      whereToWatch,
-      aiTray,
-      progressScope,
-      providerAuthorization: null,
-      torrent: null,
-      intelligence,
-      liveAsr,
-    };
   } catch (thrown) {
     // resolvePlayback throws the typed RuntimeError for resolution failures
     // (unresolvable/unsupported/network...) — carried verbatim, never faked.
     const kind = (thrown as { kind?: unknown }).kind;
-    const detail = thrown instanceof Error ? thrown.message : String(thrown);
+    media = {
+      kind: "resolve-failed",
+      failureKind: typeof kind === "string" ? kind : "unavailable",
+      detail: thrown instanceof Error ? thrown.message : String(thrown),
+    };
+  }
+
+  // THE STARTUP-CRITICAL ROW (R24-E's essential lane): the
+  // Where-to-watch switch composes after the media path (the play
+  // decision's own surface — the taxonomy's startup-critical
+  // classification). The NONESSENTIAL enrichments (the AI tray, the
+  // intelligence artifacts, the live-ASR route, the related/up-next
+  // projection) are NOT loaded here: they ride the deferred lane
+  // (loadPlayerEnrichments), which the page starts only after this
+  // shell resolves and streams in behind it — never blocking the
+  // player's startup.
+  const whereToWatch = await loadWhereToWatchView(host, {
+    itemId: input.itemId,
+    connectorId: input.connectorId,
+    externalRef: input.externalRef,
+    title: input.title,
+    canonicalType: input.canonicalType,
+    ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+  });
+
+  if (media.kind === "resolve-failed") {
     return {
       mode: host.mode,
       kind: "session",
@@ -989,22 +1142,165 @@ export async function loadPlayerView(
       surfaceUrl: null,
       realizationCapabilities: [],
       resumePositionMs: 0,
+      durationMs: input.durationMs ?? null,
       phase: "failed",
       skippedForCapability: [],
       browserSurface: null,
-      failure: { kind: typeof kind === "string" ? kind : "unavailable", detail },
+      failure: { kind: media.failureKind, detail: media.detail },
       precedenceTrace: [],
       embedAttestation: null,
       externalReturn: null,
       whereToWatch,
-      aiTray,
       progressScope,
-      providerAuthorization: providerAuthorizationOf_(typeof kind === "string" ? kind : ""),
+      providerAuthorization: providerAuthorizationOf_(media.failureKind),
       torrent: null,
-      intelligence,
-      liveAsr,
+      queue: sessionQueue().state(),
+      attentionMode,
+      watchlistSaved,
     };
   }
+  if (media.kind === "no-controller") {
+    return {
+      mode: host.mode,
+      kind: "session",
+      itemId: input.itemId,
+      title: input.title,
+      canonicalType: input.canonicalType,
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      sessionId: media.sessionId,
+      surfaceMode: media.surfaceMode,
+      surfaceUrl: media.surfaceUrl,
+      realizationCapabilities: [...media.realizationCapabilities],
+      resumePositionMs: media.resumePositionMs,
+      durationMs: input.durationMs ?? null,
+      phase: "failed",
+      skippedForCapability: [],
+      browserSurface: null,
+      failure: { kind: "not-found", detail: "the runtime does not know this playback session" },
+      precedenceTrace: [],
+      embedAttestation: null,
+      externalReturn: null,
+      whereToWatch,
+      progressScope,
+      providerAuthorization: providerAuthorizationOf_("not-found"),
+      torrent: null,
+      queue: sessionQueue().state(),
+      attentionMode,
+      watchlistSaved,
+    };
+  }
+  if (media.kind === "prepare-failed") {
+    return {
+      mode: host.mode,
+      kind: "session",
+      itemId: input.itemId,
+      title: input.title,
+      canonicalType: input.canonicalType,
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      sessionId: media.session.id,
+      surfaceMode: media.session.realization.mode,
+      surfaceUrl: media.session.realization.url ?? null,
+      realizationCapabilities: [...media.session.realization.capabilities],
+      resumePositionMs: media.session.resumePositionMs,
+      durationMs: input.durationMs ?? null,
+      phase: "failed",
+      skippedForCapability: [{ mode: media.session.realization.mode, reason: media.detail }],
+      browserSurface: null,
+      failure: { kind: "unavailable", detail: media.detail },
+      precedenceTrace: [],
+      embedAttestation: null,
+      externalReturn: null,
+      whereToWatch,
+      progressScope,
+      providerAuthorization: null,
+      torrent: null,
+      queue: sessionQueue().state(),
+      attentionMode,
+      watchlistSaved,
+    };
+  }
+  return {
+    mode: host.mode,
+    kind: "session",
+    itemId: input.itemId,
+    title: input.title,
+    canonicalType: input.canonicalType,
+    connectorId: input.connectorId,
+    externalRef: input.externalRef,
+    sessionId: media.session.id,
+    surfaceMode: media.session.realization.mode,
+    surfaceUrl: media.session.realization.url ?? null,
+    realizationCapabilities: [...media.session.realization.capabilities],
+    resumePositionMs: media.session.resumePositionMs,
+    durationMs: input.durationMs ?? null,
+    phase: media.state.phase,
+    skippedForCapability: [],
+    browserSurface: media.browserSurface,
+    failure: null,
+    precedenceTrace: [...(media.state.precedenceTrace ?? [])],
+    embedAttestation: media.embedAttestation,
+    externalReturn: media.externalReturn,
+    whereToWatch,
+    progressScope,
+    providerAuthorization: null,
+    torrent: null,
+    queue: sessionQueue().state(),
+    attentionMode,
+    watchlistSaved,
+  };
+}
+
+/**
+ * Load the player's NONESSENTIAL enrichments (R24-E's deferred lane):
+ * the AI action tray, the derived intelligence artifacts, the live-ASR
+ * route, and the related/up-next projection. Each degrades to its own
+ * honest section state — a typed failure in any of them answers its
+ * own section, never a blank page and never a blocked player.
+ *
+ * THE START LAW: the page starts this work only AFTER the media path
+ * resolved (the audit's order finding — the enrichment reads fire
+ * after `resolvePlayback`/prepare), then streams the sections in as
+ * they resolve (Suspense) WITHOUT awaiting them for the shell's flush:
+ * playback never waits on the deferred lane.
+ */
+export async function loadPlayerEnrichments(
+  host: WebRuntimeHost,
+  input: PlayerViewInput,
+): Promise<PlayerEnrichments> {
+  const [aiTray, intelligence, liveAsr, related] = await Promise.all([
+    loadAiTrayView(host, {
+      connectorId: input.connectorId,
+      externalRef: input.externalRef,
+      title: input.title,
+      ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+    }),
+    loadItemIntelligence(host, input.externalRef),
+    loadLiveAsrRoute(host, input.externalRef),
+    relatedCardsOf(host, input.itemId),
+  ]);
+  return { aiTray, intelligence, liveAsr, related };
+}
+
+/**
+ * Load the COMPLETE composed player view (the shell + the enrichments):
+ * the composed API for the consumers that await everything (the tests'
+ * view-model assertions, the non-page surfaces). The PAGE uses the
+ * split (loadPlayerViewShell awaited + loadPlayerEnrichments streamed)
+ * — this composed path preserves the same order law (the shell's media
+ * path resolves BEFORE any enrichment read fires).
+ */
+export async function loadPlayerView(
+  host: WebRuntimeHost,
+  input: PlayerViewInput,
+): Promise<PlayerView> {
+  const shell = await loadPlayerViewShell(host, input);
+  // The deferred lane starts only AFTER the media path resolved (the
+  // R24-E order law — the audit's original finding stays fixed in both
+  // the split AND the composed path).
+  const enrichments = await loadPlayerEnrichments(host, input);
+  return { ...shell, ...enrichments };
 }
 
 // ---------------------------------------------------------------------------
@@ -1066,6 +1362,18 @@ export interface LibraryView {
   readonly offline: {
     readonly entries: readonly OfflineReadyEntryView[];
   };
+  /**
+   * R24-W2 — the playlists projection: the watchlist's NAMED lists
+   * (the runtime's listName seam — the same canonical-keyed writes,
+   * grouped by list; the default watchlist list stays the Watchlist
+   * section above). One write path, two honest sections.
+   */
+  readonly playlists: {
+    readonly lists: readonly {
+      readonly name: string;
+      readonly entries: readonly WatchlistEntryView[];
+    }[];
+  };
 }
 
 /** Load the library view from the runtime's library read model. */
@@ -1088,6 +1396,29 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
       assetCount: view.offline?.assetCount ?? 0,
       joined: joinedItemOf(view.itemId),
     }));
+  // R24-W2 — the watchlist entry views (the playlists projection's source:
+  // the same canonical-keyed entries, grouped by their list name).
+  const watchlistEntries: WatchlistEntryView[] = model.watchlist.entries.map((entry) => ({
+    itemId: entry.itemId,
+    title: entry.title,
+    listName: entry.listName,
+    sync: entry.sync,
+    savedAt: entry.savedAt,
+    ...(entry.detail !== undefined ? { detail: entry.detail } : {}),
+    joined: joinedItemOf(entry.itemId),
+  }));
+  // The playlists: the NAMED lists (the default "Saved" list stays the
+  // Watchlist section; every other list name renders as its own playlist).
+  const playlistLists = new Map<string, WatchlistEntryView[]>();
+  for (const entry of watchlistEntries) {
+    if (entry.listName === "Saved") continue;
+    const bucket = playlistLists.get(entry.listName);
+    if (bucket === undefined) {
+      playlistLists.set(entry.listName, [entry]);
+    } else {
+      bucket.push(entry);
+    }
+  }
   return {
     mode: host.mode,
     watchlist: {
@@ -1095,15 +1426,7 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
         model.watchlist.status.state === "ready"
           ? { state: "ready" }
           : { state: "error", errorDetail: model.watchlist.status.errorDetail ?? "the watchlist read failed" },
-      entries: model.watchlist.entries.map((entry) => ({
-        itemId: entry.itemId,
-        title: entry.title,
-        listName: entry.listName,
-        sync: entry.sync,
-        savedAt: entry.savedAt,
-        ...(entry.detail !== undefined ? { detail: entry.detail } : {}),
-        joined: joinedItemOf(entry.itemId),
-      })),
+      entries: watchlistEntries,
     },
     history: {
       status:
@@ -1121,6 +1444,9 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
       })),
     },
     offline: { entries: offlineEntries },
+    playlists: {
+      lists: [...playlistLists.entries()].map(([name, entries]) => ({ name, entries })),
+    },
   };
 }
 

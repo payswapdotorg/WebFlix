@@ -40,6 +40,7 @@ import {
   loadShortsView,
   loadWatchBrowseView,
 } from "../src/host/view-models";
+import type { PlayerEnrichments } from "../src/host/view-models";
 import { loadDetailView } from "../src/host/view-models";
 import { loadShortsPayload } from "../src/host/shorts";
 import { AppShell } from "../src/components/shell/AppShell";
@@ -48,6 +49,21 @@ import { SearchSurface } from "../src/components/search/SearchSurface";
 import { WatchBrowseSurface } from "../src/components/watch/WatchBrowseSurface";
 import { ItemDetailSurface } from "../src/components/item/ItemDetailSurface";
 import { PlayerSurface } from "../src/components/player/PlayerSurface";
+
+/** The resolved enrichment fields of a composed player view (the surface's streaming input, resolved). */
+function playerEnrichmentsOf(view: {
+  aiTray: PlayerEnrichments["aiTray"];
+  intelligence: PlayerEnrichments["intelligence"];
+  liveAsr: PlayerEnrichments["liveAsr"];
+  related: PlayerEnrichments["related"];
+}): PlayerEnrichments {
+  return {
+    aiTray: view.aiTray,
+    intelligence: view.intelligence,
+    liveAsr: view.liveAsr,
+    related: view.related,
+  };
+}
 import { LibrarySurface } from "../src/components/library/LibrarySurface";
 import { SettingsSurface } from "../src/components/settings/SettingsSurface";
 import { POST as postEvent } from "../src/app/api/events/route";
@@ -277,7 +293,7 @@ describe("R07 adapter surfaces — PLAYER (the resolved Media Surface mode)", ()
       createElement(AppShell, {
         mode: host.mode,
         session: host.session.state,
-        children: createElement(PlayerSurface, { view }),
+        children: createElement(PlayerSurface, { view, enrichments: playerEnrichmentsOf(view) }),
       }),
     );
     expect(markup).toContain("data-wfx-player-mode=\"embed\"");
@@ -302,7 +318,7 @@ describe("R07 adapter surfaces — PLAYER (the resolved Media Surface mode)", ()
       createElement(AppShell, {
         mode: host.mode,
         session: host.session.state,
-        children: createElement(PlayerSurface, { view }),
+        children: createElement(PlayerSurface, { view, enrichments: playerEnrichmentsOf(view) }),
       }),
     );
     expect(markup).toContain("data-wfx-player-mode=\"browser\"");
@@ -354,7 +370,7 @@ describe("R07 adapter surfaces — PLAYER (the resolved Media Surface mode)", ()
             createElement(AppShell, {
               mode: host.mode,
               session: host.session.state,
-              children: createElement(PlayerSurface, { view }),
+              children: createElement(PlayerSurface, { view, enrichments: playerEnrichmentsOf(view) }),
             }),
           );
           expect(markup).toContain("data-wfx-player-state=\"failed\"");
@@ -403,7 +419,7 @@ describe("R07 adapter surfaces — PLAYER (the resolved Media Surface mode)", ()
             createElement(AppShell, {
               mode: host.mode,
               session: host.session.state,
-              children: createElement(PlayerSurface, { view }),
+              children: createElement(PlayerSurface, { view, enrichments: playerEnrichmentsOf(view) }),
             }),
           );
           expect(markup).toContain("data-wfx-player-state=\"failed\"");
@@ -445,7 +461,7 @@ describe("R07 adapter surfaces — PLAYER (the resolved Media Surface mode)", ()
             createElement(AppShell, {
               mode: host.mode,
               session: host.session.state,
-              children: createElement(PlayerSurface, { view }),
+              children: createElement(PlayerSurface, { view, enrichments: playerEnrichmentsOf(view) }),
             }),
           );
           expect(markup).toContain("data-wfx-player-mode=\"external\"");

@@ -42,6 +42,7 @@ import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadDetailView, loadPlayerView, loadSearchView } from "../src/host/view-models";
+import type { PlayerEnrichments } from "../src/host/view-models";
 import {
   progressScopeTruthOf,
   promoteAnonymousProgress,
@@ -208,11 +209,17 @@ describe("R23 web-A — the session-scoped progress law and the lawful promotion
     expect(view.progressScope.offersSignInUpgrade).toBe(true);
     expect(view.progressScope.sentence).toContain("kept for this session");
     const PlayerSurface = (await import("../src/components/player/PlayerSurface")).PlayerSurface;
+    const viewEnrichments: {
+      aiTray: PlayerEnrichments["aiTray"];
+      intelligence: PlayerEnrichments["intelligence"];
+      liveAsr: PlayerEnrichments["liveAsr"];
+      related: PlayerEnrichments["related"];
+    } = view;
     const markup = renderToStaticMarkup(
       createElement(AppShell, {
         mode: host.mode,
         session: host.session.state,
-        children: createElement(PlayerSurface, { view }),
+        children: createElement(PlayerSurface, { view, enrichments: viewEnrichments }),
       }),
     );
     expect(markup).toContain('data-wfx-player-progress-scope="session-local"');

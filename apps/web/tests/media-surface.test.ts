@@ -33,9 +33,32 @@ import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadPlayerView } from "../src/host/view-models";
+import type { PlayerEnrichments, PlayerShellView, PlayerView } from "../src/host/view-models";
 import { webDeviceCapabilities, createWebSurfaceResolver } from "../src/host/media-surface";
 import { createWebBrowserHostPort, webSurfaceCapabilityTruth } from "../src/platform/browser-host";
 import { PlayerSurface } from "../src/components/player/PlayerSurface";
+
+/**
+ * The surface's render props from a composed view (the shell fields +
+ * the RESOLVED enrichments — the composed render path: the sections
+ * render inline, no suspension, no streaming).
+ */
+function playerSurfaceRenderProps(
+  view: PlayerView,
+): {
+  view: PlayerShellView;
+  enrichments: PlayerEnrichments;
+} {
+  return {
+    view,
+    enrichments: {
+      aiTray: view.aiTray,
+      intelligence: view.intelligence,
+      liveAsr: view.liveAsr,
+      related: view.related,
+    },
+  };
+}
 import { AppShell } from "../src/components/shell/AppShell";
 import { withEnv, withFetchStub, FakeDocument, makeBrowserEnvironment, makeServerEnvironment } from "./fake-web";
 
@@ -54,12 +77,12 @@ async function bootHost(): Promise<WebRuntimeHost> {
 }
 
 /** The full player markup for one view (the real component tree). */
-function playerMarkup(host: WebRuntimeHost, view: Parameters<typeof PlayerSurface>[0]["view"]): string {
+function playerMarkup(host: WebRuntimeHost, view: PlayerView): string {
   return renderToStaticMarkup(
     createElement(AppShell, {
       mode: host.mode,
       session: host.session.state,
-      children: createElement(PlayerSurface, { view }),
+      children: createElement(PlayerSurface, playerSurfaceRenderProps(view)),
     }),
   );
 }

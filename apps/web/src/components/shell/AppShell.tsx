@@ -30,8 +30,12 @@ import type { WebSessionState } from "@/host/session";
 import { surfaceHref, SHELL_SURFACE_NAV } from "@/app/routing";
 import type { SurfaceId } from "@wfx/client-runtime";
 import { Icon, type IconName } from "./Icon";
+import { SearchBox } from "./SearchBox";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdatePrompt } from "./UpdatePrompt";
+// R24-E — the play-intent recorder (the document-level listener that
+// records the user's real play/switch clicks for the startup traces).
+import { PlayIntentRecorder } from "./PlayIntentRecorder";
 
 /** One shell navigation icon per surface (item surfaces are not in the shell nav). */
 const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
@@ -89,19 +93,10 @@ export function AppShell({
           </span>
         </div>
         <div className="wfx-topbar__center">
-          <form className="wfx-search" action="/search" method="get" role="search">
-            <input
-              className="wfx-search__input"
-              type="search"
-              name="q"
-              placeholder="Search your entertainment"
-              aria-label="Search your entertainment"
-              autoComplete="off"
-            />
-            <button className="wfx-search__submit" type="submit" aria-label="Search">
-              <Icon name="search" size={18} />
-            </button>
-          </form>
+          {/* R24-W2 — the search box with its suggestion island (the
+              R24-C search-suggestions row: the title + by-meaning lanes
+              under the box while typing — a hint, never a required step). */}
+          <SearchBox />
         </div>
         <div className="wfx-topbar__side">
           <details className="wfx-avatar-menu">
@@ -153,6 +148,9 @@ export function AppShell({
         </nav>
         <main className={`wfx-main${mainClass !== undefined ? ` ${mainClass}` : ""}`} id="wfx-main">
           {children}
+          {/* R24-E — the play-intent recorder: the real play actions on
+              every surface feed the startup telemetry (renders nothing). */}
+          <PlayIntentRecorder />
         </main>
       </div>
       <nav className="wfx-bottomnav" aria-label="Primary mobile">
