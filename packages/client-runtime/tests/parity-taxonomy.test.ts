@@ -38,9 +38,9 @@ import {
   parityTaxonomyRowOf,
   parityTaxonomyRowsOfArea,
   parityTaxonomyRowsOfClassification,
-  type ParityTaxonomyRowId,
   parityTaxonomyViewRow,
   validateParityTaxonomy,
+  type ParityTaxonomyRowId,
 } from "../src/index";
 
 describe("R24-A parity taxonomy — the frozen inventory", () => {
@@ -156,20 +156,19 @@ describe("R24-A parity taxonomy — classification completeness (the lab rule)",
     // authorization / WebRTC peers), which is capability truth, never
     // redesigned product semantics.
     const variants = parityTaxonomyRowsOfClassification("platform-variant");
+    const expectedVariants: readonly ParityTaxonomyRowId[] = [
+      "fullscreen",
+      "miniplayer-pip",
+      "quality",
+      "comments-reactions",
+      "live-playback",
+      "live-chat",
+      "shorts-remix-attribution",
+      "notifications",
+      "tv-second-screen-continuation",
+    ];
     expect(variants.map((row) => row.id).sort()).toEqual(
-      (
-        [
-        "fullscreen",
-        "miniplayer-pip",
-        "quality",
-        "comments-reactions",
-        "live-playback",
-        "live-chat",
-        "shorts-remix-attribution",
-        "notifications",
-        "tv-second-screen-continuation",
-        ] satisfies readonly ParityTaxonomyRowId[] as readonly ParityTaxonomyRowId[]
-      ).slice().sort(),
+      [...expectedVariants].sort(),
     );
     for (const row of variants) {
       expect(row.area).not.toBe("webflix-extension");
@@ -277,18 +276,15 @@ describe("R24-A parity taxonomy — the frozen product laws", () => {
     const critical = PARITY_TAXONOMY.filter(
       (row) => row.performanceRelevance === "startup-critical",
     ).map((row) => row.id);
-    expect(critical.sort()).toEqual(
-      (
-        [
-          "play-pause",
-          "anonymous-public-viewing",
-          "canonical-identity",
-          "where-to-watch",
-          "authorized-peer-copy",
-          "browser-host",
-        ] satisfies readonly ParityTaxonomyRowId[] as readonly ParityTaxonomyRowId[]
-      ).slice().sort(),
-    );
+    const expectedCritical: readonly ParityTaxonomyRowId[] = [
+      "play-pause",
+      "anonymous-public-viewing",
+      "canonical-identity",
+      "where-to-watch",
+      "authorized-peer-copy",
+      "browser-host",
+    ];
+    expect(critical.sort()).toEqual([...expectedCritical].sort());
   });
 
   it("area vocabulary + membership checks", () => {
