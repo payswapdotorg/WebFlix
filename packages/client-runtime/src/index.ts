@@ -112,6 +112,43 @@
  *                               actions, the derived verify/usable truth,
  *                               typed errors/recovery) + the bind-command
  *                               validation + the machine-checked secret law
+ * - `parity-taxonomy.ts`     — R24-A: the shared YouTube-parity taxonomy —
+ *                               the typed 17-field feature-inventory schema
+ *                               + the COMPLETE frozen matrix (the plan's
+ *                               entire R24-C pairing matrix + the frozen
+ *                               lab inventory's reference rows + all 14
+ *                               R24-B WebFlix-only extensions = 65 rows,
+ *                               every row classified) + the no-"to be
+ *                               considered" machine guard + the plan-coverage
+ *                               contracts + the lab view derivations
+ * - `playback-telemetry.ts` — R24-E: the shared playback-performance
+ *                               telemetry contract — the typed metric
+ *                               vocabulary (the plan's nine primary metrics
+ *                               + realization-switch time), the frozen hard
+ *                               thresholds (TTFF p50/p75/p95 deltas,
+ *                               startup-failure + first-60s-rebuffer pp),
+ *                               the startup instrumentation marker pairs,
+ *                               the benchmark record shape (cold/warm cache
+ *                               passes, device/browser/network profile
+ *                               fields, the same-content law), the
+ *                               raw-observation retention shapes, and the
+ *                               comparability-checked threshold evaluation
+ * - `capability-placement.ts` — the R24 feature capability matrix +
+ *                               placement contracts — the shared read model
+ *                               joining parity classification with
+ *                               contextual placement truth for every
+ *                               capability (the lab's UX/UI review
+ *                               checklist, typed), with the R24-B laws 1-6
+ *                               as machine-checkable contracts
+ * - `interaction-policy.ts`  — R24-E/R24-C: the interaction-policy seams —
+ *                               the two-lane playback startup law (essential
+ *                               vs deferred work; playback NEVER waits on
+ *                               recommendation/AI enrichment, by
+ *                               construction), the readiness-gates start
+ *                               decision, the enrichment-boundary view,
+ *                               attention-policy-aware autoplay (the frozen
+ *                               policy table; anonymous-identical, ends-only)
+ *                               + the aggregate parity-regression invariants
  * - `secret-guard.ts`        — R22: the client read-model secret guard
  *                               (the machine check — secret material never
  *                               appears in a client read model after
@@ -145,6 +182,7 @@ export * from "./torrent-realization";
 export * from "./parity-taxonomy";
 export * from "./playback-telemetry";
 export * from "./capability-placement";
+export * from "./interaction-policy";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
