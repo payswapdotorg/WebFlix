@@ -143,3 +143,88 @@ export interface FeedReconciliationItem { key:string; externalRef:string; relati
 
 /** The reconciliation report: what one sync changed, what it deduplicated, what it preserved, with honest counts. `preservedLocalActions` is the structural law: feed reconciliation writes ONLY feed records/imports. */
 export interface FeedReconciliationReport { importId:string; connectorId:string; method:FeedImportMethod; capturedAt:string; appliedAt:string; added:number; updated:number; removed:number; kept:number; deduplicated:number; preservedLocalActions:boolean; items:readonly FeedReconciliationItem[]; }
+
+// ===== section: Realtime translation =====
+// --- R25-A lane additions (Worker 1, for lead ratification): the
+// provider-neutral realtime translation session contract. ---
+
+/** What the session outputs: translated text, or translated text plus translated speech. */
+export type RealtimeOutputModality='text'|'text-and-audio';
+/** Which captions the session surfaces: source transcript, translated text, or both interleaved (the live bilingual view preserves source/translation alignment — the source transcript is never replaced). */
+export type RealtimeSubtitleMode='source'|'translated'|'bilingual';
+/** How utterance speakers are labeled: no attribution; simple contextual labels (Speaker 1 / Speaker 2); or labels taken only from trusted source metadata. */
+export type RealtimeSpeakerAttributionMode='off'|'simple-labels'|'trusted-metadata';
+/** Whether the caller may append video frames as visual context. The frame sampler belongs to the media adapter, never the provider; 'adaptive' means sampled frames only (scene/shot/on-screen-text triggers plus a low-rate periodic fallback), never every frame. */
+export type RealtimeVisualContextPolicy='off'|'adaptive';
+/** The translated-speech voice policy. 'preserve-source-voice' is consent-gated (a satisfied consent record must accompany it); the neutral system voice is the default and the fallback. */
+export type RealtimeTranslatedVoicePolicy='neutral-system-voice'|'preserve-source-voice';
+/** The voice-cloning consent state, recorded with the session/artifact whenever translated speech is produced. */
+export type RealtimeVoiceConsentState='not-required'|'satisfied'|'missing'|'revoked';
+/** The consent/provenance record for voice preservation. Never silently synthesized: 'satisfied' requires a real basis. */
+export interface RealtimeVoiceConsentRecord { state:RealtimeVoiceConsentState; basis:string; recordedAt:string; }
+/** The identity of the media whose audio the session translates. `audioStreamLegallyAvailable` is the honest gate: false means WebFlix has no lawful audio path and the session refuses (no capture circumvention, ever). */
+export interface RealtimeSourceMediaIdentity { itemId?:string; connectorId?:string; externalRef?:string; audioStreamLegallyAvailable:boolean; }
+/** One hotword mapping: a source term plus its preferred target-language rendering. Provider hotword syntax is the adapter's concern. */
+export interface RealtimeHotwordMapping { term:string; preferredRendering?:string; }
+/** The complete realtime translation session input. */
+export interface RealtimeTranslationSessionInputs {
+  sourceMedia:RealtimeSourceMediaIdentity;
+  targetLanguage:string;
+  sourceLanguageHint?:string;
+  outputModality:RealtimeOutputModality;
+  subtitleMode:RealtimeSubtitleMode;
+  speakerAttribution:RealtimeSpeakerAttributionMode;
+  visualContextPolicy:RealtimeVisualContextPolicy;
+  hotwords:readonly RealtimeHotwordMapping[];
+  translatedVoicePolicy:RealtimeTranslatedVoicePolicy;
+  voiceConsent?:RealtimeVoiceConsentRecord;
+}
+/** The mid-session reconfiguration subset. Source media identity is immutable for a session; every other dimension may be reconfigured where the state machine allows it. */
+export interface RealtimeSessionConfiguration { targetLanguage?:string; outputModality?:RealtimeOutputModality; subtitleMode?:RealtimeSubtitleMode; speakerAttribution?:RealtimeSpeakerAttributionMode; visualContextPolicy?:RealtimeVisualContextPolicy; hotwords?:readonly RealtimeHotwordMapping[]; translatedVoicePolicy?:RealtimeTranslatedVoicePolicy; voiceConsent?:RealtimeVoiceConsentRecord; }
+/** The session lifecycle states. */
+export type RealtimeTranslationSessionState='idle'|'starting'|'streaming'|'reconnecting'|'stopped'|'closed';
+/** The session operations (the command surface). 'reconnect' is reconnect/resume: reattach after an interruption WITHOUT restarting the media item. */
+export type RealtimeTranslationOperation='start'|'configure'|'append-audio'|'append-image-frame'|'stop'|'reconnect'|'close';
+/** The closed event vocabulary — provider-neutral. 'timing-metadata' carries source/translation timing; 'usage-telemetry' carries the usage/cost accounting. */
+export type RealtimeTranslationEventKind='session-created'|'source-transcript-delta'|'source-transcript-final'|'translation-delta'|'translation-segment-final'|'speaker-attribution'|'translated-audio-chunk'|'timing-metadata'|'usage-telemetry'|'recoverable-error'|'terminal-error'|'session-closed';
+/** Provider-neutral error classes. 'recoverable-error' carries the recovery hint; 'terminal-error' ends the session (base playback continues regardless). */
+export type RealtimeTranslationErrorKind='network'|'timeout'|'policy'|'unsupported-language-direction'|'consent-required'|'provider-failure'|'unknown';
+/** Source/translation segment timing, in media-position milliseconds. */
+export interface RealtimeSegmentTiming { startedAtMs:number; endedAtMs:number; }
+/** The normalized audio format of translated speech chunks. */
+export type RealtimeTranslatedAudioFormat='pcm16'|'opus';
+/** The usage accounting record. Token counts are provider-reported truth; monetary cost is derived by Model Fabric's realtime cost model, never by the provider adapter. */
+export interface RealtimeSessionUsage { inputAudioTokens:number; textOutputTokens:number; outputAudioTokens:number; imageInputTokens:number; }
+/** The full provider-neutral event union. Every event carries the sessionId and a wall-clock occurredAt. */
+export type RealtimeTranslationEvent =
+ | { kind:'session-created'; sessionId:string; occurredAt:string; providerId:string; modelId:string; modelRevision:string; effectiveInputs:RealtimeTranslationSessionInputs }
+ | { kind:'source-transcript-delta'; sessionId:string; occurredAt:string; segmentId:string; deltaText:string; sourceLanguage?:string; timing:RealtimeSegmentTiming }
+ | { kind:'source-transcript-final'; sessionId:string; occurredAt:string; segmentId:string; text:string; speakerId?:string; timing:RealtimeSegmentTiming }
+ | { kind:'translation-delta'; sessionId:string; occurredAt:string; segmentId:string; sourceSegmentId?:string; targetLanguage:string; deltaText:string }
+ | { kind:'translation-segment-final'; sessionId:string; occurredAt:string; segmentId:string; sourceSegmentId?:string; targetLanguage:string; text:string; timing:RealtimeSegmentTiming }
+ | { kind:'speaker-attribution'; sessionId:string; occurredAt:string; speakerId:string; label:string; segmentId?:string; trustedSource:boolean }
+ | { kind:'translated-audio-chunk'; sessionId:string; occurredAt:string; sequence:number; audio:Uint8Array; format:RealtimeTranslatedAudioFormat; timing:RealtimeSegmentTiming }
+ | { kind:'timing-metadata'; sessionId:string; occurredAt:string; firstSourceTranscriptDeltaMs?:number; firstTranslationDeltaMs?:number; firstTranslatedAudioChunkMs?:number; sourceToTranslationLagMs?:number }
+ | { kind:'usage-telemetry'; sessionId:string; occurredAt:string; usage:RealtimeSessionUsage }
+ | { kind:'recoverable-error'; sessionId:string; occurredAt:string; errorKind:RealtimeTranslationErrorKind; detail:string; recovery:string }
+ | { kind:'terminal-error'; sessionId:string; occurredAt:string; errorKind:RealtimeTranslationErrorKind; detail:string }
+ | { kind:'session-closed'; sessionId:string; occurredAt:string; reason:'user-stop'|'user-close'|'terminal-error'|'policy'|'provider-closed'; finalUsage?:RealtimeSessionUsage };
+/** One appended source-audio chunk, in media-position order. */
+export interface RealtimeAudioChunkInput { audio:Uint8Array; mediaPositionMs?:number; }
+/** One appended visual frame, sampled by the media adapter under an 'adaptive' visual-context policy. */
+export interface RealtimeImageFrameInput { frame:Uint8Array; mediaPositionMs?:number; }
+/** The provider-neutral realtime translation session port. Implementations (the provider adapter behind Model Fabric, the Web bridge, the Desktop capture path) own the protocol; this surface stays provider-neutral by law. */
+export interface RealtimeTranslationSession {
+  readonly sessionId:string;
+  readonly state:RealtimeTranslationSessionState;
+  start():Promise<void>;
+  configure(configuration:RealtimeSessionConfiguration):Promise<void>;
+  appendAudio(chunk:RealtimeAudioChunkInput):Promise<void>;
+  appendImageFrame(frame:RealtimeImageFrameInput):Promise<void>;
+  stop():Promise<void>;
+  reconnect():Promise<void>;
+  close():Promise<void>;
+  events():AsyncIterable<RealtimeTranslationEvent>;
+}
+/** The session factory seam Model Fabric exposes for realtime translation. */
+export interface RealtimeTranslationSessionFactory { open(inputs:RealtimeTranslationSessionInputs):Promise<RealtimeTranslationSession>; }
