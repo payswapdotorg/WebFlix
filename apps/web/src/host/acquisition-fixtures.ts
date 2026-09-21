@@ -73,6 +73,19 @@ interface ScriptedAcquisition {
     readonly basis: string;
     readonly dataDir: string;
   };
+  /**
+   * R23-E — the item's authorized PEER COPY declaration (the first-class
+   * torrent realization truth): `authorized` is the R11/R13 gate (every
+   * fixture copy carries the user-owned/licensed provenance basis the
+   * protocol overlay records); `browserCapable` is the honest per-SWARM
+   * truth — which fixture swarms are WebRTC-hybrid (reachable from a
+   * browser) and which are ordinary TCP/UDP-only swarms (the honest
+   * Desktop next step on Web — the capability truth R23-C demands).
+   */
+  readonly torrent: {
+    readonly authorized: true;
+    readonly browserCapable: boolean;
+  };
   /** The learned canonical item id (set at seed — PER MODULE INSTANCE). */
   itemId: string | null;
 }
@@ -143,6 +156,65 @@ const asteriodScript: readonly AcquisitionFacts[] = [
     itemId: "PENDING",
     title: "Asteroid Drift",
     offlineReady: { verified: true, degraded: false, assetCount: 1, sizeBytes: 88_912, exposedAtMs: T0 },
+  },
+];
+
+/**
+ * R23-E/J38 — the BROWSER-RUNG full lifecycle (Rain Check): the same
+ * lawful stepwise shape as the asteroid walk, on an item whose drive
+ * cursor no other journey touches (the J21–J26 chain owns Asteroid
+ * Drift's cursor in a full battery; this item's authorized peer copy is
+ * browser-capable, so the web-side J38 walks its whole lifecycle here).
+ */
+const rainCheckScript: readonly AcquisitionFacts[] = [
+  { itemId: "PENDING", title: "Rain Check" },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "locating", paused: false, progressFraction: null },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "choosing-files", paused: false, progressFraction: 0 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.3 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.42 },
+    playback: { activity: "starting", runwaySeconds: 0, deadlineAtRisk: false, playableNow: false },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.6 },
+    playback: { activity: "playing", runwaySeconds: 38, deadlineAtRisk: false, playableNow: true },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "transferring", paused: false, progressFraction: 0.75 },
+    playback: { activity: "completing-in-background", runwaySeconds: null, deadlineAtRisk: false, playableNow: true },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "verifying", paused: false, progressFraction: 1 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    transfer: { phase: "completed", paused: false, progressFraction: 1 },
+  },
+  {
+    itemId: "PENDING",
+    title: "Rain Check",
+    offlineReady: { verified: true, degraded: false, assetCount: 1, sizeBytes: 314_572, exposedAtMs: T0 },
   },
 ];
 
@@ -308,6 +380,7 @@ const midnightScoopScript: readonly AcquisitionFacts[] = [
 const SCRIPTED: readonly ScriptedAcquisition[] = [
   {
     externalRef: "fake:movie-1",
+    torrent: { authorized: true, browserCapable: true },
     searchQuery: "Asteroid",
     script: asteriodScript,
     protocol: {
@@ -325,6 +398,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:series-1",
+    torrent: { authorized: true, browserCapable: false },
     searchQuery: "Harbor",
     script: harborScript,
     protocol: {
@@ -342,6 +416,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:video-1",
+    torrent: { authorized: true, browserCapable: true },
     searchQuery: "Deep Field",
     script: deepFieldScript,
     protocol: {
@@ -359,6 +434,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
   },
   {
     externalRef: "fake:video-3",
+    torrent: { authorized: true, browserCapable: false },
     searchQuery: "Desert Rain",
     script: desertScript,
     protocol: {
@@ -382,6 +458,7 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
     // "bloom" feed-fallback test keeps its single-card truth). The script
     // facts keep the "Static Bloom" view title (tests assert it by title).
     externalRef: "fake:video-4",
+    torrent: { authorized: true, browserCapable: true },
     searchQuery: "Signal Fade",
     script: staticBloomScript,
     protocol: {
@@ -398,7 +475,28 @@ const SCRIPTED: readonly ScriptedAcquisition[] = [
     itemId: null,
   },
   {
+    // R23-E/J38: the browser-capable full-lifecycle item (its own drive
+    // cursor — the J21-J26 chain's Asteroid cursor is untouched).
+    externalRef: "fake:short-3",
+    torrent: { authorized: true, browserCapable: true },
+    searchQuery: "Rain Check",
+    script: rainCheckScript,
+    protocol: {
+      infoHash: "7777777777777777777777777777777777777777",
+      peersConnected: 4,
+      piecesVerified: 12,
+      piecesTotal: 32,
+      downloadBytesPerSec: 131_072,
+      uploadBytesPerSec: 16_384,
+      sourceId: "vault:family-media",
+      basis: "user-owned",
+      dataDir: "<app-data>/webflix/native-media/sessions/wfx-ts-7/data",
+    },
+    itemId: null,
+  },
+  {
     externalRef: "fake:short-2",
+    torrent: { authorized: true, browserCapable: false },
     searchQuery: "Midnight Scoop",
     script: midnightScoopScript,
     protocol: {
@@ -486,6 +584,31 @@ function scriptedOf(itemId: string): ScriptedAcquisition | undefined {
 /** The scripted item of a stable external ref (the cross-module key). */
 function scriptedByRef(ref: string): ScriptedAcquisition | undefined {
   return SCRIPTED.find((item) => item.externalRef === ref);
+}
+
+/**
+ * R23-E — the item's authorized peer-copy DECLARATION (the first-class
+ * torrent realization truth) or the honest `null` (no authorized copy is
+ * known for the item). FIXTURES MODE ONLY (the loud dev badge); the
+ * shape is the shared `TorrentRealizationDeclaration` (R23-C), consumed
+ * verbatim by the Where-to-watch surface — never re-derived.
+ */
+export function torrentRealizationFixtureOf(externalRef: string): {
+  readonly transport: "torrent";
+  readonly authorized: boolean;
+  readonly browserCapable: boolean;
+  readonly accessClass: "public";
+} | null {
+  const item = scriptedByRef(externalRef);
+  if (item === undefined) return null;
+  // The authorized peer copy needs no provider sign-in: the honest R23-A
+  // access class is public (the R23-C declaration law).
+  return {
+    transport: "torrent",
+    authorized: item.torrent.authorized === true,
+    browserCapable: item.torrent.browserCapable,
+    accessClass: "public",
+  };
 }
 
 /**

@@ -35,8 +35,11 @@ import type { PlayerView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { WatchStateReporter } from "@/components/player/WatchStateReporter";
 import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
+import { TorrentPlaybackStage, TorrentAcquisitionLifecycle } from "@/components/player/TorrentPlaybackStage";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
+import { IntelligenceSurface } from "@/components/item/IntelligenceSurface";
+import { LiveCaptionsSurface } from "@/components/player/LiveCaptionsSurface";
 import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
@@ -56,8 +59,28 @@ function modeSentenceOf(mode: PlayerView["surfaceMode"]): string {
   }
 }
 
+/** The realization sentence for the peer-copy render (R23-E). */
+function torrentSentenceOf(view: PlayerView): string {
+  const torrent = view.torrent;
+  if (torrent === null) return "";
+  if (torrent.rungKind === "satisfies-browser-rung") {
+    return "playing your authorized peer copy through WebRTC-capable peers — it plays like any other way of watching";
+  }
+  if (torrent.rungKind === "desktop-next-step") {
+    return "this peer copy needs the Desktop app's native player";
+  }
+  return "this peer copy is not authorized";
+}
+
 /** The resolved stage — one branch per Media Surface mode. */
 function Stage({ view }: { readonly view: PlayerView }): JSX.Element {
+  // R23-E — the authorized peer copy (the first-class torrent
+  // realization): the torrent stage owns this render when the view plays
+  // through the peer copy (the browser rung / the honest Desktop next
+  // step / the typed refusal).
+  if (view.torrent !== null) {
+    return <TorrentPlaybackStage view={view} />;
+  }
   if (view.failure !== null) {
     return (
       <div className="wfx-player__handoff" data-wfx-player-mode="failed">
@@ -259,6 +282,19 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
             )
           }
         />
+        {/* R23 web-A — the typed PROVIDER-authorization truth: when the
+            source's OWN authorization is the missing piece, the reconnect
+            path is the SOURCE's (Settings → Sources) — distinct from any
+            WebFlix-account requirement; no playback failure may ever route
+            to a WebFlix login. */}
+        {view.providerAuthorization !== null ? (
+          <p className="wfx-player__trace" data-wfx-player-provider-auth={view.providerAuthorization.connectorId}>
+            {view.providerAuthorization.sentence}{" "}
+            <a href={view.providerAuthorization.reconnectHref} data-wfx-player-provider-reconnect>
+              Reconnect {view.providerAuthorization.connectorId}
+            </a>
+          </p>
+        ) : null}
         <WhereToWatch view={view.whereToWatch} variant="player" />
         {view.skippedForCapability.map((skipped) => (
           <p key={skipped.mode} className="wfx-player__trace" data-wfx-player-skipped={skipped.mode}>
@@ -279,10 +315,23 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
         <p className="wfx-detail__meta">
           <span className="wfx-badge wfx-badge--type">{view.canonicalType}</span>
           <span data-wfx-player-mode-label>
-            Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)} — {view.phase}
+            {view.torrent !== null ? (
+              <>Authorized peer copy · {torrentSentenceOf(view)} — {view.phase}</>
+            ) : (
+              <>Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)} — {view.phase}</>
+            )}
           </span>
           {view.resumePositionMs > 0 ? (
             <span data-wfx-player-resume>Resumed at {formatPosition(view.resumePositionMs)}</span>
+          ) : null}
+        </p>
+        {/* R23 web-A — the session-scoped progress truth (anonymous
+            sessions keep the place session-local; sign-in is the optional
+            upgrade, never a playback prerequisite). */}
+        <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
+          {view.progressScope.sentence}
+          {view.progressScope.offersSignInUpgrade ? (
+            <>{" "}<a href="/settings?section=general" data-wfx-player-progress-signin>Sign in (optional)</a></>
           ) : null}
         </p>
         <div className="wfx-actionbar">
@@ -323,7 +372,23 @@ export function PlayerSurface({ view }: { readonly view: PlayerView }): JSX.Elem
             behind ONE progressive disclosure. */}
         <WhereToWatch view={view.whereToWatch} variant="player" />
         <AiActionTray view={view.aiTray} surface="player" />
+        {/* R23-G — the live captions surface: the legal-audio gate + the
+            R2T2 route truth (progressively disclosed on the player). */}
+        <LiveCaptionsSurface view={view.liveAsr} mode={view.mode} />
+        {/* R23 (J39) — the transcript/chapters/moment navigation (the same
+            intelligence surface as the item hub — the parity law). */}
+        <IntelligenceSurface
+          view={view.intelligence}
+          target={{
+            itemId: view.itemId,
+            connectorId: view.connectorId,
+            externalRef: view.externalRef,
+            title: view.title,
+            canonicalType: view.canonicalType,
+          }}
+        />
         <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="player" />
+        {view.torrent !== null ? <TorrentAcquisitionLifecycle view={view} /> : null}
         <PlaybackDiagnostics view={view} />
       </div>
       <div

@@ -53,6 +53,8 @@ import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
 import { ByofPanel } from "@/components/byof/ByofPanel";
 import { ByomManagementPanel } from "@/components/settings/ByomManagementPanel";
+import { OpenModelsSection, openModelRowsOf } from "@/components/settings/OpenModelsSection";
+import { LocalInferenceProbe } from "@/components/settings/LocalInferenceProbe";
 import { SourceActions } from "@/components/settings/SourceActions";
 import { SourceChooser } from "@/components/settings/SourceChooser";
 import { SessionControls } from "@/components/settings/SessionControls";
@@ -469,6 +471,32 @@ export function SettingsSurface({
               authenticated={session.signedIn}
             />
           ) : null}
+
+          {/* R23-J — the open-model catalog rows with their REAL license
+              truth + the registration truth (a catalog row is not a
+              provider until registered); the register/unregister drive is
+              the fixtures persona's typed action (loudly badged). */}
+          {modelProviders !== undefined && modelProviders.status.state === "ready" ? (
+            <OpenModelsSection
+              rows={openModelRowsOf(
+                modelProviders.providers.map((provider) => provider.id),
+                mode,
+              )}
+            />
+          ) : null}
+
+          {/* R23-I — the WebGPU-optional local-inference probe: the frozen
+              fallback-chain truth (WebGPU → WASM → remote) with each hop's
+              honest privacy impact. */}
+          <section className="wfx-detail__section" aria-label="Local inference" data-wfx-local-inference>
+            <h2>Private local inference</h2>
+            <p className="wfx-row__reason">
+              Query understanding can run privately in your browser — WebGPU when available, the
+              slower in-browser fallback otherwise, remote only under your policy. WebGPU is
+              optional; the chain below is this browser&apos;s honest truth.
+            </p>
+            <LocalInferenceProbe privacyPolicy="local-only" />
+          </section>
         </section>
       ) : null}
 

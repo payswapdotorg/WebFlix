@@ -49,6 +49,9 @@ import { j32SourceNeutralIdentity } from "./j32-source-neutral-identity";
 import { j33BringYourOwnFeed } from "./j33-bring-your-own-feed";
 import { j34CapabilityDiscoverability } from "./j34-capability-discoverability";
 import { j36MajorJourneyCompletion } from "./j36-major-journey-completion";
+import { j37AnonymousViewing } from "./j37-anonymous-viewing";
+import { j38TorrentPlayback } from "./j38-torrent-playback";
+import { j39MediaIntelligence } from "./j39-media-intelligence";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -99,6 +102,9 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   j33BringYourOwnFeed,
   j34CapabilityDiscoverability,
   j36MajorJourneyCompletion,
+  j37AnonymousViewing,
+  j38TorrentPlayback,
+  j39MediaIntelligence,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -218,10 +224,10 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
     procedure: "LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/.",
   },
   {
-    journeyId: "J05",
-    kind: "known-defect",
-    note: "FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state=\"empty-query\" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.",
-    procedure: "FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions.",
+    journeyId: "J38",
+    kind: "configuration-limit",
+    note: "The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.",
+    procedure: "LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure.",
   },
   {
     journeyId: "J33",

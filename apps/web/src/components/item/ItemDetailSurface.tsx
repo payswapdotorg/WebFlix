@@ -18,6 +18,7 @@ import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
+import { IntelligenceSurface } from "@/components/item/IntelligenceSurface";
 import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, percentWatched, placeholderArt, placeholderMonogram } from "@/components/ui/format";
@@ -42,7 +43,29 @@ const CAPABILITY_LABELS: Readonly<Record<string, string>> = {
 
 /** The detail surface. */
 export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.Element {
-  const playable = view.capabilities.some((capability) => capability.startsWith("play"));
+  // R23-E — the primary play decision: the authorized peer copy is a
+  // FIRST-CLASS way to watch. The provider rungs keep the frozen Media
+  // Surface precedence for the primary Play target; when no provider rung
+  // is usable here, a playable peer copy IS the primary play decision
+  // (never "no playback capability", never hidden under Settings).
+  const providerPlayable = view.capabilities.some((capability) => capability.startsWith("play"));
+  const peerCopyPlayable = view.whereToWatch.peerCopy?.usable === true;
+  const playable = providerPlayable || peerCopyPlayable;
+  const primaryPlayHref = providerPlayable
+    ? playerHref(
+        {
+          itemId: view.itemId,
+          connectorId: view.connectorId,
+          externalRef: view.externalRef,
+          title: view.title,
+          canonicalType: view.canonicalType,
+          ...(view.durationMs !== undefined ? { durationMs: view.durationMs } : {}),
+        },
+        view.watch !== null && view.watch.status !== "completed" && view.watch.positionMs > 0
+          ? view.watch.positionMs
+          : undefined,
+      )
+    : (view.whereToWatch.peerCopy?.switchHref ?? null);
   const resumeLabel =
     view.watch === null
       ? null
@@ -78,27 +101,24 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
         </p>
       </div>
       <div className="wfx-actionbar">
-        {playable ? (
+        {playable && primaryPlayHref !== null ? (
           <a
             className="wfx-btn wfx-btn--primary"
-            href={playerHref(
-              {
-                itemId: view.itemId,
-                connectorId: view.connectorId,
-                externalRef: view.externalRef,
-                title: view.title,
-                canonicalType: view.canonicalType,
-                ...(view.durationMs !== undefined ? { durationMs: view.durationMs } : {}),
-              },
-              view.watch !== null && view.watch.status !== "completed" && view.watch.positionMs > 0
-                ? view.watch.positionMs
-                : undefined,
-            )}
+            href={primaryPlayHref}
             data-wfx-item-play
+            {...(!providerPlayable && peerCopyPlayable ? { "data-wfx-item-play-realization": "authorized-peer-copy" } : {})}
           >
             <Icon name="play" size={18} />
             {resumeLabel ?? "Play"}
           </a>
+        ) : playable && primaryPlayHref === null ? (
+          // A playable view without a concrete href (the peer copy is not
+          // playable HERE): the where-to-watch row carries the honest
+          // next step — never a dead button.
+          <span className="wfx-actionbar__status" data-wfx-item-unplayable>
+            The ways to watch this title are listed below — the ones this platform cannot host
+            carry their honest next step.
+          </span>
         ) : (
           <span className="wfx-actionbar__status" data-wfx-item-unplayable>
             This source declares no playback capability for this content.
@@ -132,6 +152,19 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
           controls in context, raw connector diagnostics secondary. */}
       <WhereToWatch view={view.whereToWatch} />
       <AiActionTray view={view.aiTray} surface="item" />
+      {/* R23 (J39) — the item's derived intelligence: transcript, chapters,
+          findable moments with jump paths, per-feature availability, and
+          honest model provenance (progressively disclosed). */}
+      <IntelligenceSurface
+        view={view.intelligence}
+        target={{
+          itemId: view.itemId,
+          connectorId: view.connectorId,
+          externalRef: view.externalRef,
+          title: view.title,
+          canonicalType: view.canonicalType,
+        }}
+      />
       <FeedbackControls target={view.itemId} sourceId={view.connectorId} surface="item" />
       <section className="wfx-detail__section" aria-label="Source capabilities">
         <details className="wfx-disc__capabilities" data-wfx-item-capabilities-disclosure>

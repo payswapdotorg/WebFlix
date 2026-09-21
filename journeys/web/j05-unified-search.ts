@@ -66,6 +66,19 @@ export const j05UnifiedSearch: Journey = {
       (hrefs ?? []).length === 3 && canonical.length === 3,
     );
 
+    // The EMPTY-QUERY state (the R23-W2 fix of the harness-found
+    // defect): /search with no query renders the typed empty state —
+    // never the thrown invalid-input error boundary.
+    await goto(context, "/search");
+    const emptyHtml = await browser.outerHtml("[data-wfx-surface='search']");
+    const empty = parseSearch(emptyHtml ?? "");
+    assert.that(
+      "an empty query renders the typed empty-query state (the R23-W2 fix of the found defect)",
+      'data-wfx-search-state="empty-query"',
+      empty.state ?? "<none>",
+      empty.state === "empty-query",
+    );
+
     // The no-results state: typed and honest, never an error.
     await goto(context, "/search?q=zzzz-no-such-title");
     const noneHtml = await browser.outerHtml("[data-wfx-surface='search']");

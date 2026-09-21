@@ -1,17 +1,17 @@
 {
   "schema": "wfx-journey-manifest/1",
-  "commit": "d168f6038e5d7f326e774c816185fe405408ac6e",
-  "branch": "wfx/r21/discoverability-web",
+  "commit": "6e12f667f2778996152bf862e3102b8a0790a729",
+  "branch": "wfx/r23/web",
   "environment": {
     "mode": "web-fixtures",
     "webUrl": "http://localhost:3101",
     "ci": false,
-    "startedAt": "2026-09-20T03:19:16.284Z",
-    "finishedAt": "2026-09-20T03:24:19.803Z",
+    "startedAt": "2026-09-21T00:49:40.005Z",
+    "finishedAt": "2026-09-21T00:56:50.584Z",
     "determinism": [
       "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
       "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
-      "one isolated agent-browser session per run (wfx-journeys-1789874361068)",
+      "one isolated agent-browser session per run (wfx-journeys-1789951792529)",
       "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
       "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
       "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
@@ -19,9 +19,9 @@
     ]
   },
   "summary": {
-    "total": 34,
-    "encoded": 34,
-    "passed": 34,
+    "total": 38,
+    "encoded": 38,
+    "passed": 38,
     "failed": 0,
     "notRun": 0
   },
@@ -148,7 +148,7 @@
         "evidence/r16/j01-first-launch-profile-selection-onboarding.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5017
+      "durationMs": 4928
     },
     {
       "id": "J02",
@@ -242,7 +242,7 @@
         "evidence/r16/j02-home-discovery-hero-rows-intent-entry.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2484
+      "durationMs": 2488
     },
     {
       "id": "J03",
@@ -294,7 +294,7 @@
         "evidence/r16/j03-long-form-watch-browsing.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2344
+      "durationMs": 2480
     },
     {
       "id": "J04",
@@ -388,7 +388,7 @@
         "evidence/r16/j04-shorts-vertical-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3772
+      "durationMs": 3755
     },
     {
       "id": "J05",
@@ -422,6 +422,12 @@
           "pass": true
         },
         {
+          "description": "an empty query renders the typed empty-query state (the R23-W2 fix of the found defect)",
+          "expected": "data-wfx-search-state=\"empty-query\"",
+          "observed": "empty-query",
+          "pass": true
+        },
+        {
           "description": "an unmatched query renders the honest no-results state",
           "expected": "data-wfx-search-state=\"no-results\"",
           "observed": "no-results",
@@ -440,7 +446,7 @@
         "evidence/r16/j05-unified-search.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3750
+      "durationMs": 5783
     },
     {
       "id": "J06",
@@ -522,7 +528,7 @@
         "evidence/r16/j06-item-detail-availability-realization-choice.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3822
+      "durationMs": 3895
     },
     {
       "id": "J07",
@@ -534,13 +540,13 @@
         {
           "description": "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_34H2THK1HJ1RTGG0CBRG5P3F4C&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_34H2THK1HJ1RTGG0CBRG5P3F4C&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -582,7 +588,7 @@
         {
           "description": "the embed note states the attestation truth",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"no provider official-embed attestation\"",
-          "observed": "<9835 chars of html>",
+          "observed": "<12527 chars of html>",
           "pass": true
         },
         {
@@ -616,7 +622,7 @@
         "evidence/r16/j07-official-embed-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5239
+      "durationMs": 5584
     },
     {
       "id": "J08",
@@ -628,13 +634,13 @@
         {
           "description": "the search surface offers the browser-realized item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1B5YBZD08A32XSR17YQ2VX56DQ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_1B5YBZD08A32XSR17YQ2VX56DQ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -676,7 +682,7 @@
         {
           "description": "the containment note states the no-injection boundary (provider security is not bypassed)",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"never injects into or inspects the provider page\"",
-          "observed": "<10728 chars of html>",
+          "observed": "<22894 chars of html>",
           "pass": true
         },
         {
@@ -692,7 +698,7 @@
         "evidence/r16/j08-contained-browser-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5691
+      "durationMs": 5686
     },
     {
       "id": "J09",
@@ -704,7 +710,7 @@
         {
           "description": "the search surface offers the multi-realization item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1B5YBZD08A32XSR17YQ2VX56DQ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -770,7 +776,7 @@
         {
           "description": "the failure state names the playback failure",
           "expected": "text of [data-wfx-surface='player'] contains \"Playback could not start\"",
-          "observed": "\"Unknown Item\n\nPlayback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\nWhere to watch\n\nNo way to watch on this platform yet — the ways that exist are named below.\n\nNo way to play here\n0 ways offered across your sources\n\nNo source offered a way to watch this title yet — the sources strip on Home and Settings carry the connection paths.\"",
+          "observed": "\"Unknown Item\n\nPlayback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\nWhere to watch\n\nNo way to watch on this platform yet — the ways that exist are named below.\n\nNo way to play here\n0 ways offered across your sources and copies\n\nNo source offered a way to watch this title yet — the sources strip on Home and Settings carry the connection paths.\"",
           "pass": true
         },
         {
@@ -786,7 +792,7 @@
         "evidence/r16/j09-external-playback-fallback-return-context.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 8580
+      "durationMs": 9051
     },
     {
       "id": "J10",
@@ -798,7 +804,7 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -816,7 +822,7 @@
         {
           "description": "the absent notes state the provider truth (never a fake success)",
           "expected": "text of [data-wfx-surface='item'] contains \"not available on this source\"",
-          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\n\nPlay\nLike: not available on this source\nSave: not available on this source\nWhere to watch\n\nPlays inside WebFlix when you press play.\n\n3 ways to play here\n4 ways offered across your sources\n\nPlays in a contained window\nsource fake-source\nPlay this way\nPlays natively in the Desktop app\nsource fake-source\nNative playback runs in the Desktop app — this platform plays it another way.\nOpens outside WebFlix\nsource fake-source\nPlay this way\nPlays inside WebFlix\nsource fake-source\nPlay this way\nAI actions\ntranscribe · subtitles · translate · dub · commentary\nShape what WebFlix shows you next\nMore like this\nNot interested\nDon't recommend this source\nI've already watched this\n\nFeedback is immediate and reversible — undoing restores the signal.\n\nWhat this source can do\nOffline copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\n\nAcquisitions run in the WebFlix desktop app — this status is the honest limited view Web can show. Make this title available offline there.\n\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\n\nSF\nVIDEO\n10m 0s\n\nSignal Fade\n\nPlayback options on details\"",
+          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\n\nPlay\nLike: not available on this source\nSave: not available on this source\nWhere to watch\n\nPlays inside WebFlix when you press play.\n\n4 ways to play here\n5 ways offered across your sources and copies\n\nWebFlix source\n\nPlays in a contained window\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\nPlays natively in the Desktop app\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nNative playback runs in the Desktop app — this platform plays it another way.\nOpens outside WebFlix\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\nPlays inside WebFlix\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\n\nAuthorized peer copy\n\nAuthorized peer copy\nyour permitted copy\nPublic — your own permitted copy, no provider sign-in needed.\nA copy you are permitted to play, fetched peer-to-peer — it plays like any other way of watching, keeps your place, and lands in your Library.\nPlay this way\nAI actions\ntranscribe · subtitles · translate · dub · commentary\nWhat's inside this title — 4 chapters, 4 findable moments\nShape what WebFlix shows you next\nMore like this\nNot interested\nDon't recommend this source\nI've already watched this\n\nFeedback is immediate and reversible — undoing restores the signal.\n\nWhat this source can do\nYour copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\n\nAcquisitions run in the WebFlix desktop app — this status is the honest limited view Web can show. Make this title available offline there.\n\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\n\nSF\nVIDEO\n10m 0s\n\nSignal Fade\n\nPlayback options on details\"",
           "pass": true
         },
         {
@@ -828,7 +834,7 @@
         {
           "description": "the item page offers playback (the report surface)",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -856,7 +862,7 @@
         "evidence/r16/j10-like-save-action-synchronization-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 36553
+      "durationMs": 35932
     },
     {
       "id": "J11",
@@ -938,7 +944,7 @@
         "evidence/r16/j11-library-watchlist-history.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2527
+      "durationMs": 2461
     },
     {
       "id": "J12",
@@ -950,13 +956,13 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1B5YBZD08A32XSR17YQ2VX56DQ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_1B5YBZD08A32XSR17YQ2VX56DQ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -990,7 +996,7 @@
         "evidence/r16/j12-cross-device-resume.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6765
+      "durationMs": 7567
     },
     {
       "id": "J13",
@@ -1036,7 +1042,7 @@
         "evidence/r16/j13-account-profile-identity-lifecycle.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2182
+      "durationMs": 2582
     },
     {
       "id": "J14",
@@ -1118,7 +1124,7 @@
         "evidence/r16/j14-source-connect-reauthorize-disconnect.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2376
+      "durationMs": 2276
     },
     {
       "id": "J15",
@@ -1170,7 +1176,7 @@
         "evidence/r16/j15-recommendation-feedback-controls.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4323
+      "durationMs": 4308
     },
     {
       "id": "J16",
@@ -1210,7 +1216,7 @@
         "evidence/r16/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4341
+      "durationMs": 4340
     },
     {
       "id": "J17",
@@ -1262,7 +1268,7 @@
         "evidence/r16/j17-explicit-intent-learn-happier-surprise-tonight-friend-taste.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5640
+      "durationMs": 5612
     },
     {
       "id": "J18",
@@ -1302,7 +1308,7 @@
         "evidence/r16/j18-attention-modes-mindful-balanced-immersive-custom.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3430
+      "durationMs": 4029
     },
     {
       "id": "J19",
@@ -1344,13 +1350,31 @@
         {
           "description": "the model section names the controls' scope (providers, BYOM, local models, policy truth)",
           "expected": "the scope named in the section",
-          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and commentary — across first-party, your own providers (BYOM), and local models, with each task's current policy. Provider keys stay sealed; they are never shown or sent to a model. AI actions launch from the tray where you watch — any title or player; local-model execution runs in the Desktop app.\n\nFind a title to transform — the AI action tray lives on every title and player\n\nProviders\nWFX-FIRST-PARTY\nRuns locally\nAvailable\n\nTasks: recommendation, ranking, summary, translation, transcription\n\nTask policies\nRECOMMENDATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nRANKING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSUMMARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSLATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSCRIPTION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSPEECHTOTEXT\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTEXTTOSPEECH\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nDUBBING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nCOMMENTARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.",
+          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and commentary — across first-party, your own providers (BYOM), and local models, with each task's current policy. Provider keys stay sealed; they are never shown or sent to a model. AI actions launch from the tray where you watch — any title or player; local-model execution runs in the Desktop app.\n\nFind a title to transform — the AI action tray lives on every title and player\n\nProviders\nWFX-FIRST-PARTY\nRuns locally\nAvailable\n\nTasks: recommendation, ranking, summary, translation, transcription\n\nTask policies\nRECOMMENDATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nRANKING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSUMMARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSLATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSCRIPTION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSPEECHTOTEXT\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTEXTTOSPEECH\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nDUBBING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nCOMMENTARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nYour model providers\n\nBring your own model: paste your provider's web address and key — the key is stored encrypted and never shown again. The contextual AI tray (on every title and player) is where you USE AI; this is where you MANAGE which providers WebFlix may use.\n\nAdd your model provider\n\nModel providers belong to your account — sign in or create one to add your own provider.\n\nNo model provider of your own is added yet — WebFlix's built-in local model keeps working, and you can add your own provider anytime.\n\nBuilt-in models\nWFX-FIRST-PARTY\nBuilt-in\nRuns on this device\n\nWebFlix's built-in model — always available, no setup.\n\nrecommendation\nranking\nsummary\ntranslation\ntranscription\nOpen models\n\nResearched open models with their honest licenses, tasks, and registration truth — no model authorizes a playback or acquisition action; your policy and choices stay yours.\n\nNetEase Youdao/Confucius4-R2T2\nCode Apache-2.0 · weights NetEase Model Use License Agreement\nlive streaming (low latency)\nCATALOG ONLY\n\nThe live-captions and voice-input route: true streaming with committed output, typically well under a second behind the audio. Serves: speechToText, transcription. Not registered — a catalog row is not a provider until registered.\n\nRegister for live speech\n\nOpenMOSS-Team/MOSS-Transcribe-Diarize\nCode Apache-2.0 · weights Apache-2.0\nbatch\nCATALOG ONLY\n\nThe long-form companion: multi-speaker transcription with speaker labels, timestamps, and acoustic-event awareness. Serves: transcription. Not registered — a catalog row is not a provider until registered.\n\nRegister for live speech\nPrivate local inference\n\nQuery understanding can run privately in your browser — WebGPU when available, the slower in-browser fallback otherwise, remote only under your policy. WebGPU is optional; the chain below is this browser's honest truth.\n\nThis search understanding runs privately in your browser (WebGPU is off, so it uses the slower in-browser fallback) — nothing leaves this device.\n\nPrivacy impact: local-only — nothing leaves this device.",
           "pass": true
         },
         {
-          "description": "no placeholder model controls render (a fixture is never presented as capability)",
-          "expected": "zero interactive model controls",
-          "observed": "0 interactive controls",
+          "description": "the R22-F BYOM management surface renders inside the Model & AI section (the normal-path management panel)",
+          "expected": "[data-wfx-byom-management] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider entry control renders (discover → configure is a real control, never a hidden API)",
+          "expected": "[data-wfx-byom-action='add'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous state names the sign-in prerequisite honestly (the no-dead-end law)",
+          "expected": "[data-wfx-byom-anonymous-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no placeholder model controls render outside the typed surfaces (BYOM, open-model registration, the local-inference probe — a fixture is never presented as capability)",
+          "expected": "zero interactive controls outside the typed surfaces",
+          "observed": "0 stray controls",
           "pass": true
         },
         {
@@ -1366,7 +1390,7 @@
         "evidence/r16/j19-webflix-model-byom-local-model-policy.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2200
+      "durationMs": 2762
     },
     {
       "id": "J20",
@@ -1490,7 +1514,7 @@
         "evidence/r16/j20-ai-subtitles-translation-transcription-dubbing-commentary.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9906
+      "durationMs": 10352
     },
     {
       "id": "J21",
@@ -1502,7 +1526,7 @@
         {
           "description": "the search surface offers the scripted authorized acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -1590,7 +1614,7 @@
         "evidence/r16/j21-authorized-torrent-acquisition-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5156
+      "durationMs": 6133
     },
     {
       "id": "J22",
@@ -1648,7 +1672,7 @@
         "evidence/r16/j22-torrent-metadata-and-file-selection-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5238
+      "durationMs": 5597
     },
     {
       "id": "J23",
@@ -1754,7 +1778,7 @@
         "evidence/r16/j23-torrent-playback-before-full-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 11654
+      "durationMs": 12480
     },
     {
       "id": "J24",
@@ -1878,7 +1902,7 @@
         "evidence/r16/j24-torrent-background-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 11631
+      "durationMs": 11775
     },
     {
       "id": "J25",
@@ -1890,7 +1914,7 @@
         {
           "description": "the search surface offers the interrupted-acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1GY91Y7TKAGR8P5JBYPHDJZVVZ&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "observed": "/item?id=wfxitm_6BAT5J9419MCEMZ52QP874CF86&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
           "pass": true
         },
         {
@@ -1962,7 +1986,7 @@
         {
           "description": "the search surface offers the resumed-session item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1B5YBZD08A32XSR17YQ2VX56DQ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -2008,7 +2032,7 @@
         "evidence/r16/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9121
+      "durationMs": 9035
     },
     {
       "id": "J26",
@@ -2072,7 +2096,7 @@
         "evidence/r16/j26-verified-local-asset-appears-in-library-web-status-read-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5191
+      "durationMs": 5256
     },
     {
       "id": "J27",
@@ -2096,7 +2120,7 @@
         {
           "description": "the search surface offers an unscripted item (no acquisition session)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_0Z214KAR34CRRJYZYQAVXRJ0GN&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "observed": "/item?id=wfxitm_4GR1SQ4XR873RMRHAZMA5B1ZQE&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
           "pass": true
         },
         {
@@ -2124,7 +2148,7 @@
         "evidence/r16/j27-native-local-media-playback-web-constrained-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4710
+      "durationMs": 5138
     },
     {
       "id": "J28",
@@ -2136,13 +2160,13 @@
         {
           "description": "the search surface offers the item while the source is signed in",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_34H2THK1HJ1RTGG0CBRG5P3F4C&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the item page offers its play decision while the source is signed in",
           "expected": "a player link",
-          "observed": "/player?id=wfxitm_34H2THK1HJ1RTGG0CBRG5P3F4C&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -2272,7 +2296,7 @@
         "evidence/r16/j28-provider-credential-expiry-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 14850
+      "durationMs": 15277
     },
     {
       "id": "J29",
@@ -2338,7 +2362,7 @@
         {
           "description": "the search surface offers the network-loss item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_5EGSEF0WWNQNQ9894C50CPMB66&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
+          "observed": "/item?id=wfxitm_32WBT7YZBNZWST3KEYX282NFMH&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
           "pass": true
         },
         {
@@ -2402,7 +2426,7 @@
         "evidence/r16/j29-network-loss-playback-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 17994
+      "durationMs": 17333
     },
     {
       "id": "J30",
@@ -2490,7 +2514,7 @@
         "evidence/r16/j30-unsupported-capability-honesty.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 37878
+      "durationMs": 7541
     },
     {
       "id": "J31",
@@ -2502,19 +2526,19 @@
         {
           "description": "the search surface anchors the canonical item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
           "description": "the item detail surface carries the SAME canonical identity the search card linked",
-          "expected": "the detail carries wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4",
-          "observed": "wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4",
+          "expected": "the detail carries wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
+          "observed": "wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
           "pass": true
         },
         {
           "description": "the player entry carries the SAME canonical identity (one item identity across all three surfaces)",
-          "expected": "the play link carries wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4",
-          "observed": "wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4",
+          "expected": "the play link carries wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
+          "observed": "wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
           "pass": true
         },
         {
@@ -2560,7 +2584,7 @@
         "evidence/r16/j31-cross-platform-web-desktop-parity-web-side-anchors.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9654
+      "durationMs": 9306
     },
     {
       "id": "J32",
@@ -2572,7 +2596,7 @@
         {
           "description": "the search card links the CANONICAL identity (id-first, not source-first)",
           "expected": "an /item?id=wfxitm_… link",
-          "observed": "/item?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -2620,7 +2644,7 @@
         {
           "description": "every search card carries a distinct canonical identity (the join is identity-keyed, not source-keyed)",
           "expected": "3 distinct canonical ids",
-          "observed": "wfxitm_0Z214KAR34CRRJYZYQAVXRJ0GN, wfxitm_4RMJP0PFQXE5QWB7DJEFK9H3VT, wfxitm_1GY91Y7TKAGR8P5JBYPHDJZVVZ",
+          "observed": "wfxitm_4GR1SQ4XR873RMRHAZMA5B1ZQE, wfxitm_1X7XXQ7FHEB8K92H140BSRDCM4, wfxitm_6BAT5J9419MCEMZ52QP874CF86",
           "pass": true
         }
       ],
@@ -2630,7 +2654,7 @@
         "evidence/r16/j32-source-neutral-identity-same-item-multiple-realizations.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6195
+      "durationMs": 7437
     },
     {
       "id": "J33",
@@ -3024,7 +3048,7 @@
         "evidence/r16/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 22120
+      "durationMs": 21567
     },
     {
       "id": "J34",
@@ -3126,7 +3150,7 @@
         {
           "description": "the home feed offers a content card (the item path starts from Home)",
           "expected": "an aria-labeled card link",
-          "observed": "/item?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3174,7 +3198,7 @@
         {
           "description": "the Where-to-watch row names every offered way (canonical identity first, realizations second)",
           "expected": "multiple watch options",
-          "observed": "browser, native, external, embed",
+          "observed": "browser, native, external, embed, authorized-peer-copy",
           "pass": true
         },
         {
@@ -3216,7 +3240,7 @@
         {
           "description": "the item hub offers the play decision (the player path starts from the item)",
           "expected": "a play link",
-          "observed": "/player?id=wfxitm_57Y2G4AQE3CX0YE8BAP50ZPPJ4&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3292,10 +3316,914 @@
         "evidence/r16/j34-capability-discoverability-from-normal-product-surfaces.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 13670
+      "durationMs": 14069
+    },
+    {
+      "id": "J36",
+      "title": "Major user journey completion / no dead-end discovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the fresh Home surface renders",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu offers the create/sign-in path (the J36 identity entry — no documentation needed)",
+          "expected": "[data-wfx-session-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session controls render in Settings",
+          "expected": "[data-wfx-session-controls] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session states the honest signed-out identity before the journey starts",
+          "expected": "[data-wfx-session-signed-out] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Create account entry is visible from the signed-out state (the F1 closer — never a hidden API)",
+          "expected": "[data-wfx-session-mode-option='register'], [data-wfx-session-mode-toggle] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the register form is the active mode (one primary action per state — no modal sprawl)",
+          "expected": "data-wfx-session-mode of [data-wfx-session-controls] is \"register\"",
+          "observed": "\"register\"",
+          "pass": true
+        },
+        {
+          "description": "the register form carries the display-name field (the create-account shape, not the sign-in shape)",
+          "expected": "#wfx-session-display-name present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the register round trip completes into the authenticated state (auto-login continuity — the account exists and the session is live)",
+          "expected": "[data-wfx-session-signed-in] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "profile selection is downstream of the authenticated state (the registration closed the identity gap first)",
+          "expected": "[data-wfx-profile-select] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source chooser renders in the sources section (the F2 dead-end killer — the CTA no longer loops to the same empty state)",
+          "expected": "[data-wfx-source-chooser] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser carries at least one supported connector entry (a real catalog, never a bare anchor)",
+          "expected": "[data-wfx-source-chooser-entry] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser entry states its connection truth (the state label — never a fabricated state)",
+          "expected": "[data-wfx-source-chooser-state-label] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser entry carries the typed connection-journey state (the R22-A union)",
+          "expected": "a typed state (connected / not-connected / connecting / authorization-expired / failed / unsupported)",
+          "observed": "connected",
+          "pass": true
+        },
+        {
+          "description": "the fixture source's connected truth renders in user vocabulary (the return-to-source-management law)",
+          "expected": "the Connected state label",
+          "observed": "Connected",
+          "pass": true
+        },
+        {
+          "description": "the Bring your feed panel renders inside the sources section (BYOF is reachable once the prerequisite is satisfied — no direct URL)",
+          "expected": "[data-wfx-byof-panel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-import source card renders (the choose-source step of the import journey)",
+          "expected": "[data-wfx-byof-source='youtube'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the BYOF dev-reset answers (the pristine import state — the journey's own precondition)",
+          "expected": "HTTP 200 from the dev-reset drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the feed source starts not-connected (the reset state — the connect step's honest precondition)",
+          "expected": "[data-wfx-byof-source-auth-state='not-connected'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the authorized import preview renders (preview before confirm — the provenance law)",
+          "expected": "[data-wfx-byof-preview] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the confirmed import renders its durable card (the BYOF journey completed)",
+          "expected": "[data-wfx-byof-import] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-mode choices render on the live surface (For you / Following / Your imported feed / Blend)",
+          "expected": "[data-wfx-feed-mode-option] present in the DOM",
+          "observed": "4 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the imported feed mode is present after the BYOF import (the mode transition law)",
+          "expected": "the imported-feed mode label",
+          "observed": "imported mode present",
+          "pass": true
+        },
+        {
+          "description": "the temporary session intent control renders (Personalize → intent)",
+          "expected": "[data-wfx-personalize-set-intent] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the attention modes render (Mindful / Balanced / Immersive / Custom)",
+          "expected": "[data-wfx-attention-mode] present in the DOM",
+          "observed": "4 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "a source-backed item is browsable from the normal surface (no direct route navigation)",
+          "expected": "a card link on Home",
+          "observed": "/item?id=wfxitm_4GR1SQ4XR873RMRHAZMA5B1ZQE&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "the item states where to watch (the realization truth — the Where-to-watch step)",
+          "expected": "[data-wfx-item-availability], [data-wfx-acquisition] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the AI tray is reachable from the item (the use-an-AI-action step)",
+          "expected": "[data-wfx-ai-tray-toggle], [data-wfx-ai-tray] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the recommendation feedback controls render (the provide-feedback step)",
+          "expected": "[data-wfx-feedback-controls], [data-wfx-feedback] present in the DOM",
+          "observed": "5 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts viewport renders",
+          "expected": "[data-wfx-shorts-viewport] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Share action is present after hydration (the source advertises it)",
+          "expected": "[data-wfx-shorts-action='share'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Like renders exactly when the source declares the capability (the J36 hydration law — presence where permitted, typed absence where not)",
+          "expected": "the like control's capability truth",
+          "observed": "0 like control(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library Watchlist renders",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library History renders",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library offline truth renders (the honest Web platform truth)",
+          "expected": "[data-wfx-library-offline], [data-wfx-offline-status] present in the DOM",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Model & AI settings section renders",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the BYOM management panel renders in Model & AI (the F8 closer — a normal-path management surface, never a hidden API)",
+          "expected": "[data-wfx-byom-management] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the built-in model stays visible context (the first-party truth)",
+          "expected": "[data-wfx-byom-first-party-section] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider entry control renders (the management entry point)",
+          "expected": "[data-wfx-byom-action='add'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider form renders (discover → configure)",
+          "expected": "[data-wfx-byom-add-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the bound-provider list renders after the bind (configure → verified state)",
+          "expected": "[data-wfx-byom-bound-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the just-bound provider appears in the bound list (the BYOM add completed through the normal surface)",
+          "expected": "the bound provider entry",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the provider key NEVER renders back in the management surface (secrets stay server-side)",
+          "expected": "no key material in the rendered surface",
+          "observed": "no key material",
+          "pass": true
+        },
+        {
+          "description": "after removal the honest empty state renders (the remove completed — WebFlix's built-in model takes over)",
+          "expected": "[data-wfx-byom-empty] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Sign out control renders in the session controls (the normal-path exit)",
+          "expected": "[data-wfx-session-action='logout'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the sign-out completes into the honest anonymous state (no fabricated profile, no stale session)",
+          "expected": "[data-wfx-session-signed-out] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on / (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on /settings?section=sources (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on /library (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        },
+        {
+          "description": "no stale accepted-capability copy on /shorts (the anti-regression sweep)",
+          "expected": "no 'arrives later / ships with R0x' language",
+          "observed": "clean",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j36-major-journey-completion.png",
+        "evidence/r16/j36-major-user-journey-completion-no-dead-end-discovery.snapshot.txt",
+        "evidence/r16/j36-major-user-journey-completion-no-dead-end-discovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 41414
+    },
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the anonymous viewer lands on Home (no gate, no interstitial)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu states the honest anonymous truth",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session truth names accountless watching (login optional, never a prerequisite)",
+          "expected": "no account is needed to watch public content",
+          "observed": "You are watching in an anonymous session — no account is needed to watch public ",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the public title anonymously",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the access truth renders: the source's own sign-in is active, so playback works without a WebFlix account (provider truth, distinguished from any WebFlix-account truth)",
+          "expected": "[data-wfx-watch-access=\"provider-authorized\"] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the access sentence names the source's own sign-in (the R23-A independence law)",
+          "expected": "works without a WebFlix account",
+          "observed": "This source's own sign-in is active, so playback works without a WebFlix account.",
+          "pass": true
+        },
+        {
+          "description": "the item page offers Play to the anonymous viewer",
+          "expected": "a play href",
+          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the player renders for the anonymous viewer (no wall)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the public embed stage engages (playback actually starts — not a gate)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no redirect away from the player happened (no login wall, no settings redirect)",
+          "expected": "the /player route",
+          "observed": "/player",
+          "pass": true
+        },
+        {
+          "description": "the player states the session-scoped progress truth (honestly session-local)",
+          "expected": "[data-wfx-player-progress-scope='session-local'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the progress-scope sentence keeps watching accountless (sign-in optional)",
+          "expected": "kept for this session / never requires it",
+          "observed": "Watching without an account — your place is kept for this session on this device. Sign in any time to keep it everywhere",
+          "pass": true
+        },
+        {
+          "description": "sign-in remains available but optional (a link, never a wall)",
+          "expected": "[data-wfx-player-progress-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session continues watching at the carried position",
+          "expected": "text of [data-wfx-player-resume] is exactly \"Resumed at 1:00\"",
+          "observed": "\"Resumed at 1:00\"",
+          "pass": true
+        },
+        {
+          "description": "the realization switch is offered on the anonymous player (public playback controls)",
+          "expected": "a switch href",
+          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000&mode=browser",
+          "pass": true
+        },
+        {
+          "description": "the switched realization still plays anonymously (the session continues)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous viewer browses Watch (no gate)",
+          "expected": "[data-wfx-surface='watch'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "returning Home keeps the anonymous session (the journey continues)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j37-anonymous-viewing.png",
+        "evidence/r16/j37-anonymous-public-viewing-without-webflix-login.snapshot.txt",
+        "evidence/r16/j37-anonymous-public-viewing-without-webflix-login.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 44329
+    },
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (web: browser-capable + honest fallbacks)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the peer-copy-capable title",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_1X7XXQ7FHEB8K92H140BSRDCM4&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000",
+          "pass": true
+        },
+        {
+          "description": "Where to watch groups: the WebFlix source first, the Authorized peer copy second (the frozen order)",
+          "expected": "webflix-source then authorized-peer-copy",
+          "observed": "webflix-source → authorized-peer-copy",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy entry renders the frozen vocabulary ('Authorized peer copy', never merely 'Offline copy')",
+          "expected": "Authorized peer copy",
+          "observed": "Authorized peer copy",
+          "pass": true
+        },
+        {
+          "description": "the peer copy is ELIGIBLE for the primary play decision (its own Play-this-way path, not hidden under Settings or diagnostics)",
+          "expected": "a realization=torrent play path",
+          "observed": "/player?id=wfxitm_1X7XXQ7FHEB8K92H140BSRDCM4&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000&realization=torrent",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy player stage renders (the browser rung engaged)",
+          "expected": "[data-wfx-torrent-stage] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stage's primary language is watching (not a download workflow)",
+          "expected": "text of [data-wfx-torrent-rung-detail] contains \"plays like any other way of watching\"",
+          "observed": "\"Playing your authorized peer copy — it plays like any other way of watching, keeps your place, and lands in your Library.\"",
+          "pass": true
+        },
+        {
+          "description": "the realization switch row renders on the peer-copy player (the parity set)",
+          "expected": "[data-wfx-where-to-watch] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the AI tray renders on the peer-copy player (the parity set)",
+          "expected": "[data-wfx-ai-tray] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"available\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"available\"",
+          "observed": "\"available\"",
+          "pass": true
+        },
+        {
+          "description": "the \"available\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Ready to be made available offline.\"",
+          "observed": "Ready to be made available offline.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Available",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Preparing the files you selected.\"",
+          "observed": "Preparing the files you selected.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"buffering\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"buffering\"",
+          "observed": "\"buffering\"",
+          "pass": true
+        },
+        {
+          "description": "the \"buffering\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Getting enough of the video ready to play smoothly.\"",
+          "observed": "Getting enough of the video ready to play smoothly.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Buffering",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"playing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"playing\"",
+          "observed": "\"playing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"playing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Playing while the rest of the offline copy is finished in the background.\"",
+          "observed": "Playing while the rest of the offline copy is finished in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Playing",
+          "pass": true
+        },
+        {
+          "description": "the playing state states its truthful buffered runway (playback before full completion, honestly)",
+          "expected": "text of [data-wfx-acquisition-runway] is exactly \"38s buffered ahead\"",
+          "observed": "\"38s buffered ahead\"",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy player resumes at the carried position (the same resume seam)",
+          "expected": "[data-wfx-torrent-resume] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the pause action states the honest paused modifier",
+          "expected": "text of [data-wfx-acquisition-label] is exactly \"Paused\"",
+          "observed": "\"Paused\"",
+          "pass": true
+        },
+        {
+          "description": "the resume action restores the playing truth",
+          "expected": "text of [data-wfx-acquisition-label] contains \"Playing\"",
+          "observed": "\"Playing\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"ready-offline\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"ready-offline\"",
+          "observed": "\"ready-offline\"",
+          "pass": true
+        },
+        {
+          "description": "the \"ready-offline\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Verified and available to watch without a connection.\"",
+          "observed": "Verified and available to watch without a connection.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Ready offline",
+          "pass": true
+        },
+        {
+          "description": "the verified offline copy states its size (verified truth)",
+          "expected": "[data-wfx-acquisition-size] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the verified peer copy appears in the Library (the same Library integration as any way of watching)",
+          "expected": "[data-wfx-offline-entry] present in the DOM",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library's offline truth names this title's verified copy",
+          "expected": "Rain Check in the offline library",
+          "observed": "Offline and verified\nAD\nMOVIE\n2h 0m\n\nAsteroid Drift\n\nPlayback options on details\n\nReady offline · 87 kB · watchable without a connection\n\nHL\nSERIES\n\nHarbor Ligh",
+          "pass": true
+        },
+        {
+          "description": "the adapter truth stays progressively disclosed (the 'How this copy reaches you' panel is closed by default)",
+          "expected": "closed by default",
+          "observed": "closed",
+          "pass": true
+        },
+        {
+          "description": "the wired adapter identity is inspectable behind the disclosure (webtorrent@3.0.21 browser build — never a silent claim)",
+          "expected": "[data-wfx-torrent-implementation] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the viewer's WebRTC environment truth renders (the honest per-context probe)",
+          "expected": "[data-wfx-torrent-probe-webrtc] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ordinary-swarm title is offered",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_6BAT5J9419MCEMZ52QP874CF86&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "the ordinary swarm's peer copy stays VISIBLE with its honest not-here truth (never hidden, never a dead unavailable)",
+          "expected": "[data-wfx-watch-option=\"authorized-peer-copy\"][data-wfx-watch-usable=\"false\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ordinary-swarm entry names the Desktop native player as the honest next step (WebTorrent-capable ≠ ordinary torrent)",
+          "expected": "needs the Desktop app's native player — the browser cannot reach this swarm's peers",
+          "observed": "This authorized peer copy needs the Desktop app's native player — the browser cannot reach this swarm's peers.",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j38-torrent-playback.png",
+        "evidence/r16/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.snapshot.txt",
+        "evidence/r16/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 36361
+    },
+    {
+      "id": "J39",
+      "title": "Multimodal media intelligence / semantic moment discovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers matches by meaning (the multimodal lane)",
+          "expected": "[data-wfx-semantic-search] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the meaning result finds the space documentary by what it IS (not its name)",
+          "expected": "Deep Field Diary",
+          "observed": "Deep Field Diary — matched “A space documentary about captur",
+          "pass": true
+        },
+        {
+          "description": "the meaning result names WHY it matched (the honest matched text)",
+          "expected": "matched “…”",
+          "observed": "Deep Field Diary — matched “A space documentary about capturing a deep-field image of distant galaxi",
+          "pass": true
+        },
+        {
+          "description": "the semantic results carry their provenance (contributing models, named)",
+          "expected": "[data-wfx-semantic-provenance] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance names the signal models + the ownership law",
+          "expected": "open-model:… + your choices stay yours",
+          "observed": "Signals from open-model:moss-transcribe-diarize, open-model:qwen2.5-vl-7b-instruct, open-model:videoprism-base-f16r288, open-model:bge-m3 — ",
+          "pass": true
+        },
+        {
+          "description": "the show-me-the-part-where query lands on the findable moment with its jump path",
+          "expected": "[data-wfx-semantic-moment-jump] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the moment's jump path targets the player at its timestamp (the resume seam)",
+          "expected": "a player href with resume",
+          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&resume=46100",
+          "pass": true
+        },
+        {
+          "description": "the moment jump lands in the player",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player resumes AT the moment's timestamp (the jump honored)",
+          "expected": "[data-wfx-player-resume] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the title search offers the item too",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the item hub carries its derived intelligence (transcript, chapters, moments)",
+          "expected": "[data-wfx-intelligence] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chapters render with their jump paths",
+          "expected": "[data-wfx-intelligence-chapters] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the findable moments render with their jump paths",
+          "expected": "[data-wfx-intelligence-moments] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the transcript renders (speaker labels, timestamps)",
+          "expected": "[data-wfx-intelligence-transcript] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the transcript carries speaker attribution (the diarization truth)",
+          "expected": "Dr. Amara Osei",
+          "observed": "0:00Dr. Amara Osei: The observatory wakes an hour before dusk — every dome, one checklist.\n0:06Dr. Amara Osei: First light is a ritual: cooling the sensors, opening the shutter, listening for the sky.",
+          "pass": true
+        },
+        {
+          "description": "the per-feature availability truth renders (the R23-H honesty law)",
+          "expected": "[data-wfx-intelligence-features] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance block renders (where the intelligence came from)",
+          "expected": "[data-wfx-intelligence-provenance] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance names the batch transcription + structural analysis models",
+          "expected": "open-model:moss-transcribe-diarize + open-model:qwen2.5-vl-7b-instruct",
+          "observed": "Where this came from\ntranscription by open-model:moss-transcribe-diarize at 94% confidence.\nstructural-analysis by open-model:qwen2.5-vl-7b-instruct at 88% confidence.\nvideo-embeddings by open-model:videoprism-base-f16r288 at 90% confidence",
+          "pass": true
+        },
+        {
+          "description": "the model-authority boundary renders ('no model authorizes a playback or acquisition action')",
+          "expected": "[data-wfx-intelligence-provenance-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the AI tray offers the translation action with its language choice",
+          "expected": "a language select in the tray",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the live captions surface renders on the player (progressively disclosed)",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the honest gap: no low-latency live route is registered (never a fake live lane)",
+          "expected": "[data-wfx-live-captions-state=\"no-route\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the typed gap carries its recovery (bind and register the R2T2 open model)",
+          "expected": "[data-wfx-live-captions-recovery] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Model & AI surface lists the open models",
+          "expected": "[data-wfx-openmodels] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the R2T2 row carries its REAL license truth (the code/weights distinction)",
+          "expected": "Code Apache-2.0 · weights NetEase Model Use License Agreement",
+          "observed": "Code Apache-2.0 · weights NetEase Model Use License Agreement",
+          "pass": true
+        },
+        {
+          "description": "the registration truth updates (a catalog row becomes a provider)",
+          "expected": "[data-wfx-openmodel-registered=\"true\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the live captions route to R2T2 once registered (the live lane wired)",
+          "expected": "[data-wfx-live-captions-state=\"routed\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the route's envelope truth renders (committed output, 80 ms–2 s chunks)",
+          "expected": "[data-wfx-live-captions-envelope] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the multimodal intelligence walk ran entirely without a WebFlix account (the R23-K anonymous AI boundary)",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j39-media-intelligence.png",
+        "evidence/r16/j39-multimodal-media-intelligence-semantic-moment-discovery.snapshot.txt",
+        "evidence/r16/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 18867
     }
   ],
   "limitations": [
+    {
+      "journeyId": "J36",
+      "kind": "configuration-limit",
+      "note": "The R22-G encoding runs the full J36 completion walk over the deterministic fixtures boot: the register round trip uses the scripted dev persona (the loud dev badge — the REAL /api/auth/register transport's email-taken/validation round trips are service-mode, proven at the contract level by packages/client-runtime/tests/account-creation.test.ts); the source chooser's connected truth and the BYOF import ride the fixture connectors (the REAL provider OAuth dance is J14/J28's service-side procedure); the Shorts like/save typed absence is the fixture source's own capability truth (the hydration law is asserted as capability-truth, not blanket presence).",
+      "procedure": "LEAD (the production sweep): deploy the integrated tree, run this journey with --base-url against the deployed service-mode boot (real register transport, a real connectable connector, a source that declares like/save), and capture the evidence under evidence/r22/ — the J35 production-parity sweep covers the same deployment."
+    },
     {
       "journeyId": "J28",
       "kind": "local-only",
@@ -3399,10 +4327,10 @@
       "procedure": "LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/."
     },
     {
-      "journeyId": "J05",
-      "kind": "known-defect",
-      "note": "FOUND BY THIS HARNESS (reported for an apps/web fix — outside R16's allowed paths): opening /search with NO query throws a typed RuntimeError (invalid-input: empty query) before the empty-query state can render — apps/web/src/app/search/page.tsx calls loadSearchView unguarded. The SearchSurface's data-wfx-search-state=\"empty-query\" branch is currently unreachable. The encoded J05 asserts the reachable states (results/no-results/intent retention) and does NOT encode the crash as pass.",
-      "procedure": "FIX (apps/web lane): guard the empty query in the search page (render the empty-query state without calling the runtime), then re-run `bun run journeys:web` — J05's limitation entry can be removed and the empty-query state added to the encoded assertions."
+      "journeyId": "J38",
+      "kind": "configuration-limit",
+      "note": "The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.",
+      "procedure": "LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure."
     },
     {
       "journeyId": "J33",

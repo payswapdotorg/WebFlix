@@ -19,16 +19,55 @@
  * - the password never appears in any answer or log.
  */
 
-import { getWebRuntimeHost } from "@/host/web-host";
+import { getWebRuntimeHost, getWebRuntimeHostForRequest } from "@/host/web-host";
 import { authLogin } from "@/host/auth-transport";
 import { driveFixtureLogin } from "@/host/auth-fixtures";
 import { sessionCookieFor } from "@/host/session-cookie";
+import { promoteAnonymousProgress } from "@/host/anonymous-truth";
 
 export const dynamic = "force-dynamic";
 
 interface LoginBody {
   readonly email?: unknown;
   readonly password?: unknown;
+}
+
+/**
+ * R23 web-A — THE LAWFUL POST-AUTHENTICATION PROMOTION (the R23-B
+ * session-scoped progress law): when a viewer signs in, the anonymous
+ * session's continue-watching positions are promoted into the identity's
+ * watch-state `start` commands (the one lawful durable write — the shared
+ * `promoteSessionProgressToDurable` outcome). Best-effort and honest: a
+ * promotion failure never blocks the login itself, and NOTHING is ever
+ * represented as durable identity BEFORE this point.
+ */
+async function promoteAnonymousSessionProgress(token: string): Promise<void> {
+  try {
+    const anonymousHost = await getWebRuntimeHost();
+    const home = await anonymousHost.runtime.getHome();
+    const inProgress = home.continueWatching.entries.filter(
+      (entry) => entry.positionMs > 0 && entry.status === "in-progress",
+    );
+    if (inProgress.length === 0) return;
+    const identityHost = await getWebRuntimeHostForRequest(token);
+    if (identityHost === anonymousHost) return; // the token did not resolve an identity
+    const sessionId = anonymousHost.session.context.sessionId;
+    const promotedAt = new Date().toISOString();
+    for (const entry of inProgress) {
+      const outcome = promoteAnonymousProgress({
+        sessionId,
+        itemId: entry.itemId,
+        positionMs: entry.positionMs,
+        updatedAt: promotedAt,
+      });
+      if (outcome.kind === "promoted") {
+        await identityHost.runtime.updateWatchState(outcome.command);
+      }
+    }
+  } catch {
+    // The promotion is the OPTIONAL durable upgrade — a failure here is
+    // reported nowhere as success and never blocks the sign-in.
+  }
 }
 
 export async function POST(request: Request): Promise<Response> {
@@ -62,6 +101,8 @@ export async function POST(request: Request): Promise<Response> {
         { status: 401 },
       );
     }
+    // R23 web-A: the lawful post-authentication promotion (best-effort).
+    await promoteAnonymousSessionProgress(driven.token);
     return Response.json(
       { session: { user: driven.session.user, profiles: driven.session.profiles, activeProfileId: driven.session.activeProfileId } },
       { status: 200, headers: { "set-cookie": sessionCookieFor(driven.token) } },
@@ -81,6 +122,8 @@ export async function POST(request: Request): Promise<Response> {
       { status },
     );
   }
+  // R23 web-A: the lawful post-authentication promotion (best-effort).
+  await promoteAnonymousSessionProgress(result.value.token);
   return Response.json(
     { session: result.value.session },
     { status: 200, headers: { "set-cookie": sessionCookieFor(result.value.token) } },
