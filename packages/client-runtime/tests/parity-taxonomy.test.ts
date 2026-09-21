@@ -38,6 +38,7 @@ import {
   parityTaxonomyRowOf,
   parityTaxonomyRowsOfArea,
   parityTaxonomyRowsOfClassification,
+  type ParityTaxonomyRowId,
   parityTaxonomyViewRow,
   validateParityTaxonomy,
 } from "../src/index";
@@ -156,7 +157,8 @@ describe("R24-A parity taxonomy — classification completeness (the lab rule)",
     // redesigned product semantics.
     const variants = parityTaxonomyRowsOfClassification("platform-variant");
     expect(variants.map((row) => row.id).sort()).toEqual(
-      [
+      (
+        [
         "fullscreen",
         "miniplayer-pip",
         "quality",
@@ -166,7 +168,8 @@ describe("R24-A parity taxonomy — classification completeness (the lab rule)",
         "shorts-remix-attribution",
         "notifications",
         "tv-second-screen-continuation",
-      ].sort(),
+        ] satisfies readonly ParityTaxonomyRowId[] as readonly ParityTaxonomyRowId[]
+      ).slice().sort(),
     );
     for (const row of variants) {
       expect(row.area).not.toBe("webflix-extension");
@@ -275,14 +278,16 @@ describe("R24-A parity taxonomy — the frozen product laws", () => {
       (row) => row.performanceRelevance === "startup-critical",
     ).map((row) => row.id);
     expect(critical.sort()).toEqual(
-      [
-        "play-pause",
-        "anonymous-public-viewing",
-        "canonical-identity",
-        "where-to-watch",
-        "authorized-peer-copy",
-        "browser-host",
-      ].sort(),
+      (
+        [
+          "play-pause",
+          "anonymous-public-viewing",
+          "canonical-identity",
+          "where-to-watch",
+          "authorized-peer-copy",
+          "browser-host",
+        ] satisfies readonly ParityTaxonomyRowId[] as readonly ParityTaxonomyRowId[]
+      ).slice().sort(),
     );
   });
 

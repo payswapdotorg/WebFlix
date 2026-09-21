@@ -134,14 +134,14 @@ describe("R24-W2 — the audit record's integrity", () => {
 });
 
 // ---------------------------------------------------------------------------
-// The audit-time startup finding (the R24-E serial-chain violation the
-// corrections fix; this block is REPLACED by the corrected-order law in
-// apps/web/tests/startup-instrument.test.ts when the corrections land —
-// the commit diff is the honest transition record)
+// The startup law (R24-E) — the corrected order after the R24-W2
+// corrections landed (the audit-time finding — the media resolution
+// waiting on the enrichment reads — is preserved in the audit record's
+// `finding` fields + the evidence; the live law now asserts the fix)
 // ---------------------------------------------------------------------------
 
-describe("R24-W2 — the audit-time startup finding: the media resolution waits on enrichment reads", () => {
-  it("loadPlayerView resolves playback only AFTER the AI/model enrichment reads (the R24-E violation)", async () => {
+describe("R24-W2 — the corrected startup law: the media path leads", () => {
+  it("loadPlayerView resolves the playback session BEFORE any AI/model enrichment read (the R24-E law)", async () => {
     const host = await bootHost();
     const order: string[] = [];
     const originalResolve = host.runtime.resolvePlayback.bind(host.runtime);
@@ -160,14 +160,15 @@ describe("R24-W2 — the audit-time startup finding: the media resolution waits 
         return originalProviders(...args);
       };
     await loadPlayerView(host, DIARY);
-    // The honest pre-correction truth: the enrichment reads fire BEFORE
-    // the playback resolution — the serial chain the R24-E startup law
-    // forbids (no AI/recommendation work may block the media path).
+    // The corrected truth: the playback resolution LEADS — every
+    // enrichment read (the AI-tray/live-ASR model-controls reads) fires
+    // after the media path resolved (the R24-E startup architecture law:
+    // no AI/recommendation work blocks the media critical path).
     const firstResolve = order.indexOf("resolve-playback");
     const firstEnrichment = order.indexOf("enrichment-read");
     expect(firstResolve).toBeGreaterThanOrEqual(0);
     expect(firstEnrichment).toBeGreaterThanOrEqual(0);
-    expect(firstEnrichment).toBeLessThan(firstResolve);
+    expect(firstResolve).toBeLessThan(firstEnrichment);
   });
 });
 

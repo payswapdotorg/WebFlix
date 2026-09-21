@@ -589,6 +589,7 @@ describe("R14 web — J26: verified assets present Ready offline in the Library"
       watchlist: { status: { state: "ready" }, entries: [] },
       history: { status: { state: "ready" }, entries: [] },
       offline: { entries: [] },
+      playlists: { lists: [] },
     };
     const markup = renderToStaticMarkup(
       createElement(AppShell, {

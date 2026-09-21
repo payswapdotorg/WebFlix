@@ -203,6 +203,31 @@ export function LibrarySurface({
         )}
       </section>
 
+      {/* R24-W2 — THE PLAYLISTS SECTION (the R24-C playlists row: the
+          named lists from the watchlist's listName seam — the same
+          canonical-keyed writes, grouped; the save-queue action and the
+          item hub's save-to-playlist land here). */}
+      <section className="wfx-detail__section" aria-label="Playlists" data-wfx-library-playlists>
+        <h2>Playlists</h2>
+        {view.playlists.lists.length === 0 ? (
+          <EmptyState
+            title="No playlists yet"
+            detail="Save a playlist from any title's save control, or save your session queue from the player — the lists land here."
+          />
+        ) : (
+          view.playlists.lists.map((list) => (
+            <div key={list.name} className="wfx-playlist" data-wfx-library-playlist={list.name}>
+              <h3 data-wfx-playlist-name>{list.name}</h3>
+              <ul className="wfx-queue__list" style={{ listStyle: "none", padding: 0 }}>
+                {list.entries.map((entry) => (
+                  <WatchlistRow key={`${list.name}-${entry.itemId}`} entry={entry} />
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
+      </section>
+
       <section className="wfx-detail__section" aria-label="History" data-wfx-library-history>
         <h2>History</h2>
         {view.history.status.state === "error" ? (

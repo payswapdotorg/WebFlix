@@ -23,7 +23,7 @@ import type {
 } from "@/host/view-models";
 import type { DiscoveryBundle } from "@/host/discoverability";
 import { DiscoveryHeader } from "@/components/discovery/DiscoveryHeader";
-import { ItemCard, cardPlayerHref } from "@/components/cards/ItemCard";
+import { ItemCard, cardPlayerHref, type CardActionContextInput } from "@/components/cards/ItemCard";
 import { itemDetailHref } from "@/app/routing";
 import { Icon } from "@/components/shell/Icon";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
@@ -48,7 +48,14 @@ export function SectionStatus({ status, title }: { readonly status: SectionStatu
 }
 
 /** One horizontal, scrollable content row (typed status + cards). */
-export function Row({ row }: { readonly row: RowView }): JSX.Element | null {
+export function Row({
+  row,
+  actions,
+}: {
+  readonly row: RowView;
+  /** R24-W2 — the cards' action context (queue/save/share + the preview policy). */
+  readonly actions?: CardActionContextInput;
+}): JSX.Element | null {
   const hasContent = row.cards.length > 0;
   if (!hasContent && row.status.state === "ready") return null; // honest absence — no empty scaffolding
   return (
@@ -61,7 +68,7 @@ export function Row({ row }: { readonly row: RowView }): JSX.Element | null {
       {hasContent ? (
         <div className="wfx-row__scroller">
           {row.cards.map((card) => (
-            <ItemCard key={card.itemId} card={card} />
+            <ItemCard key={card.itemId} card={card} {...(actions !== undefined ? { actions } : {})} />
           ))}
         </div>
       ) : null}
@@ -299,7 +306,7 @@ export function HomeSurface({
       {importedSection !== null ? <ImportedFeedSection section={importedSection} /> : null}
       {showDiscoveryRows
         ? view.rows.map((row) => (
-            <Row key={row.id} row={row} />
+            <Row key={row.id} row={row} actions={view.cardActions} />
           ))
         : null}
       {view.shortsRail.cards.length > 0 ? (
