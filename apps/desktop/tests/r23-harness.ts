@@ -248,6 +248,8 @@ export interface R23BootOptions {
 export interface R23Boot {
   readonly engine: TorrentFlowEngine;
   readonly runtime: ClientRuntime;
+  /** The in-memory server double (scriptable — the R24 journeys' content truth). */
+  readonly server: InMemoryServerPort;
   readonly capabilities: PlatformCapabilities & {
     readonly ports: PlatformCapabilities["ports"] & { readonly nativeMedia: InMemoryNativeMediaPort };
   };
@@ -270,7 +272,8 @@ export interface R23Boot {
 export function bootR23(options: R23BootOptions = {}): R23Boot {
   const engine = new TorrentFlowEngine();
   const capabilities = makeDesktopCapabilities();
-  const runtime: ClientRuntime = createRuntime(capabilities, new InMemoryServerPort(), {
+  const server = new InMemoryServerPort();
+  const runtime: ClientRuntime = createRuntime(capabilities, server, {
     context: { userId: "wfx-desktop-r23-user", sessionId: "wfx-desktop-r23-session", locale: "en" },
     clock: new FixedClock(R23_T0),
     ids: new SequentialIdGen(),
@@ -331,6 +334,7 @@ export function bootR23(options: R23BootOptions = {}): R23Boot {
   return {
     engine,
     runtime,
+    server,
     capabilities,
     nativeMedia: capabilities.ports.nativeMedia,
     source,
