@@ -367,22 +367,27 @@ export function realtimeSpecialistDimensionCoverage(): readonly string[] {
     string,
     unknown
   >;
+  /** The dimension id → profile field mapping (every dimension, one truth). */
+  const fieldByDimension: Readonly<Record<string, string>> = {
+    "streaming-input": "streamingInput",
+    "source-asr": "sourceAsr",
+    "text-translation": "textTranslation",
+    "streaming-text-output": "streamingTextOutput",
+    "translated-speech-output": "translatedSpeechOutput",
+    "speaker-attribution": "speakerAttribution",
+    "visual-context-input": "visualContextInput",
+    "hotword-support": "hotwordSupport",
+    "voice-cloning": "voiceCloning",
+    "supported-language-directions": "supportedLanguageDirections",
+    "latency-profile": "latencyProfile",
+    "privacy-class": "privacyClass",
+    "price-cost-model": "priceCostModel",
+    "provider-provenance": "providerProvenance",
+    "revision-model-id": "model",
+  };
   return REALTIME_CAPABILITY_DIMENSIONS.filter((dimension) => {
-    const field =
-      dimension === "supported-language-directions"
-        ? "supportedLanguageDirections"
-        : dimension === "latency-profile"
-          ? "latencyProfile"
-          : dimension === "privacy-class"
-            ? "privacyClass"
-            : dimension === "price-cost-model"
-              ? "priceCostModel"
-              : dimension === "provider-provenance"
-                ? "providerProvenance"
-                : dimension === "revision-model-id"
-                  ? "model"
-                  : dimension;
-    return field in profile;
+    const field = fieldByDimension[dimension];
+    return field !== undefined && field in profile;
   });
 }
 

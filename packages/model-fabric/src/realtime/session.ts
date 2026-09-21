@@ -532,6 +532,19 @@ export function validateRealtimeSessionConfiguration(
       value.translatedVoicePolicy = configuration.translatedVoicePolicy;
     }
   }
+  // THE CONSENT GATE (fail-closed): a reconfiguration that SELECTS
+  // voice preservation must carry a satisfied consent record in the
+  // same payload — never silently clone a source speaker. (A caller
+  // re-asserting an existing satisfied record supplies it again.)
+  if (configuration.translatedVoicePolicy === "preserve-source-voice") {
+    if (!isRecord(configuration.voiceConsent) || configuration.voiceConsent.state !== "satisfied") {
+      issues.push({
+        path: "voiceConsent",
+        message:
+          "voice preservation requires a consent record with state 'satisfied' — never silently clone a source speaker",
+      });
+    }
+  }
   if (configuration.voiceConsent !== undefined) {
     if (!isRecord(configuration.voiceConsent) || configuration.voiceConsent.state !== "satisfied") {
       issues.push({

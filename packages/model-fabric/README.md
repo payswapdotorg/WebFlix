@@ -55,6 +55,43 @@ later work items, but the policy machinery is frozen here.
 - **`wfx-model/`** — the first-party recommendation model adapter
   (WFX-031): local-only, cost 0, replaceable through the frozen
   `RecommendationModel` interface.
+- **`realtime/`** — the realtime translation lane (R25, the Qwen3.8
+  LiveTranslate round's SHARED contracts — provider-neutral by law;
+  the provider adapter owns the protocol):
+  - **`session.ts`** — R25-A: the realtime translation session
+    contract's operational layer — runtime vocabularies (the 12 event
+    kinds, 7 operations, 6 states, inputs), field-path
+    input/configuration validation (the legal-audio + consent gates,
+    fail-closed), the operation × state legality table, the
+    provider-neutrality forbidden-token scan, the pure event-stream
+    helper, and the never-block-playback law. The typed shapes are the
+    frozen domain contracts (`@wfx/domain`, contracts.md "Realtime
+    translation").
+  - **`task.ts`** — R25-B: the `realtime-translation` LOGICAL task (a
+    vocabulary BESIDE the frozen `ModelTask` union — never an overload
+    of the batch transform task), the 15 capability dimensions, the
+    capability profile + validation, and the serving derivations.
+  - **`provider.ts`** — the managed-cloud provider record for the
+    realtime translation specialist (managed-service-only
+    distribution, openWeights false — never self-hosting or
+    open-weight assumptions), the frozen research facts, and the
+    managed-provider laws.
+  - **`router.ts`** — the router policy seams: the specialist for
+    realtime translation combos (translated speech / speaker
+    separation / visual context), R2T2 for transcription-only, batch
+    workloads refused, honest typed gaps, policy-first preference.
+  - **`cost.ts`** — R25-K: the indicative token rate card, the
+    bit-stable cost math, the cost-policy controls (modality with
+    automatic text-only fallback, duration limits, anonymous quotas,
+    budget ceilings, adaptive visual sampling), and the total
+    never-block-playback law.
+  - **`consent.ts`** — R25-H: the voice-cloning consent state
+    contracts (neutral voice default; preservation only with satisfied
+    consent; the typed consent-required refusal; the provenance record
+    for every session/artifact; the never-silent-clone laws).
+  - **`anonymous-session.ts`** — R25-J: the accountless realtime
+    session capability, the durable login boundaries, the
+    no-login-wall law, and the anonymous readiness gate.
 
 ## R06 — the control surface over the fabric (the productionized layer)
 
