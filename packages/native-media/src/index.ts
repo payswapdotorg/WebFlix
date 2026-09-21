@@ -48,6 +48,12 @@
  *                  entry (main.ts). The simulation (engine/simulation)
  *                  stays TEST/DEV-only — production paths never import
  *                  it (enforced by tests/production-import-guard.test.ts).
+ * - realtime/capture.ts   — R25-W3 the realtime audio capture tap: the
+ *                  full-fidelity capture vocabulary (`NativeAudioTapFrame`,
+ *                  `NativeAudioTapSource` — the platform's decoded-audio
+ *                  seam), the capture service (validation + arrival
+ *                  stamping + fan-out + the honest accounting), the typed
+ *                  refusal vocabulary + the `NativeMediaError` mapping.
  *
  * Domain types (`NativeMediaSession`, `NativeMediaEngine`) come from
  * `@wfx/domain`, the frozen public entry — never deep paths.
@@ -80,3 +86,4 @@ export * from "./service-process/engine";
 export * from "./service-process/gateway";
 export * from "./service-process/service";
 export * from "./service-process/process";
+export * from "./realtime/capture";
