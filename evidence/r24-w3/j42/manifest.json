@@ -1,0 +1,418 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "5ce932e77582d3a3a1efa951bbc9f721f9da96fb",
+  "branch": "wfx/r24/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "startedAt": "2026-09-21T04:29:04.318Z",
+    "finishedAt": "2026-09-21T04:29:04.328Z"
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0,
+    "steps": 10,
+    "assertions": 70,
+    "extensionPlacements": 13
+  },
+  "journeys": [
+    {
+      "id": "J42",
+      "title": "WebFlix extension parity (Desktop — the extension-consistency checks)",
+      "status": "pass",
+      "assertions": [
+        {
+          "step": "X1",
+          "description": "the canonical identity answers the search"
+        },
+        {
+          "step": "X1",
+          "description": "the decision hub renders the three frozen groups"
+        },
+        {
+          "step": "X1",
+          "description": "the authorized peer copy is a first-class way to watch (torrent stays first-class)"
+        },
+        {
+          "step": "X2",
+          "description": "the provider realization engaged (the contained surface)"
+        },
+        {
+          "step": "X2",
+          "description": "the realization switch to the peer copy started"
+        },
+        {
+          "step": "X2",
+          "description": "the peer copy plays (the familiar grammar on the native rung)"
+        },
+        {
+          "step": "X3",
+          "description": "the feed-mode operations answer the availability truth"
+        },
+        {
+          "step": "X3",
+          "description": "the current feed mode answers (the For-you default)"
+        },
+        {
+          "step": "X3",
+          "description": "the BYOF import discovery answers (the Desktop file-import truth)"
+        },
+        {
+          "step": "X4",
+          "description": "the session-scoped intent landed in the LOCAL active set"
+        },
+        {
+          "step": "X4",
+          "description": "the session-scoped intent NEVER wrote the server (the J17 session law)"
+        },
+        {
+          "step": "X4",
+          "description": "the mindful policy keeps autoplay off (the user control, not hidden optimization)"
+        },
+        {
+          "step": "X4",
+          "description": "the balanced policy keeps the familiar default"
+        },
+        {
+          "step": "X5",
+          "description": "the media-intelligence view answers derived"
+        },
+        {
+          "step": "X5",
+          "description": "the transcript renders with provenance (the model truth)"
+        },
+        {
+          "step": "X5",
+          "description": "the chapters render with provenance"
+        },
+        {
+          "step": "X5",
+          "description": "the not-derived note names the explicit action (never a silent background claim)"
+        },
+        {
+          "step": "X6",
+          "description": "the peer copy plays (the playhead exists)"
+        },
+        {
+          "step": "X6",
+          "description": "the semantic moment matched the query"
+        },
+        {
+          "step": "X6",
+          "description": "the moment jump executed (the playhead moved)"
+        },
+        {
+          "step": "X6",
+          "description": "the playhead landed on the moment's timestamp"
+        },
+        {
+          "step": "X7",
+          "description": "the Library's offline section answers"
+        },
+        {
+          "step": "X7",
+          "description": "the make-available-offline affordance answers from the item's own surface"
+        },
+        {
+          "step": "X7",
+          "description": "the transcript's provenance names its source honestly (source-provided, never a fabricated model)"
+        },
+        {
+          "step": "X7",
+          "description": "the chapters' provenance names the deriving model"
+        },
+        {
+          "step": "X8",
+          "description": "the open-viewing view renders for the anonymous session"
+        },
+        {
+          "step": "X8",
+          "description": "the extension journey completed without a WebFlix login"
+        },
+        {
+          "step": "X9",
+          "description": "the native volume answers not-exposed-yet (capability truth)"
+        },
+        {
+          "step": "X9",
+          "description": "the cast absence is the platform's honest truth"
+        },
+        {
+          "step": "X9",
+          "description": "the provider volume answers realization-exposed"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Source-neutral canonical identity' capability has a walked audit row ('r24-discovery-search')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Source-neutral canonical identity' placement is a FAMILIAR surface ('Search / item / player (one title, multiple realizations)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Source-neutral canonical identity' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Where to watch / realization switching' capability has a walked audit row ('r24-discovery-related-next')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Where to watch / realization switching' placement is a FAMILIAR surface ('Near Play — the Watch page's decision hub')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Where to watch / realization switching' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Authorized peer/torrent copy' capability has a walked audit row ('r24-watch-queue')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Authorized peer/torrent copy' placement is a FAMILIAR surface ('Where to watch — a peer realization, never a download-only admin flow')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Authorized peer/torrent copy' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Bring Your Own Feed' capability has a walked audit row ('r24-discovery-subscriptions')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Bring Your Own Feed' placement is a FAMILIAR surface ('Home feed mode + source context (the Following mental model)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Bring Your Own Feed' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Explicit session intent' capability has a walked audit row ('r24-discovery-home-feed')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Explicit session intent' placement is a FAMILIAR surface ('Home (the intent entry rides Home's own semantics)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Explicit session intent' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Attention modes (mindful/balanced/immersive/custom)' capability has a walked audit row ('r24-watch-autoplay')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Attention modes (mindful/balanced/immersive/custom)' placement is a FAMILIAR surface ('Home/Personalize/player — the autoplay toggle derives from it')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Attention modes (mindful/balanced/immersive/custom)' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Anti-tunnel recommendation controls' capability has a walked audit row ('r24-watch-feedback')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Anti-tunnel recommendation controls' placement is a FAMILIAR surface ('The card/player feedback menu (the familiar placement)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Anti-tunnel recommendation controls' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Model selection (WebFlix/BYOM/local)' capability has a walked audit row ('r24-watch-captions')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Model selection (WebFlix/BYOM/local)' placement is a FAMILIAR surface ('The AI tray + Model & AI (optional, never required to watch)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Model selection (WebFlix/BYOM/local)' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'AI transformations (transcript/translation/dubbing/commentary)' capability has a walked audit row ('r24-watch-transcript')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'AI transformations (transcript/translation/dubbing/commentary)' placement is a FAMILIAR surface ('The player's AI tray (contextual media tools)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'AI transformations (transcript/translation/dubbing/commentary)' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Semantic moment search' capability has a walked audit row ('r24-discovery-search-suggestions')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Semantic moment search' placement is a FAMILIAR surface ('Search + the transcript/chapters panel ('find the part where…')')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Semantic moment search' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Contained provider BrowserHost' capability has a walked audit row ('r24-watch-external-handoff')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Contained provider BrowserHost' placement is a FAMILIAR surface ('The player's realization (another playback surface)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Contained provider BrowserHost' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Local media + verified offline Library' capability has a walked audit row ('r24-watch-watch-later')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Local media + verified offline Library' placement is a FAMILIAR surface ('Library + playback (the same item continues locally)')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Local media + verified offline Library' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Provenance/model/license transparency' capability has a walked audit row ('r24-watch-chapters')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Provenance/model/license transparency' placement is a FAMILIAR surface ('Progressive disclosure beside the truth it describes')"
+        },
+        {
+          "step": "X10",
+          "description": "the 'Provenance/model/license transparency' placement never requires an architecture dashboard"
+        },
+        {
+          "step": "X10",
+          "description": "all 13 WebFlix-only capabilities (the R24-B list) carry placement decisions"
+        }
+      ]
+    }
+  ],
+  "placements": [
+    {
+      "capability": "Source-neutral canonical identity",
+      "auditRowId": "r24-discovery-search",
+      "placementSurface": "Search / item / player (one title, multiple realizations)"
+    },
+    {
+      "capability": "Where to watch / realization switching",
+      "auditRowId": "r24-discovery-related-next",
+      "placementSurface": "Near Play — the Watch page's decision hub"
+    },
+    {
+      "capability": "Authorized peer/torrent copy",
+      "auditRowId": "r24-watch-queue",
+      "placementSurface": "Where to watch — a peer realization, never a download-only admin flow"
+    },
+    {
+      "capability": "Bring Your Own Feed",
+      "auditRowId": "r24-discovery-subscriptions",
+      "placementSurface": "Home feed mode + source context (the Following mental model)"
+    },
+    {
+      "capability": "Explicit session intent",
+      "auditRowId": "r24-discovery-home-feed",
+      "placementSurface": "Home (the intent entry rides Home's own semantics)"
+    },
+    {
+      "capability": "Attention modes (mindful/balanced/immersive/custom)",
+      "auditRowId": "r24-watch-autoplay",
+      "placementSurface": "Home/Personalize/player — the autoplay toggle derives from it"
+    },
+    {
+      "capability": "Anti-tunnel recommendation controls",
+      "auditRowId": "r24-watch-feedback",
+      "placementSurface": "The card/player feedback menu (the familiar placement)"
+    },
+    {
+      "capability": "Model selection (WebFlix/BYOM/local)",
+      "auditRowId": "r24-watch-captions",
+      "placementSurface": "The AI tray + Model & AI (optional, never required to watch)"
+    },
+    {
+      "capability": "AI transformations (transcript/translation/dubbing/commentary)",
+      "auditRowId": "r24-watch-transcript",
+      "placementSurface": "The player's AI tray (contextual media tools)"
+    },
+    {
+      "capability": "Semantic moment search",
+      "auditRowId": "r24-discovery-search-suggestions",
+      "placementSurface": "Search + the transcript/chapters panel ('find the part where…')"
+    },
+    {
+      "capability": "Contained provider BrowserHost",
+      "auditRowId": "r24-watch-external-handoff",
+      "placementSurface": "The player's realization (another playback surface)"
+    },
+    {
+      "capability": "Local media + verified offline Library",
+      "auditRowId": "r24-watch-watch-later",
+      "placementSurface": "Library + playback (the same item continues locally)"
+    },
+    {
+      "capability": "Provenance/model/license transparency",
+      "auditRowId": "r24-watch-chapters",
+      "placementSurface": "Progressive disclosure beside the truth it describes"
+    }
+  ],
+  "walk": [
+    {
+      "step": "X1",
+      "observed": "Canonical identity → Where to watch: the decision hub lists the peer copy first-class beside the provider ways."
+    },
+    {
+      "step": "X2",
+      "observed": "Provider → peer realization switch: both rungs through the same play-decision grammar."
+    },
+    {
+      "step": "X3",
+      "observed": "BYOF context: the feed modes answer (foryou); the Desktop import discovery carries the OS-dialog truth."
+    },
+    {
+      "step": "X4",
+      "observed": "Intent/attention: the session intent landed locally (never corrupting durable preferences — the J17 law); the autoplay affordance derives from the attention policy."
+    },
+    {
+      "step": "X5",
+      "observed": "AI actions: the transcript/chapters render with their provenance truth from the player-adjacent AI tray."
+    },
+    {
+      "step": "X6",
+      "observed": "Semantic moment search: \"the parade rounds the corner\" → moment@4200ms → the playhead jumped."
+    },
+    {
+      "step": "X7",
+      "observed": "Library/offline/provenance: the offline section + the item-surface affordance answer; the artifacts carry their provenance truth."
+    },
+    {
+      "step": "X8",
+      "observed": "Anonymous viewing stayed frictionless: the entire extension journey ran accountless."
+    },
+    {
+      "step": "X9",
+      "observed": "Platform capability differences stay honest: not-exposed, honestly absent, and realization-exposed — each named, never faked."
+    },
+    {
+      "step": "X10",
+      "observed": "All 13 WebFlix-only capabilities carry contextual placement decisions — every entry point is a familiar product surface."
+    }
+  ]
+}

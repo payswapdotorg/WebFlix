@@ -1,0 +1,282 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "5ce932e77582d3a3a1efa951bbc9f721f9da96fb",
+  "branch": "wfx/r24/desktop",
+  "environment": {
+    "mode": "desktop-composition-simulator",
+    "startedAt": "2026-09-21T04:29:04.008Z",
+    "finishedAt": "2026-09-21T04:29:04.018Z"
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0,
+    "steps": 10,
+    "assertions": 53
+  },
+  "journeys": [
+    {
+      "id": "J40",
+      "title": "YouTube viewer parity (Desktop — the parity journey)",
+      "status": "pass",
+      "assertions": [
+        {
+          "step": "W1",
+          "description": "Home answers the fresh user (the anonymous default — no login gate)"
+        },
+        {
+          "step": "W1",
+          "description": "the exercised 'Home feed' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W1",
+          "description": "the pairing is classified (native-equivalent, never missing)"
+        },
+        {
+          "step": "W1",
+          "description": "the intent entry rides the shared runtime's own Home semantics"
+        },
+        {
+          "step": "W2",
+          "description": "Search answers ready with canonical-joined hits"
+        },
+        {
+          "step": "W2",
+          "description": "the search's canonical join produced the journey's item id"
+        },
+        {
+          "step": "W2",
+          "description": "the exercised 'Search' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W3",
+          "description": "the decision hub renders the frozen groups"
+        },
+        {
+          "step": "W3",
+          "description": "the authorized peer copy sits IN the decision flow (contextual, first-class)"
+        },
+        {
+          "step": "W3",
+          "description": "the primary action is the play decision"
+        },
+        {
+          "step": "W3",
+          "description": "the adjacent-content behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W4",
+          "description": "the primary play action started playback"
+        },
+        {
+          "step": "W4",
+          "description": "the first frame arrived (playing, evidence-backed)"
+        },
+        {
+          "step": "W4",
+          "description": "the exercised 'Play/pause' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W5",
+          "description": "the playback session is active"
+        },
+        {
+          "step": "W5",
+          "description": "the controller exists"
+        },
+        {
+          "step": "W5",
+          "description": "Space/K pauses through the shared controller"
+        },
+        {
+          "step": "W5",
+          "description": "J/L seeks through the controller's typed seek"
+        },
+        {
+          "step": "W5",
+          "description": "the volume control answers the honest not-exposed-yet truth (never a dead button)"
+        },
+        {
+          "step": "W5",
+          "description": "no cast placeholder is rendered (the honest absence)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Play / Pause' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Seek' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Volume' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Mute' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Playback speed' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Quality' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Fullscreen' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Miniplayer' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Captions' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Transcript' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Chapters' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Autoplay' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Up next' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Queue' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Save' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Share' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the 'Feedback' control carries a real placement + honest detail (no placeholder labels)"
+        },
+        {
+          "step": "W5",
+          "description": "the exercised 'Seek/scrub' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W6",
+          "description": "the Up-next rail presents the queued head with the autoplay truth"
+        },
+        {
+          "step": "W6",
+          "description": "the exercised 'Queue' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W6",
+          "description": "the 'Watch Later' behavior pairs to the Watchlist"
+        },
+        {
+          "step": "W6",
+          "description": "save-queue wrote the watchlist (the Library bridge)"
+        },
+        {
+          "step": "W6",
+          "description": "the 'Playlists' behavior pairs to the Library collections"
+        },
+        {
+          "step": "W7",
+          "description": "Shorts answers the vertical feed"
+        },
+        {
+          "step": "W7",
+          "description": "the exercised 'Shorts surface' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W8",
+          "description": "the feedback/policy write landed on the shared seam"
+        },
+        {
+          "step": "W8",
+          "description": "the exercised 'Feedback' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W9",
+          "description": "the Library answers the watchlist section (the saved entry)"
+        },
+        {
+          "step": "W9",
+          "description": "the Library answers the history section"
+        },
+        {
+          "step": "W9",
+          "description": "the exercised 'Watch history' behavior has a parity-matrix pairing"
+        },
+        {
+          "step": "W10",
+          "description": "the journey recorded its exercised-behavior pairings (9 audit rows resolved)"
+        },
+        {
+          "step": "W10",
+          "description": "the journey drove only the shared runtime's semantics (no Desktop-forked product rules)"
+        },
+        {
+          "step": "W10",
+          "description": "the audit's classification distribution is intact (8/22/14/0)"
+        }
+      ]
+    }
+  ],
+  "walk": [
+    {
+      "step": "W1",
+      "observed": "Home answered the fresh anonymous user; the intent entry rides Home's own semantics (contextual, not administrative)."
+    },
+    {
+      "step": "W2",
+      "observed": "Search answered 'Family Archive Feature Presentation' over the canonical identity (joined to wfxitm_00000000000000000000000001)."
+    },
+    {
+      "step": "W3",
+      "observed": "Opened the video: the Where-to-watch hub lists the WebFlix source, the Authorized peer copy, and the other ways — the WebFlix-only control is contextual."
+    },
+    {
+      "step": "W4",
+      "observed": "Play started through the one obvious play action; the first frame is evidence-backed (playing)."
+    },
+    {
+      "step": "W5",
+      "observed": "Player controls exercised: pause + seek through the shared controller; volume answers its honest truth; no dead buttons, no placeholder labels."
+    },
+    {
+      "step": "W6",
+      "observed": "Adjacent content + queue/watchlist/playlist exercised: the Up-next rail, the session queue, and the save-queue → watchlist bridge."
+    },
+    {
+      "step": "W7",
+      "observed": "Shorts served the vertical feed with the shared hydration truth."
+    },
+    {
+      "step": "W8",
+      "observed": "Feedback exercised through the shared recommendation policy seam (the same vocabulary as Web)."
+    },
+    {
+      "step": "W9",
+      "observed": "Library/History exercised: the watchlist carries the saved entry; the history section answers."
+    },
+    {
+      "step": "W10",
+      "observed": "The journey-wide laws hold: every exercised behavior paired to a walked row; the semantics are the shared runtime's own; the distribution is intact."
+    }
+  ]
+}
