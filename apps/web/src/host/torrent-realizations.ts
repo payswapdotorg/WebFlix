@@ -36,7 +36,16 @@ import type {
   TorrentRungSatisfaction,
 } from "@wfx/client-runtime";
 
-import { WEB_BROWSER_TORRENT_SUPPORTED } from "@/platform/browser-torrent";
+// R23-L build fix (the lead's surgical fix, 2026-09-21): import the
+// capability constant from the ZERO-IMPORT environment module — never
+// from `@/platform/browser-torrent`, whose (lazy) webtorrent dynamic
+// imports Next traces into every SERVER bundle that statically reaches
+// this module (the shorts API route's graph pulled
+// webtorrent→node-datachannel, a native module, into the serverless
+// build and broke `next build` — the Vercel deploy of eb6adc4). The
+// lazy-import law of R23-D still holds: webtorrent loads ONLY inside
+// the browser adapter's own functions at call time.
+import { WEB_BROWSER_TORRENT_SUPPORTED } from "@/platform/browser-torrent-environment";
 import type { WebRuntimeHost } from "./web-host";
 import { torrentRealizationFixtureOf } from "./acquisition-fixtures";
 
