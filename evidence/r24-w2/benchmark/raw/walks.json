@@ -1,9 +1,9 @@
 {
   "Deep Field Diary-cold": {
-    "contentId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+    "contentId": "wfxitm_10R4DXK35WS4BBVMNB5B11J22B",
     "trace": {
-      "traceId": "wfx-trace-bf879ac0-15a6-4476-9df9-30a376f36340",
-      "itemId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+      "traceId": "wfx-trace-12751d4d-bfc5-4d04-9b39-2f0cb55f992b",
+      "itemId": "wfxitm_10R4DXK35WS4BBVMNB5B11J22B",
       "realization": "browser",
       "markers": [
         {
@@ -12,65 +12,65 @@
         },
         {
           "marker": "navigation-start",
-          "offsetMs": 253.10000000009313,
+          "offsetMs": 2.60009765625,
           "detail": "click-to-navigation bridge"
         },
         {
           "marker": "player-surface-visible",
-          "offsetMs": 253.10000000009313,
+          "offsetMs": 338.10009765625,
           "detail": "the streamed player shell parsed (stage + chrome in the DOM)"
         },
         {
           "marker": "playable-declared",
-          "offsetMs": 253.20000000018624,
+          "offsetMs": 338.20009765587747,
           "detail": "runtime phase at shell render: buffering"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 772.9000000003725,
+          "offsetMs": 843.4000976569951,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 778.3000000002794,
+          "offsetMs": 850.4000976569951,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "seek-requested",
-          "offsetMs": 1638.2000000001865,
+          "offsetMs": 1762.60009765625,
           "detail": "seek → 0ms"
         },
         {
           "marker": "seek-confirmed",
-          "offsetMs": 1713.3000000002794,
+          "offsetMs": 1852.10009765625,
           "detail": "position 0ms accepted"
         },
         {
           "marker": "control-invoked",
-          "offsetMs": 2507.4000000003725,
+          "offsetMs": 1923.0000976566223,
           "detail": "play"
         },
         {
           "marker": "control-confirmed",
-          "offsetMs": 2572.4000000003725,
+          "offsetMs": 1957.2000976558777,
           "detail": "play → phase buffering"
         }
       ]
     },
     "enrichmentMountedAtMs": {
-      "ai-tray": 778.3000000002794,
-      "intelligence": 778.3000000002794,
-      "live-captions": 778.3000000002794
+      "ai-tray": 850.4000976569951,
+      "intelligence": 850.4000976569951,
+      "live-captions": 850.4000976569951
     },
-    "firstFrameOffsetMs": 772.9000000003725,
+    "firstFrameOffsetMs": 843.4000976569951,
     "positionAnchored": true,
     "screenshot": "evidence/r24-w2/benchmark/screenshots/deep-field-diary-cold.png"
   },
   "Deep Field Diary-warm": {
-    "contentId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+    "contentId": "wfxitm_10R4DXK35WS4BBVMNB5B11J22B",
     "trace": {
-      "traceId": "wfx-trace-759dac5e-f772-411c-bbb3-36c8b62abe66",
-      "itemId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+      "traceId": "wfx-trace-a860f6c1-a7b4-474b-9c0b-52760f3ff6bd",
+      "itemId": "wfxitm_10R4DXK35WS4BBVMNB5B11J22B",
       "realization": "browser",
       "markers": [
         {
@@ -79,65 +79,65 @@
         },
         {
           "marker": "navigation-start",
-          "offsetMs": 299.10000000009313,
+          "offsetMs": 0.800048828125,
           "detail": "click-to-navigation bridge"
         },
         {
           "marker": "player-surface-visible",
-          "offsetMs": 299.10000000009313,
+          "offsetMs": 271.0000488292426,
           "detail": "the streamed player shell parsed (stage + chrome in the DOM)"
         },
         {
           "marker": "playable-declared",
-          "offsetMs": 299.20000000018626,
+          "offsetMs": 271.20004882849753,
           "detail": "runtime phase at shell render: buffering"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 728.2000000001863,
+          "offsetMs": 929.800048828125,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 734,
+          "offsetMs": 937.300048828125,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "seek-requested",
-          "offsetMs": 1693.1000000000931,
+          "offsetMs": 1793.800048828125,
           "detail": "seek → 0ms"
         },
         {
           "marker": "seek-confirmed",
-          "offsetMs": 1738.8999999999069,
+          "offsetMs": 1826.9000488296151,
           "detail": "position 0ms accepted"
         },
         {
           "marker": "control-invoked",
-          "offsetMs": 1810.3999999999069,
+          "offsetMs": 1901.300048828125,
           "detail": "play"
         },
         {
           "marker": "control-confirmed",
-          "offsetMs": 1841.6000000000931,
+          "offsetMs": 1931.800048828125,
           "detail": "play → phase buffering"
         }
       ]
     },
     "enrichmentMountedAtMs": {
-      "ai-tray": 734.1000000000931,
-      "intelligence": 734.3999999999069,
-      "live-captions": 734.3999999999069
+      "ai-tray": 937.800048828125,
+      "intelligence": 937.800048828125,
+      "live-captions": 937.800048828125
     },
-    "firstFrameOffsetMs": 728.2000000001863,
+    "firstFrameOffsetMs": 929.800048828125,
     "positionAnchored": true,
     "screenshot": "evidence/r24-w2/benchmark/screenshots/deep-field-diary-warm.png"
   },
   "Desert Rain Doc-cold": {
-    "contentId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+    "contentId": "wfxitm_5G6XFACHB7GAEARXQ9P2P1JZJM",
     "trace": {
-      "traceId": "wfx-trace-1043fc82-0fc7-400f-971a-5795c856c39b",
-      "itemId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+      "traceId": "wfx-trace-440da5c7-6e0d-48b7-b434-d7943d91cc77",
+      "itemId": "wfxitm_5G6XFACHB7GAEARXQ9P2P1JZJM",
       "realization": "embed",
       "markers": [
         {
@@ -146,65 +146,65 @@
         },
         {
           "marker": "navigation-start",
-          "offsetMs": 363.199951171875,
+          "offsetMs": 1.60009765625,
           "detail": "click-to-navigation bridge"
         },
         {
           "marker": "player-surface-visible",
-          "offsetMs": 363.199951171875,
+          "offsetMs": 254.00009765662253,
           "detail": "the streamed player shell parsed (stage + chrome in the DOM)"
         },
         {
           "marker": "playable-declared",
-          "offsetMs": 363.29995117196813,
+          "offsetMs": 254.20009765587747,
           "detail": "runtime phase at shell render: buffering"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 956.199951171875,
+          "offsetMs": 815.5000976566225,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 961.199951171875,
+          "offsetMs": 820.10009765625,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "seek-requested",
-          "offsetMs": 2022.4999511721544,
+          "offsetMs": 1700.60009765625,
           "detail": "seek → 0ms"
         },
         {
           "marker": "seek-confirmed",
-          "offsetMs": 2055.8999511720613,
+          "offsetMs": 1735.5000976566223,
           "detail": "position 0ms accepted"
         },
         {
           "marker": "control-invoked",
-          "offsetMs": 2130.5999511722475,
+          "offsetMs": 1819.9000976551324,
           "detail": "play"
         },
         {
           "marker": "control-confirmed",
-          "offsetMs": 2181.199951171875,
+          "offsetMs": 1849.60009765625,
           "detail": "play → phase buffering"
         }
       ]
     },
     "enrichmentMountedAtMs": {
-      "ai-tray": 961.199951171875,
-      "intelligence": 961.199951171875,
-      "live-captions": 961.299951171968
+      "ai-tray": 820.10009765625,
+      "intelligence": 820.10009765625,
+      "live-captions": 820.10009765625
     },
-    "firstFrameOffsetMs": 956.199951171875,
+    "firstFrameOffsetMs": 815.5000976566225,
     "positionAnchored": true,
     "screenshot": "evidence/r24-w2/benchmark/screenshots/desert-rain-doc-cold.png"
   },
   "Desert Rain Doc-warm": {
-    "contentId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+    "contentId": "wfxitm_5G6XFACHB7GAEARXQ9P2P1JZJM",
     "trace": {
-      "traceId": "wfx-trace-31959f28-0316-49b4-a744-dde838b31b5b",
-      "itemId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+      "traceId": "wfx-trace-2aa46ddf-a141-4208-b10f-9766171d71be",
+      "itemId": "wfxitm_5G6XFACHB7GAEARXQ9P2P1JZJM",
       "realization": "embed",
       "markers": [
         {
@@ -213,65 +213,65 @@
         },
         {
           "marker": "navigation-start",
-          "offsetMs": 268,
+          "offsetMs": 0.10009765625,
           "detail": "click-to-navigation bridge"
         },
         {
           "marker": "player-surface-visible",
-          "offsetMs": 268,
+          "offsetMs": 303.10009765625,
           "detail": "the streamed player shell parsed (stage + chrome in the DOM)"
         },
         {
           "marker": "playable-declared",
-          "offsetMs": 268.3000000002794,
+          "offsetMs": 303.2000976577401,
           "detail": "runtime phase at shell render: buffering"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 655.7000000001863,
+          "offsetMs": 865.5000976566225,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 668.8000000002794,
+          "offsetMs": 871.3000976573676,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "seek-requested",
-          "offsetMs": 1522,
+          "offsetMs": 31945.800097657368,
           "detail": "seek → 0ms"
         },
         {
           "marker": "seek-confirmed",
-          "offsetMs": 1558.2000000001865,
+          "offsetMs": 31978.70009765774,
           "detail": "position 0ms accepted"
         },
         {
           "marker": "control-invoked",
-          "offsetMs": 1626,
+          "offsetMs": 32057.400097656995,
           "detail": "play"
         },
         {
           "marker": "control-confirmed",
-          "offsetMs": 1662.8999999999069,
+          "offsetMs": 32095.60009765625,
           "detail": "play → phase buffering"
         }
       ]
     },
     "enrichmentMountedAtMs": {
-      "ai-tray": 668.8999999999069,
-      "intelligence": 669,
-      "live-captions": 669
+      "ai-tray": 871.3000976573676,
+      "intelligence": 871.3000976573676,
+      "live-captions": 871.3000976573676
     },
-    "firstFrameOffsetMs": 655.7000000001863,
+    "firstFrameOffsetMs": 865.5000976566225,
     "positionAnchored": true,
     "screenshot": "evidence/r24-w2/benchmark/screenshots/desert-rain-doc-warm.png"
   },
   "Signal Fade-cold": {
-    "contentId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+    "contentId": "wfxitm_4A6698J5BEG1R53QB992T989QD",
     "trace": {
-      "traceId": "wfx-trace-13bca3a9-f1de-4914-8723-eaeacd755258",
-      "itemId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+      "traceId": "wfx-trace-edc5389b-bac6-4dc4-a99f-774344fcccb3",
+      "itemId": "wfxitm_4A6698J5BEG1R53QB992T989QD",
       "realization": "browser",
       "markers": [
         {
@@ -280,65 +280,65 @@
         },
         {
           "marker": "navigation-start",
-          "offsetMs": 305.09995117178187,
+          "offsetMs": 1.699951171875,
           "detail": "click-to-navigation bridge"
         },
         {
           "marker": "player-surface-visible",
-          "offsetMs": 305.09995117178187,
+          "offsetMs": 392.9999511707574,
           "detail": "the streamed player shell parsed (stage + chrome in the DOM)"
         },
         {
           "marker": "playable-declared",
-          "offsetMs": 305.199951171875,
+          "offsetMs": 392.9999511707574,
           "detail": "runtime phase at shell render: buffering"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 941.9999511716888,
+          "offsetMs": 1176.5999511703849,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 946.799951171968,
+          "offsetMs": 1181.199951171875,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "seek-requested",
-          "offsetMs": 31790.099951171786,
+          "offsetMs": 2237.39995117113,
           "detail": "seek → 0ms"
         },
         {
           "marker": "seek-confirmed",
-          "offsetMs": 31834.799951171968,
+          "offsetMs": 2276.2999511715025,
           "detail": "position 0ms accepted"
         },
         {
           "marker": "control-invoked",
-          "offsetMs": 31897.799951171968,
+          "offsetMs": 2345.699951171875,
           "detail": "play"
         },
         {
           "marker": "control-confirmed",
-          "offsetMs": 31929.699951171875,
+          "offsetMs": 2377.199951171875,
           "detail": "play → phase buffering"
         }
       ]
     },
     "enrichmentMountedAtMs": {
-      "ai-tray": 946.799951171968,
-      "intelligence": 946.8999511720612,
-      "live-captions": 946.8999511720612
+      "ai-tray": 1181.199951171875,
+      "intelligence": 1181.199951171875,
+      "live-captions": 1181.2999511715025
     },
-    "firstFrameOffsetMs": 941.9999511716888,
+    "firstFrameOffsetMs": 1176.5999511703849,
     "positionAnchored": true,
     "screenshot": "evidence/r24-w2/benchmark/screenshots/signal-fade-cold.png"
   },
   "Signal Fade-warm": {
-    "contentId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+    "contentId": "wfxitm_4A6698J5BEG1R53QB992T989QD",
     "trace": {
-      "traceId": "wfx-trace-d78b126c-ec80-42ea-be5e-64df3337e602",
-      "itemId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+      "traceId": "wfx-trace-9f1f3260-e911-4ae7-9307-a839cddcc225",
+      "itemId": "wfxitm_4A6698J5BEG1R53QB992T989QD",
       "realization": "browser",
       "markers": [
         {
@@ -347,57 +347,57 @@
         },
         {
           "marker": "navigation-start",
-          "offsetMs": 567.9999023438431,
+          "offsetMs": 2.199951171875,
           "detail": "click-to-navigation bridge"
         },
         {
           "marker": "player-surface-visible",
-          "offsetMs": 567.9999023438431,
+          "offsetMs": 272.99995117262006,
           "detail": "the streamed player shell parsed (stage + chrome in the DOM)"
         },
         {
           "marker": "playable-declared",
-          "offsetMs": 568.0999023439363,
+          "offsetMs": 273.199951171875,
           "detail": "runtime phase at shell render: buffering"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 1087.0999023439365,
+          "offsetMs": 762.5999511722475,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "first-frame-rendered",
-          "offsetMs": 1094.1999023440294,
+          "offsetMs": 775.0999511722475,
           "detail": "contained-surface-load — the provider's opaque page is the honest observable boundary (the containment law)"
         },
         {
           "marker": "seek-requested",
-          "offsetMs": 1998.39990234375,
+          "offsetMs": 1751.99995117262,
           "detail": "seek → 0ms"
         },
         {
           "marker": "seek-confirmed",
-          "offsetMs": 2038.89990234375,
+          "offsetMs": 1789.199951171875,
           "detail": "position 0ms accepted"
         },
         {
           "marker": "control-invoked",
-          "offsetMs": 2106.89990234375,
+          "offsetMs": 1883.5999511722475,
           "detail": "play"
         },
         {
           "marker": "control-confirmed",
-          "offsetMs": 2138.39990234375,
+          "offsetMs": 1937.5999511722475,
           "detail": "play → phase buffering"
         }
       ]
     },
     "enrichmentMountedAtMs": {
-      "ai-tray": 1094.2999023436569,
-      "intelligence": 1094.2999023436569,
-      "live-captions": 1094.2999023436569
+      "ai-tray": 775.199951171875,
+      "intelligence": 775.199951171875,
+      "live-captions": 775.199951171875
     },
-    "firstFrameOffsetMs": 1087.0999023439365,
+    "firstFrameOffsetMs": 762.5999511722475,
     "positionAnchored": true,
     "screenshot": "evidence/r24-w2/benchmark/screenshots/signal-fade-warm.png"
   }

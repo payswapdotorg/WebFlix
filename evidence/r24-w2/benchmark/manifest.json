@@ -1,10 +1,10 @@
 {
-  "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
-  "generatedAt": "2026-09-21T16:09:40.847Z",
+  "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
+  "generatedAt": "2026-09-21T17:34:31.275Z",
   "platform": "web",
   "environment": {
     "platform": "web",
-    "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+    "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
     "browser": "Chrome 153.0.0.0",
     "osDevice": "unknown OS",
     "viewport": "1280x800",
@@ -36,14 +36,14 @@
       "cachePass": "cold",
       "environment": {
         "platform": "web",
-        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
         "browser": "Chrome 153.0.0.0",
         "osDevice": "unknown OS",
         "viewport": "1280x800",
         "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
       },
       "content": {
-        "contentId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+        "contentId": "wfxitm_10R4DXK35WS4BBVMNB5B11J22B",
         "title": "Deep Field Diary",
         "realization": "browser",
         "samePublicContentOnYouTube": false
@@ -52,31 +52,31 @@
         {
           "metric": "navigation-to-player-visible",
           "valuesMs": [
-            0
+            335.5
           ]
         },
         {
           "metric": "click-to-first-frame",
           "valuesMs": [
-            772.9000000003725
+            843.4000976569951
           ]
         },
         {
           "metric": "time-to-playable",
           "valuesMs": [
-            253.20000000018624
+            338.20009765587747
           ]
         },
         {
           "metric": "seek-response-latency",
           "valuesMs": [
-            75.1000000000929
+            89.5
           ]
         },
         {
           "metric": "control-responsiveness",
           "valuesMs": [
-            65
+            34.1999999992554
           ]
         }
       ],
@@ -104,14 +104,14 @@
       "cachePass": "warm",
       "environment": {
         "platform": "web",
-        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
         "browser": "Chrome 153.0.0.0",
         "osDevice": "unknown OS",
         "viewport": "1280x800",
         "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
       },
       "content": {
-        "contentId": "wfxitm_4Q9K2K3GXCVNB3ZW514DRXADHH",
+        "contentId": "wfxitm_10R4DXK35WS4BBVMNB5B11J22B",
         "title": "Deep Field Diary",
         "realization": "browser",
         "samePublicContentOnYouTube": false
@@ -120,31 +120,31 @@
         {
           "metric": "navigation-to-player-visible",
           "valuesMs": [
-            0
+            270.2000000011176
           ]
         },
         {
           "metric": "click-to-first-frame",
           "valuesMs": [
-            728.2000000001863
+            929.800048828125
           ]
         },
         {
           "metric": "time-to-playable",
           "valuesMs": [
-            299.20000000018626
+            271.20004882849753
           ]
         },
         {
           "metric": "seek-response-latency",
           "valuesMs": [
-            45.799999999813735
+            33.100000001490116
           ]
         },
         {
           "metric": "control-responsiveness",
           "valuesMs": [
-            31.200000000186265
+            30.5
           ]
         }
       ],
@@ -172,14 +172,14 @@
       "cachePass": "cold",
       "environment": {
         "platform": "web",
-        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
         "browser": "Chrome 153.0.0.0",
         "osDevice": "unknown OS",
         "viewport": "1280x800",
         "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
       },
       "content": {
-        "contentId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+        "contentId": "wfxitm_5G6XFACHB7GAEARXQ9P2P1JZJM",
         "title": "Desert Rain Doc",
         "realization": "embed",
         "samePublicContentOnYouTube": false
@@ -188,31 +188,31 @@
         {
           "metric": "navigation-to-player-visible",
           "valuesMs": [
-            0
+            252.40000000037253
           ]
         },
         {
           "metric": "click-to-first-frame",
           "valuesMs": [
-            956.199951171875
+            815.5000976566225
           ]
         },
         {
           "metric": "time-to-playable",
           "valuesMs": [
-            363.29995117196813
+            254.20009765587747
           ]
         },
         {
           "metric": "seek-response-latency",
           "valuesMs": [
-            33.39999999990687
+            34.9000000003723
           ]
         },
         {
           "metric": "control-responsiveness",
           "valuesMs": [
-            50.59999999962747
+            29.700000001117587
           ]
         }
       ],
@@ -240,14 +240,14 @@
       "cachePass": "warm",
       "environment": {
         "platform": "web",
-        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
         "browser": "Chrome 153.0.0.0",
         "osDevice": "unknown OS",
         "viewport": "1280x800",
         "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
       },
       "content": {
-        "contentId": "wfxitm_1AZJV4P98QPA0AYB94R8PXVVMJ",
+        "contentId": "wfxitm_5G6XFACHB7GAEARXQ9P2P1JZJM",
         "title": "Desert Rain Doc",
         "realization": "embed",
         "samePublicContentOnYouTube": false
@@ -256,31 +256,31 @@
         {
           "metric": "navigation-to-player-visible",
           "valuesMs": [
-            0
+            303
           ]
         },
         {
           "metric": "click-to-first-frame",
           "valuesMs": [
-            655.7000000001863
+            865.5000976566225
           ]
         },
         {
           "metric": "time-to-playable",
           "valuesMs": [
-            268.3000000002794
+            303.2000976577401
           ]
         },
         {
           "metric": "seek-response-latency",
           "valuesMs": [
-            36.20000000018649
+            32.90000000037253
           ]
         },
         {
           "metric": "control-responsiveness",
           "valuesMs": [
-            36.89999999990687
+            38.19999999925494
           ]
         }
       ],
@@ -308,14 +308,14 @@
       "cachePass": "cold",
       "environment": {
         "platform": "web",
-        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
         "browser": "Chrome 153.0.0.0",
         "osDevice": "unknown OS",
         "viewport": "1280x800",
         "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
       },
       "content": {
-        "contentId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+        "contentId": "wfxitm_4A6698J5BEG1R53QB992T989QD",
         "title": "Signal Fade",
         "realization": "browser",
         "samePublicContentOnYouTube": false
@@ -324,31 +324,31 @@
         {
           "metric": "navigation-to-player-visible",
           "valuesMs": [
-            0
+            391.2999999988824
           ]
         },
         {
           "metric": "click-to-first-frame",
           "valuesMs": [
-            941.9999511716888
+            1176.5999511703849
           ]
         },
         {
           "metric": "time-to-playable",
           "valuesMs": [
-            305.199951171875
+            392.9999511707574
           ]
         },
         {
           "metric": "seek-response-latency",
           "valuesMs": [
-            44.70000000018263
+            38.90000000037253
           ]
         },
         {
           "metric": "control-responsiveness",
           "valuesMs": [
-            31.899999999906868
+            31.5
           ]
         }
       ],
@@ -376,14 +376,14 @@
       "cachePass": "warm",
       "environment": {
         "platform": "web",
-        "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+        "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
         "browser": "Chrome 153.0.0.0",
         "osDevice": "unknown OS",
         "viewport": "1280x800",
         "networkProfile": "unthrottled (the deterministic fixtures boot; the provider URLs blocked at the network layer)"
       },
       "content": {
-        "contentId": "wfxitm_75P0H935EHJ2PPKTVTVKCXRSYQ",
+        "contentId": "wfxitm_4A6698J5BEG1R53QB992T989QD",
         "title": "Signal Fade",
         "realization": "browser",
         "samePublicContentOnYouTube": false
@@ -392,31 +392,31 @@
         {
           "metric": "navigation-to-player-visible",
           "valuesMs": [
-            0
+            270.80000000074506
           ]
         },
         {
           "metric": "click-to-first-frame",
           "valuesMs": [
-            1087.0999023439365
+            762.5999511722475
           ]
         },
         {
           "metric": "time-to-playable",
           "valuesMs": [
-            568.0999023439363
+            273.199951171875
           ]
         },
         {
           "metric": "seek-response-latency",
           "valuesMs": [
-            40.5
+            37.19999999925494
           ]
         },
         {
           "metric": "control-responsiveness",
           "valuesMs": [
-            31.5
+            54
           ]
         }
       ],
@@ -445,7 +445,7 @@
     "cachePass": "cold",
     "environment": {
       "platform": "web",
-      "commitSha": "04212274b98d6ae83a8cce699b83f369d73c2773",
+      "commitSha": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
       "browser": "Chrome 153.0.0.0",
       "osDevice": "unknown OS",
       "viewport": "1280x800",
@@ -461,56 +461,56 @@
       {
         "metric": "navigation-to-player-visible",
         "valuesMs": [
-          0,
-          0,
-          0,
-          0,
-          0,
-          0
+          335.5,
+          270.2000000011176,
+          252.40000000037253,
+          303,
+          391.2999999988824,
+          270.80000000074506
         ]
       },
       {
         "metric": "click-to-first-frame",
         "valuesMs": [
-          772.9000000003725,
-          728.2000000001863,
-          956.199951171875,
-          655.7000000001863,
-          941.9999511716888,
-          1087.0999023439365
+          843.4000976569951,
+          929.800048828125,
+          815.5000976566225,
+          865.5000976566225,
+          1176.5999511703849,
+          762.5999511722475
         ]
       },
       {
         "metric": "time-to-playable",
         "valuesMs": [
-          253.20000000018624,
-          299.20000000018626,
-          363.29995117196813,
-          268.3000000002794,
-          305.199951171875,
-          568.0999023439363
+          338.20009765587747,
+          271.20004882849753,
+          254.20009765587747,
+          303.2000976577401,
+          392.9999511707574,
+          273.199951171875
         ]
       },
       {
         "metric": "seek-response-latency",
         "valuesMs": [
-          75.1000000000929,
-          45.799999999813735,
-          33.39999999990687,
-          36.20000000018649,
-          44.70000000018263,
-          40.5
+          89.5,
+          33.100000001490116,
+          34.9000000003723,
+          32.90000000037253,
+          38.90000000037253,
+          37.19999999925494
         ]
       },
       {
         "metric": "control-responsiveness",
         "valuesMs": [
-          65,
-          31.200000000186265,
-          50.59999999962747,
-          36.89999999990687,
-          31.899999999906868,
-          31.5
+          34.1999999992554,
+          30.5,
+          29.700000001117587,
+          38.19999999925494,
+          31.5,
+          54
         ]
       }
     ],

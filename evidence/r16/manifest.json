@@ -1,17 +1,17 @@
 {
   "schema": "wfx-journey-manifest/1",
-  "commit": "6e12f667f2778996152bf862e3102b8a0790a729",
-  "branch": "wfx/r23/web",
+  "commit": "cd5ad45b8404c817a53eb4431147cf1f241d5259",
+  "branch": "wfx/r24/web",
   "environment": {
     "mode": "web-fixtures",
     "webUrl": "http://localhost:3101",
     "ci": false,
-    "startedAt": "2026-09-21T00:49:40.005Z",
-    "finishedAt": "2026-09-21T00:56:50.584Z",
+    "startedAt": "2026-09-21T17:25:02.294Z",
+    "finishedAt": "2026-09-21T17:32:55.220Z",
     "determinism": [
       "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
       "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
-      "one isolated agent-browser session per run (wfx-journeys-1789951792529)",
+      "one isolated agent-browser session per run (wfx-journeys-1790011513594)",
       "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
       "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
       "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
@@ -19,9 +19,9 @@
     ]
   },
   "summary": {
-    "total": 38,
-    "encoded": 38,
-    "passed": 38,
+    "total": 40,
+    "encoded": 40,
+    "passed": 40,
     "failed": 0,
     "notRun": 0
   },
@@ -148,7 +148,7 @@
         "evidence/r16/j01-first-launch-profile-selection-onboarding.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4928
+      "durationMs": 4712
     },
     {
       "id": "J02",
@@ -218,9 +218,9 @@
           "pass": true
         },
         {
-          "description": "cards render no source branding (source identity is secondary to the canonical item)",
-          "expected": "no connector identity in the card markup",
-          "observed": "no connector branding",
+          "description": "cards keep the source identity SECONDARY (no source branding in the canonical title; the compact provenance chip is the R24-C pairing)",
+          "expected": "the title line carries no connector identity (the chip may render below it)",
+          "observed": "no source branding in the primary identity",
           "pass": true
         },
         {
@@ -242,7 +242,7 @@
         "evidence/r16/j02-home-discovery-hero-rows-intent-entry.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2488
+      "durationMs": 2462
     },
     {
       "id": "J03",
@@ -294,7 +294,7 @@
         "evidence/r16/j03-long-form-watch-browsing.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2480
+      "durationMs": 2274
     },
     {
       "id": "J04",
@@ -388,7 +388,7 @@
         "evidence/r16/j04-shorts-vertical-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3755
+      "durationMs": 3047
     },
     {
       "id": "J05",
@@ -446,7 +446,7 @@
         "evidence/r16/j05-unified-search.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5783
+      "durationMs": 5583
     },
     {
       "id": "J06",
@@ -528,7 +528,7 @@
         "evidence/r16/j06-item-detail-availability-realization-choice.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 3895
+      "durationMs": 4088
     },
     {
       "id": "J07",
@@ -540,13 +540,13 @@
         {
           "description": "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_5N3V25H5MW8Z52CB9HYPGDD9RT&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_5N3V25H5MW8Z52CB9HYPGDD9RT&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -588,7 +588,7 @@
         {
           "description": "the embed note states the attestation truth",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"no provider official-embed attestation\"",
-          "observed": "<12527 chars of html>",
+          "observed": "<28859 chars of html>",
           "pass": true
         },
         {
@@ -622,7 +622,7 @@
         "evidence/r16/j07-official-embed-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5584
+      "durationMs": 5655
     },
     {
       "id": "J08",
@@ -634,13 +634,13 @@
         {
           "description": "the search surface offers the browser-realized item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -682,7 +682,7 @@
         {
           "description": "the containment note states the no-injection boundary (provider security is not bypassed)",
           "expected": "innerHTML of [data-wfx-surface='player'] contains \"never injects into or inspects the provider page\"",
-          "observed": "<22894 chars of html>",
+          "observed": "<39930 chars of html>",
           "pass": true
         },
         {
@@ -698,7 +698,7 @@
         "evidence/r16/j08-contained-browser-playback.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5686
+      "durationMs": 6353
     },
     {
       "id": "J09",
@@ -710,7 +710,7 @@
         {
           "description": "the search surface offers the multi-realization item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -792,7 +792,7 @@
         "evidence/r16/j09-external-playback-fallback-return-context.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9051
+      "durationMs": 9219
     },
     {
       "id": "J10",
@@ -804,7 +804,7 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -822,7 +822,7 @@
         {
           "description": "the absent notes state the provider truth (never a fake success)",
           "expected": "text of [data-wfx-surface='item'] contains \"not available on this source\"",
-          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\n\nPlay\nLike: not available on this source\nSave: not available on this source\nWhere to watch\n\nPlays inside WebFlix when you press play.\n\n4 ways to play here\n5 ways offered across your sources and copies\n\nWebFlix source\n\nPlays in a contained window\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\nPlays natively in the Desktop app\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nNative playback runs in the Desktop app — this platform plays it another way.\nOpens outside WebFlix\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\nPlays inside WebFlix\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\n\nAuthorized peer copy\n\nAuthorized peer copy\nyour permitted copy\nPublic — your own permitted copy, no provider sign-in needed.\nA copy you are permitted to play, fetched peer-to-peer — it plays like any other way of watching, keeps your place, and lands in your Library.\nPlay this way\nAI actions\ntranscribe · subtitles · translate · dub · commentary\nWhat's inside this title — 4 chapters, 4 findable moments\nShape what WebFlix shows you next\nMore like this\nNot interested\nDon't recommend this source\nI've already watched this\n\nFeedback is immediate and reversible — undoing restores the signal.\n\nWhat this source can do\nYour copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\n\nAcquisitions run in the WebFlix desktop app — this status is the honest limited view Web can show. Make this title available offline there.\n\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\n\nSF\nVIDEO\n10m 0s\n\nSignal Fade\n\nPlayback options on details\"",
+          "observed": "\"AD\nAsteroid Drift\n\nMOVIE\n2h 0m\nAvailable\nFrom fake-source\n\nPlay\nLike: not available on this source\nSave: not available on this source\nSave to Watchlist\nSave to a playlist\nShare\nQueue\nWhere to watch\n\nPlays inside WebFlix when you press play.\n\n4 ways to play here\n5 ways offered across your sources and copies\n\nWebFlix source\n\nPlays in a contained window\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\nPlays natively in the Desktop app\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nNative playback runs in the Desktop app — this platform plays it another way.\nOpens outside WebFlix\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\nPlays inside WebFlix\nsource fake-source\nThis source's own sign-in is active, so playback works without a WebFlix account.\nPlay this way\n\nAuthorized peer copy\n\nAuthorized peer copy\nyour permitted copy\nPublic — your own permitted copy, no provider sign-in needed.\nA copy you are permitted to play, fetched peer-to-peer — it plays like any other way of watching, keeps your place, and lands in your Library.\nPlay this way\nAI actions\ntranscribe · subtitles · translate · dub · commentary\nWhat's inside this title — 4 chapters, 4 findable moments\nShape what WebFlix shows you next\nMore like this\nNot interested\nDon't recommend this source\nI've already watched this\n\nFeedback is immediate and reversible — undoing restores the signal.\n\nWhat this source can do\nYour copy\n\nAVAILABLE\n\nReady to be made available offline.\n\nMake available offline\nAdvance scripted download (dev)\n\nAcquisitions run in the WebFlix desktop app — this status is the honest limited view Web can show. Make this title available offline there.\n\nAdvanced diagnostics\nMore to explore\nHL\nSERIES\n\nHarbor Lights\n\nPlayback options on details\nFrom fake-source\n\nNR\nSHORT\n45s\n\nNeon Rain\n\nPlayback options on details\nFrom fake-source\n\nDF\nVIDEO\n30m 0s\n\nDeep Field Diary\n\nPlayback options on details\nFrom fake-source\n\nSB\nVIDEO\n10m 0s\n\nStatic Bloom\n\nPlayback options on details\nFrom fake-source\n\nRC\nSHORT\n30s\n\nRain Check\n\nPlayback options on details\nFrom fake-source\n\nDR\nVIDEO\n40m 0s\n\nDesert Rain Doc\n\nPlayback options on details\nFrom fake-source\n\nSF\nVIDEO\n10m 0s\n\nSignal Fade\n\nPlayback options on details\nFrom fake-source\"",
           "pass": true
         },
         {
@@ -834,7 +834,7 @@
         {
           "description": "the item page offers playback (the report surface)",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -862,7 +862,7 @@
         "evidence/r16/j10-like-save-action-synchronization-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 35932
+      "durationMs": 5434
     },
     {
       "id": "J11",
@@ -944,7 +944,7 @@
         "evidence/r16/j11-library-watchlist-history.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2461
+      "durationMs": 2447
     },
     {
       "id": "J12",
@@ -956,13 +956,13 @@
         {
           "description": "the search surface offers the item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
           "description": "the detail page offers playback",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -996,7 +996,7 @@
         "evidence/r16/j12-cross-device-resume.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7567
+      "durationMs": 6501
     },
     {
       "id": "J13",
@@ -1042,7 +1042,7 @@
         "evidence/r16/j13-account-profile-identity-lifecycle.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2582
+      "durationMs": 2717
     },
     {
       "id": "J14",
@@ -1124,7 +1124,7 @@
         "evidence/r16/j14-source-connect-reauthorize-disconnect.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2276
+      "durationMs": 2352
     },
     {
       "id": "J15",
@@ -1176,7 +1176,7 @@
         "evidence/r16/j15-recommendation-feedback-controls.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4308
+      "durationMs": 4407
     },
     {
       "id": "J16",
@@ -1216,7 +1216,7 @@
         "evidence/r16/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4340
+      "durationMs": 4354
     },
     {
       "id": "J17",
@@ -1268,7 +1268,7 @@
         "evidence/r16/j17-explicit-intent-learn-happier-surprise-tonight-friend-taste.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5612
+      "durationMs": 5907
     },
     {
       "id": "J18",
@@ -1308,7 +1308,7 @@
         "evidence/r16/j18-attention-modes-mindful-balanced-immersive-custom.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 4029
+      "durationMs": 3920
     },
     {
       "id": "J19",
@@ -1390,7 +1390,7 @@
         "evidence/r16/j19-webflix-model-byom-local-model-policy.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 2762
+      "durationMs": 2556
     },
     {
       "id": "J20",
@@ -1514,7 +1514,7 @@
         "evidence/r16/j20-ai-subtitles-translation-transcription-dubbing-commentary.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 10352
+      "durationMs": 11291
     },
     {
       "id": "J21",
@@ -1526,7 +1526,7 @@
         {
           "description": "the search surface offers the scripted authorized acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -1614,7 +1614,7 @@
         "evidence/r16/j21-authorized-torrent-acquisition-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 6133
+      "durationMs": 6061
     },
     {
       "id": "J22",
@@ -1672,7 +1672,7 @@
         "evidence/r16/j22-torrent-metadata-and-file-selection-web-limited-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5597
+      "durationMs": 5453
     },
     {
       "id": "J23",
@@ -1778,7 +1778,7 @@
         "evidence/r16/j23-torrent-playback-before-full-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 12480
+      "durationMs": 10998
     },
     {
       "id": "J24",
@@ -1902,7 +1902,7 @@
         "evidence/r16/j24-torrent-background-completion-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 11775
+      "durationMs": 13114
     },
     {
       "id": "J25",
@@ -1914,7 +1914,7 @@
         {
           "description": "the search surface offers the interrupted-acquisition item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_6BAT5J9419MCEMZ52QP874CF86&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "observed": "/item?id=wfxitm_4F114YD95A5K75J58HVHH0FKYB&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
           "pass": true
         },
         {
@@ -1986,7 +1986,7 @@
         {
           "description": "the search surface offers the resumed-session item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -2032,7 +2032,7 @@
         "evidence/r16/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9035
+      "durationMs": 9239
     },
     {
       "id": "J26",
@@ -2096,7 +2096,7 @@
         "evidence/r16/j26-verified-local-asset-appears-in-library-web-status-read-surface.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5256
+      "durationMs": 5295
     },
     {
       "id": "J27",
@@ -2120,7 +2120,7 @@
         {
           "description": "the search surface offers an unscripted item (no acquisition session)",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_4GR1SQ4XR873RMRHAZMA5B1ZQE&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "observed": "/item?id=wfxitm_1H0FJ6962W7MHN01ENN296JF8N&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
           "pass": true
         },
         {
@@ -2148,7 +2148,7 @@
         "evidence/r16/j27-native-local-media-playback-web-constrained-truth.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 5138
+      "durationMs": 5182
     },
     {
       "id": "J28",
@@ -2160,13 +2160,13 @@
         {
           "description": "the search surface offers the item while the source is signed in",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/item?id=wfxitm_5N3V25H5MW8Z52CB9HYPGDD9RT&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
           "description": "the item page offers its play decision while the source is signed in",
           "expected": "a player link",
-          "observed": "/player?id=wfxitm_1P299T4306YH0141VQT0SXVW7W&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "observed": "/player?id=wfxitm_5N3V25H5MW8Z52CB9HYPGDD9RT&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
           "pass": true
         },
         {
@@ -2296,7 +2296,7 @@
         "evidence/r16/j28-provider-credential-expiry-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 15277
+      "durationMs": 13804
     },
     {
       "id": "J29",
@@ -2362,7 +2362,7 @@
         {
           "description": "the search surface offers the network-loss item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_32WBT7YZBNZWST3KEYX282NFMH&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
+          "observed": "/item?id=wfxitm_5WY5YFVN3W6F9YAAKXWWSCG968&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
           "pass": true
         },
         {
@@ -2426,7 +2426,7 @@
         "evidence/r16/j29-network-loss-playback-recovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 17333
+      "durationMs": 17172
     },
     {
       "id": "J30",
@@ -2514,7 +2514,7 @@
         "evidence/r16/j30-unsupported-capability-honesty.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7541
+      "durationMs": 7612
     },
     {
       "id": "J31",
@@ -2526,19 +2526,19 @@
         {
           "description": "the search surface anchors the canonical item",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
           "description": "the item detail surface carries the SAME canonical identity the search card linked",
-          "expected": "the detail carries wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
-          "observed": "wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
+          "expected": "the detail carries wfxitm_6FR4B73PN440PXKYGBR7MF5DMC",
+          "observed": "wfxitm_6FR4B73PN440PXKYGBR7MF5DMC",
           "pass": true
         },
         {
           "description": "the player entry carries the SAME canonical identity (one item identity across all three surfaces)",
-          "expected": "the play link carries wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
-          "observed": "wfxitm_2EK56V91EA2E654B1SGG9N0AWZ",
+          "expected": "the play link carries wfxitm_6FR4B73PN440PXKYGBR7MF5DMC",
+          "observed": "wfxitm_6FR4B73PN440PXKYGBR7MF5DMC",
           "pass": true
         },
         {
@@ -2584,7 +2584,7 @@
         "evidence/r16/j31-cross-platform-web-desktop-parity-web-side-anchors.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 9306
+      "durationMs": 9301
     },
     {
       "id": "J32",
@@ -2596,7 +2596,7 @@
         {
           "description": "the search card links the CANONICAL identity (id-first, not source-first)",
           "expected": "an /item?id=wfxitm_… link",
-          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -2644,7 +2644,7 @@
         {
           "description": "every search card carries a distinct canonical identity (the join is identity-keyed, not source-keyed)",
           "expected": "3 distinct canonical ids",
-          "observed": "wfxitm_4GR1SQ4XR873RMRHAZMA5B1ZQE, wfxitm_1X7XXQ7FHEB8K92H140BSRDCM4, wfxitm_6BAT5J9419MCEMZ52QP874CF86",
+          "observed": "wfxitm_1H0FJ6962W7MHN01ENN296JF8N, wfxitm_4F85N6EXXFTNH6WBM9GTV477FR, wfxitm_4F114YD95A5K75J58HVHH0FKYB",
           "pass": true
         }
       ],
@@ -2654,7 +2654,7 @@
         "evidence/r16/j32-source-neutral-identity-same-item-multiple-realizations.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 7437
+      "durationMs": 6924
     },
     {
       "id": "J33",
@@ -3048,7 +3048,7 @@
         "evidence/r16/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 21567
+      "durationMs": 23670
     },
     {
       "id": "J34",
@@ -3150,7 +3150,7 @@
         {
           "description": "the home feed offers a content card (the item path starts from Home)",
           "expected": "an aria-labeled card link",
-          "observed": "/item?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/item?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3240,7 +3240,7 @@
         {
           "description": "the item hub offers the play decision (the player path starts from the item)",
           "expected": "a play link",
-          "observed": "/player?id=wfxitm_2EK56V91EA2E654B1SGG9N0AWZ&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "observed": "/player?id=wfxitm_6FR4B73PN440PXKYGBR7MF5DMC&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
           "pass": true
         },
         {
@@ -3316,7 +3316,7 @@
         "evidence/r16/j34-capability-discoverability-from-normal-product-surfaces.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 14069
+      "durationMs": 13376
     },
     {
       "id": "J36",
@@ -3478,7 +3478,7 @@
         {
           "description": "a source-backed item is browsable from the normal surface (no direct route navigation)",
           "expected": "a card link on Home",
-          "observed": "/item?id=wfxitm_4GR1SQ4XR873RMRHAZMA5B1ZQE&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "observed": "/item?id=wfxitm_1H0FJ6962W7MHN01ENN296JF8N&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
           "pass": true
         },
         {
@@ -3632,7 +3632,7 @@
         "evidence/r16/j36-major-user-journey-completion-no-dead-end-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 41414
+      "durationMs": 38090
     },
     {
       "id": "J37",
@@ -3662,7 +3662,7 @@
         {
           "description": "the search surface offers the public title anonymously",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -3680,7 +3680,7 @@
         {
           "description": "the item page offers Play to the anonymous viewer",
           "expected": "a play href",
-          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/player?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -3728,7 +3728,7 @@
         {
           "description": "the realization switch is offered on the anonymous player (public playback controls)",
           "expected": "a switch href",
-          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000&mode=browser",
+          "observed": "/player?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000&mode=browser",
           "pass": true
         },
         {
@@ -3756,7 +3756,7 @@
         "evidence/r16/j37-anonymous-public-viewing-without-webflix-login.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 44329
+      "durationMs": 45643
     },
     {
       "id": "J38",
@@ -3768,7 +3768,7 @@
         {
           "description": "the search surface offers the peer-copy-capable title",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_1X7XXQ7FHEB8K92H140BSRDCM4&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000",
+          "observed": "/item?id=wfxitm_4F85N6EXXFTNH6WBM9GTV477FR&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000",
           "pass": true
         },
         {
@@ -3786,7 +3786,7 @@
         {
           "description": "the peer copy is ELIGIBLE for the primary play decision (its own Play-this-way path, not hidden under Settings or diagnostics)",
           "expected": "a realization=torrent play path",
-          "observed": "/player?id=wfxitm_1X7XXQ7FHEB8K92H140BSRDCM4&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000&realization=torrent",
+          "observed": "/player?id=wfxitm_4F85N6EXXFTNH6WBM9GTV477FR&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000&realization=torrent",
           "pass": true
         },
         {
@@ -3978,7 +3978,7 @@
         {
           "description": "the Library's offline truth names this title's verified copy",
           "expected": "Rain Check in the offline library",
-          "observed": "Offline and verified\nAD\nMOVIE\n2h 0m\n\nAsteroid Drift\n\nPlayback options on details\n\nReady offline · 87 kB · watchable without a connection\n\nHL\nSERIES\n\nHarbor Ligh",
+          "observed": "Offline and verified\nAD\nMOVIE\n2h 0m\n\nAsteroid Drift\n\nPlayback options on details\nFrom fake-source\n\nReady offline · 87 kB · watchable without a connection\n\nHL\nSE",
           "pass": true
         },
         {
@@ -4002,7 +4002,7 @@
         {
           "description": "the ordinary-swarm title is offered",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_6BAT5J9419MCEMZ52QP874CF86&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "observed": "/item?id=wfxitm_4F114YD95A5K75J58HVHH0FKYB&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
           "pass": true
         },
         {
@@ -4024,7 +4024,7 @@
         "evidence/r16/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 36361
+      "durationMs": 35018
     },
     {
       "id": "J39",
@@ -4072,7 +4072,7 @@
         {
           "description": "the moment's jump path targets the player at its timestamp (the resume seam)",
           "expected": "a player href with resume",
-          "observed": "/player?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&resume=46100",
+          "observed": "/player?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&resume=46100",
           "pass": true
         },
         {
@@ -4090,7 +4090,7 @@
         {
           "description": "the title search offers the item too",
           "expected": "an item link",
-          "observed": "/item?id=wfxitm_2EFWSMJWM8RT5Y4YK08SAY24EJ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
           "pass": true
         },
         {
@@ -4214,7 +4214,549 @@
         "evidence/r16/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 18867
+      "durationMs": 50465
+    },
+    {
+      "id": "J40",
+      "title": "YouTube viewer parity",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "Home renders (the parity walk's fresh start)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source-neutral cards render (the R24-C Home feed pairing)",
+          "expected": "[data-wfx-card] present in the DOM",
+          "observed": "15 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search box renders (the unified Search pairing)",
+          "expected": "[data-wfx-searchbox] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search suggestions render under the box (the R24-C Search-suggestions pairing)",
+          "expected": "[data-wfx-suggestions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "at least one suggestion row renders (keyboard-navigable)",
+          "expected": "[data-wfx-suggestion] present in the DOM",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the title search offers the item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the item hub renders (the canonical identity surface)",
+          "expected": "[data-wfx-surface='item'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the queue-add control renders on the item hub",
+          "expected": "[data-wfx-queue-add] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the item hub's queue-add control confirms the add (the pairing's own outcome state)",
+          "expected": "data-wfx-queue-added=true",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the play click lands in the player (the one obvious primary play action)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player chrome renders with the shell (the stable-chrome law)",
+          "expected": "[data-wfx-chrome] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the play/pause control (Space/K grammar)",
+          "expected": "[data-wfx-chrome-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the scrub bar (the direct-manipulation seek)",
+          "expected": "[data-wfx-chrome-seek] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the fullscreen control (F)",
+          "expected": "[data-wfx-chrome-fullscreen] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the settings cluster (speed/quality/captions truths)",
+          "expected": "[data-wfx-chrome-settings] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the keyboard-shortcut sheet (T)",
+          "expected": "[data-wfx-chrome-keyboard] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the speed steps render in the settings panel",
+          "expected": "[data-wfx-chrome-speed] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the quality truth row renders (the honest per-rung sentence)",
+          "expected": "[data-wfx-chrome-quality] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider rung's volume truth renders (realization-exposed, never a fabricated control)",
+          "expected": "[data-wfx-chrome-volume-truth] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the L keyboard seek moves the position (acceptance as evidence — never a ticker)",
+          "expected": "the position readout changed",
+          "observed": "0:00 → 0:10",
+          "pass": true
+        },
+        {
+          "description": "the up-next rail renders beside the player",
+          "expected": "[data-wfx-up-next] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the related projection renders (the source-neutral next content)",
+          "expected": "[data-wfx-up-next-related] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the autoplay toggle renders (the attention-policy-derived control)",
+          "expected": "[data-wfx-autoplay-toggle] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the autoplay policy sentence renders (the policy truth, never a raw switch)",
+          "expected": "[data-wfx-autoplay-policy] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session queue's own seam carries the queued item (the queue pairing's honest state)",
+          "expected": "the /api/queue state lists Deep Field Diary",
+          "observed": "1 entr(ies)",
+          "pass": true
+        },
+        {
+          "description": "the playlist form renders (the named-list write)",
+          "expected": "[data-wfx-watchlist-playlist-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts vertical feed renders",
+          "expected": "[data-wfx-shorts-viewport] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts speed control renders (the Shorts speed row)",
+          "expected": "[data-wfx-shorts-speed] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts clear-screen toggle renders (the distraction-free row)",
+          "expected": "[data-wfx-shorts-clearscreen-toggle] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts inline feedback toggle renders (the recommendation feedback row)",
+          "expected": "[data-wfx-shorts-feedback-toggle] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts feedback menu offers its controls",
+          "expected": "[data-wfx-shorts-feedback-kind] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player's feedback controls render (the parity seam)",
+          "expected": "[data-wfx-feedback-controls] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the 'More like this' control renders (the frozen feedback vocabulary)",
+          "expected": "[data-wfx-feedback='more-like-this'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library renders",
+          "expected": "[data-wfx-library] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Watchlist section renders (the Watch Later pairing)",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the History section renders (the Watch history pairing)",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Playlists section renders (the WebFlix playlists pairing)",
+          "expected": "[data-wfx-library-playlists] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Watchlist section answers its honest fresh-session state (the typed empty state, never fabricated saves)",
+          "expected": "the honest empty state",
+          "observed": "Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical ",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j40-youtube-parity.png",
+        "evidence/r16/j40-youtube-viewer-parity.snapshot.txt",
+        "evidence/r16/j40-youtube-viewer-parity.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 21780
+    },
+    {
+      "id": "J41",
+      "title": "YouTube-equivalent playback startup",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the benchmark title 'Deep Field Diary' is discoverable through search",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_7N32335T9H168C9FXQKF4QC8S2&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the play click lands in the player",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the first frame records (the stage observer's marker)",
+          "expected": "the first-frame-rendered marker present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the in-page startup trace exists",
+          "expected": "the trace object",
+          "observed": "6 markers",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'play-clicked' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'navigation-start' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'player-surface-visible' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'playable-declared' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'first-frame-rendered' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the trace binds the realization",
+          "expected": "browser",
+          "observed": "browser",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the play click bridges onto the trace (the click-to-first-frame origin)",
+          "expected": "offset 0 (the trace origin is the click)",
+          "observed": "0ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: click-to-first-frame is a positive finite measurement",
+          "expected": "> 0 and finite",
+          "observed": "670ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the enrichment section 'ai-tray' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 674ms",
+          "observed": "670ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the enrichment section 'intelligence' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 674ms",
+          "observed": "670ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the enrichment section 'live-captions' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 674ms",
+          "observed": "670ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the position anchor stays evidence-anchored while idle (never a fake-buffering tick)",
+          "expected": "the readout unchanged without a command",
+          "observed": "0:00 vs 0:00",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the keyboard seek records its request/confirm pair (the real command round trip)",
+          "expected": "seek-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the play/pause control records its invoked/confirm pair",
+          "expected": "control-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the flushed traces retain on the server seam (the raw observations readable back)",
+          "expected": "the store answers with the retained count",
+          "observed": "39 trace(s)",
+          "pass": true
+        },
+        {
+          "description": "the benchmark title 'Desert Rain Doc' is discoverable through search",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4F114YD95A5K75J58HVHH0FKYB&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the play click lands in the player",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the first frame records (the stage observer's marker)",
+          "expected": "the first-frame-rendered marker present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the in-page startup trace exists",
+          "expected": "the trace object",
+          "observed": "6 markers",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'play-clicked' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'navigation-start' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'player-surface-visible' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'playable-declared' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'first-frame-rendered' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the trace binds the realization",
+          "expected": "embed",
+          "observed": "embed",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the play click bridges onto the trace (the click-to-first-frame origin)",
+          "expected": "offset 0 (the trace origin is the click)",
+          "observed": "0ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: click-to-first-frame is a positive finite measurement",
+          "expected": "> 0 and finite",
+          "observed": "695ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the enrichment section 'ai-tray' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 702ms",
+          "observed": "695ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the enrichment section 'intelligence' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 702ms",
+          "observed": "695ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the enrichment section 'live-captions' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 702ms",
+          "observed": "695ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the position anchor stays evidence-anchored while idle (never a fake-buffering tick)",
+          "expected": "the readout unchanged without a command",
+          "observed": "0:00 vs 0:00",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the keyboard seek records its request/confirm pair (the real command round trip)",
+          "expected": "seek-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the play/pause control records its invoked/confirm pair",
+          "expected": "control-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the flushed traces retain on the server seam (the raw observations readable back)",
+          "expected": "the store answers with the retained count",
+          "observed": "40 trace(s)",
+          "pass": true
+        },
+        {
+          "description": "the Where-to-watch row offers the authorized peer copy ('Play this way' — the switch intent)",
+          "expected": "[data-wfx-watch-switch='authorized-peer-copy'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the switch lands on the peer-copy stage (the first-class torrent realization)",
+          "expected": "[data-wfx-torrent-stage] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the realization-switch request records (the switch intent on the player trace)",
+          "expected": "realization-switch-requested at the click origin",
+          "observed": "0ms",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy stage names its rung truth (plays here or the honest Desktop next step)",
+          "expected": "[data-wfx-torrent-rung-detail] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j41-playback-startup.png",
+        "evidence/r16/j41-youtube-equivalent-playback-startup.snapshot.txt",
+        "evidence/r16/j41-youtube-equivalent-playback-startup.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 24668
     }
   ],
   "limitations": [
@@ -4337,6 +4879,18 @@
       "kind": "local-only",
       "note": "The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.",
       "procedure": "LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    },
+    {
+      "journeyId": "J41",
+      "kind": "configuration-limit",
+      "note": "The R24-W2 web encoding measures the REAL startup path over the fixtures boot (the complete assertable marker set — the click-bridged trace origin, the streamed shell's parse, the phase declaration, the first frame at the contained-surface boundary, the seek/control pairs, the realization-switch pair — plus the MEASURED startup architecture laws: the first frame preceding every enrichment mount, the evidence-anchored position, the retained raw observations). The YouTube COMPARATIVE baseline is honestly out of scope in this configuration: the fixture catalog's content is WebFlix-internal (no identical public YouTube content — the same-content law answers samePublicContentOnYouTube=false), and this sandbox has no route to the public YouTube product. The FRESH-SESSION cold/warm cache battery (a brand-new browser per cold pass, the same browser for the warm pass) is the benchmark harness's own record under evidence/r24-w2/benchmark/ — the journey's session is shared with J01-J40 (its passes are warm by construction, which the journey never claims otherwise).",
+      "procedure": "LEAD (the comparative protocol — the plan's lead-owned 'comparative performance test protocol'): select real public content available on BOTH systems, run the same browser/device/network profile over cold and warm cache passes on WebFlix AND YouTube, record the same metric set (the shared telemetry contract's marker pairs), evaluate the frozen R24-E thresholds (p50 +150ms / p75 +300ms / p95 +750ms TTFF deltas, startup failure +0.5pp, first-60s rebuffer +0.25pp), and attach the traces + the evaluation record under evidence/r24-lab/. The WebFlix-internal benchmark record (evidence/r24-w2/benchmark/) is the standing measurement of this lane's startup architecture laws."
+    },
+    {
+      "journeyId": "J40",
+      "kind": "configuration-limit",
+      "note": "The R24-W2 encoding walks the viewer-parity flow end to end over the fixtures boot: the walk's own watchlist/playlist/queue WRITES answer their typed success at the CONTROLS (the 'Saved' status, the queue-add's outcome state, the write routes' dev-boot bridge resolving the item through the runtime's own search seam), but the cross-PAGE read of those writes (the Library page listing them) is kept apart by the dev boot's per-route module graphs — the same documented doctrine the J12 limitation records for the watch-state fold (the single-bundle production boot shares one runtime instance: the writes are visible there). The Library assertions therefore carry the fresh session's HONEST states (the typed empty states — J11's own law) plus the sections' presence (the pairing laws).",
+      "procedure": "LEAD (the production parity sweep — the J35-class run): deploy the integrated tree (the single-bundle production build), drive the same J40 walk against the deployed boot, and capture the Library showing the walk's own watchlist/playlist writes under evidence/<run>/ (the production runtime is one instance: the writes cross pages)."
     }
   ]
 }
