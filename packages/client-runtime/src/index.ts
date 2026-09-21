@@ -143,6 +143,7 @@ export * from "./anonymous-viewing";
 export * from "./anonymous-playback-boundary";
 export * from "./torrent-realization";
 export * from "./parity-taxonomy";
+export * from "./playback-telemetry";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
