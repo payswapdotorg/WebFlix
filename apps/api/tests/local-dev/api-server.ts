@@ -48,27 +48,27 @@ import {
   type SqlRow,
 } from "@wfx/persistence";
 
-import { GET as healthGET } from "../../src/app/api/health/route";
-import { GET as intelligenceGET } from "../../src/app/experience/intelligence/route";
-import { GET as metadataGET } from "../../src/app/experience/metadata/route";
-import { GET as resolveGET } from "../../src/app/experience/resolve/route";
-import { GET as searchGET } from "../../src/app/experience/search/route";
-import { setBootSlotForTests, type ApiBoot } from "../../src/host/boot";
-import { resolveApiConfig } from "../../src/host/config";
-import { RecommendationControlsHost } from "../../src/host/controls";
-import { createFeedImportHost } from "../../src/host/feed-import";
-import { createFanOutConnector } from "../../src/host/fan-out";
-import { HistoryHost } from "../../src/host/history";
-import { IntelligenceHost } from "../../src/host/intelligence-host";
+import { GET as healthGET } from "@api/app/api/health/route";
+import { GET as intelligenceGET } from "@api/app/experience/intelligence/route";
+import { GET as metadataGET } from "@api/app/experience/metadata/route";
+import { GET as resolveGET } from "@api/app/experience/resolve/route";
+import { GET as searchGET } from "@api/app/experience/search/route";
+import { setBootSlotForTests, type ApiBoot } from "@api/host/boot";
+import { resolveApiConfig } from "@api/host/config";
+import { RecommendationControlsHost } from "@api/host/controls";
+import { createFeedImportHost } from "@api/host/feed-import";
+import { createFanOutConnector } from "@api/host/fan-out";
+import { HistoryHost } from "@api/host/history";
+import { IntelligenceHost } from "@api/host/intelligence-host";
 import {
   IntelligenceDerivationPipeline,
   createHttpIntelligenceModelRuntime,
   type IntelligenceModelRuntime,
-} from "../../src/host/intelligence-pipeline";
-import { ModelControlsHost } from "../../src/host/model-controls";
-import { convergeCatalogArtwork, seedCatalogIfEmpty } from "../../src/host/seed";
-import { createSourceManagementService } from "../../src/host/source-management";
-import { API_SERVICE_VERSION } from "../../src/host/version";
+} from "@api/host/intelligence-pipeline";
+import { ModelControlsHost } from "@api/host/model-controls";
+import { convergeCatalogArtwork, seedCatalogIfEmpty } from "@api/host/seed";
+import { createSourceManagementService } from "@api/host/source-management";
+import { API_SERVICE_VERSION } from "@api/host/version";
 
 const PORT = 3102;
 const TEST_ENCRYPTION_KEY_BASE64 = "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=";
