@@ -265,8 +265,10 @@ describe("the capability-availability report (R26-W1)", () => {
       const truth = capabilityTruthOf(report, capability);
       expect(truth?.kind).toBe("not-served");
       if (truth?.kind === "not-served") {
-        expect(truth.detail).toContain("does not expose the intelligence route");
-        expect(truth.detail).toContain("stay off honestly");
+        // R26-L (the probe seam): the live read's own honest sentence —
+        // the 404 outcome names the absent route + the stays-off law.
+        expect(truth.detail).toContain("no /experience/intelligence route");
+        expect(truth.detail).toContain("stays off honestly");
         expect(truth.nextAction?.label).toContain("Search by title");
       }
       // THE RENDER LAW: not-served NEVER renders as usable.
@@ -301,6 +303,40 @@ describe("the capability-availability report (R26-W1)", () => {
       expect(artwork.detail).toContain("dev fixture catalog carries no source artwork");
     }
     expect(capabilityMayRenderAsUsable(report, "artwork")).toBe(false);
+  });
+
+  it("R26-L the probe seam: a SERVING route flips the report to SERVED — even when it answers the typed no-derived-artifacts truth (the both-directions honesty law)", async () => {
+    const host = await bootServiceHost();
+    const report = await withServiceWire(
+      (url) =>
+        url.includes(INTELLIGENCE_READ_ROUTE_PATH)
+          ? Response.json({
+              kind: "not-served",
+              reason: "no-derived-artifacts",
+              detail: "no items have derived intelligence yet",
+              dependency: "the derivation pipeline has not run",
+            })
+          : Response.json([]),
+      () => loadCapabilityAvailabilityReport(host),
+    );
+    // THE BOTH-DIRECTIONS LAW: the route ANSWERED a typed 200 — the
+    // transport serves; the derived artifacts are the limit, not the
+    // capability. Reporting this as not-served would be the reverse lie.
+    for (const capability of [
+      "semantic-search",
+      "moment-retrieval",
+      "multimodal-intelligence",
+    ] as const) {
+      const truth = capabilityTruthOf(report, capability);
+      expect(truth?.kind).toBe("served");
+      if (truth?.kind === "served") {
+        expect(truth.transport).toBe("experience-api-http");
+        expect(truth.detail).toContain("answered a live read");
+        // The honest artifact truth rides verbatim in the detail.
+        expect(truth.detail).toContain("no items have derived intelligence yet");
+      }
+      expect(capabilityMayRenderAsUsable(report, capability)).toBe(true);
+    }
   });
 
   it("every report row's truth is structurally guarded (the report fold rejects drift)", async () => {

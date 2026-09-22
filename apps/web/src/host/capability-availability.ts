@@ -53,20 +53,50 @@ import { joinedItemsSnapshot } from "./view-models";
 // The per-capability derivations
 // ---------------------------------------------------------------------------
 
-/** The intelligence-lane capabilities' truths (one readiness read, three entries). */
-function intelligenceEntries(host: WebRuntimeHost): readonly CapabilityAvailabilityEntry[] {
-  const readiness = intelligenceReadTransportOf(host).readiness();
+/**
+ * The intelligence-lane capabilities' truths (one LIVE probe read, three
+ * entries).
+ *
+ * R26-L (the lead's integration seam, post-R26-W4): the transport's sync
+ * `readiness()` accessor carries the PRE-PROBE conservative truth; the
+ * report derives the LIVE truth from one real read through the transport's
+ * own public path (`searchByMeaning`) — the outcome distinguishes the
+ * cases honestly:
+ *
+ * - a SERVED read → the transport serves (the fixtures' dev index or the
+ *   Experience API's real route);
+ * - a not-served read with reason `transport-unavailable` → the route is
+ *   absent/unreachable on this boot (the typed dependency names it);
+ * - a not-served read with reason `no-derived-artifacts` → THE ROUTE
+ *   SERVES (it answered a typed 200; the derived artifacts are the limit,
+ *   not the transport) — the entries report SERVED with the honest
+ *   artifact truth as the detail. This is the capability-truth law's
+ *   BOTH-DIRECTIONS honesty: an available capability reported as
+ *   unavailable is as much a lie as the reverse.
+ */
+async function intelligenceEntries(
+  host: WebRuntimeHost,
+): Promise<readonly CapabilityAvailabilityEntry[]> {
+  const transport = intelligenceReadTransportOf(host);
+  const outcome = await transport.searchByMeaning("capability probe");
+  const servingDetail =
+    transport.transportId === "dev-fixture-index"
+      ? "The deterministic dev fixture index answers search-by-meaning (loudly a fixture — dev only)."
+      : "The Experience API intelligence route answered a live read on this boot.";
   const truth: CapabilityServingTruth =
-    readiness.kind === "serving"
+    outcome.kind === "served" || outcome.reason === "no-derived-artifacts"
       ? {
           kind: "served",
-          transport: readiness.transport,
-          detail: readiness.detail,
+          transport: transport.transportId,
+          detail:
+            outcome.kind === "served"
+              ? servingDetail
+              : `${servingDetail} ${outcome.detail}`,
         }
       : {
           kind: "not-served",
-          transport: readiness.transport,
-          detail: readiness.detail,
+          transport: transport.transportId,
+          detail: outcome.detail,
           nextAction: {
             label: "Search by title and the AI action tray still work",
             href: "/search",
@@ -218,7 +248,7 @@ export async function loadCapabilityAvailabilityReport(
   host: WebRuntimeHost,
 ): Promise<CapabilityAvailabilityReport> {
   const entries: CapabilityAvailabilityEntry[] = [
-    ...intelligenceEntries(host),
+    ...(await intelligenceEntries(host)),
     realizationAvailabilityEntry(host),
     realtimeBridgeEntry(),
     artworkEntry(host),
