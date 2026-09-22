@@ -56,6 +56,41 @@
  *                           capability list that honestly requires
  *                           the account, the no-login-wall law, and
  *                           the anonymous readiness gate.
+ * - `qwen-protocol.ts`   — R25-C: the ENTIRE provider protocol
+ *                           vocabulary (the Qwen/DashScope realtime
+ *                           event names, the session.update
+ *                           serialization in the qwen3.8 parameter
+ *                           family, the audio/image append frames,
+ *                           the server event parser, the usage
+ *                           mapping, the speaker-id labels, the
+ *                           provider error normalization, and the
+ *                           provenance-named endpoint/model/rate-
+ *                           limit truth) — inside the adapter
+ *                           boundary, never crossing into shared
+ *                           Product/Experience code.
+ * - `qwen-adapter.ts`    — R25-C: the Qwen LiveTranslate
+ *                           `RealtimeTranslationSession`/
+ *                           `RealtimeTranslationSessionFactory`
+ *                           implementation — the injectable WebSocket
+ *                           transport seam, the server-env credential
+ *                           path (typed honest failure, never a
+ *                           hardcoded fallback), the RPM session-
+ *                           start smoothing, the bounded reconnect/
+ *                           resume policy with the replay window, the
+ *                           never-force visual-frame law, and the
+ *                           event reconstruction onto the frozen
+ *                           neutral vocabulary.
+ * - `qwen-fixtures.ts`   — R25-C TEST FIXTURES: the recorded provider
+ *                           frames (the documented wire shapes) + the
+ *                           deterministic transport double with
+ *                           scripted failure injection for every
+ *                           recovery path — never production.
+ * - `specialists.ts`     — R25-C: the realtime specialist
+ *                           registration table — the registration
+ *                           TRUTH the router consumes (descriptor +
+ *                           bound factory, validated, duplicate-
+ *                           rejected) and the bridge's route-then-
+ *                           resolve seam.
  */
 
 export * from "./session";
@@ -65,3 +100,7 @@ export * from "./provider";
 export * from "./router";
 export * from "./consent";
 export * from "./anonymous-session";
+export * from "./qwen-protocol";
+export * from "./qwen-adapter";
+export * from "./qwen-fixtures";
+export * from "./specialists";

@@ -92,6 +92,100 @@ later work items, but the policy machinery is frozen here.
   - **`anonymous-session.ts`** — R25-J: the accountless realtime
     session capability, the durable login boundaries, the
     no-login-wall law, and the anonymous readiness gate.
+  - **`qwen-protocol.ts`** — R25-C: the ENTIRE Qwen LiveTranslate
+    provider protocol, inside the adapter boundary (never crossing
+    into shared Product/Experience code — the forbidden-token scan
+    enforces the other half): the provenance-named endpoint/model/
+    rate-limit truth (the documented QwenCloud MaaS realtime endpoint
+    `wss://maas.qwencloudapi.com/api-ws/v1/realtime?model=…` with
+    `Authorization: Bearer $DASHSCOPE_API_KEY`, the Model Studio
+    International endpoint as the named deployment alternative, RPM=10
+    / TPM=100,000 International), the `session.update` serialization
+    in the qwen3.8 parameter family (`output_modalities`,
+    `audio.input.turn_detection` speaker-detection by attribution
+    mode, `translation.language`, `translation.corpus.phrases`
+    hotwords, consent-gated `enable_voice_clone`), the
+    `input_audio_buffer.append` / `input_image_buffer.append`
+    Base64 frames, the fail-closed server-event parser over the
+    documented event set (the typed `unparseable` variant — never a
+    crash, never a silent drop), the provider-reported usage mapping
+    (imageInputTokens honestly 0 — the provider reports no separate
+    image dimension), the speaker-id first-appearance labels, the
+    provider error normalization (rate-limit → recoverable
+    `provider-failure` naming the limits; auth → terminal with the
+    env-variable recovery sentence), and the frame → event mapping
+    table.
+  - **`qwen-adapter.ts`** — R25-C: the Qwen LiveTranslate
+    `RealtimeTranslationSession` / `RealtimeTranslationSessionFactory`
+    implementation — the injectable WebSocket transport seam (the
+    Bun-native production transport + the recorded double under
+    test), the server-env credential path (`DASHSCOPE_API_KEY`;
+    absent → the honest typed not-registered answer / typed terminal
+    provider-failure with the recovery sentence — never a crash,
+    never a hardcoded fallback), the RPM session-start smoothing gate
+    (bounded ≤ 6000 ms), the bounded reconnect/resume policy (resume,
+    never restart: re-send the configuration + replay the audio
+    window; the honest give-up is a typed terminal error and base
+    playback continues — the shared law is total), the never-force
+    visual-frame law + the provider's documented image fences as
+    typed events (never silent drops), and the full event
+    reconstruction onto the frozen neutral vocabulary (transcript
+    deltas/finals with timing + speaker, translation deltas/finals
+    with the `previous_item_id` source linkage, translated-audio
+    chunks Base64-decoded to pcm16 with sequences, cumulative
+    provider-reported usage telemetry, timing-metadata firsts).
+  - **`qwen-fixtures.ts`** — R25-C TEST FIXTURES (never production):
+    the recorded provider frames in the documented wire shapes
+    (verbatim from the live-checked QwenCloud API reference) + the
+    deterministic transport double with scripted failure injection
+    for every recovery path (connect failures, rate-limit hits, auth
+    rejections, mid-session drops, un-clean closes, unparsable
+    frames).
+  - **`specialists.ts`** — R25-C: the realtime specialist
+    registration table — the registration TRUTH the router consumes
+    (a validated descriptor BOUND to a session factory; duplicate
+    provider ids rejected; a descriptor without a factory is NOT
+    registrable) plus the bridge's route-then-resolve seam
+    (`routeRealtimeTranslationAgainstSpecialists`: the typed routing
+    decision with the winning provider's bound factory — factories
+    never resolve for gap decisions).
+  - **`scripts/verify-live-qwen-realtime.ts`** — R25-C: the LIVE
+    verification harness (the W2 bridge precedent — PASS/FAIL/SKIPPED
+    steps, `--base-url` override, honest SKIPPED without
+    `DASHSCOPE_API_KEY`, NEVER part of `bun test`). The live-endpoint
+    benchmark (R25-L's first-delta/first-translation/first-audio/
+    reconnect measures) stays pending the lead's procedure.
+
+## R25-C — the Qwen provider adapter behind Model Fabric (the wire)
+
+The adapter speaks the provider's documented realtime protocol and
+reconstructs the frozen provider-neutral vocabulary — the mapping
+table (`QWEN_PROTOCOL_EVENT_MAPPING`, verbatim names both sides):
+
+| provider frame (verbatim)                                  | session event (verbatim)       |
+|------------------------------------------------------------|--------------------------------|
+| `session.created`                                          | `session-created`              |
+| `conversation.item.input_audio_transcription.delta`        | `source-transcript-delta`      |
+| `conversation.item.input_audio_transcription.completed`    | `source-transcript-final`      |
+| `conversation.item.input_audio_transcription.failed`       | `recoverable-error` (per-item) |
+| `response.text.delta` / `response.audio_transcript.delta`  | `translation-delta`            |
+| `response.text.done` / `response.audio_transcript.done`    | `translation-segment-final`    |
+| `input_audio_buffer.speech_started` (speaker_id)           | `speaker-attribution`          |
+| `response.audio.delta`                                     | `translated-audio-chunk`       |
+| (adapter-derived: the measured firsts)                     | `timing-metadata`              |
+| `response.done` (usage)                                    | `usage-telemetry`              |
+| rate-limit `error` / transport loss                        | `recoverable-error`            |
+| fatal `error` / retries exhausted                          | `terminal-error`               |
+| `session.finished` / close                                 | `session-closed`               |
+
+The credential law: `DASHSCOPE_API_KEY` lives ONLY in the server
+environment (`readQwenLiveTranslateCredential` names the variable,
+never the value; there is no fallback credential anywhere in this
+package). The rate-limit law: session starts are smoothed to the RPM
+cadence (6000 ms at RPM=10) through the factory-scoped gate; provider
+rate-limit hits map to the typed recoverable `provider-failure`
+whose recovery sentence names RPM=10 / TPM=100,000 International —
+never a silent drop, never a playback blocker.
 
 ## R06 — the control surface over the fabric (the productionized layer)
 
