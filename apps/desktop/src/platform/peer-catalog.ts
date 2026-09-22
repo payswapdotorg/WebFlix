@@ -25,7 +25,13 @@
  *   (`apps/desktop/assets/peer-catalog/*.torrent`) so the engine's
  *   torrent-file ingestion path knows the file list BEFORE any network
  *   contact (the magnets stay the primary open input; the files are the
- *   same swarm's truth);
+ *   same swarm's truth). THE TRUE-INFOHASH CORRECTIVE (the re-entry
+ *   verification's find): the v1 infohash is sha1 over the info dict's
+ *   ORIGINAL bytes — the first lane minted these through a lossy
+ *   re-encode and the magnets named swarms that DO NOT EXIST; the four
+ *   identities below are cross-verified against the engine's own pinned
+ *   parse-torrent over the shipped assets (see
+ *   peer-catalog.test.ts's TRUE_SWARM_IDENTITIES regression guard);
  * - TRUTHFULLY BROWSER-CAPABLE: these swarms carry WebRTC (wss://)
  *   trackers, so `browserCapable: true` is a per-realization TRUTH, not
  *   the R23-D assumption the contract forbids;
@@ -262,7 +268,7 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
       "A giant rabbit with a heart bigger than himself meets three bullying rodents — the Blender Institute's landmark open movie, produced entirely with free and open-source tools.",
     canonicalType: "video",
     durationMs: 596_000,
-    infoHash: "74036a39dd3018ef5ae6f115497290c711c308da",
+    infoHash: "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
     torrentFileName: "big-buck-bunny.torrent",
     files: [
       { path: "Big Buck Bunny.en.srt", lengthBytes: 140 },
@@ -285,9 +291,9 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
     artworkAltText: "Big Buck Bunny — official Blender Studio artwork",
     homepageUrl: "https://peach.blender.org/",
     browserCapable: true,
-    itemId: peerCatalogItemIdOf("74036a39dd3018ef5ae6f115497290c711c308da"),
+    itemId: peerCatalogItemIdOf("dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c"),
     magnet: magnetOf({
-      infoHash: "74036a39dd3018ef5ae6f115497290c711c308da",
+      infoHash: "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
       title: "Big Buck Bunny",
     }),
   },
@@ -299,7 +305,7 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
       "A lonely young woman searches the wastelands for the dragon she once nursed back to health — the Blender Institute's third open movie.",
     canonicalType: "video",
     durationMs: 888_000,
-    infoHash: "b6a3752ebf43b27ff5a76661d32bca4df08b0b02",
+    infoHash: "08ada5a7a6183aae1e09d831df6748d566095a10",
     torrentFileName: "sintel.torrent",
     files: [
       { path: "Sintel.de.srt", lengthBytes: 1_652 },
@@ -330,9 +336,9 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
     artworkAltText: "Sintel — official poster artwork",
     homepageUrl: "https://durian.blender.org/",
     browserCapable: true,
-    itemId: peerCatalogItemIdOf("b6a3752ebf43b27ff5a76661d32bca4df08b0b02"),
+    itemId: peerCatalogItemIdOf("08ada5a7a6183aae1e09d831df6748d566095a10"),
     magnet: magnetOf({
-      infoHash: "b6a3752ebf43b27ff5a76661d32bca4df08b0b02",
+      infoHash: "08ada5a7a6183aae1e09d831df6748d566095a10",
       title: "Sintel",
     }),
   },
@@ -344,7 +350,7 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
       "In a future Amsterdam, a group of warriors and scientists gather at the Oude Kerk to stage a crucial event from the past — the Blender Institute's live-action/CGI open movie.",
     canonicalType: "video",
     durationMs: 734_000,
-    infoHash: "9c677c3fab374db96c9137e8878e97893ba96ce3",
+    infoHash: "209c8226b299b308beaf2b9cd3fb49212dbd13ec",
     torrentFileName: "tears-of-steel.torrent",
     files: [
       { path: "Tears of Steel.de.srt", lengthBytes: 4_850 },
@@ -374,9 +380,9 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
     artworkAltText: "Tears of Steel — official still artwork",
     homepageUrl: "https://mango.blender.org/",
     browserCapable: true,
-    itemId: peerCatalogItemIdOf("9c677c3fab374db96c9137e8878e97893ba96ce3"),
+    itemId: peerCatalogItemIdOf("209c8226b299b308beaf2b9cd3fb49212dbd13ec"),
     magnet: magnetOf({
-      infoHash: "9c677c3fab374db96c9137e8878e97893ba96ce3",
+      infoHash: "209c8226b299b308beaf2b9cd3fb49212dbd13ec",
       title: "Tears of Steel",
     }),
   },
@@ -388,7 +394,7 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
       "A suicidal sheep named Franck meets a mysterious salesman who offers him the life he always dreamed of — the first episode of the Blender Institute's open-movie project.",
     canonicalType: "video",
     durationMs: 726_000,
-    infoHash: "f46ada76ae66b9151c3f98cb98b34240ce115faa",
+    infoHash: "c9e15763f722f23e98a29decdfae341b98d53056",
     torrentFileName: "cosmos-laundromat.torrent",
     files: [
       { path: "Cosmos Laundromat.en.srt", lengthBytes: 3_945 },
@@ -414,9 +420,9 @@ export const PEER_CATALOG_ENTRIES: readonly PeerCatalogEntry[] = [
     artworkAltText: "Cosmos Laundromat — official Blender Studio artwork",
     homepageUrl: "https://gooseberry.blender.com/",
     browserCapable: true,
-    itemId: peerCatalogItemIdOf("f46ada76ae66b9151c3f98cb98b34240ce115faa"),
+    itemId: peerCatalogItemIdOf("c9e15763f722f23e98a29decdfae341b98d53056"),
     magnet: magnetOf({
-      infoHash: "f46ada76ae66b9151c3f98cb98b34240ce115faa",
+      infoHash: "c9e15763f722f23e98a29decdfae341b98d53056",
       title: "Cosmos Laundromat",
     }),
   },

@@ -56,40 +56,58 @@ import {
 } from "../src/platform/torrent-playback";
 
 // ---------------------------------------------------------------------------
-// A minimal local bencode decoder (the byte-level truth check)
+// A minimal local bencode decoder (the byte-level truth check).
+//
+// THE TRUE-INFOHASH LAW (the R26-W3 corrective): the v1 infohash is sha1
+// over the info dict's ORIGINAL bytes — the same bytes every real
+// BitTorrent client (and the engine's pinned parse-torrent) hashes. The
+// decoder therefore tracks each value's ORIGINAL byte range and the hash
+// is computed over the SLICE, never over a re-encode: a re-encode through
+// UTF-8 JS strings destroys the binary `pieces` field and mints a hash
+// for a swarm that does not exist (the exact production defect this
+// corrective round found and fixed — the lossy hashes joined nonexistent
+// swarms while every internal assertion stayed green).
 // ---------------------------------------------------------------------------
 
-function decodeBencode(buf: Buffer, pos: { i: number }): unknown {
+/** One decoded bencode value with its ORIGINAL byte range `[start, end)`. */
+interface DecodedRange {
+  readonly value: unknown;
+  readonly start: number;
+  readonly end: number;
+}
+
+function decodeBencode(buf: Buffer, pos: { i: number }): DecodedRange {
+  const start = pos.i;
   const c = buf[pos.i];
   if (c === 0x69) {
     pos.i += 1;
     const end = buf.indexOf(0x65, pos.i);
     const num = Number(buf.toString("utf8", pos.i, end));
     pos.i = end + 1;
-    return num;
+    return { value: num, start, end: pos.i };
   }
   if (c === 0x6c) {
     pos.i += 1;
     const list: unknown[] = [];
-    while (buf[pos.i] !== 0x65) list.push(decodeBencode(buf, pos));
+    while (buf[pos.i] !== 0x65) list.push(decodeBencode(buf, pos).value);
     pos.i += 1;
-    return list;
+    return { value: list, start, end: pos.i };
   }
   if (c === 0x64) {
     pos.i += 1;
     const dict = new Map<string, unknown>();
     while (buf[pos.i] !== 0x65) {
-      const key = decodeBencode(buf, pos) as string;
-      dict.set(key, decodeBencode(buf, pos));
+      const key = decodeBencode(buf, pos).value as string;
+      dict.set(key, decodeBencode(buf, pos).value);
     }
     pos.i += 1;
-    return dict;
+    return { value: dict, start, end: pos.i };
   }
   const colon = buf.indexOf(0x3a, pos.i);
   const len = Number(buf.toString("utf8", pos.i, colon));
-  const start = colon + 1;
-  pos.i = start + len;
-  return buf.toString("utf8", start, start + len);
+  const startStr = colon + 1;
+  pos.i = startStr + len;
+  return { value: buf.toString("utf8", startStr, startStr + len), start, end: pos.i };
 }
 
 function parseTorrentAsset(bytes: Uint8Array): {
@@ -99,20 +117,28 @@ function parseTorrentAsset(bytes: Uint8Array): {
   files: { path: string; lengthBytes: number }[];
 } {
   const buf = Buffer.from(bytes);
-  const root = decodeBencode(buf, { i: 0 }) as Map<string, unknown>;
-  const info = root.get("info") as Map<string, unknown>;
-  function encode(v: unknown): Buffer {
-    if (typeof v === "number") return Buffer.from(`i${v}e`);
-    if (typeof v === "string") return Buffer.from(`${Buffer.byteLength(v)}:${v}`);
-    if (Array.isArray(v)) return Buffer.concat([Buffer.from("l"), ...v.map(encode), Buffer.from("e")]);
-    if (v instanceof Map) {
-      const parts: Buffer[] = [Buffer.from("d")];
-      for (const key of [...v.keys()].sort()) parts.push(encode(key), encode(v.get(key)!));
-      parts.push(Buffer.from("e"));
-      return Buffer.concat(parts);
+  if (buf[0] !== 0x64) throw new Error("parseTorrentAsset: not a bencoded dict");
+  const pos = { i: 1 };
+  // Walk the TOP-LEVEL dict, recording the info value's ORIGINAL range.
+  let info: Map<string, unknown> | undefined;
+  let infoRange: { readonly start: number; readonly end: number } | undefined;
+  while (buf[pos.i] !== 0x65) {
+    const key = decodeBencode(buf, pos).value as string;
+    const value = decodeBencode(buf, pos);
+    if (key === "info") {
+      info = value.value as Map<string, unknown>;
+      infoRange = { start: value.start, end: value.end };
     }
-    throw new Error(`parseTorrentAsset: cannot encode ${typeof v}`);
   }
+  if (info === undefined || infoRange === undefined) {
+    throw new Error("parseTorrentAsset: no info dict");
+  }
+  // THE TRUE-INFOHASH LAW: sha1 over the info dict's ORIGINAL bytes (the
+  // canonical v1 derivation — cross-verified against the engine's own
+  // pinned parse-torrent library over these exact assets).
+  const infoHash = createHash("sha1")
+    .update(buf.subarray(infoRange.start, infoRange.end))
+    .digest("hex");
   const filesRaw = info.get("files") as unknown[] | undefined;
   const files =
     filesRaw !== undefined
@@ -125,7 +151,7 @@ function parseTorrentAsset(bytes: Uint8Array): {
         })
       : [{ path: info.get("name") as string, lengthBytes: info.get("length") as number }];
   return {
-    infoHash: createHash("sha1").update(encode(info)).digest("hex"),
+    infoHash,
     name: info.get("name") as string,
     pieceLength: info.get("piece length") as number,
     files,
@@ -226,6 +252,39 @@ describe("the authorized peer catalog (R26-W3 — real, lawful, discoverable)", 
       // The shipped asset on disk IS the same truth (the assets dir check).
       const onDisk = readFileSync(join(assetsDir(), entry.torrentFileName));
       expect(onDisk.byteLength).toBe(bytes!.byteLength);
+    }
+  });
+
+  it("declares the TRUE swarm identities (the R26-W3 corrective regression guard)", () => {
+    // THE GOLDEN-RULE REGRESSION: the original lane minted these hashes
+    // through a LOSSY re-encode (UTF-8 JS strings destroyed the binary
+    // `pieces` field), so the catalog's magnets carried btih values for
+    // swarms that DO NOT EXIST while every internal assertion stayed
+    // green. These literals are the REAL, publicly-known v1 infohashes of
+    // the Blender open movies (cross-verified against the engine's own
+    // pinned parse-torrent over the shipped assets) — a future re-mint
+    // through any lossy path fails HERE loudly.
+    const TRUE_SWARM_IDENTITIES: Readonly<Record<string, string>> = {
+      "Big Buck Bunny": "dd8255ecdc7ca55fb0bbf81323d87062db1f6d1c",
+      Sintel: "08ada5a7a6183aae1e09d831df6748d566095a10",
+      "Tears of Steel": "209c8226b299b308beaf2b9cd3fb49212dbd13ec",
+      "Cosmos Laundromat: First Cycle": "c9e15763f722f23e98a29decdfae341b98d53056",
+    };
+    for (const entry of PEER_CATALOG_ENTRIES) {
+      const trueInfoHash = TRUE_SWARM_IDENTITIES[entry.title];
+      // An unknown title in the catalog fails HERE first (the guard's own
+      // completeness law — every catalog entry is a known true swarm).
+      expect(trueInfoHash).toBeDefined();
+      if (trueInfoHash === undefined) continue;
+      expect(entry.infoHash).toBe(trueInfoHash);
+      // The magnet's btih IS the true swarm identity (the native-open wire
+      // input joins the REAL swarm).
+      expect(entry.magnet).toContain(`urn:btih:${trueInfoHash}`);
+      // And the shipped asset itself parses (through the TRUE-hash parser
+      // above) to the same identity — bytes, declaration, and magnet all
+      // name ONE swarm.
+      const parsed = parseTorrentAsset(peerCatalogTorrentBytes(entry)!);
+      expect(parsed.infoHash).toBe(trueInfoHash);
     }
   });
 
