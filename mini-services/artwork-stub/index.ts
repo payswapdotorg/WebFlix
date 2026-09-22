@@ -141,5 +141,6 @@ const server = createServer((request, response) => {
 });
 
 server.listen(PORT, () => {
+  // eslint-disable-next-line no-console -- the stub's own CLI output (the runner-facing honesty)
   console.log(`wfx-artwork-stub listening on http://localhost:${PORT}`);
 });
