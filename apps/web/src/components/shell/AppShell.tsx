@@ -36,6 +36,9 @@ import { UpdatePrompt } from "./UpdatePrompt";
 // R24-E — the play-intent recorder (the document-level listener that
 // records the user's real play/switch clicks for the startup traces).
 import { PlayIntentRecorder } from "./PlayIntentRecorder";
+// R26-W2 — the artwork fallback controller (one island; every real
+// artwork image on any surface falls back through it on load failure).
+import { ArtworkFallback } from "@/components/cards/ArtworkFallback";
 
 /** One shell navigation icon per surface (item surfaces are not in the shell nav). */
 const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
@@ -80,6 +83,10 @@ export function AppShell({
       <a className="wfx-skip-link" href="#wfx-main">
         Skip to content
       </a>
+      {/* R26-W2 — the artwork fallback controller (ONE island for every
+          surface's real source artwork: a failed artwork URL falls back to
+          the typed placeholder that always renders beneath it). */}
+      <ArtworkFallback />
       <header className="wfx-topbar">
         <div className="wfx-topbar__side">
           <a className="wfx-logo" href="/" aria-label="WebFlix home">

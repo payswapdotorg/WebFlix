@@ -39,6 +39,7 @@ import { Suspense, type JSX } from "react";
 import type { PlayerEnrichments, PlayerShellView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
 import { PlayerChrome, type ChromeChapter, type ChromeTranscriptFeatures, type ChromeTranscriptSegment, fulfilledTranscriptFeatures, fulfilledTranslateFeatures } from "@/components/player/PlayerChrome";
+import { EmbedStage } from "@/components/player/EmbedStage";
 import { UpNextRail, type UpNextCard } from "@/components/player/UpNextRail";
 import { ShareControl } from "@/components/player/ShareControl";
 import { WatchlistSave } from "@/components/player/WatchlistSave";
@@ -100,6 +101,9 @@ function relatedCardsOf(related: PlayerEnrichments["related"]): readonly UpNextC
     title: card.title,
     canonicalType: card.canonicalType,
     ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+    // R26-W2 — the rail cards carry the REAL SOURCE ARTWORK (the same
+    // typed fallback floor when the row carried none).
+    ...(card.artwork !== undefined ? { artwork: card.artwork } : {}),
     href: itemDetailHref({
       itemId: card.itemId,
       connectorId: card.connectorId,
@@ -348,35 +352,27 @@ function Stage({ view }: { readonly view: PlayerShellView }): JSX.Element {
     );
   }
   if (view.surfaceMode === "embed" && (view.browserSurface !== null || view.surfaceUrl !== null)) {
-    // R09: the embed rung CONTAINED EXACTLY LIKE THE BROWSER RUNG — the
-    // same sandbox tokens (opaque origin: no allow-same-origin, no
+    // R09 + R26-W2: the embed rung CONTAINED EXACTLY LIKE THE BROWSER RUNG —
+    // the same sandbox tokens (opaque origin: no allow-same-origin, no
     // storage-access grant), the provider's own embeddable player running
-    // isolated in this WebFlix-owned surface.
+    // isolated in this WebFlix-owned surface — now rendered through the
+    // EMBED STAGE, which binds the provider's own documented embed control
+    // channel (client-side realization control: the chrome's transport
+    // commands reach the provider's real player; the provider's own state
+    // broadcasts are the only evidence that advances the visible phase —
+    // the first frame is real, never fabricated). A provider without a
+    // live control answer keeps the honest pre-R26 behavior unchanged.
     const containedUrl =
       view.browserSurface !== null ? view.browserSurface.url : (view.surfaceUrl ?? "");
     return (
-      <div
-        className="wfx-player__stage"
-        data-wfx-player-mode="embed"
-        data-wfx-embed-attestation={view.embedAttestation ?? "none"}
-        {...(view.browserSurface !== null
-          ? { "data-wfx-contained-surface": view.browserSurface.id }
-          : {})}
-      >
-        <iframe
-          src={containedUrl}
-          title={`Embedded playback: ${view.title}`}
-          sandbox="allow-scripts allow-forms allow-popups allow-presentation"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
-          data-wfx-player-frame
-        />
-        <p className="wfx-player__trace" data-wfx-embed-note>
-          {view.embedAttestation === "official"
-            ? "Official provider embed — the provider exposed this player for embedding, contained and cookie-isolated by WebFlix."
-            : "Embedded playback contained in a cookie-isolated surface — the realization carries no provider official-embed attestation, named honestly; WebFlix never injects into or inspects the provider page."}
-        </p>
-      </div>
+      <EmbedStage
+        url={containedUrl}
+        title={view.title}
+        attestation={view.embedAttestation}
+        containedSurfaceId={view.browserSurface !== null ? view.browserSurface.id : null}
+        itemId={view.itemId}
+        playbackSessionId={view.sessionId}
+      />
     );
   }
   if (view.surfaceMode === "embed") {
@@ -663,6 +659,8 @@ export function PlayerSurface({
             surfaceMode={view.surfaceMode}
             qualityTruth={qualityTruth}
             autoplaySentence={autoplaySentence}
+            sessionIntent={view.sessionIntent}
+            embedControl={view.surfaceMode === "embed" && view.failure === null}
           />
           <div className="wfx-player__meta">
             <h1 className="wfx-player__title" data-wfx-player-title>

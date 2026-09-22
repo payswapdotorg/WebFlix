@@ -58,7 +58,7 @@ import type {
 import { WEB_BROWSER_TORRENT_IMPLEMENTATION } from "@/platform/browser-torrent-environment";
 import { canonicalIdFor } from "./web-host";
 import { sessionQueue, type QueueEntry } from "./queue";
-import { recordPlaybackSession } from "./playback-bridge";
+import { recordPlaybackSession, type ClientPlaybackIntent } from "./playback-bridge";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
 import {
   loadAiTrayView,
@@ -276,6 +276,25 @@ function artworkViewOf(
 ): ArtworkView | undefined {
   if (resolution.kind !== "source-artwork") return undefined;
   const artwork = resolution.artwork;
+  return {
+    url: artwork.url,
+    ...(artwork.aspectRatio !== undefined ? { aspectRatio: artwork.aspectRatio } : {}),
+    altText: `${title} — artwork served by ${artwork.provenance.connectorId}`,
+    fallbackDetail: artwork.fallback.detail,
+    connectorId: artwork.provenance.connectorId,
+  };
+}
+
+/**
+ * R26-W2 — project an ALREADY-RESOLVED source artwork (the learned join's
+ * `ContentArtwork`) into the plain card view shape (pure). The continue
+ * cards and the hero consume this — the SAME projection grammar the hit
+ * path uses, one source of truth.
+ */
+export function artworkViewOfContent(
+  artwork: ContentArtwork,
+  title: string,
+): ArtworkView {
   return {
     url: artwork.url,
     ...(artwork.aspectRatio !== undefined ? { aspectRatio: artwork.aspectRatio } : {}),
@@ -529,6 +548,14 @@ export interface SearchView {
   readonly query: string;
   readonly status: SectionStatusView;
   readonly cards: readonly CardView[];
+  /**
+   * R26-W2 — the honest token-composition disclosure: non-null iff the
+   * phrase query answered zero and the results shown are the per-token
+   * real matches (the literal-phrase gap's recovery — the sentence names
+   * exactly what matched, never presenting token matches as phrase
+   * matches).
+   */
+  readonly resultsNote: string | null;
   /** R21-E — per-card availability summaries ("where can I watch this?"). */
   readonly availability: ReadonlyMap<string, string>;
   /**
@@ -552,6 +579,61 @@ export function cardAvailabilitySummary(usableCount: number, offered: number): s
   return `${usableCount} ways to play here`;
 }
 
+/**
+ * R26-W2 — the search query's TOKENS (the tokenized-phrase recovery's
+ * input): lowercase, split on non-alphanumeric runs, first-seen-deduped,
+ * bounded to the first four (the recovery's cost stays bounded — a
+ * garbage-length query never fans out into dozens of transport calls).
+ */
+function searchTokensOf(query: string): readonly string[] {
+  const tokens = query
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((token) => token.length > 0);
+  return [...new Set(tokens)].slice(0, 4);
+}
+
+/**
+ * R26-W2 — the token-composition MERGE (the literal-phrase gap's honest
+ * recovery): the production transport's title search matches a literal
+ * SUBSTRING (the persistence catalog's LIKE law), so a query like "rainy
+ * day lofi" answers zero even when a title carries all three words apart.
+ * The recovery searches each token THROUGH THE SAME REAL TRANSPORT and
+ * merges the real hits: titles matching MORE of the query's tokens rank
+ * first (all-token matches before partial), each token model's own order
+ * preserved within its rank; the composition dedupes by canonical item.
+ * No result is fabricated — every card is a hit the transport really
+ * answered for a token the user really typed.
+ */
+function mergeTokenHits(
+  tokens: readonly string[],
+  tokenCards: readonly (readonly CardView[])[],
+  phraseCards: readonly CardView[],
+): readonly CardView[] {
+  const seen = new Set<string>(phraseCards.map((card) => card.itemId));
+  // Rank: how many of the query's tokens the title itself contains
+  // (word-boundary-insensitive — the transport's own containment law,
+  // applied per token).
+  const tokenOf = (value: string): readonly string[] =>
+    value.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter((part) => part.length > 0);
+  const ranked: { card: CardView; matchedTokens: number; order: number }[] = [];
+  let order = 0;
+  for (const cards of tokenCards) {
+    for (const card of cards) {
+      if (seen.has(card.itemId)) continue;
+      seen.add(card.itemId);
+      const titleTokens = new Set(tokenOf(card.title));
+      let matched = 0;
+      for (const token of tokens) {
+        if (titleTokens.has(token)) matched += 1;
+      }
+      ranked.push({ card, matchedTokens: matched, order: order++ });
+    }
+  }
+  ranked.sort((a, b) => b.matchedTokens - a.matchedTokens || a.order - b.order);
+  return [...phraseCards, ...ranked.map((entry) => entry.card)];
+}
+
 /** Load the search view for one query (canonical-joined results). */
 export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Promise<SearchView> {
   const query = rawQuery.trim();
@@ -565,6 +647,7 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
       query: "",
       status: { state: "ready" },
       cards: [],
+      resultsNote: null,
       availability: new Map<string, string>(),
       semantic: {
         status: "unavailable",
@@ -581,7 +664,30 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
   // read serving anonymous viewers too, the R23-K boundary).
   const semantic = await searchByMeaning(host, query);
   const model = await host.runtime.search({ query });
-  const cards = cardsFromModel(model);
+  let cards = cardsFromModel(model);
+  let resultsNote: string | null = null;
+  // R26-W2 — THE TOKENIZED-PHRASE RECOVERY (the production literal-phrase
+  // gap): when the whole-phrase query answered ZERO cards and the query
+  // carries multiple tokens, search each token through the SAME REAL
+  // TRANSPORT and merge the honest hits (more matched tokens first). The
+  // note names exactly what happened — never presenting token matches as
+  // phrase matches. Single-token queries and non-empty phrase answers
+  // keep the transport's own composition verbatim (fixture boots and
+  // every already-working query are unchanged).
+  const tokens = searchTokensOf(query);
+  if (cards.length === 0 && tokens.length > 1) {
+    const tokenModels = await Promise.all(
+      tokens.map((token) => host.runtime.search({ query: token })),
+    );
+    const tokenCards = tokenModels.map((tokenModel) => cardsFromModel(tokenModel));
+    const merged = mergeTokenHits(tokens, tokenCards, cards);
+    if (merged.length > 0) {
+      cards = merged;
+      resultsNote = `No title contains the whole phrase “${query}” — these matches contain the words ${tokens
+        .map((token) => `“${token}”`)
+        .join(", ")} in any order.`;
+    }
+  }
   // R21-E: the compact availability summary per result (the matrix's
   // search contextual entry — answering "where can I watch this?" without
   // opening every page). Typed reads: a failed resolve answers the honest
@@ -612,6 +718,7 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
     query,
     status: statusView(model.status),
     cards,
+    resultsNote,
     availability,
     semantic,
     cardActions: cardActionContextOf(host),
@@ -848,6 +955,17 @@ export interface PlayerShellView {
   readonly externalRef: string;
   /** The runtime's playback session id (event correlation). */
   readonly sessionId: string;
+  /**
+   * R26-W2 — the CLIENT-CARRIED playback intent (the exact resolve input
+   * this shell used, serialized for the chrome): the production
+   * multi-instance law. The chrome sends it with every /api/playback
+   * command so a cold invocation re-resolves the SAME session through the
+   * frozen path instead of answering the typed not-found (the reproduced
+   * production failure). Null where no runtime session backs the surface
+   * (the peer-copy branch — its session is the adapter's own, not the
+   * runtime's).
+   */
+  readonly sessionIntent: ClientPlaybackIntent | null;
   /** The chosen realization's mode + URL (embed/browser carry URLs; external may not). */
   readonly surfaceMode: PlaybackRealization["mode"];
   readonly surfaceUrl: string | null;
@@ -1046,6 +1164,23 @@ export async function loadPlayerViewShell(
   // truth when the resolve failed on the source's OWN authorization.
   const viewer = viewerKindOf(host.session.state);
   const progressScope = progressScopeTruthOf(viewer);
+  // R26-W2 — the CLIENT-CARRIED playback intent (the multi-instance law):
+  // the exact resolve input this shell hands the media path, serialized
+  // into the view so the chrome can carry it with every command. The
+  // torrent branch keeps null (its "session" is the adapter's own rung
+  // decision, never a runtime session).
+  const clientIntent: ClientPlaybackIntent = {
+    itemId: input.itemId,
+    externalRef: input.externalRef,
+    connectorId: input.connectorId,
+    ...(input.resumePositionMs !== undefined && input.resumePositionMs > 0
+      ? { resumePositionMs: input.resumePositionMs }
+      : {}),
+    ...(input.preferredMode !== undefined ? { preferredMode: input.preferredMode } : {}),
+    ...(input.preferredRealization !== undefined
+      ? { preferredRealization: input.preferredRealization }
+      : {}),
+  };
   // R24-W2 — the attention mode (the autoplay/preview policy derivation;
   // the runtime's own policy read — the same seam the Personalize control
   // renders, never a second policy) + the watchlist membership truth.
@@ -1116,6 +1251,7 @@ export async function loadPlayerViewShell(
         connectorId: input.connectorId,
         externalRef: input.externalRef,
         sessionId: "none",
+        sessionIntent: null,
         surfaceMode: "browser",
         surfaceUrl: null,
         realizationCapabilities: [],
@@ -1178,6 +1314,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: "wfx-peercopy",
+      sessionIntent: null,
       surfaceMode: "browser",
       surfaceUrl: null,
       realizationCapabilities: [],
@@ -1367,6 +1504,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: "none",
+      sessionIntent: clientIntent,
       surfaceMode: "external",
       surfaceUrl: null,
       realizationCapabilities: [],
@@ -1398,6 +1536,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: media.sessionId,
+      sessionIntent: clientIntent,
       surfaceMode: media.surfaceMode,
       surfaceUrl: media.surfaceUrl,
       realizationCapabilities: [...media.realizationCapabilities],
@@ -1429,6 +1568,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: media.session.id,
+      sessionIntent: clientIntent,
       surfaceMode: media.session.realization.mode,
       surfaceUrl: media.session.realization.url ?? null,
       realizationCapabilities: [...media.session.realization.capabilities],
@@ -1459,6 +1599,7 @@ export async function loadPlayerViewShell(
     connectorId: input.connectorId,
     externalRef: input.externalRef,
     sessionId: media.session.id,
+    sessionIntent: clientIntent,
     surfaceMode: media.session.realization.mode,
     surfaceUrl: media.session.realization.url ?? null,
     realizationCapabilities: [...media.session.realization.capabilities],

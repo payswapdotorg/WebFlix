@@ -13,6 +13,7 @@ import type { JSX } from "react";
 
 import type { DetailView } from "@/host/view-models";
 import { ItemCard } from "@/components/cards/ItemCard";
+import { ArtworkImage } from "@/components/cards/ArtworkImage";
 import { AddToQueueControl } from "@/components/cards/CardActions";
 import { itemDetailHref, playerHref } from "@/app/routing";
 import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
@@ -90,9 +91,31 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
   return (
     <div className="wfx-detail" data-wfx-surface="item" data-wfx-item={view.itemId}>
       <div className="wfx-detail__stage" style={{ background: placeholderArt(view.itemId) }}>
-        <span className="wfx-card__art" aria-hidden="true">
-          <span>{placeholderMonogram(view.title)}</span>
-        </span>
+        {/* R26-W2 — the item's REAL SOURCE ARTWORK (the source-authorized
+            thumbnail from the live metadata read); the deterministic
+            placeholder stays beneath as the typed fallback (the honest
+            reason renders when the source carries no artwork — never a
+            generated replacement). */}
+        {view.artwork.view !== null ? (
+          <>
+            <ArtworkImage
+              artwork={view.artwork.view}
+              className="wfx-card__img wfx-detail__img"
+              alt={view.artwork.view.altText}
+              eager
+            />
+            <span className="wfx-detail__scrim" aria-hidden="true" />
+          </>
+        ) : (
+          <span className="wfx-card__art" aria-hidden="true">
+            <span>{placeholderMonogram(view.title)}</span>
+          </span>
+        )}
+        {view.artwork.fallbackReason !== null ? (
+          <p className="wfx-detail__artwork-truth" data-wfx-artwork-fallback-reason>
+            {view.artwork.fallbackReason}
+          </p>
+        ) : null}
       </div>
       <div>
         <h1 className="wfx-detail__title" data-wfx-item-title>

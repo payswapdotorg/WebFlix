@@ -287,6 +287,8 @@ describe("R25-G — the player surfaces render the translate experience", () => 
         surfaceMode: view.surfaceMode,
         qualityTruth: "test",
         autoplaySentence: "test",
+        sessionIntent: null,
+        embedControl: false,
       }),
     );
     expect(chromeWithout).not.toContain("data-wfx-translate-row");
@@ -303,6 +305,8 @@ describe("R25-G — the player surfaces render the translate experience", () => 
         surfaceMode: view.surfaceMode,
         qualityTruth: "test",
         autoplaySentence: "test",
+        sessionIntent: null,
+        embedControl: false,
       }),
     );
     expect(chromeWith).toContain("data-wfx-translate-row");

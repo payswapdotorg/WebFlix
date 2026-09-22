@@ -266,6 +266,8 @@ describe("R24-W2 — the chrome's honest per-rung backing truths", () => {
         surfaceMode: "browser",
         qualityTruth: "This way of watching carries its own quality selection — the provider's player answers it.",
         autoplaySentence: "Balanced mode lets the next thing start when this one ends, if autoplay is on.",
+        sessionIntent: null,
+        embedControl: false,
       }),
     );
     // The settings cluster's speed row renders its honest backing sentence.
@@ -288,6 +290,8 @@ describe("R24-W2 — the chrome's honest per-rung backing truths", () => {
         surfaceMode: "browser",
         qualityTruth: "For a peer copy, the file you chose IS the quality decision.",
         autoplaySentence: "Balanced mode lets the next thing start when this one ends, if autoplay is on.",
+        sessionIntent: null,
+        embedControl: false,
       }),
     );
     expect(markup).toContain("data-wfx-chrome-volume");
@@ -316,6 +320,8 @@ describe("R24-W2 — the chrome's honest per-rung backing truths", () => {
       surfaceMode: "browser",
       qualityTruth: "quality truth",
       autoplaySentence: "autoplay truth",
+      sessionIntent: null,
+      embedControl: false,
     });
     // SSR renders the closed-overlay state; the captions toggle + the
     // transcript source are the overlay's backing (the toggle renders
