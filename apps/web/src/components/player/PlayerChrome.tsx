@@ -44,6 +44,19 @@ import { Icon } from "@/components/shell/Icon";
 // R24-E — the startup/interaction telemetry recorder (the seek/control
 // marker pairs wrap the REAL command round trips).
 import { recordPlaybackMarker } from "@/host/playback-telemetry";
+// R26-W2 — the provider embed control contract (the client-side
+// realization control store the EmbedStage binds).
+import {
+  getActiveEmbedSessionController,
+  getActiveEmbedControl,
+  idleEmbedControlSnapshot,
+  subscribeActiveEmbedControl,
+  type EmbedControlState,
+} from "@/components/player/embed-session-client";
+// R26-W2 — the client-carried playback intent (the multi-instance law's
+// serializable shape — sent with every command so a cold invocation
+// re-resolves the SAME session).
+import type { ClientPlaybackIntent } from "@/host/playback-bridge";
 // R25-W2 — the realtime translation session client (the shared
 // controller the chrome's Translate row and the experience island
 // both bind to) + the route view's truths.
@@ -164,6 +177,21 @@ export interface PlayerChromeProps {
   readonly qualityTruth: string;
   /** The attention-policy sentence that governs autoplay (rendered in settings). */
   readonly autoplaySentence: string;
+  /**
+   * R26-W2 — the page's playback intent (the exact resolve input the
+   * shell used), carried with every /api/playback command so a cold
+   * serverless invocation re-resolves the SAME session through the frozen
+   * path (the production multi-instance law). Null where no runtime
+   * session backs the surface.
+   */
+  readonly sessionIntent: ClientPlaybackIntent | null;
+  /**
+   * R26-W2 — whether the stage binds the provider's own embed control
+   * contract (the EmbedStage's family check): the transport commands then
+   * dispatch to the provider's real player, and the provider's own state
+   * broadcasts are the only evidence that advances the visible phase.
+   */
+  readonly embedControl: boolean;
 }
 
 /** The familiar speed steps (the settings cluster's vocabulary). */
@@ -500,9 +528,46 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
   const [fullscreenOn, setFullscreenOn] = useState<boolean>(false);
   const scrubRef = useRef<HTMLDivElement | null>(null);
 
-  const duration = props.durationMs ?? null;
-  const playing = phase === "playing";
-  const terminal = phase === "stopped" || phase === "failed" || phase === "unresolvable";
+  // R26-W2 — THE PROVIDER EMBED CONTROL CONTRACT's evidence store: when the
+  // stage bound the provider's own embed player API (the EmbedStage) and
+  // the provider ANSWERED (live), the realization's own broadcasts are the
+  // ONLY evidence that advances the visible phase/position/duration — the
+  // server session's snapshot remains the honest fallback otherwise
+  // (never a fabricated live state: a provider that never answered keeps
+  // `live: false` and the pre-R26 truthful behavior).
+  const embedControlState = useSyncExternalStore(
+    subscribeActiveEmbedControl,
+    getActiveEmbedControl,
+    idleEmbedControlSnapshot,
+  );
+  const embedLive = props.embedControl && embedControlState.live;
+
+  /** Map the provider's own player state onto the runtime's phase vocabulary (evidence only). */
+  const embedPhaseOf = (state: EmbedControlState): string => {
+    switch (state.phase) {
+      case "playing":
+        return "playing";
+      case "paused":
+        return "paused";
+      case "ended":
+        return "stopped";
+      case "buffering":
+      case "unstarted":
+      default:
+        return "buffering";
+    }
+  };
+
+  // The visible truths: the realization's own evidence when live, the
+  // session's otherwise (the server-path states — identical to pre-R26).
+  const visiblePhase = embedLive ? embedPhaseOf(embedControlState) : phase;
+  const visiblePositionMs = embedLive ? embedControlState.positionMs : positionMs;
+  const duration =
+    embedLive && embedControlState.durationMs !== null
+      ? embedControlState.durationMs
+      : (props.durationMs ?? null);
+  const playing = visiblePhase === "playing";
+  const terminal = visiblePhase === "stopped" || visiblePhase === "failed" || visiblePhase === "unresolvable";
 
   /** Issue one typed command through the real route; render its truth. */
   const issue = useCallback(
@@ -519,6 +584,21 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
       } else {
         recordPlaybackMarker("control-invoked", kind);
       }
+      // R26-W2 — the PROVIDER EMBED realization control: dispatch the
+      // command to the provider's own player FIRST (the real player — the
+      // provider's documented embed control channel), then record the
+      // session command through /api/playback (the same typed transport
+      // every way of watching uses). The provider's own state broadcasts
+      // (the evidence store) advance the visible phase — the command's
+      // result never fabricates one.
+      if (props.embedControl) {
+        const providerController = getActiveEmbedSessionController();
+        if (providerController !== null) {
+          if (kind === "play") providerController.play();
+          else if (kind === "pause") providerController.pause();
+          else if (kind === "seek" && positionMs !== undefined) providerController.seek(positionMs);
+        }
+      }
       try {
         const response = await fetch("/api/playback", {
           method: "POST",
@@ -527,9 +607,18 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
             sessionId: props.sessionId,
             command: kind,
             ...(kind === "seek" && positionMs !== undefined ? { positionMs } : {}),
+            // R26-W2 — the client-carried intent (the multi-instance law):
+            // a cold invocation re-resolves the SAME session through the
+            // frozen path instead of answering the typed not-found.
+            ...(props.sessionIntent !== null ? { intent: props.sessionIntent } : {}),
           }),
         });
-        const outcome = (await response.json()) as { ok?: boolean; detail?: string; kind?: string };
+        const outcome = (await response.json()) as {
+          ok?: boolean;
+          detail?: string;
+          kind?: string;
+          state?: { phase: string; positionMs: number; bufferedMs: number };
+        };
         setCommand({
           ok: outcome.ok === true,
           detail:
@@ -538,22 +627,21 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
               : `${outcome.kind ?? "failed"}: ${outcome.detail ?? "the command was refused"}`,
         });
         if (outcome.ok === true) {
-          // Refetch the truthful state (the only progress source).
-          const stateResponse = await fetch(`/api/playback?sessionId=${encodeURIComponent(props.sessionId)}`);
-          const stateBody = (await stateResponse.json()) as {
-            ok?: boolean;
-            state?: { phase: string; positionMs: number; bufferedMs: number };
-          };
-          if (stateBody.ok === true && stateBody.state !== undefined) {
-            setPhase(stateBody.state.phase);
-            setPositionMs(stateBody.state.positionMs);
-            setBufferedMs(stateBody.state.bufferedMs);
+          // R26-W2 — the POST response carries the post-command state
+          // snapshot (one round trip). Where the provider's embed evidence
+          // is live, the evidence store overrides the display anyway (the
+          // realization's own truth); these setters keep the session-path
+          // display truthful otherwise.
+          if (outcome.state !== undefined) {
+            setPhase(outcome.state.phase);
+            setPositionMs(outcome.state.positionMs);
+            setBufferedMs(outcome.state.bufferedMs);
             // R24-E — the confirmation at the visible effect: the state
             // rendered is the effect the metric measures.
             if (kind === "seek") {
-              recordPlaybackMarker("seek-confirmed", `position ${stateBody.state.positionMs}ms accepted`);
+              recordPlaybackMarker("seek-confirmed", `position ${outcome.state.positionMs}ms accepted`);
             } else {
-              recordPlaybackMarker("control-confirmed", `${kind} → phase ${stateBody.state.phase}`);
+              recordPlaybackMarker("control-confirmed", `${kind} → phase ${outcome.state.phase}`);
             }
           } else if (kind === "seek" && positionMs !== undefined) {
             // Seek acceptance IS position evidence (the runtime's law) —
@@ -565,7 +653,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         setCommand({ ok: false, detail: "the command could not reach the host" });
       }
     },
-    [props.sessionId],
+    [props.embedControl, props.sessionId, props.sessionIntent],
   );
 
   /** Seek to an absolute position (the scrub bar + the keyboard grammar). */
@@ -577,42 +665,60 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
     [duration, issue],
   );
 
-  /** Toggle play/pause through the real command. */
+  /** Toggle play/pause through the real command (the visible phase's truth). */
   const togglePlay = useCallback((): void => {
-    void issue(playing || phase === "degraded" ? "pause" : "play");
-  }, [issue, phase, playing]);
+    void issue(playing || visiblePhase === "degraded" ? "pause" : "play");
+  }, [issue, playing, visiblePhase]);
 
-  /** Apply the volume/mute truth to the stage's own media element (if any). */
-  const applyStageVolume = useCallback((nextVolume: number, nextMuted: boolean): void => {
-    const stage = document.querySelector<HTMLElement>("[data-wfx-player-stagewrap]");
-    const media = stage?.querySelectorAll("video, audio");
-    if (media !== undefined && media !== null) {
-      for (const element of Array.from(media)) {
-        const mediaElement = element as HTMLMediaElement;
-        mediaElement.volume = nextVolume;
-        mediaElement.muted = nextMuted;
+  /**
+   * Apply the volume/mute truth to the stage's own media element (the
+   * WebFlix-owned stages) — or to the provider's own player through its
+   * embed control API (the R26-W2 realization-exposed binding).
+   */
+  const applyStageVolume = useCallback(
+    (nextVolume: number, nextMuted: boolean): void => {
+      if (props.embedControl) {
+        // R26-W2 — the provider's own player carries the control; WebFlix's
+        // chrome binds the provider's documented embed API (never a
+        // fabricated WebFlix control over provider media).
+        const providerController = getActiveEmbedSessionController();
+        if (providerController !== null && getActiveEmbedControl().live) {
+          providerController.setVolume(nextVolume);
+          providerController.setMuted(nextMuted);
+          return;
+        }
       }
-    }
-  }, []);
+      const stage = document.querySelector<HTMLElement>("[data-wfx-player-stagewrap]");
+      const media = stage?.querySelectorAll("video, audio");
+      if (media !== undefined && media !== null) {
+        for (const element of Array.from(media)) {
+          const mediaElement = element as HTMLMediaElement;
+          mediaElement.volume = nextVolume;
+          mediaElement.muted = nextMuted;
+        }
+      }
+    },
+    [props.embedControl],
+  );
 
-  /** Toggle mute (WebFlix-owned stages only — the honest cluster). */
+  /** Toggle mute (where the volume control truthfully operates — the honest cluster). */
   const toggleMute = useCallback((): void => {
-    if (!props.webflixOwnsStage) return;
+    if (!props.webflixOwnsStage && !embedLive) return;
     const next = !muted;
     setMuted(next);
     applyStageVolume(volume, next);
-  }, [applyStageVolume, muted, props.webflixOwnsStage, volume]);
+  }, [applyStageVolume, embedLive, muted, props.webflixOwnsStage, volume]);
 
   /** Step the volume (the keyboard grammar's up/down). */
   const stepVolume = useCallback(
     (direction: 1 | -1): void => {
-      if (!props.webflixOwnsStage) return;
+      if (!props.webflixOwnsStage && !embedLive) return;
       const next = Math.min(1, Math.max(0, volume + direction * 0.1));
       setVolume(next);
       setMuted(false);
       applyStageVolume(next, false);
     },
-    [applyStageVolume, props.webflixOwnsStage, volume],
+    [applyStageVolume, embedLive, props.webflixOwnsStage, volume],
   );
 
   /** Enter/leave fullscreen through the platform's own affordance. */
@@ -654,10 +760,21 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
       });
   }, []);
 
-  /** Set the session rate (applied where WebFlix owns the media path). */
+  /**
+   * Set the session rate: applied to the WebFlix-owned stage's media, or
+   * through the provider's own embed player API where that is the live
+   * control surface (R26-W2 — the honest realization-exposed binding).
+   */
   const setPlaybackRate = useCallback(
     (nextRate: number): void => {
       setRate(nextRate);
+      if (props.embedControl) {
+        const providerController = getActiveEmbedSessionController();
+        if (providerController !== null && getActiveEmbedControl().live) {
+          providerController.setRate(nextRate);
+          return;
+        }
+      }
       const stage = document.querySelector<HTMLElement>("[data-wfx-player-stagewrap]");
       const media = stage?.querySelectorAll("video, audio");
       if (media !== undefined && media !== null) {
@@ -666,7 +783,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         }
       }
     },
-    [],
+    [props.embedControl],
   );
 
   /** THE KEYBOARD GRAMMAR (the familiar map, active when not typing). */
@@ -684,22 +801,25 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
       }
       const key = event.key.toLowerCase();
       let handled = true;
+      // The keyboard grammar seeks from the VISIBLE position (the
+      // realization's own evidence when the embed control is live).
+      const from = visiblePositionMs;
       switch (key) {
         case " ":
         case "k":
           if (!terminal) togglePlay();
           break;
         case "j":
-          if (!terminal) seekTo(positionMs - BIG_SEEK_MS);
+          if (!terminal) seekTo(from - BIG_SEEK_MS);
           break;
         case "l":
-          if (!terminal) seekTo(positionMs + BIG_SEEK_MS);
+          if (!terminal) seekTo(from + BIG_SEEK_MS);
           break;
         case "arrowleft":
-          if (!terminal) seekTo(positionMs - SMALL_SEEK_MS);
+          if (!terminal) seekTo(from - SMALL_SEEK_MS);
           break;
         case "arrowright":
-          if (!terminal) seekTo(positionMs + SMALL_SEEK_MS);
+          if (!terminal) seekTo(from + SMALL_SEEK_MS);
           break;
         case "arrowup":
           stepVolume(1);
@@ -738,13 +858,13 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
     };
   }, [
     duration,
-    positionMs,
     seekTo,
     stepVolume,
     terminal,
     toggleFullscreen,
     toggleMute,
     togglePlay,
+    visiblePositionMs,
   ]);
 
   /** Track the platform's fullscreen transitions (the honest state). */
@@ -761,10 +881,18 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
     };
   }, []);
 
-  /** The scrub bar's position ratio (honest — from the truthful position). */
-  const ratio = duration !== null && duration > 0 ? Math.min(1, Math.max(0, positionMs / duration)) : 0;
+  /** The scrub bar's position ratio (honest — from the truthful VISIBLE position). */
+  const ratio =
+    duration !== null && duration > 0 ? Math.min(1, Math.max(0, visiblePositionMs / duration)) : 0;
+  // The buffered bar: the provider's OWN loaded-fraction evidence when the
+  // embed control is live (videoLoadedFraction × duration — provider
+  // reported, never estimated); the session's bufferedMs otherwise.
+  const visibleBufferedMs =
+    embedLive && embedControlState.loadedFraction !== null && duration !== null
+      ? embedControlState.loadedFraction * duration
+      : bufferedMs;
   const bufferedRatio =
-    duration !== null && duration > 0 ? Math.min(1, Math.max(0, bufferedMs / duration)) : 0;
+    duration !== null && duration > 0 ? Math.min(1, Math.max(0, visibleBufferedMs / duration)) : 0;
 
   /** The scrub bar's seek-from-event (direct manipulation). */
   const seekFromEvent = useCallback(
@@ -779,7 +907,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
   );
 
   return (
-    <div className="wfx-chrome" data-wfx-chrome data-wfx-chrome-phase={phase}>
+    <div className="wfx-chrome" data-wfx-chrome data-wfx-chrome-phase={visiblePhase}>
       {/* THE SCRUB BAR (direct manipulation + chapter marks + honest buffered) */}
       <div
         className="wfx-chrome__scrub"
@@ -789,8 +917,8 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         aria-label="Seek"
         aria-valuemin={0}
         aria-valuemax={duration !== null ? Math.round(duration / 1000) : 0}
-        aria-valuenow={Math.round(positionMs / 1000)}
-        aria-valuetext={`${formatReadout(positionMs)} of ${duration !== null ? formatReadout(duration) : "unknown length"}`}
+        aria-valuenow={Math.round(visiblePositionMs / 1000)}
+        aria-valuetext={`${formatReadout(visiblePositionMs)} of ${duration !== null ? formatReadout(duration) : "unknown length"}`}
         data-wfx-chrome-seek
         onPointerDown={(event) => {
           if (terminal) return;
@@ -798,8 +926,8 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         }}
         onKeyDown={(event) => {
           if (terminal) return;
-          if (event.key === "ArrowLeft") seekTo(positionMs - SMALL_SEEK_MS);
-          if (event.key === "ArrowRight") seekTo(positionMs + SMALL_SEEK_MS);
+          if (event.key === "ArrowLeft") seekTo(visiblePositionMs - SMALL_SEEK_MS);
+          if (event.key === "ArrowRight") seekTo(visiblePositionMs + SMALL_SEEK_MS);
           if (event.key === "Home") seekTo(0);
           if (event.key === "End" && duration !== null) seekTo(duration);
         }}
@@ -817,7 +945,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           <span className="wfx-chrome__thumb" style={{ left: `${ratio * 100}%` }} />
         </span>
         <span className="wfx-chrome__readout" aria-hidden="true">
-          <span data-wfx-chrome-position>{formatReadout(positionMs)}</span>
+          <span data-wfx-chrome-position>{formatReadout(visiblePositionMs)}</span>
           {" / "}
           <span data-wfx-chrome-duration>{duration !== null ? formatReadout(duration) : "—"}</span>
         </span>
@@ -837,7 +965,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           >
             <Icon name={playing ? "pause" : "play"} size={20} />
           </button>
-          {props.webflixOwnsStage ? (
+          {props.webflixOwnsStage || embedLive ? (
             <div className="wfx-chrome__volume" data-wfx-chrome-volume>
               <button
                 type="button"
@@ -869,7 +997,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
 
         <div className="wfx-chrome__cluster">
           <span className="wfx-chrome__phase" data-wfx-chrome-phase-label>
-            {phase}
+            {visiblePhase}
           </span>
           {command !== null && command.detail !== null ? (
             <span className="wfx-chrome__status" role="status" data-wfx-chrome-command-status>
@@ -924,7 +1052,9 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                 <span className="wfx-chrome__settingstruth">
                   {props.webflixOwnsStage
                     ? "Applies to this WebFlix stage's playback."
-                    : "This way of watching carries its own speed control — the choice applies wherever WebFlix owns the playback."}
+                    : embedLive
+                      ? "Applies to this provider embed's own player — carried through the provider's embed controls."
+                      : "This way of watching carries its own speed control — the choice applies wherever WebFlix owns the playback."}
                 </span>
               </div>
               <div className="wfx-chrome__settingsrow" data-wfx-chrome-quality>
@@ -947,7 +1077,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                 <span>Autoplay</span>
                 <span className="wfx-chrome__settingstruth">{props.autoplaySentence}</span>
               </div>
-              {!props.webflixOwnsStage ? (
+              {!props.webflixOwnsStage && !embedLive ? (
                 <div className="wfx-chrome__settingsrow" data-wfx-chrome-volume-truth>
                   <span>Volume</span>
                   <span className="wfx-chrome__settingstruth">
@@ -1007,7 +1137,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           </div>
           <div>
             <dt>M</dt>
-            <dd>Mute{props.webflixOwnsStage ? "" : " (WebFlix-owned stages)"}</dd>
+            <dd>Mute{props.webflixOwnsStage || embedLive ? "" : " (WebFlix-owned stages)"}</dd>
           </div>
           <div>
             <dt>F</dt>
@@ -1031,7 +1161,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
       <CaptionOverlayDispatcher
         features={props.transcriptFeatures}
         captionsOn={captionsOn}
-        positionMs={positionMs}
+        positionMs={visiblePositionMs}
         onToggle={() => {
           setCaptionsOn((current) => !current);
         }}

@@ -58,7 +58,7 @@ import type {
 import { WEB_BROWSER_TORRENT_IMPLEMENTATION } from "@/platform/browser-torrent-environment";
 import { canonicalIdFor } from "./web-host";
 import { sessionQueue, type QueueEntry } from "./queue";
-import { recordPlaybackSession } from "./playback-bridge";
+import { recordPlaybackSession, type ClientPlaybackIntent } from "./playback-bridge";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
 import {
   loadAiTrayView,
@@ -848,6 +848,17 @@ export interface PlayerShellView {
   readonly externalRef: string;
   /** The runtime's playback session id (event correlation). */
   readonly sessionId: string;
+  /**
+   * R26-W2 — the CLIENT-CARRIED playback intent (the exact resolve input
+   * this shell used, serialized for the chrome): the production
+   * multi-instance law. The chrome sends it with every /api/playback
+   * command so a cold invocation re-resolves the SAME session through the
+   * frozen path instead of answering the typed not-found (the reproduced
+   * production failure). Null where no runtime session backs the surface
+   * (the peer-copy branch — its session is the adapter's own, not the
+   * runtime's).
+   */
+  readonly sessionIntent: ClientPlaybackIntent | null;
   /** The chosen realization's mode + URL (embed/browser carry URLs; external may not). */
   readonly surfaceMode: PlaybackRealization["mode"];
   readonly surfaceUrl: string | null;
@@ -1046,6 +1057,23 @@ export async function loadPlayerViewShell(
   // truth when the resolve failed on the source's OWN authorization.
   const viewer = viewerKindOf(host.session.state);
   const progressScope = progressScopeTruthOf(viewer);
+  // R26-W2 — the CLIENT-CARRIED playback intent (the multi-instance law):
+  // the exact resolve input this shell hands the media path, serialized
+  // into the view so the chrome can carry it with every command. The
+  // torrent branch keeps null (its "session" is the adapter's own rung
+  // decision, never a runtime session).
+  const clientIntent: ClientPlaybackIntent = {
+    itemId: input.itemId,
+    externalRef: input.externalRef,
+    connectorId: input.connectorId,
+    ...(input.resumePositionMs !== undefined && input.resumePositionMs > 0
+      ? { resumePositionMs: input.resumePositionMs }
+      : {}),
+    ...(input.preferredMode !== undefined ? { preferredMode: input.preferredMode } : {}),
+    ...(input.preferredRealization !== undefined
+      ? { preferredRealization: input.preferredRealization }
+      : {}),
+  };
   // R24-W2 — the attention mode (the autoplay/preview policy derivation;
   // the runtime's own policy read — the same seam the Personalize control
   // renders, never a second policy) + the watchlist membership truth.
@@ -1116,6 +1144,7 @@ export async function loadPlayerViewShell(
         connectorId: input.connectorId,
         externalRef: input.externalRef,
         sessionId: "none",
+        sessionIntent: null,
         surfaceMode: "browser",
         surfaceUrl: null,
         realizationCapabilities: [],
@@ -1178,6 +1207,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: "wfx-peercopy",
+      sessionIntent: null,
       surfaceMode: "browser",
       surfaceUrl: null,
       realizationCapabilities: [],
@@ -1367,6 +1397,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: "none",
+      sessionIntent: clientIntent,
       surfaceMode: "external",
       surfaceUrl: null,
       realizationCapabilities: [],
@@ -1398,6 +1429,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: media.sessionId,
+      sessionIntent: clientIntent,
       surfaceMode: media.surfaceMode,
       surfaceUrl: media.surfaceUrl,
       realizationCapabilities: [...media.realizationCapabilities],
@@ -1429,6 +1461,7 @@ export async function loadPlayerViewShell(
       connectorId: input.connectorId,
       externalRef: input.externalRef,
       sessionId: media.session.id,
+      sessionIntent: clientIntent,
       surfaceMode: media.session.realization.mode,
       surfaceUrl: media.session.realization.url ?? null,
       realizationCapabilities: [...media.session.realization.capabilities],
@@ -1459,6 +1492,7 @@ export async function loadPlayerViewShell(
     connectorId: input.connectorId,
     externalRef: input.externalRef,
     sessionId: media.session.id,
+    sessionIntent: clientIntent,
     surfaceMode: media.session.realization.mode,
     surfaceUrl: media.session.realization.url ?? null,
     realizationCapabilities: [...media.session.realization.capabilities],
