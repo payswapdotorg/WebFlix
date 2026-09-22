@@ -98,6 +98,8 @@ interface SearchJoinRow {
   duration_ms: unknown;
   orientation: string | null;
   external_ref: string;
+  /** R26-W4: the realization's metadata projection (the artwork carrier). */
+  metadata: unknown;
 }
 
 interface MetadataJoinRow {
@@ -109,6 +111,8 @@ interface MetadataJoinRow {
   external_ref: string;
   capabilities: unknown;
   availability: string;
+  /** R26-W4: the realization's metadata projection (the artwork carrier). */
+  metadata: unknown;
 }
 
 interface RefItemRow {
@@ -155,7 +159,7 @@ export class PostgresCatalogConnector implements ConnectorPort {
       rows = await this.db.query<SearchJoinRow>(
         `SELECT DISTINCT ON (i.id)
             i.id, i.canonical_type, i.canonical_title, i.duration_ms, i.orientation,
-            r.external_ref
+            r.external_ref, r.metadata
          FROM entertainment_items i
          JOIN source_realizations r
            ON r.entertainment_item_id = i.id AND r.connector_id = $1
@@ -180,7 +184,7 @@ export class PostgresCatalogConnector implements ConnectorPort {
     try {
       const rows = await this.db.query<MetadataJoinRow>(
         `SELECT i.id AS item_id, i.canonical_type, i.canonical_title, i.duration_ms,
-                i.orientation, r.external_ref, r.capabilities, r.availability
+                i.orientation, r.external_ref, r.capabilities, r.availability, r.metadata
          FROM source_realizations r
          JOIN entertainment_items i ON i.id = r.entertainment_item_id
          WHERE r.connector_id = $1 AND r.external_ref = $2`,
@@ -204,6 +208,14 @@ export class PostgresCatalogConnector implements ConnectorPort {
     if (row.duration_ms !== null) item.durationMs = Number(row.duration_ms);
     if (row.orientation !== null) {
       item.orientation = row.orientation as NonNullable<SourceItem["orientation"]>;
+    }
+    // R26-W4 — the realization's metadata projection rides verbatim (the
+    // typed `ContentArtwork` contract's carrier: the connector's own
+    // `thumbnailUrl` key with the provider's artwork address). Only a
+    // well-formed JSON object projects — anything else is honestly
+    // absent, never coerced.
+    if (isRecord(row.metadata)) {
+      item.metadata = row.metadata as Record<string, unknown>;
     }
     return item;
   }
@@ -501,6 +513,11 @@ export class PostgresCatalogConnector implements ConnectorPort {
     if (row.duration_ms !== null) hit.durationMs = Number(row.duration_ms);
     if (row.orientation !== null) {
       hit.orientation = row.orientation as NonNullable<SearchResult["orientation"]>;
+    }
+    // R26-W4 — the realization's metadata projection rides verbatim (the
+    // artwork carrier; a well-formed JSON object only — never coerced).
+    if (isRecord(row.metadata)) {
+      hit.metadata = row.metadata as Record<string, unknown>;
     }
     return hit;
   }

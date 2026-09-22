@@ -23,6 +23,21 @@
  *   `CRON_SECRET` is a typed error at relay time: the relay is a protected
  *   route and must not drift open. In non-production it may be unset (local
  *   draining without a secret).
+ * - `WFX_INTELLIGENCE_MODEL_ENDPOINT` — OPTIONAL (R26-W4). The
+ *   operator-provisioned open-model runtime endpoint (absolute http(s)
+ *   URL — the self-hosted/HF-endpoint execution locations the R23-J
+ *   catalog declares). When set, the media-intelligence derivation
+ *   pipeline's model routes bind the REAL HTTP executor over it (the
+ *   `OpenModelExecutorPort` seam — no provider SDK anywhere in shared
+ *   logic); when unset the model-gated derivation stages record their
+ *   honest not-provisioned truths and the intelligence route answers the
+ *   typed `no-derived-artifacts` states — never a fake success.
+ * - `WFX_INTELLIGENCE_DERIVATION_LIMIT` — OPTIONAL (R26-W4). A positive
+ *   integer bounding the boot-time derivation convergence (how many
+ *   catalog items the boot pass derives). Default: the whole catalog
+ *   (57 rows today — the metadata-fold stages are pure code; the
+ *   model-gated stages are bounded by the endpoint's own capacity and
+ *   their failures never fail the boot).
  *
  * Loudness law (mirrors 050/052): a missing or malformed required variable
  * is a TYPED error (`ApiConfigError`) naming every offending variable — the
@@ -109,6 +124,20 @@ export interface ApiConfig {
    * (allowed outside production only; the relay handler enforces the law).
    */
   readonly cronSecret: string | null;
+  /**
+   * R26-W4: the operator-provisioned open-model runtime endpoint
+   * (`WFX_INTELLIGENCE_MODEL_ENDPOINT`, absolute http(s) URL) — `null` when
+   * unset (the model-gated derivation stages then record their honest
+   * not-provisioned truths; the pipeline never fabricates model output).
+   */
+  readonly intelligenceModelEndpoint: string | null;
+  /**
+   * R26-W4: the boot-time derivation bound (`WFX_INTELLIGENCE_DERIVATION_LIMIT`,
+   * a positive integer) — `undefined` when unset (the default: derive the
+   * whole catalog; the catalog is small and per-item failures never fail
+   * the boot).
+   */
+  readonly intelligenceDerivationLimit: number | undefined;
 }
 
 /** Read and normalize one variable (undefined for absent/whitespace-only). */
@@ -211,10 +240,44 @@ export function resolveApiConfig(env: ApiEnv = process.env): ApiConfig {
 
   const cronSecret = readVar(env, "CRON_SECRET") ?? null;
 
+  // R26-W4 — the intelligence derivation wiring. The model-runtime endpoint
+  // is OPTIONAL: unset means the model-gated stages record their honest
+  // not-provisioned truths (the route then answers the typed
+  // no-derived-artifacts states — never a fabricated artifact). When present
+  // it must be an absolute http(s) URL (the operator's self-hosted or
+  // HF-endpoint model runtime the executor binds).
+  const intelligenceModelEndpointRaw = readVar(env, "WFX_INTELLIGENCE_MODEL_ENDPOINT");
+  if (intelligenceModelEndpointRaw !== undefined && !/^https?:\/\//.test(intelligenceModelEndpointRaw)) {
+    throw new ApiConfigError(
+      "WFX_INTELLIGENCE_MODEL_ENDPOINT must be an absolute http(s) URL (the operator-provisioned open-model runtime endpoint)",
+      [],
+      ["WFX_INTELLIGENCE_MODEL_ENDPOINT"],
+    );
+  }
+  const intelligenceModelEndpoint = intelligenceModelEndpointRaw ?? null;
+
+  // The derivation bound: a positive integer when present (garbage is a
+  // typed config crime, never silently ignored).
+  const derivationLimitRaw = readVar(env, "WFX_INTELLIGENCE_DERIVATION_LIMIT");
+  let intelligenceDerivationLimit: number | undefined;
+  if (derivationLimitRaw !== undefined) {
+    const parsed = Number(derivationLimitRaw);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      throw new ApiConfigError(
+        "WFX_INTELLIGENCE_DERIVATION_LIMIT must be a positive integer (the boot-time derivation bound)",
+        [],
+        ["WFX_INTELLIGENCE_DERIVATION_LIMIT"],
+      );
+    }
+    intelligenceDerivationLimit = parsed;
+  }
+
   return {
     databaseUrl: databaseUrl as string,
     encryptionKey: encryptionKey as string,
     youtube,
     cronSecret,
+    intelligenceModelEndpoint,
+    intelligenceDerivationLimit,
   };
 }

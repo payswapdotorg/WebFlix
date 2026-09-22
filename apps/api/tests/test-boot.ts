@@ -27,6 +27,7 @@ import {
   PostgresConnectorAccountStore,
   PostgresEventSink,
   PostgresIdentityService,
+  PostgresMediaIntelligenceStore,
   PostgresProfileService,
   PostgresSessionService,
   decodeEncryptionKey,
@@ -39,6 +40,11 @@ import { RecommendationControlsHost } from "../src/host/controls";
 import { createFeedImportHost, type FeedConnectorWiring } from "../src/host/feed-import";
 import { createFanOutConnector, type FanOutConnector } from "../src/host/fan-out";
 import { HistoryHost } from "../src/host/history";
+import { IntelligenceHost } from "../src/host/intelligence-host";
+import {
+  IntelligenceDerivationPipeline,
+  type IntelligenceModelRuntime,
+} from "../src/host/intelligence-pipeline";
 import { ModelControlsHost } from "../src/host/model-controls";
 import {
   createSourceManagementService,
@@ -80,12 +86,20 @@ export interface ApiTestBoot {
  * web fixtures host established) so the /feeds routes' round-trips are
  * exercised deterministically with NO network. Default: the honest EMPTY
  * registry (an unprovisioned deployment's truth).
+ *
+ * R26-W4: `intelligenceRuntime` injects the intelligence pipeline's model
+ * runtime (the ESTABLISHED injectable seam — deterministic stubs in tests,
+ * the honest `null` default for the unprovisioned deployment truth), and
+ * `intelligenceDerivationLimit` bounds the boot-time derivation pass. The
+ * intelligence lane is composed EXACTLY as `bootApi` composes it.
  */
 export async function createApiTestBoot(sourceOverrides?: {
   readonly extraSources?: readonly import("@wfx/experience").ConnectorPort[];
   readonly wirings?: ReadonlyMap<string, SourceAuthWiring>;
   readonly authGate?: import("../src/host/fan-out").FanOutAuthGate;
   readonly feedWiring?: readonly FeedConnectorWiring[];
+  readonly intelligenceRuntime?: IntelligenceModelRuntime | null;
+  readonly intelligenceDerivationLimit?: number;
 }): Promise<ApiTestBoot> {
   const testDb = await createTestDb();
   const clock = new FixedClock(HANDLER_TEST_CLOCK_MS);
@@ -162,6 +176,30 @@ export async function createApiTestBoot(sourceOverrides?: {
     ),
   });
 
+  // R26-W4 — the intelligence lane, composed EXACTLY as bootApi composes
+  // it: the derived-artifact store over the same PGlite boot, the
+  // derivation pipeline over the injected (or honestly-null) model
+  // runtime, the read host, and the boot-time derivation pass.
+  const intelligenceStore = new PostgresMediaIntelligenceStore({
+    db: testDb.db,
+    clock,
+  });
+  const intelligencePipeline = new IntelligenceDerivationPipeline({
+    db: testDb.db,
+    store: intelligenceStore,
+    clock,
+    runtime: sourceOverrides?.intelligenceRuntime !== undefined
+      ? sourceOverrides.intelligenceRuntime
+      : null,
+  });
+  const intelligenceHost = new IntelligenceHost({
+    db: testDb.db,
+    store: intelligenceStore,
+  });
+  const derivation = await intelligencePipeline.deriveCatalog(
+    sourceOverrides?.intelligenceDerivationLimit,
+  );
+
   // The R02 identity services — the SAME wiring bootApi performs (the
   // boot's 2.6 step): register/authenticate, session tokens, profiles,
   // and the profile-aware event sink, all over the shared seams.
@@ -201,6 +239,15 @@ export async function createApiTestBoot(sourceOverrides?: {
     controls,
     modelControls,
     feedImports,
+    intelligence: {
+      host: intelligenceHost,
+      pipeline: intelligencePipeline,
+      derivation,
+      // The harness DB converges through the same projection step the
+      // service boot performs (createTestDb seeds via seedCatalogIfEmpty;
+      // the artwork convergence is the seed module's every-boot step).
+      artworkConvergence: { updated: 57 },
+    },
   };
   return { boot, testDb, clock, ids };
 }
