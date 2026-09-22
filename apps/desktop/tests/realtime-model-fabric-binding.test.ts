@@ -32,7 +32,6 @@ import { describe, expect, it } from "bun:test";
 
 import { createRealtimeEventStream, REALTIME_EVENT_KINDS } from "@wfx/model-fabric";
 import type {
-  RealtimeTranslationEvent,
   RealtimeTranslationSession as CanonicalRealtimeTranslationSession,
   RealtimeTranslationSessionFactory as CanonicalRealtimeTranslationSessionFactory,
   RealtimeTranslationSessionInputs,
