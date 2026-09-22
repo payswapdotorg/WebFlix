@@ -1,1 +1,0 @@
-- the choosing-files step rendered its preparing state, the honest 0% progress, and the gated 'selecting' diagnostics

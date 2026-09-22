@@ -1,1 +1,0 @@
-- the recoverable failure rendered its typed cause + retry; the retry landed preparing; the interrupted session resumed with its Resuming badge and 55%-saved/62% truth

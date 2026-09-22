@@ -1,1 +1,0 @@
-- the player honored the carried resume position ('Resumed at 1:00'), kept the evidence-backed phase, and stated no resume line without a carried position (the service-mode cross-device fold is listed)

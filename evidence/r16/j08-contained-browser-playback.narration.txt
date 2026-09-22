@@ -1,1 +1,0 @@
-- the browser rung played inside the contained, sandboxed, cookie-isolated surface with the no-injection boundary stated

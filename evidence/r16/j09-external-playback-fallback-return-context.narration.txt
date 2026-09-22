@@ -1,1 +1,0 @@
-- the precedence trace names every rung with its decision; the missing-params and unresolvable-realization states render typed honest errors with return paths (the external-rung win itself needs the service-mode external-only realization — listed)

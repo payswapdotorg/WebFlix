@@ -1,1 +1,0 @@
-- buffering → playing (92s runway, 55%) → the honest deadline-risk demotion back to buffering — playback truth before completion, never false success
