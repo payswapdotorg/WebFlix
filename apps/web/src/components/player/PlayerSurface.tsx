@@ -101,6 +101,9 @@ function relatedCardsOf(related: PlayerEnrichments["related"]): readonly UpNextC
     title: card.title,
     canonicalType: card.canonicalType,
     ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+    // R26-W2 — the rail cards carry the REAL SOURCE ARTWORK (the same
+    // typed fallback floor when the row carried none).
+    ...(card.artwork !== undefined ? { artwork: card.artwork } : {}),
     href: itemDetailHref({
       itemId: card.itemId,
       connectorId: card.connectorId,

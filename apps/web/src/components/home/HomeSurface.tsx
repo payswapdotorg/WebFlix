@@ -21,9 +21,11 @@ import type {
   RowView,
   SectionStatusView,
 } from "@/host/view-models";
+import { artworkViewOfContent } from "@/host/view-models";
 import type { DiscoveryBundle } from "@/host/discoverability";
 import { DiscoveryHeader } from "@/components/discovery/DiscoveryHeader";
 import { ItemCard, cardPlayerHref, type CardActionContextInput } from "@/components/cards/ItemCard";
+import { ArtworkImage } from "@/components/cards/ArtworkImage";
 import { itemDetailHref } from "@/app/routing";
 import { Icon } from "@/components/shell/Icon";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
@@ -102,6 +104,11 @@ function ContinueRow({
               ...(entry.joined.durationMs !== undefined ? { durationMs: entry.joined.durationMs } : {}),
               connectorId: entry.joined.connectorId,
               externalRef: entry.joined.externalRef,
+              // R26-W2 — the continue card carries the joined item's REAL
+              // source artwork (the same typed fallback floor when absent).
+              ...(entry.joined.artwork !== undefined
+                ? { artwork: artworkViewOfContent(entry.joined.artwork, entry.title) }
+                : {}),
             };
             return card === null ? (
               <ItemCard
@@ -130,12 +137,16 @@ function ContinueRow({
   );
 }
 
-/** The hero: the one resume-or-start primary item. */
+/** The hero: the one resume-or-start primary item (content-led — the real source artwork anchors it). */
 function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
   const resumeEntry = view.continueWatching.entries.find((entry) => entry.status !== "completed") ?? null;
   const startCard = view.rows[0]?.cards[0] ?? view.rows[1]?.cards[0] ?? null;
   if (resumeEntry !== null && resumeEntry.joined !== null) {
     const pct = percentWatched(resumeEntry.completionRatio);
+    const resumeArtwork =
+      resumeEntry.joined.artwork !== undefined
+        ? artworkViewOfContent(resumeEntry.joined.artwork, resumeEntry.title)
+        : null;
     return (
       <section
         className="wfx-hero"
@@ -143,9 +154,23 @@ function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
         data-wfx-hero="resume"
         aria-label={`Continue watching: ${resumeEntry.title}`}
       >
-        <span className="wfx-card__art" aria-hidden="true">
-          <span>{placeholderMonogram(resumeEntry.title)}</span>
-        </span>
+        {/* R26-W2 — the hero's REAL SOURCE ARTWORK (the media-product
+            grammar: the artwork is the anchor); the deterministic gradient
+            stays beneath as the typed fallback. */}
+        {resumeArtwork !== null ? (
+          <ArtworkImage
+            artwork={resumeArtwork}
+            className="wfx-hero__img"
+            alt={`${resumeEntry.title} — artwork served by ${resumeArtwork.connectorId}`}
+            eager
+          />
+        ) : null}
+        <span className="wfx-hero__scrim" aria-hidden="true" />
+        {resumeArtwork === null ? (
+          <span className="wfx-card__art" aria-hidden="true">
+            <span>{placeholderMonogram(resumeEntry.title)}</span>
+          </span>
+        ) : null}
         <h1 className="wfx-hero__title" data-wfx-hero-title>
           {resumeEntry.title}
         </h1>
@@ -200,9 +225,22 @@ function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
       data-wfx-hero="start"
       aria-label={`Featured: ${startCard.title}`}
     >
-      <span className="wfx-card__art" aria-hidden="true">
-        <span>{placeholderMonogram(startCard.title)}</span>
-      </span>
+      {/* R26-W2 — the start hero's REAL SOURCE ARTWORK (same law as the
+          resume hero: the source's own thumbnail anchors the featured item;
+          the deterministic gradient stays beneath as the fallback). */}
+      {startCard.artwork !== undefined ? (
+        <ArtworkImage
+          artwork={startCard.artwork}
+          className="wfx-hero__img"
+          alt={`${startCard.title} — artwork served by ${startCard.artwork.connectorId}`}
+          eager
+        />
+      ) : (
+        <span className="wfx-card__art" aria-hidden="true">
+          <span>{placeholderMonogram(startCard.title)}</span>
+        </span>
+      )}
+      <span className="wfx-hero__scrim" aria-hidden="true" />
       <h1 className="wfx-hero__title" data-wfx-hero-title>
         {startCard.title}
       </h1>

@@ -26,6 +26,8 @@ import { useCallback, useState, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
+import { ArtworkImage } from "@/components/cards/ArtworkImage";
+import type { ArtworkView } from "@/host/view-models";
 
 /** One rail card (the same card grammar as discovery — serialized server-side). */
 export interface UpNextCard {
@@ -37,6 +39,8 @@ export interface UpNextCard {
   readonly durationMs?: number;
   /** The card's link (the item hub href — the same navigation every card uses). */
   readonly href: string;
+  /** R26-W2 — the card's REAL SOURCE ARTWORK when the content row carried one. */
+  readonly artwork?: ArtworkView;
 }
 
 /** The rail's serialized view input (server-computed per render). */
@@ -139,9 +143,12 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
             data-wfx-up-next-link
           >
             <span className="wfx-card__thumb wfx-card__thumb--rail" style={{ background: placeholderArt(upNext.itemId) }}>
-              <span className="wfx-card__art">
+              <span className="wfx-card__art" aria-hidden="true">
                 <span>{placeholderMonogram(upNext.title)}</span>
               </span>
+              {upNext.artwork !== undefined ? (
+                <ArtworkImage artwork={upNext.artwork} className="wfx-card__img" />
+              ) : null}
               {upNext.durationMs !== undefined ? (
                 <span className="wfx-badge wfx-badge--duration">{formatDuration(upNext.durationMs)}</span>
               ) : null}
@@ -278,9 +285,12 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
                     className="wfx-card__thumb wfx-card__thumb--rail"
                     style={{ background: placeholderArt(card.itemId) }}
                   >
-                    <span className="wfx-card__art">
+                    <span className="wfx-card__art" aria-hidden="true">
                       <span>{placeholderMonogram(card.title)}</span>
                     </span>
+                    {card.artwork !== undefined ? (
+                      <ArtworkImage artwork={card.artwork} className="wfx-card__img" />
+                    ) : null}
                     {card.durationMs !== undefined ? (
                       <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
                     ) : null}

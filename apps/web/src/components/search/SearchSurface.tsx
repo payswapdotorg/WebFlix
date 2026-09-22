@@ -69,6 +69,14 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
       <p className="wfx-page-subtitle" data-wfx-search-query>
         {view.cards.length} result{view.cards.length === 1 ? "" : "s"} for “{view.query}”
       </p>
+      {/* R26-W2 — the honest token-composition disclosure (the
+          literal-phrase recovery's own sentence — token matches are never
+          presented as phrase matches). */}
+      {view.resultsNote !== null ? (
+        <p className="wfx-row__reason" data-wfx-search-results-note>
+          {view.resultsNote}
+        </p>
+      ) : null}
       <div className="wfx-grid" data-wfx-search-results>
         {view.cards.map((card) => {
           const availability = view.availability.get(card.itemId);

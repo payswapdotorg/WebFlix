@@ -16,6 +16,7 @@ import type { JSX } from "react";
 import type { CardView } from "@/host/view-models";
 import { itemDetailHref, playerHref } from "@/app/routing";
 import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
+import { ArtworkImage } from "@/components/cards/ArtworkImage";
 import { CardActions } from "@/components/cards/CardActions";
 import { CardPreview } from "@/components/cards/CardPreview";
 
@@ -88,9 +89,17 @@ export function ItemCard({
         className={`wfx-card__thumb${variant === "short" ? " wfx-card__thumb--vertical" : ""}`}
         style={{ background: placeholderArt(card.itemId) }}
       >
-        <span className="wfx-card__art">
+        {/* The typed placeholder fallback — ALWAYS present beneath the real
+            artwork (a failed artwork load falls back to it; absent artwork
+            simply keeps it — the real-artwork law's honest floor). */}
+        <span className="wfx-card__art" aria-hidden="true">
           <span>{placeholderMonogram(card.title)}</span>
         </span>
+        {/* R26-W2 — the REAL SOURCE ARTWORK (the connector-authorized URL);
+            decorative inside the link (the link's label carries the title). */}
+        {card.artwork !== undefined ? (
+          <ArtworkImage artwork={card.artwork} className="wfx-card__img" />
+        ) : null}
         <span className="wfx-card__badges">
           <span className="wfx-badge wfx-badge--type">{card.canonicalType}</span>
           {card.durationMs !== undefined ? (

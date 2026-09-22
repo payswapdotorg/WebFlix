@@ -495,6 +495,24 @@ body {
   justify-content: center;
 }
 
+/* R26-W2 — the REAL SOURCE ARTWORK layer (the connector-authorized
+ * thumbnail rendered verbatim over the typed placeholder beneath it; a
+ * failed load is hidden by the ArtworkFallback controller so the
+ * placeholder shows through — never a dead box). */
+.wfx-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  background: transparent;
+}
+
+[data-wfx-artwork-failed] {
+  display: none;
+}
+
 .wfx-card__art span {
   font-size: 1.6rem;
   font-weight: 800;
@@ -581,7 +599,32 @@ body {
   overflow: hidden;
 }
 
+/* R26-W2 — the hero's REAL SOURCE ARTWORK (the content-led anchor) with
+ * the readability scrim above it; the deterministic gradient stays
+ * beneath as the typed fallback. */
+.wfx-hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wfx-hero__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(11, 10, 16, 0.94) 0%,
+    rgba(11, 10, 16, 0.66) 46%,
+    rgba(11, 10, 16, 0.28) 78%,
+    rgba(11, 10, 16, 0.12) 100%
+  );
+}
+
 .wfx-hero__title {
+  position: relative;
+  z-index: 1;
   margin: 0;
   font-size: clamp(1.5rem, 4vw, 2.4rem);
   font-weight: 800;
@@ -590,6 +633,8 @@ body {
 }
 
 .wfx-hero__meta {
+  position: relative;
+  z-index: 1;
   margin: 0;
   display: flex;
   flex-wrap: wrap;
@@ -599,6 +644,8 @@ body {
 }
 
 .wfx-hero__actions {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
@@ -823,6 +870,37 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* R26-W2 — the item detail's REAL SOURCE ARTWORK layers (the artwork, the
+ * readability scrim, and the honest fallback-reason sentence when the
+ * source carries no artwork). */
+.wfx-detail__img {
+  border-radius: inherit;
+}
+
+.wfx-detail__scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(11, 10, 16, 0.5) 0%,
+    rgba(11, 10, 16, 0.06) 55%,
+    rgba(11, 10, 16, 0) 100%
+  );
+}
+
+.wfx-detail__artwork-truth {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.68rem;
+  color: var(--wfx-text-faint);
+  background: rgba(11, 10, 16, 0.72);
+  border-top: 1px solid var(--wfx-border);
 }
 
 .wfx-detail__title {
