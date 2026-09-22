@@ -209,28 +209,32 @@ describe("GET /experience/intelligence — the unprovisioned boot's honest truth
     expect(textEmbedding?.detail).toContain("WFX_INTELLIGENCE_MODEL_ENDPOINT is unset");
   });
 
-  it("answers typed 400s for garbage params and identity", async () => {
+  it("answers typed 400s for garbage params (and serves ANONYMOUSLY — the R23-K boundary)", async () => {
     const neither = await intelligenceGET(
-      getRequest("/experience/intelligence", identityHeaders()),
+      getRequest("/experience/intelligence"),
     );
     expect(neither.status).toBe(400);
 
     const both = await intelligenceGET(
-      getRequest("/experience/intelligence?q=a&item=b", identityHeaders()),
+      getRequest("/experience/intelligence?q=a&item=b"),
     );
     expect(both.status).toBe(400);
 
     const empty = await intelligenceGET(
-      getRequest("/experience/intelligence?q=%20%20", identityHeaders()),
+      getRequest("/experience/intelligence?q=%20%20"),
     );
     expect(empty.status).toBe(400);
 
-    const noIdentity = await intelligenceGET(getRequest("/experience/intelligence?q=storm"));
-    expect(noIdentity.status).toBe(400);
-    const garbageIdentity = await intelligenceGET(
-      getRequest("/experience/intelligence?q=storm", { "x-wfx-user-id": "   " }),
+    // THE ANONYMOUS BOUNDARY: the wire contract's client sends NO identity
+    // headers (accept: application/json only) — the read serves without a
+    // login wall (R23-K), unlike the identity-carrying /experience routes.
+    const anonymous = await intelligenceGET(
+      getRequest("/experience/intelligence?q=storm"),
     );
-    expect(garbageIdentity.status).toBe(400);
+    expect(anonymous.status).toBe(200);
+    const body = (await json(anonymous)) as IntelligenceReadOutcome<unknown>;
+    expectWireShape(body, "search-by-meaning");
+    expect(body.kind).toBe("served");
   });
 });
 

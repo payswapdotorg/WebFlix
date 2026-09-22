@@ -18,8 +18,12 @@
  * mandatory: malformed payloads are REJECTED by the client, never
  * coerced (drift is never silently absorbed).
  *
- * Identity rides as headers (the R23-K anonymous boundary — these are
- * LOW-COST reads serving anonymous viewers, never a login wall).
+ * Identity: THE ANONYMOUS BOUNDARY (R23-K) — these reads are LOW-COST
+ * and serve ANONYMOUS viewers with typed states, never a login wall.
+ * The wire contract's client (W1's service transport) sends no identity
+ * headers (`accept: application/json` only), so this route requires
+ * NONE — unlike the identity-carrying /experience routes the frozen
+ * remote-ports client serves.
  *
  * Degradation law (052 classify + WFX-003): a LOUD boot failure answers
  * the typed 500; the degradation family (the store/DB down) answers the
@@ -35,7 +39,6 @@ import type {
 
 import { getApiBoot, type ApiBoot } from "@api/host/boot";
 import { badRequest, bootFailure, isLoudFailure, logDegradation } from "@api/host/http";
-import { readConnectorContext } from "@api/host/identity";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -62,9 +65,6 @@ function storeUnavailable(detail: string): IntelligenceReadOutcome<never> {
 }
 
 export async function GET(request: Request): Promise<Response> {
-  const identity = readConnectorContext(request.headers);
-  if (!identity.ok) return badRequest(identity.detail);
-
   const url = new URL(request.url);
   const rawQuery = url.searchParams.get("q");
   const rawItem = url.searchParams.get("item");
