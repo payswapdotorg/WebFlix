@@ -42,6 +42,7 @@ import { progressScopeTruthOf, viewerKindOf } from "./anonymous-truth";
 import type { ProgressScopeTruth } from "./anonymous-truth";
 import { torrentRealizationOf } from "./torrent-realizations";
 import { loadItemIntelligence, loadLiveAsrRoute, searchByMeaning } from "./intelligence";
+import { loadRealtimeRouteView, type RealtimeRouteView } from "./realtime/realtime-route";
 import type {
   ItemIntelligenceView,
   LiveAsrRouteView,
@@ -729,6 +730,13 @@ export interface PlayerEnrichments {
   /** R23-G — the live-ASR route view (the live captions surface's truth). */
   readonly liveAsr: LiveAsrRouteView;
   /**
+   * R25-W2 — the realtime translation route view (the Translate
+   * control's honest capability truth: the bridge/provider/legal-audio
+   * gates + the provider's languages + the anonymous truth; the
+   * realization-level restriction composes at the surface).
+   */
+  readonly realtime: RealtimeRouteView;
+  /**
    * R24-W2 — the related/up-next projection (the trending pool minus
    * this item — the same card grammar the item hub's "More to explore"
    * renders). The Up-next rail composes it with the session queue.
@@ -1269,7 +1277,7 @@ export async function loadPlayerEnrichments(
   host: WebRuntimeHost,
   input: PlayerViewInput,
 ): Promise<PlayerEnrichments> {
-  const [aiTray, intelligence, liveAsr, related] = await Promise.all([
+  const [aiTray, intelligence, liveAsr, realtime, related] = await Promise.all([
     loadAiTrayView(host, {
       connectorId: input.connectorId,
       externalRef: input.externalRef,
@@ -1278,9 +1286,10 @@ export async function loadPlayerEnrichments(
     }),
     loadItemIntelligence(host, input.externalRef),
     loadLiveAsrRoute(host, input.externalRef),
+    loadRealtimeRouteView({ externalRef: input.externalRef }),
     relatedCardsOf(host, input.itemId),
   ]);
-  return { aiTray, intelligence, liveAsr, related };
+  return { aiTray, intelligence, liveAsr, realtime, related };
 }
 
 /**

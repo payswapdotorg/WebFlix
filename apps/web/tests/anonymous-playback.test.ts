@@ -209,12 +209,7 @@ describe("R23 web-A — the session-scoped progress law and the lawful promotion
     expect(view.progressScope.offersSignInUpgrade).toBe(true);
     expect(view.progressScope.sentence).toContain("kept for this session");
     const PlayerSurface = (await import("../src/components/player/PlayerSurface")).PlayerSurface;
-    const viewEnrichments: {
-      aiTray: PlayerEnrichments["aiTray"];
-      intelligence: PlayerEnrichments["intelligence"];
-      liveAsr: PlayerEnrichments["liveAsr"];
-      related: PlayerEnrichments["related"];
-    } = view;
+    const viewEnrichments: PlayerEnrichments = view;
     const markup = renderToStaticMarkup(
       createElement(AppShell, {
         mode: host.mode,

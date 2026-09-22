@@ -450,7 +450,15 @@ export function deriveRealtimeLatencyMetrics(
   const firstAudio = at("first-translated-audio-chunk");
   const firstStable = at("first-stable-segment");
   const disconnected = at("client-disconnected");
-  const reconnected = at("reconnected");
+  // The reconnect confirmation AFTER the disconnect (the provider-side
+  // recovery earlier in the walk is a different observation — the
+  // client reconnect time measures THIS interruption's recovery).
+  const reconnectedAfter = disconnected === null ? null : (() => {
+    const found = markers.find(
+      (record) => record.marker === "reconnected" && record.atMs >= disconnected,
+    );
+    return found === undefined ? null : found.atMs;
+  })();
   let driftMs: number | null = null;
   if (arrivals.length > 0) {
     let total = 0;
@@ -465,7 +473,9 @@ export function deriveRealtimeLatencyMetrics(
     firstTranslatedSpeechChunkMs: firstAudio === null ? null : sinceStart(firstAudio),
     stableSegmentMs: sinceStart(firstStable),
     reconnectTimeMs:
-      disconnected === null || reconnected === null ? null : Math.max(0, reconnected - disconnected),
+      disconnected === null || reconnectedAfter === null
+        ? null
+        : Math.max(0, reconnectedAfter - disconnected),
     driftMs,
     providerReportedLagMs,
   };

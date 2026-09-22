@@ -38,12 +38,23 @@
  *   C captions, T transcript.
  */
 
-import { Suspense, useCallback, useEffect, useRef, useState, use, type JSX } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState, use, useSyncExternalStore, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
 // R24-E — the startup/interaction telemetry recorder (the seek/control
 // marker pairs wrap the REAL command round trips).
 import { recordPlaybackMarker } from "@/host/playback-telemetry";
+// R25-W2 — the realtime translation session client (the shared
+// controller the chrome's Translate row and the experience island
+// both bind to) + the route view's truths.
+import {
+  getActiveRealtimeSessionController,
+  getActiveRealtimePhase,
+  idleRealtimePhaseSnapshot,
+  subscribeActiveRealtimePhase,
+} from "@/components/player/realtime-session-client";
+import type { RealtimeRouteView } from "@/host/realtime/realtime-route";
+import { realtimeRestrictedAlternativesSentence } from "@/host/realtime/realtime-route";
 
 /** One chapter mark on the scrub bar (the intelligence artifact's chapter). */
 export interface ChromeChapter {
@@ -74,6 +85,22 @@ export interface ChromeTranscriptFeatures {
 export type ChromeTranscriptFeaturesUsable = Promise<ChromeTranscriptFeatures | null>;
 
 /**
+ * Build React's sync-fulfilled usable for the translate features (the
+ * same `use()` fast path — the composed render never suspends).
+ */
+export function fulfilledTranslateFeatures(
+  route: RealtimeRouteView | null,
+): ChromeTranslateFeaturesUsable {
+  const promise = Promise.resolve(route) as ChromeTranslateFeaturesUsable & {
+    status?: "fulfilled";
+    value?: RealtimeRouteView | null;
+  };
+  promise.status = "fulfilled";
+  promise.value = route;
+  return promise;
+}
+
+/**
  * Build React's sync-fulfilled usable (the `use()` fast path — the
  * promise carries the fulfilled status/value fields React reads
  * synchronously; the composed/test render never suspends).
@@ -88,6 +115,14 @@ export function fulfilledTranscriptFeatures(
   promise.status = "fulfilled";
   promise.value = features;
   return promise;
+}
+
+/** The chrome's translate-features usable (the same streaming-promise discipline as the transcript features). */
+export type ChromeTranslateFeaturesUsable = Promise<RealtimeRouteView | null>;
+
+/** The language label derivation (the row's rendering). */
+function languageLabelOf(route: RealtimeRouteView, code: string): string {
+  return route.targetLanguages.find((language) => language.code === code)?.label ?? code;
 }
 
 /** The chrome's serialized view input (server-computed per render). */
@@ -109,6 +144,14 @@ export interface PlayerChromeProps {
    * nonessential artifact streams in).
    */
   readonly transcriptFeatures: ChromeTranscriptFeaturesUsable;
+  /**
+   * R25-W2 — the realtime translation route view (the composed stage
+   * truth). Optional (the row renders only when provided — the surface
+   * always passes it; direct-render tests may omit). The same streaming
+   * discipline as the transcript features: a LOCAL suspension inside
+   * the settings panel, never the transport bar.
+   */
+  readonly translateFeatures?: ChromeTranslateFeaturesUsable;
   /**
    * Whether WebFlix owns THIS stage's media path (the authorized peer
    * copy's browser rung) — the volume/mute cluster and the media-rate
@@ -229,6 +272,214 @@ function CaptionsLayer({
       ) : null}
       {segment.text}
     </div>
+  );
+}
+
+/**
+ * R25-W2 — THE TRANSLATE ROW (the settings cluster's language control,
+ * §R25-G's "Translate → [target language]" in the R24 disclosure
+ * grammar). The row renders the route view's gate truths + the target
+ * language buttons (one click starts the session); a live session
+ * renders the subtitle-mode buttons (translated / original + translated
+ * / original) + the stop control. The row rides the suspended features
+ * layer (a LOCAL suspension inside the settings panel — the transport
+ * bar never suspends) and binds the surface's shared session
+ * controller (the experience island's — one controller, two views).
+ */
+function TranslateRowLayer({
+  features,
+  onSessionStarted,
+}: {
+  readonly features: ChromeTranslateFeaturesUsable;
+  readonly onSessionStarted: () => void;
+}): JSX.Element | null {
+  const route = use<RealtimeRouteView | null>(features);
+  // The ACTIVE-phase proxy store (resolved at read time — the island
+  // binds the controller after this row's first render; the store
+  // re-renders when the binding lands).
+  const phase = useSyncExternalStore(subscribeActiveRealtimePhase, getActiveRealtimePhase, idleRealtimePhaseSnapshot);
+  const startWith = (code: string): void => {
+    // The controller resolves at CLICK time (never a stale capture).
+    getActiveRealtimeSessionController()?.start(code);
+    onSessionStarted();
+  };
+  if (route === null) return null;
+  const ready = route.readiness.kind === "ready" && route.route !== null && route.route.kind === "registered-provider";
+  const state = phase.phase;
+  return (
+    <div className="wfx-chrome__settingsrow" data-wfx-translate-row data-wfx-translate-row-state={
+    state === "live" ? "live" : state === "connecting" ? "connecting" : state === "failed" ? "failed" : state === "stopped" ? "stopped" : ready ? "ready" : route.readiness.kind
+    }>
+      <span>Translate</span>
+      {route.readiness.kind !== "ready" ? (
+        <>
+          <span className="wfx-chrome__settingstruth" data-wfx-translate-gate={route.readiness.kind}>
+            {route.readiness.detail}
+          </span>
+          {route.readiness.kind === "restricted-realization" ? (
+            <span className="wfx-chrome__settingstruth" data-wfx-translate-alternatives>
+              {realtimeRestrictedAlternativesSentence(route.readiness)}
+            </span>
+          ) : null}
+        </>
+      ) : route.route !== null && route.route.kind === "no-realtime-provider-registered" ? (
+        <>
+          <span className="wfx-chrome__settingstruth" data-wfx-translate-gate="no-realtime-provider-registered">
+            {route.route.detail}
+          </span>
+          <span className="wfx-chrome__settingstruth">{route.route.recovery}</span>
+        </>
+      ) : state === "live" ? (
+        <>
+          <div className="wfx-chrome__speedsteps" role="group" aria-label="Captions language">
+            <span className="wfx-chrome__stepbtn wfx-chrome__stepbtn--active" data-wfx-translate-active-target>
+              → {languageLabelOf(route, phase.targetLanguage)}
+            </span>
+            <button
+              type="button"
+              className="wfx-chrome__stepbtn"
+              onClick={() => {
+                getActiveRealtimeSessionController()?.stop();
+              }}
+              data-wfx-translate-stop
+            >
+              Stop
+            </button>
+          </div>
+          <div className="wfx-chrome__speedsteps" role="group" aria-label="Subtitle mode">
+            {(["translated", "bilingual", "source"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                className={`wfx-chrome__stepbtn${phase.subtitleMode === mode ? " wfx-chrome__stepbtn--active" : ""}`}
+                onClick={() => {
+                  getActiveRealtimeSessionController()?.setSubtitleMode(mode);
+                }}
+                aria-pressed={phase.subtitleMode === mode}
+                data-wfx-translate-mode={mode}
+              >
+                {mode === "translated" ? "Translated" : mode === "bilingual" ? "Original + translated" : "Original"}
+              </button>
+            ))}
+          </div>
+          <span className="wfx-chrome__settingstruth" data-wfx-translate-status>
+            {phase.recovering
+              ? "reconnecting the session…"
+              : phase.lastRecoverable !== null
+                ? phase.lastRecoverable.detail
+                : "the live bilingual view renders below the player; the transcript below keeps its own truth"}
+          </span>
+        </>
+      ) : state === "connecting" ? (
+        <span className="wfx-chrome__settingstruth" data-wfx-translate-status>starting the translation…</span>
+      ) : state === "failed" ? (
+        <>
+          <span className="wfx-chrome__settingstruth" data-wfx-translate-failure-detail>
+            Translation stopped ({phase.errorKind}) — original captions remain available.
+          </span>
+          <div className="wfx-chrome__speedsteps" role="group" aria-label="Translation retry">
+            {route.targetLanguages.map((language) => (
+              <button
+                key={language.code}
+                type="button"
+                className="wfx-chrome__stepbtn"
+                onClick={() => {
+                  startWith(language.code);
+                }}
+                data-wfx-translate-target={language.code}
+              >
+                → {language.label}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : ready ? (
+        <>
+          <div className="wfx-chrome__speedsteps" role="group" aria-label="Translate to a language">
+            {route.targetLanguages.map((language) => (
+              <button
+                key={language.code}
+                type="button"
+                className="wfx-chrome__stepbtn"
+                onClick={() => {
+                  startWith(language.code);
+                }}
+                data-wfx-translate-target={language.code}
+              >
+                → {language.label}
+              </button>
+            ))}
+          </div>
+          <span className="wfx-chrome__settingstruth" data-wfx-translate-truth>
+            Live translation over the WebFlix bridge — no account needed; the cost policy governs the session.
+          </span>
+        </>
+      ) : (
+        <span className="wfx-chrome__settingstruth" data-wfx-translate-gate="no-languages">
+          No translation directions are registered.
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * R25-W2 — THE CAPTION OVERLAY DISPATCHER: while a live translation
+ * session runs with subtitle mode translated/bilingual, the overlay
+ * renders the LIVE stream's current segment (the translated line + the
+ * source line under it) — the live stream's own timing, like live TV
+ * captions. The original artifact overlay (position-synced) renders
+ * otherwise — the R24 law unchanged. The dispatcher is FULLY
+ * SUBSCRIBED to the session phase (the switch itself re-renders on
+ * every phase change, never a stale dual render).
+ */
+function CaptionOverlayDispatcher({
+  features,
+  captionsOn,
+  positionMs,
+  onToggle,
+}: {
+  readonly features: ChromeTranscriptFeaturesUsable;
+  readonly captionsOn: boolean;
+  readonly positionMs: number;
+  readonly onToggle: () => void;
+}): JSX.Element | null {
+  const phase = useSyncExternalStore(subscribeActiveRealtimePhase, getActiveRealtimePhase, idleRealtimePhaseSnapshot);
+  if (!captionsOn) return null;
+  // The LIVE bilingual overlay (the translated line + the source line
+  // when the mode is bilingual).
+  if (phase.phase === "live" && phase.subtitleMode !== "source") {
+    const segments = [...phase.segments].filter(
+      (segment) => segment.translationText.length > 0 || segment.sourceText.length > 0,
+    );
+    if (segments.length === 0) return null;
+    const current = segments[segments.length - 1]!;
+    return (
+      <div className="wfx-chrome__caption" data-wfx-caption-line data-wfx-caption-live="true" aria-live="polite">
+        {phase.subtitleMode === "bilingual" ? (
+          <span className="wfx-chrome__captionsource" data-wfx-caption-source>
+            {current.speakerLabel !== null ? `${current.speakerLabel}: ` : ""}
+            {current.sourceText}
+          </span>
+        ) : null}
+        <span className="wfx-chrome__captiontranslation" data-wfx-caption-translation>
+          {current.translationText.length > 0 ? current.translationText : "…"}
+        </span>
+      </div>
+    );
+  }
+  // The artifact overlay (the transcript artifact, position-synced — the
+  // R24 law; a LOCAL suspension).
+  return (
+    <Suspense fallback={null}>
+      <CaptionsLayer
+        features={features}
+        part="overlay"
+        captionsOn={captionsOn}
+        positionMs={positionMs}
+        onToggle={onToggle}
+      />
+    </Suspense>
   );
 }
 
@@ -680,6 +931,18 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                 <span>Quality</span>
                 <span className="wfx-chrome__settingstruth">{props.qualityTruth}</span>
               </div>
+              {/* R25-W2 — THE TRANSLATE ROW (the plan's "Translate → [target
+                  language]" control, in the settings cluster's own grammar).
+                  A LOCAL suspension — the settings panel streams the row
+                  when the realtime route view resolves; the transport bar
+                  never suspends. */}
+              {props.translateFeatures !== undefined ? (
+                <Suspense fallback={<div className="wfx-chrome__settingsrow" data-wfx-translate-row data-wfx-translate-row-state="pending" />}>
+                  <TranslateRowLayer features={props.translateFeatures} onSessionStarted={() => {
+                    setCaptionsOn(true);
+                  }} />
+                </Suspense>
+              ) : null}
               <div className="wfx-chrome__settingsrow" data-wfx-chrome-autoplay-truth>
                 <span>Autoplay</span>
                 <span className="wfx-chrome__settingstruth">{props.autoplaySentence}</span>
@@ -761,19 +1024,18 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         </dl>
       </details>
 
-      {/* THE CAPTION OVERLAY (the transcript artifact, position-synced —
-          the streamed features layer's overlay part; a LOCAL suspension). */}
-      <Suspense fallback={null}>
-        <CaptionsLayer
-          features={props.transcriptFeatures}
-          part="overlay"
-          captionsOn={captionsOn}
-          positionMs={positionMs}
-          onToggle={() => {
-            setCaptionsOn((current) => !current);
-          }}
-        />
-      </Suspense>
+      {/* THE CAPTION OVERLAY (R25-W2's dispatcher: the LIVE bilingual
+          overlay while a translation session runs; the transcript
+          artifact overlay otherwise — the R24 law unchanged; the
+          visibility is the C toggle's own state). */}
+      <CaptionOverlayDispatcher
+        features={props.transcriptFeatures}
+        captionsOn={captionsOn}
+        positionMs={positionMs}
+        onToggle={() => {
+          setCaptionsOn((current) => !current);
+        }}
+      />
     </div>
   );
 }

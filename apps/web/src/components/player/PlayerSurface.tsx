@@ -38,7 +38,7 @@ import { Suspense, type JSX } from "react";
 
 import type { PlayerEnrichments, PlayerShellView } from "@/host/view-models";
 import { ActionButtons } from "@/components/player/ActionButtons";
-import { PlayerChrome, type ChromeChapter, type ChromeTranscriptFeatures, type ChromeTranscriptSegment, fulfilledTranscriptFeatures } from "@/components/player/PlayerChrome";
+import { PlayerChrome, type ChromeChapter, type ChromeTranscriptFeatures, type ChromeTranscriptSegment, fulfilledTranscriptFeatures, fulfilledTranslateFeatures } from "@/components/player/PlayerChrome";
 import { UpNextRail, type UpNextCard } from "@/components/player/UpNextRail";
 import { ShareControl } from "@/components/player/ShareControl";
 import { WatchlistSave } from "@/components/player/WatchlistSave";
@@ -51,6 +51,8 @@ import { WhereToWatch } from "@/components/item/WhereToWatch";
 import { AiActionTray } from "@/components/discovery/AiActionTray";
 import { IntelligenceSurface } from "@/components/item/IntelligenceSurface";
 import { LiveCaptionsSurface } from "@/components/player/LiveCaptionsSurface";
+import { TranslateExperience } from "@/components/player/TranslateExperience";
+import { realtimeStageReadiness } from "@/host/realtime/realtime-route";
 import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
@@ -224,6 +226,47 @@ function AiTrayPanel({ enrichments }: { readonly enrichments: EnrichmentInput })
   ) : (
     <AiActionTray view={enrichments.aiTray} surface="player" />
   );
+}
+
+/** The realtime translation panel (the same composed/streaming split). */
+function RealtimeTranslatePanel({
+  enrichments,
+  identity,
+  stage,
+}: {
+  readonly enrichments: EnrichmentInput;
+  readonly identity: Parameters<typeof TranslateExperience>[0]["identity"];
+  readonly stage: Parameters<typeof realtimeStageReadiness>[1];
+}): JSX.Element {
+  const stageContext = stage;
+  const routeOf = (resolved: PlayerEnrichments): Parameters<typeof TranslateExperience>[0]["route"] => ({
+    ...resolved.realtime,
+    readiness: realtimeStageReadiness(resolved.realtime, stageContext),
+  });
+  return enrichments instanceof Promise ? (
+    <Suspense fallback={<EnrichmentPending label="Translate" />}>
+      <RealtimeTranslateSection enrichments={enrichments} identity={identity} stage={stageContext} routeOf={routeOf} />
+    </Suspense>
+  ) : (
+    <TranslateExperience route={routeOf(enrichments)} identity={identity} />
+  );
+}
+
+/** A streamed async section: the realtime translate island. */
+async function RealtimeTranslateSection({
+  enrichments,
+  identity,
+  stage,
+  routeOf,
+}: {
+  readonly enrichments: Promise<PlayerEnrichments>;
+  readonly identity: Parameters<typeof TranslateExperience>[0]["identity"];
+  readonly stage: Parameters<typeof realtimeStageReadiness>[1];
+  readonly routeOf: (resolved: PlayerEnrichments) => Parameters<typeof TranslateExperience>[0]["route"];
+}): Promise<JSX.Element> {
+  const resolved = await enrichments;
+  void stage;
+  return <TranslateExperience route={routeOf(resolved)} identity={identity} />;
 }
 
 /** The live-captions panel (the same composed/streaming split). */
@@ -496,6 +539,33 @@ export function PlayerSurface({
           .then((resolved) => chromeFeaturesOf(resolved))
           .catch(() => null)
       : fulfilledTranscriptFeatures(chromeFeaturesOf(enrichments));
+  // R25-W2 — the chrome's TRANSLATE features (the same discipline): the
+  // composed stage truth (the realization gate applied — R25-E) either
+  // sync-fulfilled (the composed render) or streamed (the page's split;
+  // the row suspends locally inside the settings panel).
+  const stageForReadiness = {
+    webflixOwnsStage,
+    surfaceMode: view.surfaceMode,
+    transcriptAvailable: true,
+  };
+  const translateFeatures =
+    enrichments instanceof Promise
+      ? enrichments
+          .then((resolved) => ({
+            ...resolved.realtime,
+            readiness: realtimeStageReadiness(resolved.realtime, {
+              ...stageForReadiness,
+              transcriptAvailable: (resolved.intelligence.transcript ?? []).length > 0,
+            }),
+          }))
+          .catch(() => null)
+      : fulfilledTranslateFeatures({
+          ...enrichments.realtime,
+          readiness: realtimeStageReadiness(enrichments.realtime, {
+            ...stageForReadiness,
+            transcriptAvailable: (enrichments.intelligence.transcript ?? []).length > 0,
+          }),
+        });
 
   if (view.failure !== null) {
     // R21-E — the playback RECOVERY path: the typed failure renders with
@@ -588,6 +658,7 @@ export function PlayerSurface({
             initialBufferedMs={0}
             durationMs={view.durationMs}
             transcriptFeatures={transcriptFeatures}
+            translateFeatures={translateFeatures}
             webflixOwnsStage={webflixOwnsStage}
             surfaceMode={view.surfaceMode}
             qualityTruth={qualityTruth}
@@ -684,6 +755,21 @@ export function PlayerSurface({
                 never a blank section. */}
             <AiTrayPanel enrichments={enrichments} />
             <LiveCaptionsPanel enrichments={enrichments} mode={view.mode} />
+            {/* R25-W2 — THE TRANSLATE EXPERIENCE island (the live bilingual
+                surface + the translated-speech cluster + the graceful
+                fallback + the anonymous truth — the deferred lane, never a
+                blocked shell). */}
+            <RealtimeTranslatePanel
+              enrichments={enrichments}
+              identity={{
+                itemId: view.itemId,
+                connectorId: view.connectorId,
+                externalRef: view.externalRef,
+                playbackSessionId: view.sessionId,
+                webflixOwnsStage,
+              }}
+              stage={stageForReadiness}
+            />
             <IntelligencePanel
               enrichments={enrichments}
               target={{

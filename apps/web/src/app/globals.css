@@ -3699,3 +3699,134 @@ body {
 .wfx-share summary::-webkit-details-marker {
   display: none;
 }
+
+/* — The R25 realtime translation surfaces (the Translate island + the chrome's rows). */
+.wfx-translate {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.8rem 1rem;
+  border-radius: var(--wfx-radius);
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-surface);
+}
+
+.wfx-translate__title {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.wfx-translate__live {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.wfx-translate__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-translate__reason {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-translate__audio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.wfx-translate__audio > span:first-child {
+  font-weight: 600;
+}
+
+.wfx-translate__segments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 22rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.wfx-translate__segment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--wfx-radius-sm);
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-translate__speaker {
+  font-weight: 700;
+  color: var(--wfx-accent);
+  font-size: 0.78rem;
+}
+
+.wfx-translate__source {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-translate__translation {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--wfx-text);
+}
+
+.wfx-translate__pending {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--wfx-text-faint);
+  font-style: italic;
+}
+
+.wfx-translate__failed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--wfx-radius-sm);
+  border: 1px solid var(--wfx-warn-border, var(--wfx-border-strong));
+  background: var(--wfx-warn-soft, var(--wfx-bg-raised));
+}
+
+.wfx-translate__actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.wfx-translate__truths {
+  border-top: 1px dashed var(--wfx-border);
+  padding-top: 0.4rem;
+}
+
+.wfx-translate__truths summary {
+  cursor: pointer;
+  font-size: 0.8rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-chrome__captionsource {
+  display: block;
+  font-size: 0.82rem;
+  opacity: 0.92;
+}
+
+.wfx-chrome__captiontranslation {
+  display: block;
+  font-size: 0.98rem;
+}
+
+/* The translate settings row's pending state (the streamed row's skeleton). */
+.wfx-chrome__settingsrow[data-wfx-translate-row-state="pending"] {
+  min-height: 2.2rem;
+}

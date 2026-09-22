@@ -78,6 +78,17 @@ export const REALTIME_BRIDGE_DEFAULT_PORT = 3102;
 const CLIENT_RESUME_WINDOW_MS = 30_000;
 
 /**
+ * THE SCRIPTED CLIENT NETWORK BLIP (the dev double's client-side
+ * interruption — the symmetric twin of the scripted provider drop):
+ * once per session, after this much live streaming, the bridge closes
+ * the CLIENT connection abruptly. The client's reconnect loop, the
+ * resume token, the continuity cursor, and the measured reconnect
+ * time are ALL the real machinery — only the interruption itself is
+ * the modeled network event (the same honesty as the provider drop).
+ */
+const SCRIPTED_CLIENT_BLIP_AFTER_MS = 24_000;
+
+/**
  * The bridge's session budget ceiling (§R25-K's budget limit — the
  * shared policy's `maxSessionCostUsd`; the DEV prototype's ceiling).
  */
@@ -114,6 +125,10 @@ interface BridgeSession {
   continuityTimer: ReturnType<typeof setTimeout> | null;
   /** The duration-cap timer (the shared policy's session limit). */
   capTimer: ReturnType<typeof setTimeout> | null;
+  /** The scripted client network blip timer (the dev double's interruption). */
+  blipTimer: ReturnType<typeof setTimeout> | null;
+  /** Whether the scripted client blip already fired (once per session). */
+  clientBlipped: boolean;
   /** The detached relay task (the event pump's stop signal). */
   relayStopped: boolean;
 }
@@ -300,6 +315,7 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
     session.relayStopped = true;
     if (session.capTimer !== null) clearTimeout(session.capTimer);
     if (session.continuityTimer !== null) clearTimeout(session.continuityTimer);
+    if (session.blipTimer !== null) clearTimeout(session.blipTimer);
     mark(session, "session-closed");
     // THE RETENTION SEAM: the ended session's telemetry record survives
     // (readable through GET /telemetry after the close — the J41-style
@@ -424,6 +440,8 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
           markers: [{ marker: "session-created", atMs: Date.now() }],
           continuityTimer: null,
           capTimer: null,
+          blipTimer: null,
+          clientBlipped: false,
           relayStopped: false,
         };
         sessions.set(sessionId, session);
@@ -484,6 +502,18 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
                 `the session reached its ${Math.round(durationLimitMs / 1000)}s duration limit (the cost policy)`,
               );
             }, durationLimitMs);
+            // THE SCRIPTED CLIENT NETWORK BLIP (the dev double's
+            // client-side interruption — once, after the stream has
+            // run long enough for the journey to have observed the
+            // speaker change + the translated speech).
+            session.blipTimer = setTimeout(() => {
+              if (session.ended || session.clientBlipped || session.client === null) return;
+              session.clientBlipped = true;
+              mark(session, "client-blip");
+              // The abrupt close (a network-like drop — the client's
+              // reconnect loop + the resume run for real).
+              session.client.terminate();
+            }, SCRIPTED_CLIENT_BLIP_AFTER_MS);
           })
           .catch(() => {
             if (session.ended) return;

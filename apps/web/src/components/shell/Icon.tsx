@@ -33,6 +33,7 @@ export type IconName =
   | "fullscreenExit"
   | "miniplayer"
   | "captions"
+  | "translate"
   | "link";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
@@ -143,6 +144,12 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
       <path d="M9.5 14.5 14.5 9.5" />
       <path d="M8 11l-2.8 2.8a3.8 3.8 0 0 0 5.4 5.4L13.5 16.2" />
       <path d="M16 13l2.8-2.8a3.8 3.8 0 0 0-5.4-5.4L10.5 7.8" />
+    </>
+  ),
+  translate: (
+    <>
+      <path d="M3 5h12a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H7l-4 3v-3H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+      <path d="M14 14.5h.01M12 18h6M15 13.5l1.8 4.5 1.7-4.5" />
     </>
   ),
 };
