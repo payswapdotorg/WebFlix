@@ -28,7 +28,7 @@ import { AcquisitionPanel } from "@/components/acquisition/AcquisitionPanel";
 import { TorrentStageProbe } from "@/components/player/TorrentStageProbe";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
-import { formatPosition } from "@/components/ui/format";
+import { firstCodePointOf, formatPosition } from "@/components/ui/format";
 
 /** The authorized peer copy's stage (the browser rung). */
 export function TorrentPlaybackStage({ view }: { readonly view: PlayerShellView }): JSX.Element {
@@ -95,7 +95,10 @@ export function TorrentPlaybackStage({ view }: { readonly view: PlayerShellView 
             adapter's business (the client probe below carries the
             environment truth — no fabricated frames here). */}
         <span className="wfx-card__art" aria-hidden="true">
-          <span>{view.title.slice(0, 1)}</span>
+          {/* R26-W2 — code-point-safe leading glyph (an emoji-leading real
+              catalog title renders the whole emoji, never a lone surrogate
+              — the same hydration law the card monogram keeps). */}
+          <span>{firstCodePointOf(view.title.trim())}</span>
         </span>
       </div>
       <p className="wfx-player__trace" data-wfx-torrent-rung-detail>

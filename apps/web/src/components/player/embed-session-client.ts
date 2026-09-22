@@ -87,20 +87,29 @@ export interface EmbedControlState {
   readonly provider: "youtube" | "unknown";
 }
 
+/**
+ * The STABLE idle snapshot — a CACHED module constant (the
+ * `useSyncExternalStore` law: `getServerSnapshot` must return a stable
+ * reference, never a fresh object per call — the fresh-object form threw
+ * React's "result of getServerSnapshot should be cached" warning during
+ * hydration, reproduced on the real-catalog player page).
+ */
+const IDLE_EMBED_CONTROL_SNAPSHOT: EmbedControlState = {
+  live: false,
+  settled: false,
+  phase: "unstarted",
+  positionMs: 0,
+  durationMs: null,
+  loadedFraction: null,
+  volume: null,
+  muted: null,
+  rate: null,
+  provider: "unknown",
+};
+
 /** The idle snapshot (no stage bound — the chrome's pre-hydration truth). */
 export function idleEmbedControlSnapshot(): EmbedControlState {
-  return {
-    live: false,
-    settled: false,
-    phase: "unstarted",
-    positionMs: 0,
-    durationMs: null,
-    loadedFraction: null,
-    volume: null,
-    muted: null,
-    rate: null,
-    provider: "unknown",
-  };
+  return IDLE_EMBED_CONTROL_SNAPSHOT;
 }
 
 // ---------------------------------------------------------------------------
@@ -230,11 +239,22 @@ export function bindActiveEmbedSession(config: BindEmbedSessionConfig): {
     phase: "unstarted",
   });
 
-  /** Send one protocol command to the provider's player (best-effort). */
+  /**
+   * Send one protocol message to the provider's player — the provider's
+   * OWN widget API message form (verified against
+   * `www-widgetapi.js`'s `sendMessage`: every message carries the widget
+   * `id` and the provider's `channel: "widget"`; the provider's answers
+   * echo both). Best-effort; a refused postMessage (a closed/changed
+   * window) degrades to the honest fallback path — never a crash, never
+   * a fabricated state.
+   */
   const send = (payload: Record<string, unknown>): void => {
     if (disposed) return;
     try {
-      iframe.contentWindow?.postMessage(JSON.stringify(payload), "*");
+      iframe.contentWindow?.postMessage(
+        JSON.stringify({ ...payload, id: "wfx-embed", channel: "widget" }),
+        "*",
+      );
     } catch {
       // A refused postMessage (a closed/changed window) degrades to the
       // honest fallback path — never a crash, never a fabricated state.
@@ -406,18 +426,39 @@ export function bindActiveEmbedSession(config: BindEmbedSessionConfig): {
     if (disposed || handshakeSettled) return;
     send({ event: "listening", id: "wfx-embed", channel: "wfx-embed" });
   };
-  iframe.addEventListener("load", handshake);
-  handshake();
-  const handshakeRetry = setTimeout(handshake, 800);
 
   // The honest timeout: no provider answer ⇒ the API is not there for
   // this embed — the surface keeps the server session's truthful states
   // and the "carries its own controls" disclosure (never a fake live).
-  const handshakeTimeout = setTimeout(() => {
+  // R26-W2 (corrective): the window is measured FROM THE FRAME'S LOAD — a
+  // slow-loading provider frame (cold provider assets, first embed of the
+  // session) used to settle the fallback BEFORE the provider's player
+  // script even existed, permanently killing a channel that would have
+  // answered; the load event now re-arms the window so the provider gets
+  // its full chance after its player is actually up.
+  let handshakeTimeout: ReturnType<typeof setTimeout> | null = setTimeout(() => {
     if (disposed || handshakeSettled) return;
     handshakeSettled = true;
     publish({ ...getActiveEmbedControl(), live: false, settled: true });
   }, HANDSHAKE_TIMEOUT_MS);
+
+  const rearmHandshakeTimeout = (): void => {
+    if (handshakeTimeout !== null) clearTimeout(handshakeTimeout);
+    handshakeTimeout = setTimeout(() => {
+      if (disposed || handshakeSettled) return;
+      handshakeSettled = true;
+      publish({ ...getActiveEmbedControl(), live: false, settled: true });
+    }, HANDSHAKE_TIMEOUT_MS);
+  };
+
+  const onLoad = (): void => {
+    if (disposed || handshakeSettled) return;
+    rearmHandshakeTimeout();
+    handshake();
+  };
+  iframe.addEventListener("load", onLoad);
+  handshake();
+  const handshakeRetry = setTimeout(handshake, 800);
 
   window.addEventListener("message", onMessage);
 
@@ -456,10 +497,11 @@ export function bindActiveEmbedSession(config: BindEmbedSessionConfig): {
   const unbind = (): void => {
     if (disposed) return;
     disposed = true;
-    iframe.removeEventListener("load", handshake);
+    iframe.removeEventListener("load", onLoad);
     window.removeEventListener("message", onMessage);
     clearTimeout(handshakeRetry);
-    clearTimeout(handshakeTimeout);
+    if (handshakeTimeout !== null) clearTimeout(handshakeTimeout);
+    handshakeTimeout = null;
     clearInterval(liveWatch);
     if (pollTimer !== null) clearInterval(pollTimer);
     pollTimer = null;

@@ -45,12 +45,30 @@ export function placeholderArt(id: string): string {
   return `linear-gradient(135deg, hsl(${hue} 42% 24%) 0%, hsl(${(hue + 46) % 360} 48% 11%) 100%)`;
 }
 
+/**
+ * The first code POINT of a word (UTF-16-safe — an emoji-leading title
+ * yields the whole emoji, never a lone surrogate).
+ *
+ * R26-W2 (corrective fix, real-catalog reproduction): `charAt(0)` answers
+ * the first UTF-16 CODE UNIT, so a title leading with an astral character
+ * (🌧️, 🔴, ⚡ — the real catalog carries many) produced a LONE SURROGATE,
+ * which the server's HTML encodes as U+FFFD while the client's hydration
+ * render kept the raw lone surrogate — a hydration mismatch that killed
+ * the whole page on the REAL production catalog (the ASCII fixture
+ * catalog never exercised it). Code-point extraction is deterministic and
+ * byte-identical on server and client — the hydration law holds.
+ */
+export function firstCodePointOf(word: string): string {
+  const first = word.codePointAt(0);
+  return first === undefined ? "" : String.fromCodePoint(first);
+}
+
 /** The placeholder monogram of a title (first grapheme pair, uppercased). */
 export function placeholderMonogram(title: string): string {
   const trimmed = title.trim();
   if (trimmed.length === 0) return "··";
   const words = trimmed.split(/\s+/).slice(0, 2);
-  return words.map((word) => word.charAt(0)).join("").toUpperCase();
+  return words.map(firstCodePointOf).join("").toUpperCase();
 }
 
 /** Percent text for a completion ratio (`"45% watched"`); null when unknown. */

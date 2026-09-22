@@ -4,11 +4,40 @@
  * @wfx/app-web — the provider EMBED STAGE (R26-W2): the embed rung's
  * contained iframe with the provider's own embed control contract bound.
  *
- * THE UNCHANGED CONTAINMENT LAW (R09): the provider's player runs inside
- * the SAME sandboxed, opaque-origin, cookie-isolated iframe as before —
- * `sandbox` without `allow-same-origin`, strict referrer policy, provider
- * page stays provider-owned. Nothing is injected into the frame and
- * nothing is inspected.
+ * THE CONTAINMENT LAW (R09, the R26-W2 corrective refinement — verified
+ * empirically on the real provider, classified honestly as an
+ * iframe-security restriction): the provider's DOCUMENTED embed control
+ * API (the postMessage channel the R26-W2 client binds) cannot function
+ * in an OPAQUE-origin sandbox — the provider's player never answers the
+ * listening handshake without `allow-same-origin` (reproduced: opaque
+ * sandbox ⇒ 0 provider messages; `allow-same-origin` ⇒ the provider's
+ * own `initialDelivery` with its full command interface). The two laws —
+ * opaque-origin cookie isolation AND the provider's own control channel —
+ * are mutually exclusive for the embed rung.
+ *
+ * The lawful combination this stage now keeps, per containment INTENT:
+ *
+ * - the CONTROL-BOUND embed (the YouTube family) loads from the provider's
+ *   own PRIVACY-ENHANCED embed host (`www.youtube-nocookie.com` — the
+ *   provider's documented cookie-free embed surface) with
+ *   `sandbox="allow-scripts allow-same-origin ..."`: the provider's player
+ *   keeps its own origin (the control channel answers), while the viewer's
+ *   provider IDENTITY stays isolated — `youtube-nocookie.com` is a
+ *   separate origin with a separate cookie jar, so the provider's page
+ *   cannot see or attach the viewer's `youtube.com` session. Identity
+ *   isolation is preserved by the provider's own domain separation
+ *   (the provider's published privacy mechanism), not by breaking the
+ *   provider's player.
+ * - the NO-CONTROL embed (every other provider) keeps the strictest
+ *   posture VERBATIM: the opaque-origin sandbox without
+ *   `allow-same-origin`, exactly as before (nothing is bound, nothing
+ *   needs the provider's origin).
+ * - BOTH postures keep the invariant core of the frozen law: the provider
+ *   page stays PROVIDER-OWNED — no script injection, no content
+ *   inspection (the cross-origin boundary enforces it in both), strict
+ *   referrer policy, and the BROWSER rung's contained surface
+ *   (`platform/browser-host.ts`) keeps its opaque-origin sandbox law
+ *   VERBATIM — this refinement is the EMBED rung's alone.
  *
  * THE R26-W2 ADDITION (client-side realization control): where the
  * provider's embed URL identifies a provider that DOCUMENTS an embed
@@ -28,16 +57,23 @@ import { useEffect, useRef, type JSX } from "react";
 
 import { bindActiveEmbedSession } from "@/components/player/embed-session-client";
 
+/** The provider's own privacy-enhanced embed hosts (the cookie-free surface). */
+const YOUTUBE_PRIVACY_EMBED_HOST = "www.youtube-nocookie.com";
+
+/** The YouTube embed hosts the privacy host substitution covers. */
+const YOUTUBE_EMBED_HOSTS: ReadonlySet<string> = new Set([
+  "www.youtube.com",
+  "youtube.com",
+  "m.youtube.com",
+]);
+
 /** The providers whose documented embed control API the stage binds. */
 function providerFamilyOf(url: string): "youtube" | "unknown" {
   try {
     const parsed = new URL(url);
     const host = parsed.hostname.toLowerCase();
     const isYouTubeHost =
-      host === "www.youtube.com" ||
-      host === "youtube.com" ||
-      host === "m.youtube.com" ||
-      host === "www.youtube-nocookie.com";
+      YOUTUBE_EMBED_HOSTS.has(host) || host === YOUTUBE_PRIVACY_EMBED_HOST;
     if (isYouTubeHost && parsed.pathname.startsWith("/embed/")) return "youtube";
   } catch {
     // A non-parsable URL never reaches this stage (the surface validates).
@@ -46,17 +82,40 @@ function providerFamilyOf(url: string): "youtube" | "unknown" {
 }
 
 /**
+ * The sandbox tokens of the CONTROL-BOUND embed: the provider's player
+ * needs its own origin (`allow-same-origin`) for its documented embed
+ * control channel to answer (the empirical iframe-security restriction
+ * above); the viewer's provider identity stays isolated through the
+ * provider's privacy-enhanced embed host (a separate origin + cookie
+ * jar), so the provider page never sees the viewer's `youtube.com`
+ * session. The no-control embed keeps the opaque-origin tokens VERBATIM.
+ */
+const CONTROL_BOUND_SANDBOX =
+  "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation";
+
+/** The opaque-origin tokens (the strictest posture — the no-control embed's). */
+const OPAQUE_ORIGIN_SANDBOX =
+  "allow-scripts allow-forms allow-popups allow-presentation";
+
+/**
  * The presentation src: the provider's embed URL with the provider's own
- * embed-API parameter where the family documents one (the endpoint, the
- * video, and every provider parameter stay verbatim — the only addition
- * is the provider's published control switch).
+ * embed-API parameter where the family documents one, served from the
+ * provider's own privacy-enhanced embed host where the control channel
+ * binds (the provider's published cookie-free surface for the SAME embed
+ * — the video id, the path, and every provider parameter stay verbatim;
+ * the additions are the provider's own documented embed mechanisms:
+ * the privacy host and the published control switch).
  */
 function presentationSrcOf(url: string): string {
   if (providerFamilyOf(url) !== "youtube") return url;
   try {
     const parsed = new URL(url);
-    if (parsed.searchParams.has("enablejsapi")) return url;
-    parsed.searchParams.set("enablejsapi", "1");
+    if (YOUTUBE_EMBED_HOSTS.has(parsed.hostname.toLowerCase())) {
+      parsed.hostname = YOUTUBE_PRIVACY_EMBED_HOST;
+    }
+    if (!parsed.searchParams.has("enablejsapi")) {
+      parsed.searchParams.set("enablejsapi", "1");
+    }
     return parsed.toString();
   } catch {
     return url;
@@ -87,12 +146,13 @@ export function EmbedStage({
   const frameRef = useRef<HTMLIFrameElement | null>(null);
   const provider = providerFamilyOf(url);
   const src = presentationSrcOf(url);
+  const controlBound = provider === "youtube";
 
   // Bind the provider's embed control contract for this stage's life.
   useEffect(() => {
     const frame = frameRef.current;
     if (frame === null) return;
-    if (provider !== "youtube") return; // no documented control channel — the honest pre-R26 path
+    if (!controlBound) return; // no documented control channel — the honest pre-R26 path
     const bound = bindActiveEmbedSession({
       iframe: frame,
       provider,
@@ -100,29 +160,32 @@ export function EmbedStage({
       playbackSessionId,
     });
     return bound.unbind;
-  }, [provider, itemId, playbackSessionId, url]);
+  }, [controlBound, provider, itemId, playbackSessionId, url]);
 
   return (
     <div
       className="wfx-player__stage"
       data-wfx-player-mode="embed"
       data-wfx-embed-attestation={attestation ?? "none"}
-      data-wfx-embed-control={provider === "youtube" ? "bound" : "unsupported-provider"}
+      data-wfx-embed-control={controlBound ? "bound" : "unsupported-provider"}
+      data-wfx-embed-containment={controlBound ? "privacy-host" : "opaque-origin"}
       {...(containedSurfaceId !== null ? { "data-wfx-contained-surface": containedSurfaceId } : {})}
     >
       <iframe
         ref={frameRef}
         src={src}
         title={`Embedded playback: ${title}`}
-        sandbox="allow-scripts allow-forms allow-popups allow-presentation"
+        sandbox={controlBound ? CONTROL_BOUND_SANDBOX : OPAQUE_ORIGIN_SANDBOX}
         referrerPolicy="strict-origin-when-cross-origin"
         allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
         data-wfx-player-frame
       />
       <p className="wfx-player__trace" data-wfx-embed-note>
         {attestation === "official"
-          ? "Official provider embed — the provider exposed this player for embedding, contained and cookie-isolated by WebFlix."
-          : "Embedded playback contained in a cookie-isolated surface — the realization carries no provider official-embed attestation, named honestly; WebFlix never injects into or inspects the provider page, and binds only the provider's own published embed player controls."}
+          ? controlBound
+            ? "Official provider embed on the provider's own privacy-enhanced host — the provider's player keeps its own controls, which WebFlix's player binds with the provider's published embed API; your provider sign-in stays invisible to this surface, and WebFlix never injects into or inspects the provider page."
+            : "Official provider embed — the provider exposed this player for embedding, contained and cookie-isolated by WebFlix."
+          : "Embedded playback in a contained surface — the realization carries no provider official-embed attestation, named honestly; WebFlix never injects into or inspects the provider page, and binds only the provider's own published embed player controls."}
       </p>
     </div>
   );
