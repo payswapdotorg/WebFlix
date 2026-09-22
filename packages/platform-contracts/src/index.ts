@@ -18,6 +18,11 @@
  * - `sharing.ts`         — `SharingPort`
  * - `capabilities.ts`    — `PlatformCapabilities`, `CapabilityDescriptor`,
  *                          `checkCapabilityTruth` (the truth law), helpers
+ * - `capability-availability.ts` — `ServedCapabilityKind`,
+ *                          `CapabilityServingTruth`,
+ *                          `CapabilityAvailabilityReport` (R26-W1: the live
+ *                          transport's served/not-served truth per capability
+ *                          — the production capability-truth law)
  */
 
 export * from "./common";
@@ -29,3 +34,4 @@ export * from "./notifications";
 export * from "./background-work";
 export * from "./sharing";
 export * from "./capabilities";
+export * from "./capability-availability";

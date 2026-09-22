@@ -1,6 +1,6 @@
 /**
  * @wfx/app-web — the media-intelligence read models (R23-F/G/H
- * consumption, Worker 2's lane).
+ * consumption, Worker 2's lane; the transport binding R26-W1).
  *
  * THE LAWS THIS MODULE BINDS:
  *
@@ -20,10 +20,17 @@
  *   lane).
  * - THE ANONYMOUS AI BOUNDARY (R23-K): these reads are LOW-COST/LOCAL —
  *   they serve anonymous viewers with typed states, never a login wall.
- *
- * DATA TRUTH: the artifact sets are the DEV fixtures feed (loudly
- * badged) in fixtures mode; SERVICE mode has no transport-exposed
- * intelligence data yet, so every read answers the honest empty state.
+ * - R26-W1's TRANSPORT law: the reads are bound to the CANONICAL
+ *   `IntelligenceReadTransport` (`@wfx/model-fabric`), NEVER gated on
+ *   `host.mode`:
+ *     - the FIXTURES boot binds the deterministic dev fixture index
+ *       (loudly badged — invariant 10);
+ *     - the SERVICE boot binds the REAL Experience-API HTTP transport
+ *       (`host/intelligence-service-transport.ts` — the wire contract
+ *       `@wfx/model-fabric` freezes). While the service-side route is
+ *       the escalated missing dependency, the transport answers the
+ *       typed `transport-unavailable` truth — the honest not-served
+ *       sentence, never an approximation.
  */
 
 import {
@@ -33,9 +40,53 @@ import {
 } from "@wfx/model-fabric";
 import type { MediaIntelligenceArtifacts } from "@wfx/model-fabric";
 import type { DiscoveryFeatureKind } from "@wfx/model-fabric";
+import type {
+  IntelligenceItemRead,
+  IntelligenceReadOutcome,
+  IntelligenceReadTransport,
+  IntelligenceSearchRead,
+} from "@wfx/model-fabric";
 
 import type { WebRuntimeHost } from "./web-host";
 import { INTELLIGENCE_FIXTURE_ROWS, intelligenceFixtureOf } from "./intelligence-fixtures";
+import { createFixtureIntelligenceReadTransport } from "./intelligence-fixture-transport";
+import { createServiceIntelligenceReadTransport } from "./intelligence-service-transport";
+
+// ---------------------------------------------------------------------------
+// The transport binding (R26-W1 — the mode gate's replacement)
+// ---------------------------------------------------------------------------
+
+/**
+ * The intelligence read transport THIS host boot binds. The fixtures
+ * boot binds the deterministic dev index (the id-learning seam wired);
+ * the service boot binds the REAL Experience-API HTTP transport
+ * (`WFX_API_BASE`). The per-process cache keeps one transport per boot
+ * (the same law the host's boot promise keeps).
+ */
+export function intelligenceReadTransportOf(host: WebRuntimeHost): IntelligenceReadTransport {
+  if (host.mode === "fixtures") {
+    const existing = fixtureTransportCache.get(host);
+    if (existing !== undefined) return existing;
+    const transport = createFixtureIntelligenceReadTransport({
+      learnIds: () => learnIntelligenceIds(host),
+    });
+    fixtureTransportCache.set(host, transport);
+    return transport;
+  }
+  const existing = serviceTransportCache.get(host);
+  if (existing !== undefined) return existing;
+  if (host.config.mode !== "service") {
+    throw new Error("intelligence transport: host config is neither fixtures nor service");
+  }
+  const transport = createServiceIntelligenceReadTransport({
+    apiBase: host.config.apiBase,
+  });
+  serviceTransportCache.set(host, transport);
+  return transport;
+}
+
+const fixtureTransportCache = new WeakMap<WebRuntimeHost, IntelligenceReadTransport>();
+const serviceTransportCache = new WeakMap<WebRuntimeHost, IntelligenceReadTransport>();
 
 // ---------------------------------------------------------------------------
 // The id learning (per module instance — the dev-server split reality)
@@ -211,21 +262,21 @@ export function intelligenceViewFromArtifacts(
   };
 }
 
-/** Load one item's intelligence view (the honest per-mode truth). */
+/** Load one item's intelligence view (through the bound transport). */
 export async function loadItemIntelligence(
   host: WebRuntimeHost,
   externalRef: string,
 ): Promise<ItemIntelligenceView> {
-  await learnIntelligenceIds(host);
-  const row = host.mode === "fixtures" ? intelligenceFixtureOf(externalRef) : null;
-  if (row === null || row.itemId === null) {
-    return unavailableIntelligence(
-      host.mode === "fixtures"
-        ? "This title has no derived intelligence on this host yet — transcript, chapters, and moment search stay off honestly rather than approximated."
-        : "Semantic intelligence is not served by this transport yet — the reads stay off honestly rather than approximated.",
-    );
+  const transport = intelligenceReadTransportOf(host);
+  const outcome: IntelligenceReadOutcome<IntelligenceItemRead> =
+    await transport.itemArtifacts(externalRef);
+  if (outcome.kind === "not-served") {
+    return unavailableIntelligence(outcome.detail);
   }
-  return intelligenceViewFromArtifacts(row.artifacts, row.audioStreamLegallyAvailable);
+  return intelligenceViewFromArtifacts(
+    outcome.value.artifacts,
+    outcome.value.audioStreamLegallyAvailable,
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -268,148 +319,69 @@ export interface SemanticSearchView {
   readonly meaningSearchAvailable: boolean;
 }
 
-/** The stopword set the deterministic scorer drops (fixture-only scoring). */
-const STOPWORDS = new Set([
-  "a", "an", "the", "of", "in", "on", "at", "to", "for", "and", "or",
-  "is", "are", "was", "were", "it", "its", "this", "that", "with", "about",
-  "where", "when", "how", "what", "show", "me", "part", "find",
-]);
+/** Project the transport's search read into the surface view (pure). */
+function searchViewFromRead(read: IntelligenceSearchRead): SemanticSearchView {
+  const provenance = read.provenance.map((entry) => ({
+    stage: entry.stage,
+    modelId: entry.modelId,
+    confidence: entry.confidence,
+    sentence: `${entry.stage} by ${entry.modelId} at ${Math.round(entry.confidence * 100)}% confidence.`,
+  }));
+  return {
+    status: "ready",
+    meaning: read.meaning.map((row) => ({
+      itemId: row.itemId,
+      connectorId: row.connectorId,
+      externalRef: row.externalRef,
+      title: row.title,
+      matchedText: row.matchedText,
+      score: row.score,
+    })),
+    moments: read.moments.map((row) => ({
+      itemId: row.itemId,
+      connectorId: row.connectorId,
+      externalRef: row.externalRef,
+      title: row.title,
+      startMs: row.startMs,
+      endMs: row.endMs,
+      description: row.description,
+      matchedText: row.matchedText,
+      score: row.score,
+    })),
+    provenance,
+    meaningSearchAvailable: read.meaningSearchAvailable,
+  };
+}
 
-/** Tokenize text for the deterministic fixture scorer (lowercased terms). */
-function tokenize(text: string): readonly string[] {
-  return text
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length > 1 && !STOPWORDS.has(token));
+/** The typed unavailable search view (the honest transport truth). */
+function unavailableSearch(detail: string): SemanticSearchView {
+  return {
+    status: "unavailable",
+    detail,
+    meaning: [],
+    moments: [],
+    provenance: [],
+    meaningSearchAvailable: false,
+  };
 }
 
 /**
- * The deterministic fixture scorer: the fraction of query terms present
- * in the entry text (coverage), a lexical double of the embedding-space
- * nearest-neighbor the production semantic index serves (honestly
- * labeled by the provenance — never presented as a model result).
- */
-function coverageScore(queryTerms: readonly string[], text: string): number {
-  if (queryTerms.length === 0) return 0;
-  const textTokens = new Set(tokenize(text));
-  let matched = 0;
-  for (const term of queryTerms) {
-    for (const token of textTokens) {
-      if (token === term || token.startsWith(term) || term.startsWith(token)) {
-        matched += 1;
-        break;
-      }
-    }
-  }
-  return matched / queryTerms.length;
-}
-
-/** The minimum coverage a result needs (an honest threshold, not a hair-trigger). */
-const MATCH_THRESHOLD = 0.34;
-
-/**
- * Search by meaning + moments over the fixture intelligence index (the
- * R23-H surfaces' read). Anonymous-friendly by construction (a low-cost
- * local read — the R23-K boundary).
+ * Search by meaning + moments through the bound transport (the R23-H
+ * surfaces' read). Anonymous-friendly by construction (a low-cost
+ * local/transport read — the R23-K boundary). A not-served outcome
+ * answers the typed unavailable view with the transport's honest
+ * detail — never an approximation, never a fake result.
  */
 export async function searchByMeaning(
   host: WebRuntimeHost,
   query: string,
 ): Promise<SemanticSearchView> {
-  await learnIntelligenceIds(host);
-  if (host.mode !== "fixtures") {
-    return {
-      status: "unavailable",
-      detail:
-        "Semantic search is not served by this transport yet — it stays off honestly rather than approximated.",
-      meaning: [],
-      moments: [],
-      provenance: [],
-      meaningSearchAvailable: false,
-    };
+  const transport = intelligenceReadTransportOf(host);
+  const outcome = await transport.searchByMeaning(query);
+  if (outcome.kind === "not-served") {
+    return unavailableSearch(outcome.detail);
   }
-  const queryTerms = tokenize(query);
-  const meaning: MeaningResultView[] = [];
-  const moments: MomentResultView[] = [];
-  const provenance: ProvenanceSentenceView[] = [];
-  let meaningSearchAvailable = false;
-
-  for (const row of INTELLIGENCE_FIXTURE_ROWS) {
-    if (row.itemId === null) continue;
-    const artifacts = row.artifacts;
-    const index = artifacts.semanticIndex;
-    if (index === undefined || index.entries.length === 0) continue;
-
-    // The R23-H prerequisite truth for THIS item:
-    // - search-by-meaning needs BOTH embeddings (video + text);
-    // - moment-search needs transcript + moments.
-    const hasBothEmbeddings =
-      artifacts.videoEmbedding !== undefined && artifacts.textEmbedding !== undefined;
-    const hasMoments =
-      artifacts.transcript !== undefined && artifacts.searchableMoments !== undefined;
-
-    if (hasBothEmbeddings) {
-      meaningSearchAvailable = true;
-      let best: { text: string; score: number } | null = null;
-      for (const entry of index.entries) {
-        const score = coverageScore(queryTerms, entry.text);
-        if (score >= MATCH_THRESHOLD && (best === null || score > best.score)) {
-          best = { text: entry.text, score };
-        }
-      }
-      if (best !== null) {
-        meaning.push({
-          itemId: row.itemId,
-          connectorId: row.connectorId ?? "",
-          externalRef: row.externalRef,
-          title: row.title,
-          matchedText: best.text,
-          score: Math.round(best.score * 100) / 100,
-        });
-      }
-    }
-
-    if (hasMoments) {
-      for (const moment of artifacts.searchableMoments.moments) {
-        const descriptionScore = coverageScore(queryTerms, moment.description);
-        const matchedScore = moment.matchedText !== undefined
-          ? coverageScore(queryTerms, moment.matchedText)
-          : 0;
-        const score = Math.max(descriptionScore, matchedScore);
-        if (score >= MATCH_THRESHOLD) {
-          moments.push({
-            itemId: row.itemId,
-            connectorId: row.connectorId ?? "",
-            externalRef: row.externalRef,
-            title: row.title,
-            startMs: moment.startMs,
-            endMs: moment.endMs,
-            description: moment.description,
-            matchedText: moment.matchedText ?? null,
-            score: Math.round(score * 100) / 100,
-          });
-        }
-      }
-    }
-
-    if (meaning.length > 0 || moments.some((m) => m.itemId === row.itemId)) {
-      for (const sentence of provenanceSentencesOf(artifacts)) {
-        if (!provenance.some((p) => p.modelId === sentence.modelId && p.stage === sentence.stage)) {
-          provenance.push(sentence);
-        }
-      }
-    }
-  }
-
-  meaning.sort((a, b) => b.score - a.score);
-  moments.sort((a, b) => b.score - a.score || a.startMs - b.startMs);
-  return {
-    status: "ready",
-    meaning,
-    moments,
-    provenance,
-    meaningSearchAvailable,
-  };
+  return searchViewFromRead(outcome.value);
 }
 
 // ---------------------------------------------------------------------------

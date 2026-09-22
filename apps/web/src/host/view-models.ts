@@ -34,6 +34,13 @@ import type {
 import type { PlaybackRealization, PlaybackSession, SourceItem, UserAction } from "@wfx/domain";
 import { buildExternalReturnContext, isOfficialEmbed } from "@wfx/experience";
 import { canUsePlaybackMode } from "@wfx/client-runtime";
+import { contentArtworkOf } from "@wfx/domain";
+import type {
+  ContentArtwork,
+  ContentArtworkResolution,
+} from "@wfx/domain";
+import { isTorrentRealizationDeclaration } from "@wfx/client-runtime";
+import type { TorrentRealizationDeclaration } from "@wfx/client-runtime";
 
 import { WebClock } from "@/platform/lifecycle";
 
@@ -71,14 +78,45 @@ export interface JoinedItem {
   readonly title: string;
   readonly canonicalType: string;
   readonly durationMs?: number;
+  /**
+   * R26-W1 — the item's REAL SOURCE ARTWORK when the content row carried
+   * one (the connector's source-authorized thumbnail/poster URL, carried
+   * through the typed `ContentArtwork` contract). Absent when the source
+   * serves no artwork (the placeholder fallback renders — never a
+   * generated image replacing an available source thumbnail).
+   */
+  readonly artwork?: ContentArtwork;
+  /**
+   * R26-W1 — the item's DECLARED authorized peer copy when the content
+   * row carried one (the R23-C `TorrentRealizationDeclaration`,
+   * validated). Absent when no row declared one — the honest absence
+   * (the Where-to-watch peer entry never renders without a declaration).
+   */
+  readonly peerRealization?: TorrentRealizationDeclaration;
 }
 
 const itemJoin = new Map<string, JoinedItem>();
+
+/** The item's source-artwork resolution over a content row (the typed carrier). */
+function artworkOfCarrier(
+  row: {
+    readonly connectorId: string;
+    readonly externalRef: string;
+    readonly title?: string;
+    readonly orientation?: "horizontal" | "vertical" | "square" | "unknown";
+    readonly metadata?: Record<string, unknown>;
+  },
+): ContentArtwork | undefined {
+  const resolution = contentArtworkOf(row);
+  return resolution.kind === "source-artwork" ? resolution.artwork : undefined;
+}
 
 /** Learn the join from the runtime's own search/shorts hits (idempotent). */
 function learnHits(hits: readonly SearchHit[]): void {
   for (const hit of hits) {
     const existing = itemJoin.get(hit.canonicalItemId);
+    const artwork = artworkOfCarrier(hit.result);
+    const peer = peerRealizationOfCarrier(hit.result);
     const joined: JoinedItem = {
       itemId: hit.canonicalItemId,
       connectorId: hit.result.connectorId,
@@ -86,23 +124,65 @@ function learnHits(hits: readonly SearchHit[]): void {
       title: hit.result.title,
       canonicalType: hit.result.canonicalType ?? "video",
       ...(hit.result.durationMs !== undefined ? { durationMs: hit.result.durationMs } : {}),
+      // R26-W1 — learn the REAL source artwork + the declared authorized
+      // peer copy the content row carries (first sight wins, the same
+      // display-data law as the title).
+      ...(artwork !== undefined ? { artwork } : {}),
+      ...(peer !== undefined ? { peerRealization: peer } : {}),
     };
     // First-sight display data wins (stability); the join never rewrites.
     if (existing === undefined) itemJoin.set(hit.canonicalItemId, joined);
   }
 }
 
+/**
+ * R26-W1 — the well-known metadata key a content row may carry an
+ * authorized peer-copy declaration under (the R23-C
+ * `TorrentRealizationDeclaration`, validated by its structural guard —
+ * never trusted blindly). The connector/service is the declaration
+ * boundary, exactly as it is for artwork: a row that declares nothing
+ * carries nothing (the honest absence).
+ */
+export const PEER_REALIZATION_METADATA_KEY = "torrentRealization" as const;
+
+/** The row's declared peer realization (validated; undefined when none). */
+function peerRealizationOfCarrier(
+  row: { readonly metadata?: Record<string, unknown> },
+): TorrentRealizationDeclaration | undefined {
+  const raw = row.metadata?.[PEER_REALIZATION_METADATA_KEY];
+  return isTorrentRealizationDeclaration(raw) ? raw : undefined;
+}
+
 /** Learn one explicitly-known item (deep-link joins mint through the host seam). */
-function learnJoinedItem(connectorId: string, externalRef: string, title: string, canonicalType: string, durationMs?: number): string {
+function learnJoinedItem(
+  carrier: {
+    readonly connectorId: string;
+    readonly externalRef: string;
+    readonly title: string;
+    readonly canonicalType?: string;
+    readonly durationMs?: number;
+    readonly orientation?: "horizontal" | "vertical" | "square" | "unknown";
+    readonly metadata?: Record<string, unknown>;
+  },
+): string {
+  const { connectorId, externalRef, title } = carrier;
+  const canonicalType = carrier.canonicalType ?? "video";
   const itemId = canonicalIdFor(connectorId, externalRef);
   if (!itemJoin.has(itemId)) {
+    const artwork = artworkOfCarrier(carrier);
+    const peer = peerRealizationOfCarrier(carrier);
     itemJoin.set(itemId, {
       itemId,
       connectorId,
       externalRef,
       title,
       canonicalType,
-      ...(durationMs !== undefined ? { durationMs } : {}),
+      ...(carrier.durationMs !== undefined ? { durationMs: carrier.durationMs } : {}),
+      // R26-W1 — the real source artwork + the authorized peer-copy
+      // declaration the content row carries (first sight wins — the
+      // same display-data law).
+      ...(artwork !== undefined ? { artwork } : {}),
+      ...(peer !== undefined ? { peerRealization: peer } : {}),
     });
   }
   return itemId;
@@ -113,9 +193,97 @@ export function joinedItemOf(itemId: string): JoinedItem | null {
   return itemJoin.get(itemId) ?? null;
 }
 
+/**
+ * R26-W1 — the joined identity of one item BY its source identity (the
+ * peer-realization read's lookup: the content rows carry declarations
+ * keyed by external ref). Null when this process never saw the row.
+ */
+export function joinedItemByExternalRef(
+  connectorId: string,
+  externalRef: string,
+): JoinedItem | null {
+  for (const joined of itemJoin.values()) {
+    if (joined.connectorId === connectorId && joined.externalRef === externalRef) {
+      return joined;
+    }
+  }
+  return null;
+}
+
+/**
+ * R26-W1 — the joined identity by external ref ACROSS connectors (the
+ * unscoped deep-link fallback: one canonical item may be joined through
+ * any source). Null when no connector's row was observed.
+ */
+export function joinedItemByExternalRefAny(externalRef: string): JoinedItem | null {
+  for (const joined of itemJoin.values()) {
+    if (joined.externalRef === externalRef) {
+      return joined;
+    }
+  }
+  return null;
+}
+
+/**
+ * R26-W1 — the learned-join SNAPSHOT (the capability-availability
+ * derivation's empirical read): every item this process has observed,
+ * with its source-artwork presence. Readonly projection of the join's
+ * display data; an empty snapshot is honest (a boot that has served no
+ * content rows yet observes nothing — never a fabricated observation).
+ */
+export function joinedItemsSnapshot(): readonly {
+  readonly itemId: string;
+  readonly connectorId: string;
+  readonly externalRef: string;
+  readonly artwork?: { readonly url: string };
+}[] {
+  return [...itemJoin.values()].map((joined) => ({
+    itemId: joined.itemId,
+    connectorId: joined.connectorId,
+    externalRef: joined.externalRef,
+    ...(joined.artwork !== undefined ? { artwork: { url: joined.artwork.url } } : {}),
+  }));
+}
+
 // ---------------------------------------------------------------------------
 // Card views
 // ---------------------------------------------------------------------------
+
+/**
+ * R26-W1 — the card's ARTWORK VIEW: the REAL source artwork the content
+ * row carried, projected into the plain serializable shape the card
+ * surfaces render (Worker 2's lane renders the `<img>` from this;
+ * absent ⇒ the placeholder fallback renders — never a fabricated
+ * image, never a generated replacement for a source thumbnail).
+ */
+export interface ArtworkView {
+  /** The source-authorized artwork URL (absolute http/https, verbatim). */
+  readonly url: string;
+  /** The honest aspect ratio (width/height) when the source carries the signal. */
+  readonly aspectRatio?: number;
+  /** The accessibility alt text (the title + the source identity). */
+  readonly altText: string;
+  /** The honest fallback sentence (what renders if the URL fails to load). */
+  readonly fallbackDetail: string;
+  /** The connector the artwork is authorized by (the provenance truth). */
+  readonly connectorId: string;
+}
+
+/** Project the artwork resolution into the card view (pure). */
+function artworkViewOf(
+  resolution: ContentArtworkResolution,
+  title: string,
+): ArtworkView | undefined {
+  if (resolution.kind !== "source-artwork") return undefined;
+  const artwork = resolution.artwork;
+  return {
+    url: artwork.url,
+    ...(artwork.aspectRatio !== undefined ? { aspectRatio: artwork.aspectRatio } : {}),
+    altText: `${title} — artwork served by ${artwork.provenance.connectorId}`,
+    fallbackDetail: artwork.fallback.detail,
+    connectorId: artwork.provenance.connectorId,
+  };
+}
 
 /** One content card view (identity + type + duration — no fabricated claims). */
 export interface CardView {
@@ -125,6 +293,13 @@ export interface CardView {
   readonly durationMs?: number;
   readonly connectorId: string;
   readonly externalRef: string;
+  /**
+   * R26-W1 — the item's REAL SOURCE ARTWORK when the content row carried
+   * one (the connector's source-authorized thumbnail/poster). Absent when
+   * the source serves no artwork — the card renders the placeholder
+   * fallback, never a generated replacement (the real-artwork law).
+   */
+  readonly artwork?: ArtworkView;
 }
 
 /** The view status of one model section (the runtime's status, verbatim). */
@@ -141,6 +316,7 @@ function statusView(status: ModelSectionStatus): SectionStatusView {
 /** Project one runtime hit into a card view (learning the join). */
 export function cardFromHit(hit: SearchHit): CardView {
   learnHits([hit]);
+  const artwork = artworkViewOf(contentArtworkOf(hit.result), hit.result.title);
   return {
     itemId: hit.canonicalItemId,
     title: hit.result.title,
@@ -148,20 +324,25 @@ export function cardFromHit(hit: SearchHit): CardView {
     ...(hit.result.durationMs !== undefined ? { durationMs: hit.result.durationMs } : {}),
     connectorId: hit.result.connectorId,
     externalRef: hit.result.externalRef,
+    ...(artwork !== undefined ? { artwork } : {}),
   };
 }
 
 /** Project a model's hits into cards (order preserved; the join learned). */
 export function cardsFromModel(model: SearchModel): readonly CardView[] {
   learnHits(model.hits);
-  return model.hits.map((hit) => ({
-    itemId: hit.canonicalItemId,
-    title: hit.result.title,
-    canonicalType: hit.result.canonicalType ?? "video",
-    ...(hit.result.durationMs !== undefined ? { durationMs: hit.result.durationMs } : {}),
-    connectorId: hit.result.connectorId,
-    externalRef: hit.result.externalRef,
-  }));
+  return model.hits.map((hit) => {
+    const artwork = artworkViewOf(contentArtworkOf(hit.result), hit.result.title);
+    return {
+      itemId: hit.canonicalItemId,
+      title: hit.result.title,
+      canonicalType: hit.result.canonicalType ?? "video",
+      ...(hit.result.durationMs !== undefined ? { durationMs: hit.result.durationMs } : {}),
+      connectorId: hit.result.connectorId,
+      externalRef: hit.result.externalRef,
+      ...(artwork !== undefined ? { artwork } : {}),
+    };
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -499,6 +680,17 @@ export interface DetailView {
    * honest unavailable state when the host has none.
    */
   readonly intelligence: ItemIntelligenceView;
+  /**
+   * R26-W1 — the item's REAL ARTWORK truth resolved from the LIVE source
+   * metadata: the source-authorized artwork view when the source carries
+   * one, or the honest fallback-only truth (the reason artwork is absent)
+   * — never a generated replacement for an available source thumbnail.
+   */
+  readonly artwork: {
+    readonly view: ArtworkView | null;
+    /** The honest one-sentence reason when no source artwork exists. */
+    readonly fallbackReason: string | null;
+  };
   /** R24-W2 - whether the canonical item is already in the watchlist (the runtime's truth). */
   readonly watchlistSaved: boolean;
 }
@@ -548,8 +740,25 @@ export async function loadDetailView(
   const metadata = result.value;
   if (metadata === null) return null; // the honest not-found (no fabricated card)
   const itemId = input.itemId;
-  // The deep-link join learns the item's display data (first sight wins).
-  learnJoinedItem(input.connectorId, input.externalRef, metadata.title, metadata.canonicalType ?? "video", metadata.durationMs);
+  // The deep-link join learns the item's display data (first sight wins —
+  // the FULL metadata row, so the artwork + peer-declaration carriage the
+  // source row carries is learned at the deep-link join too).
+  learnJoinedItem({
+    connectorId: metadata.connectorId,
+    externalRef: metadata.externalRef,
+    title: metadata.title,
+    ...(metadata.canonicalType !== undefined ? { canonicalType: metadata.canonicalType } : {}),
+    ...(metadata.durationMs !== undefined ? { durationMs: metadata.durationMs } : {}),
+    ...(metadata.orientation !== undefined ? { orientation: metadata.orientation } : {}),
+    ...(metadata.metadata !== undefined ? { metadata: metadata.metadata } : {}),
+  });
+  // R26-W1 — the item's REAL artwork truth from the LIVE source metadata
+  // (the connector's source-authorized thumbnail; the honest fallback
+  // reason when the source serves none).
+  const artworkResolution = contentArtworkOf(metadata);
+  const artworkView = artworkViewOf(artworkResolution, metadata.title) ?? null;
+  const artworkFallbackReason =
+    artworkResolution.kind === "fallback-only" ? artworkResolution.reason : null;
   const trending = await host.runtime.search({ query: TRENDING_QUERY });
   const watchState = host.runtime.watchState.get(itemId) ?? null;
   return {
@@ -594,6 +803,12 @@ export async function loadDetailView(
     // R23 (J39): the item's derived intelligence (the transcript /
     // chapters / moments surface + the honest unavailable state).
     intelligence: await loadItemIntelligence(host, metadata.externalRef),
+    // R26-W1 — the item's real artwork truth (view when served; the honest
+    // fallback reason when the source carries no artwork).
+    artwork: {
+      view: artworkView,
+      fallbackReason: artworkFallbackReason,
+    },
   };
 }
 
@@ -818,7 +1033,13 @@ export async function loadPlayerViewShell(
   host: WebRuntimeHost,
   input: PlayerViewInput,
 ): Promise<PlayerShellView> {
-  learnJoinedItem(input.connectorId, input.externalRef, input.title, input.canonicalType, input.durationMs);
+  learnJoinedItem({
+    connectorId: input.connectorId,
+    externalRef: input.externalRef,
+    title: input.title,
+    canonicalType: input.canonicalType,
+    ...(input.durationMs !== undefined ? { durationMs: input.durationMs } : {}),
+  });
   // R23 web-A: the session truth of THIS surface's binding — the
   // progress-scope sentence (session-local for anonymous sessions, with
   // sign-in as the optional upgrade) and the typed provider-authorization
@@ -870,7 +1091,7 @@ export async function loadPlayerViewShell(
   // this render — the peer copy path never consults a provider
   // realization.
   if (input.preferredRealization === "torrent") {
-    const peerCopy = torrentRealizationOf(host, input.externalRef);
+    const peerCopy = torrentRealizationOf(host, input.externalRef, input.connectorId);
     // The STARTUP-CRITICAL row (the taxonomy's own classification):
     // the Where-to-watch switch composes with the rung decision (the
     // play decision's own surface — R24-E's essential lane). The

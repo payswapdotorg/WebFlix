@@ -48,6 +48,7 @@ import type {
 import { WEB_BROWSER_TORRENT_SUPPORTED } from "@/platform/browser-torrent-environment";
 import type { WebRuntimeHost } from "./web-host";
 import { torrentRealizationFixtureOf } from "./acquisition-fixtures";
+import { joinedItemByExternalRef, joinedItemByExternalRefAny } from "./view-models";
 
 // ---------------------------------------------------------------------------
 // The platform truth (R23-D's adapter-declared capability)
@@ -113,15 +114,36 @@ export function torrentRealizationViewOf(
 
 /**
  * The per-item authorized peer copy read (the host's honest data truth):
- * the fixtures feed in fixtures mode (loudly badged), the honest `null`
- * in service mode (no transport-exposed peer-copy data yet — the entry
- * never renders there until the service carries one).
+ *
+ * - the FIXTURES boot reads the dev fixtures feed (loudly badged);
+ * - the SERVICE boot reads the LIVE content rows' declarations — the
+ *   R26-W1 carriage: a content row (search hit / source metadata) may
+ *   declare its authorized peer copy under the well-known
+ *   `torrentRealization` metadata key (the R23-C declaration, validated
+ *   by its structural guard); the join learns it on first sight and
+ *   THIS read projects it. No row declared one ⇒ the honest `null`
+ *   (the entry never renders — never a fabricated peer copy).
+ *
+ * `connectorId` (optional) scopes the lookup to the item's source; an
+ * unscoped lookup matches the ref across connectors (the deep-link
+ * fallback).
  */
 export function torrentRealizationOf(
   host: WebRuntimeHost,
   externalRef: string,
+  connectorId?: string,
 ): TorrentRealizationView | null {
-  if (host.mode !== "fixtures") return null;
+  if (host.mode !== "fixtures") {
+    // The live transport's declaration (carried by the content rows the
+    // process has observed; null when no row declared one — honest).
+    const joined =
+      connectorId !== undefined
+        ? joinedItemByExternalRef(connectorId, externalRef)
+        : joinedItemByExternalRefAny(externalRef);
+    const declaration = joined?.peerRealization;
+    if (declaration === undefined) return null;
+    return torrentRealizationViewOf(declaration);
+  }
   const declaration = torrentRealizationFixtureOf(externalRef);
   if (declaration === null) return null;
   return torrentRealizationViewOf(declaration);

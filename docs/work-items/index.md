@@ -2,7 +2,7 @@
 
 **Historical release registry:** R00-R19 in docs/plans/2026-09-16-webflix-remediation-plan.md — COMPLETE and release-accepted.
 
-**Active execution registry:** R24/R25 are registered (docs/plans/2026-09-20-webflix-youtube-parity-performance-plan.md, -qwen-livetranslate-plan.md). **R20, R21, R22 and R23 are implementation-complete and acceptance-green** (R23 accepted 2026-09-21: main @ `7ee847c` — the three-lane integration `eb6adc4` + the lead's build fix; battery — lint 0/10 baseline, typecheck clean, 4311 tests / 0 fail, contract-check OK, lane-check OK (755 files); journeys — J37/J38/J39 encoded + green: the web one-run evidence of record 38/38 / 596 assertions (evidence/r16 manifest @ `8d6a528`), the Desktop machine-recorded evidence 124 assertions across J37/J38/J39 (evidence/r23-w3, authenticity re-proven by the verify session), J01–J36 green with the J05 known defect closed and the J19/J36 regressions fixed; production sweep — evidence/r23/production-sweep.md @ `7ee847c` (anonymous viewing live with zero login walls, the R23 API routes answering their honest typed service-mode states, no R22 regressions)).
+**Active execution registry:** R23 revalidation, R24, and R25 are active corrective rounds. R20-R22 remain acceptance-green. R23 remains implementation-complete but requires current-production revalidation because the live semantic-search transport is currently unavailable. R24 and R25 are NOT acceptance-green. (R23 accepted 2026-09-21: main @ `7ee847c` — the three-lane integration `eb6adc4` + the lead's build fix; battery — lint 0/10 baseline, typecheck clean, 4311 tests / 0 fail, contract-check OK, lane-check OK (755 files); journeys — J37/J38/J39 encoded + green: the web one-run evidence of record 38/38 / 596 assertions (evidence/r16 manifest @ `8d6a528`), the Desktop machine-recorded evidence 124 assertions across J37/J38/J39 (evidence/r23-w3, authenticity re-proven by the verify session), J01–J36 green with the J05 known defect closed and the J19/J36 regressions fixed; production sweep — evidence/r23/production-sweep.md @ `7ee847c` (anonymous viewing live with zero login walls, the R23 API routes answering their honest typed service-mode states, no R22 regressions)).
 
 The earlier WFX-001–043 registry remains historical context only. No worker should treat a legacy WFX item as sufficient proof that the corresponding product capability is complete.
 
@@ -72,7 +72,7 @@ R22 is complete only when a fresh user can COMPLETE the major product journeys a
 
 ## R23 completion truth
 
-R23 is complete only when public playback works without requiring a WebFlix account, provider-auth boundaries remain truthful, torrent is a first-class realization/playback path rather than only an offline utility, browser-capable torrent scenarios are exercised where technically supported, AI media intelligence is production-wired through Model Fabric with license/provenance truth, and J37-J39 pass without regressions to J01-J36.
+R23 implementation is complete, but the current production acceptance record is stale relative to the current deployment state. Revalidation is required whenever a current production surface reports a previously accepted transport as unavailable. Current revalidation target: J39 semantic/moment search, plus current Web/API deployment parity and J37/J38 regression confirmation.
 
 Canonical plan: docs/plans/2026-09-20-webflix-open-viewing-torrent-ai-plan.md
 
@@ -90,3 +90,9 @@ R25 is complete only when Qwen3.8-LiveTranslate is registered through Model Fabr
 Canonical plan: docs/plans/2026-09-20-webflix-qwen-livetranslate-plan.md
 
 **R23 ACCEPTANCE RECORD (2026-09-21, the Lead):** every clause of the R23 plan's acceptance is green — anonymous public viewing with no login gate (J37 web 18 + Desktop 39 assertions; the no-login-wall law machine-checked on both surfaces and verified live in production), torrent as a first-class realization (J38 web 42 + Desktop 55 assertions: the Where-to-watch "Authorized peer copy" grouping primary-eligible, the protocol-free lifecycle, the interruption/recovery continuity, the earned ready-offline; no `PlaybackMode="torrent"` — the compile-time guard holds), multimodal media intelligence (J39 web 29 + Desktop 30 assertions: search-by-meaning with provenance, the moment jump, the license-true R2T2 routing, the model-authority boundary), no regression in J01–J36 (38/38 web one-run of record + the Desktop lane), model-license/provenance checks (the R2T2 code/weights distinction recorded verbatim; BGE-M3 MIT verified), production Web verification (evidence/r23/production-sweep.md — including the root-caused + fixed next-build server-graph incident at eb6adc4→7ee847c), and the standing doctrine: the Desktop native halves remain the lead's real-toolchain procedure (journeys/desktop/README.md), no model authorizes playback or acquisition, no provider SDK inside shared product logic.
+
+## Corrective acceptance law — 2026-09-22
+
+R24 must not be marked green from fixture/evidence-lane results alone. Production acceptance requires real source thumbnails, real end-to-end public video playback to first frame, coherent YouTube-like content-first UX, an actual same-content YouTube comparison, production J40/J41/J42 evidence, and affected J01-J39 regression.
+
+R25 requires a live Qwen provider path; the deterministic realtime provider double proves architecture only. R23 requires current-production revalidation where the live transport disagrees with the prior acceptance record.

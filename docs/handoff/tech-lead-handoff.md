@@ -308,3 +308,276 @@ Do not:
 - silently clone a speaker's voice.
 
 Qwen3.8 should complement R2T2 for live ASR and the existing batch models for long-form transcription/indexing.
+
+
+## CURRENT CORRECTIVE TAKEOVER — 2026-09-22
+
+### Lead must treat the current production product as NOT YouTube-parity-complete
+
+A fresh production-first re-audit found a material gap between implementation-lane evidence and the actual consumer product. The prior R24 engineering evidence is useful, but it is **not acceptance evidence** for production UX/playback parity.
+
+Current truth:
+
+- Web production deployment: `main @ 22f9051838ab2deb67f8e228584600916a612a2a`.
+- Web production loads, but a representative real item/player route did not independently prove first-frame playback; the live player reported `buffering`.
+- Production discovery cards currently use generated gradient/initial artwork rather than source video thumbnails. This is not acceptable for the YouTube parity goal.
+- A real item route does resolve a real YouTube embed URL, so the source/playback path is not merely a fixture claim; however, successful end-to-end playback still requires fresh production browser proof.
+- Production Search explicitly reports semantic search unavailable on the live transport.
+- Production Player exposes Translate/Live Captions, but explicitly reports that the realtime translation bridge is not serving on the current host.
+- The current catalog/content encountered did not provide an authorized peer/torrent realization in the normal user flow, so torrent discoverability is not production-proven merely because Desktop evidence is green.
+- The current API project has a newer READY R25 integration deployment on `9621e4dbde21b06373520076e2b15a47e3457193`, while the production-target API deployment observed in Vercel is still `7ee847c4e7be3053091a34b8e1f4aaad5919acc6`. Treat Web/API production-version skew as a first-class investigation item before rewriting product logic.
+
+### Hard rebaselining law
+
+Do not close R24 from:
+
+- fixture-only journey evidence;
+- synthetic provider/browser doubles;
+- route existence;
+- rendered capability labels;
+- internal benchmark content;
+- unit/integration test counts;
+- prior acceptance comments.
+
+A capability is green only when a fresh user can use it against the current production deployment.
+
+### R24 acceptance gate is reopened
+
+R24 remains OPEN until all of the following are independently proven:
+
+1. Real source thumbnails render on Home/Watch/Search/related surfaces for representative source-backed media.
+2. A fresh anonymous user can open representative public videos from normal discovery surfaces.
+3. The video reaches a real first frame and continues playing.
+4. Player startup/control/seek/recovery work in production.
+5. Home, Watch, Search, cards, Item and Player form a coherent YouTube-like viewer experience rather than a capability/architecture dashboard.
+6. WebFlix-only capabilities remain present but are progressively disclosed/contextually placed.
+7. An authorized peer/torrent realization is discoverable in the same content decision flow on a known eligible title.
+8. The same public video is tested on both YouTube and WebFlix where technically possible, under the same browser/device/network profile.
+9. J40/J41/J42 are rerun against production with fresh browser evidence.
+10. Affected J01-J39 are rerun after integration.
+11. No production capability shown in the UI is backed by an unavailable transport.
+
+### R23 acceptance requires current-production revalidation
+
+R23 remains implementation-complete, but the acceptance record must be revalidated because current production Search reports semantic search unavailable despite the prior R23 acceptance record claiming production multimodal intelligence.
+
+Re-run:
+
+- J39 semantic/moment search;
+- J37 anonymous playback;
+- J38 first-class torrent on a known torrent-eligible content fixture/catalog item;
+- current Web/API deployment parity.
+
+Do not silently rewrite the R23 acceptance record; append a dated revalidation record.
+
+### R25 production completion is also open
+
+The realtime translation implementation is substantial, but current production reports the bridge unavailable.
+
+Before declaring R25 green:
+
+- verify the production Web/API/bridge deployment topology;
+- verify Qwen credentials/server environment;
+- verify the realtime WebSocket bridge is reachable from the production Web surface;
+- run a real-provider benchmark;
+- prove Translate -> target language -> streaming bilingual captions -> optional translated audio -> reconnect -> playback continuity;
+- keep translation failure non-blocking to base playback.
+
+The deterministic provider double proves architecture ordering only. It does not prove Qwen production readiness.
+
+### Immediate priority order
+
+The Lead must execute in this order:
+
+```text
+P0  Freeze + reproduce production failures
+    |
+    +--> verify Web/API SHA + alias parity
+    +--> reproduce one-click-to-play failure
+    +--> identify why real thumbnails are absent
+    +--> reproduce semantic-search-unavailable
+    +--> reproduce realtime-bridge-unavailable
+    |
+P1  Real playback first
+    |
+    +--> representative public video catalog
+    +--> real thumbnails
+    +--> real Play -> first frame -> continuous playback
+    +--> recovery / external / embed truth
+    |
+P2  YouTube viewer UX rebuild
+    |
+    +--> content-first Home/Watch/Search cards
+    +--> real source artwork
+    +--> familiar player/page hierarchy
+    +--> reduce capability/diagnostic prominence
+    +--> preserve WebFlix contextual extensions
+    |
+P3  First-class source parity
+    |
+    +--> provider realizations
+    +--> eligible authorized peer/torrent realization
+    +--> same player semantics
+    |
+P4  AI production convergence
+    |
+    +--> semantic search / moment search live
+    +--> Qwen realtime translation live
+    |
+P5  Comparative acceptance
+    |
+    +--> same-content YouTube benchmark
+    +--> J40/J41/J42 production evidence
+    +--> affected J01-J43 regression
+    +--> final acceptance
+```
+
+### Three-worker corrective allocation
+
+#### Worker 1 — Shared/runtime/data
+
+Own:
+
+- production capability truth contracts where the live transport is currently behind;
+- catalog/media-artwork metadata contract, ensuring real thumbnail/artwork provenance can flow through the shared runtime;
+- playback/realization read-model truth needed by Web;
+- semantic-search transport diagnosis and repair;
+- R25 realtime route/health contract;
+- regression contracts that prevent a UI capability from rendering as available when its transport is unavailable.
+
+Do not change:
+- Web visual implementation;
+- Desktop native UI;
+- provider security boundaries;
+- source authorization semantics.
+
+#### Worker 2 — Web/product UX
+
+Own:
+
+- real source thumbnail rendering;
+- Home/Watch/Search card redesign;
+- content-first information hierarchy;
+- real end-to-end public video playback;
+- production player startup/first-frame proof;
+- YouTube-like watch-page UX;
+- progressive disclosure of provenance/diagnostics;
+- contextual placement of Where-to-watch, AI, attention and recommendation controls;
+- production browser evidence for J40/J41/J42 and affected J01-J39.
+
+Critical rule: do not declare a visual fix complete from screenshots containing fixture/gradient artwork. Evidence must come from representative real source-backed content.
+
+#### Worker 3 — Desktop/native/torrent
+
+Own:
+
+- known torrent-eligible production/demo content path;
+- Desktop torrent first-class realization evidence;
+- same-title/source-neutral player semantics as Web;
+- thumbnail/artwork parity where Desktop owns the catalog surface;
+- native playback benchmarking;
+- recovery/offline proof;
+- Desktop regression after shared/runtime changes.
+
+Do not allow Desktop to become a separate product grammar.
+
+#### Lead
+
+Own:
+
+- P0 production reproduction and Web/API deployment parity;
+- assignment/dependency coordination;
+- frozen UX laws;
+- YouTube reference audit;
+- source-thumbnail correctness;
+- real same-content YouTube comparison;
+- production credentials/environment;
+- agent-browser independent reruns;
+- acceptance and issue/registry reconciliation.
+
+### UI/product law for this takeover
+
+WebFlix should feel like a world-class consumer video product first.
+
+The following must remain true:
+
+- the content thumbnail is the visual anchor;
+- Play is the obvious primary action;
+- title/channel/source metadata has a familiar hierarchy;
+- recommendation cards are visual and content-led;
+- player chrome is familiar without cloning YouTube branding;
+- provenance, model, source and capability diagnostics are progressively disclosed;
+- WebFlix-only features appear exactly where the user's intent makes them relevant;
+- no architecture/status dashboard is required to understand how to watch something.
+
+### Production playback law
+
+The shortest path from a user's decision to watch to the first playable frame is sacred.
+
+The player must not wait for:
+
+- semantic indexing;
+- recommendation enrichment;
+- AI actions;
+- provenance expansion;
+- social enrichment;
+- analytics;
+- Qwen translation.
+
+A failure in any of those systems must leave the underlying public video playable when the realization itself is healthy.
+
+### Fresh evidence required for completion
+
+Each worker must attach:
+
+- current production SHA;
+- environment + browser/device;
+- representative real-content IDs;
+- exact route/realization;
+- before/after screenshot;
+- browser console/network error status;
+- first-frame/startup evidence;
+- relevant journey IDs;
+- known limitations.
+
+The Lead must independently repeat the final journeys.
+
+### Forbidden completion shortcuts
+
+Reject:
+
+- "39/39 passed" as proof of visual parity;
+- generated thumbnails as substitutes for real media artwork;
+- route-level 200 as proof of playback;
+- iframe presence as proof of video playback;
+- fixture provider doubles as proof of production provider health;
+- a catalog-only torrent contract as proof of user-facing torrent discoverability;
+- an unavailable AI transport represented as an available feature;
+- architecture/diagnostic panels presented as the main entertainment UX;
+- any YouTube visual clone that copies branding/assets instead of interaction grammar.
+
+### Final takeover acceptance
+
+The Lead may only report the product green when a fresh user can:
+
+```text
+Home
+ -> see real video artwork
+ -> search
+ -> open a real public video
+ -> press Play
+ -> actually see/hear it play
+ -> use normal player controls
+ -> discover related content
+ -> use Shorts
+ -> save/share/feedback
+ -> see Where to watch
+ -> use an eligible authorized peer/torrent realization
+ -> use supported AI features
+ -> use semantic/moment search
+ -> use realtime translation where configured
+ -> return to Library
+```
+
+and the same journey survives a fresh production browser run with no hidden direct routes or test-only controls.
+
