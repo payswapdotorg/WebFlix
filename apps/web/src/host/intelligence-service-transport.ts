@@ -107,7 +107,9 @@ async function fetchOutcome(
   url: URL,
   fetchImpl: typeof fetch,
   timeoutMs: number,
-): Promise<{ ok: true; body: unknown } | { ok: false; detail: string }> {
+): Promise<
+  { ok: true; body: unknown } | { ok: false; detail: string; routeAbsent: boolean }
+> {
   let response: Response;
   try {
     response = await fetchImpl(url.href, {
@@ -119,12 +121,14 @@ async function fetchOutcome(
     const reason = thrown instanceof Error ? thrown.name : "network";
     return {
       ok: false,
+      routeAbsent: false,
       detail: `The intelligence transport could not reach the Experience API (${reason}) — semantic and moment reads stay off honestly rather than approximated.`,
     };
   }
   if (response.status === 404 || response.status === 405) {
     return {
       ok: false,
+      routeAbsent: true,
       detail:
         "Semantic intelligence is not served by this transport yet — the Experience API deployment has no /experience/intelligence route. It stays off honestly rather than approximated.",
     };
@@ -132,12 +136,14 @@ async function fetchOutcome(
   if (response.status >= 500) {
     return {
       ok: false,
+      routeAbsent: false,
       detail: `The Experience API failed serving the intelligence read (HTTP ${response.status}) — the read stays off honestly rather than approximated.`,
     };
   }
   if (response.status >= 400) {
     return {
       ok: false,
+      routeAbsent: false,
       detail: `The intelligence read was rejected by the Experience API (HTTP ${response.status}).`,
     };
   }
@@ -145,6 +151,7 @@ async function fetchOutcome(
   if (!contentType.includes("application/json")) {
     return {
       ok: false,
+      routeAbsent: false,
       detail:
         "The Experience API answered the intelligence read with a non-JSON payload — rejected, never coerced into a served read.",
     };
@@ -154,6 +161,7 @@ async function fetchOutcome(
   } catch {
     return {
       ok: false,
+      routeAbsent: false,
       detail:
         "The Experience API answered the intelligence read with a malformed JSON body — rejected, never coerced into a served read.",
     };
@@ -180,17 +188,34 @@ export function createServiceIntelligenceReadTransport(
     dependency: SERVICE_INTELLIGENCE_DEPENDENCY,
   };
 
+  /**
+   * The per-boot ROUTE-ABSENT memo (the same per-process truth law the
+   * realtime bridge state keeps): once a hard 404/405 observes the route
+   * absent on THIS transport instance, later reads answer the same
+   * typed outcome without re-probing — no clock, no TTL, honest for the
+   * instance's lifetime (a deploy cycles the process; the truth
+   * re-derives on the next boot). Transient failures (network/5xx) are
+   * NEVER memoized — only the structural absence is.
+   */
+  let routeAbsentDetail: string | null = null;
+
   const read = async <T>(
     params: URLSearchParams,
     guard: (body: unknown) => body is T,
     scope: string,
   ): Promise<IntelligenceReadOutcome<T>> => {
+    if (routeAbsentDetail !== null) {
+      return transportUnavailable(routeAbsentDetail);
+    }
     const outcome = await fetchOutcome(
       readUrl(options.apiBase, params),
       fetchImpl,
       timeoutMs,
     );
-    if (!outcome.ok) return transportUnavailable(outcome.detail);
+    if (!outcome.ok) {
+      if (outcome.routeAbsent) routeAbsentDetail = outcome.detail;
+      return transportUnavailable(outcome.detail);
+    }
     const body = (outcome.body as Record<string, unknown> | null) ?? {};
     if (isIntelligenceReadNotServedWire(body)) {
       // The service's OWN typed not-served answer rides verbatim.

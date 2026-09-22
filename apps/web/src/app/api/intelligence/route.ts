@@ -14,9 +14,12 @@
  *
  * R23-K (the anonymous AI boundary): these are LOW-COST/LOCAL reads —
  * the route serves ANONYMOUS viewers with typed states (never a login
- * wall). In service mode the reads answer the honest unavailable state
- * (no transport-exposed intelligence data yet — never a fabricated
- * result).
+ * wall). R26-W1: the reads bind the CANONICAL
+ * `IntelligenceReadTransport` — the fixtures boot serves the loudly
+ * badged dev index; the SERVICE boot serves the REAL Experience-API
+ * HTTP transport, which answers the typed not-served truth (the honest
+ * missing-dependency sentence) while the service-side route is absent —
+ * never a fabricated result, never an approximation.
  */
 
 import { getWebRuntimeHost } from "@/host/web-host";
