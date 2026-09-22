@@ -1,0 +1,396 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "af854b3575ffe0beec4ab67bfa32742c2b767c18",
+  "branch": "wfx/r26/web",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-22T17:56:57.141Z",
+    "finishedAt": "2026-09-22T17:57:52.019Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790099823749)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 4,
+    "encoded": 4,
+    "passed": 4,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J29",
+      "title": "Network loss / playback recovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the offline route renders its self-contained state",
+          "expected": "[data-wfx-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state is announced (role=status)",
+          "expected": "[data-wfx-offline-state] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state says you're offline and the watch progress is safe (specific, honest)",
+          "expected": "the offline + safe-progress truth",
+          "observed": "You're offline\n\nWebFlix needs a connection to load your feeds. Your watch progress is safe — everything you watched while online is already recorded.\n\nTry again",
+          "pass": true
+        },
+        {
+          "description": "the offline state offers its retry action (recoverable)",
+          "expected": "[data-wfx-offline-retry] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline retry control is wired to a real handler",
+          "expected": "a retry handler present",
+          "observed": "wired",
+          "pass": true
+        },
+        {
+          "description": "an unresolvable playback renders its typed failure (never a silent success)",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure is specific (names what failed)",
+          "expected": "text of [data-wfx-error] contains \"Playback could not start\"",
+          "observed": "\"Playback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure offers its recovery path back to the item",
+          "expected": "[data-wfx-surface='player'] a[href*='/item?'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no provider frame renders for a failed session (never a fake stage)",
+          "expected": "[data-wfx-player-frame] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the network-loss item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_6G1S81457BNM3AFW7PVWZABEDB&connector=fake-source&ref=fake%3Avideo-4&title=Signal+Fade&type=video&duration=600000",
+          "pass": true
+        },
+        {
+          "description": "the starved session renders its explicit starvation marker",
+          "expected": "[data-wfx-acquisition-starved='true'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the starved session renders its waiting badge (the honest named state)",
+          "expected": "text of [data-wfx-acquisition-waiting] is exactly \"Waiting for the download source\"",
+          "observed": "\"Waiting for the download source\"",
+          "pass": true
+        },
+        {
+          "description": "the starved session's progress bar stays the MEASURED 35% (never a fake moving bar)",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"35%\"",
+          "observed": "\"35%\"",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session offers its typed resume action (keep the saved progress)",
+          "expected": "[data-wfx-acquisition-action='resume'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session offers its typed clean-restart action (discard the saved progress)",
+          "expected": "[data-wfx-acquisition-action='restart'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the resume action SAYS it keeps the saved progress",
+          "expected": "a keep-progress label",
+          "observed": "Resume download — keep saved progress",
+          "pass": true
+        },
+        {
+          "description": "the restart action SAYS it discards the saved progress",
+          "expected": "a discard-progress label",
+          "observed": "Start over — discard saved progress",
+          "pass": true
+        },
+        {
+          "description": "the restarted session carries NO resuming badge (a fresh start — the progress was discarded)",
+          "expected": "[data-wfx-acquisition-resuming] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the restarted session carries no starvation marker (a fresh healthy attempt)",
+          "expected": "[data-wfx-acquisition-starved='true'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j29-j32/j29-network-loss-recovery.png",
+        "evidence/r26-web/verify-j29-j32/j29-network-loss-playback-recovery.snapshot.txt",
+        "evidence/r26-web/verify-j29-j32/j29-network-loss-playback-recovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 23282
+    },
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the capability truth table renders every platform area",
+          "expected": "[data-wfx-settings-capabilities] li[data-wfx-capability] matches >= 5",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'storage' capability area",
+          "expected": "a row for 'storage'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'contained browser' capability area",
+          "expected": "a row for 'contained browser'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'native media & torrent acquisition' capability area",
+          "expected": "a row for 'native media & torrent acquisition'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'background work' capability area",
+          "expected": "a row for 'background work'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'sharing' capability area",
+          "expected": "a row for 'sharing'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'notifications' capability area",
+          "expected": "a row for 'notifications'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the native-media area declares itself NOT available on Web (the honest unsupported state — never silent, never faked)",
+          "expected": "the native row carries the unsupported chip",
+          "observed": "unsupported chip present",
+          "pass": true
+        },
+        {
+          "description": "the adapter's own descriptor is stated (the truth the runtime booted on)",
+          "expected": "text of [data-wfx-capability-descriptor] contains \"wfx-web-adapter\"",
+          "observed": "\"Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).\"",
+          "pass": true
+        },
+        {
+          "description": "the descriptor states the platform truth and that a lying bundle cannot boot",
+          "expected": "the re-check law stated",
+          "observed": "Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).",
+          "pass": true
+        },
+        {
+          "description": "the playback surface's like/save render their typed absent notes (unsupported never looks like success)",
+          "expected": "absent like + save notes",
+          "observed": "like, save",
+          "pass": true
+        },
+        {
+          "description": "no settled action state masquerades as provider-confirmed on the playback surface",
+          "expected": "zero settled action states",
+          "observed": "zero",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j29-j32/j30-capability-honesty.png",
+        "evidence/r26-web/verify-j29-j32/j30-unsupported-capability-honesty.snapshot.txt",
+        "evidence/r26-web/verify-j29-j32/j30-unsupported-capability-honesty.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 7509
+    },
+    {
+      "id": "J31",
+      "title": "Cross-platform Web/Desktop parity (web-side anchors)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface anchors the canonical item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_6039BHJ9JFWXF3JZXKC9SWR84F&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the item detail surface carries the SAME canonical identity the search card linked",
+          "expected": "the detail carries wfxitm_6039BHJ9JFWXF3JZXKC9SWR84F",
+          "observed": "wfxitm_6039BHJ9JFWXF3JZXKC9SWR84F",
+          "pass": true
+        },
+        {
+          "description": "the player entry carries the SAME canonical identity (one item identity across all three surfaces)",
+          "expected": "the play link carries wfxitm_6039BHJ9JFWXF3JZXKC9SWR84F",
+          "observed": "wfxitm_6039BHJ9JFWXF3JZXKC9SWR84F",
+          "pass": true
+        },
+        {
+          "description": "the library watchlist section renders (the library-state parity anchor)",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the library history section renders (the library-state parity anchor)",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the library offline-and-verified section renders (the library-state parity anchor)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stated intent composes its outcome (the intent parity anchor)",
+          "expected": "[data-wfx-search-results] a[data-wfx-card] matches >= 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the profile/session state renders its honest anonymous truth (the profile-state parity anchor)",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "platform-specific capability differences are stated (allowed by the parity law, never hidden)",
+          "expected": "[data-wfx-capability-unsupported] matches >= 1",
+          "observed": "4 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j29-j32/j31-cross-platform-parity.png",
+        "evidence/r26-web/verify-j29-j32/j31-cross-platform-web-desktop-parity-web-side-anchors.snapshot.txt",
+        "evidence/r26-web/verify-j29-j32/j31-cross-platform-web-desktop-parity-web-side-anchors.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 8141
+    },
+    {
+      "id": "J32",
+      "title": "Source-neutral identity: same item, multiple realizations",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search card links the CANONICAL identity (id-first, not source-first)",
+          "expected": "an /item?id=wfxitm_… link",
+          "observed": "/item?id=wfxitm_6039BHJ9JFWXF3JZXKC9SWR84F&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the canonical item renders one identity",
+          "expected": "text of [data-wfx-item-title] is exactly \"Asteroid Drift\"",
+          "observed": "\"Asteroid Drift\"",
+          "pass": true
+        },
+        {
+          "description": "the item declares the 'Native playback' realization (multiple realizations of one canonical item)",
+          "expected": "the capability list includes Native playback",
+          "observed": "Native playbackEmbedded playbackWeb playerExternal handoff",
+          "pass": true
+        },
+        {
+          "description": "the item declares the 'Embedded playback' realization (multiple realizations of one canonical item)",
+          "expected": "the capability list includes Embedded playback",
+          "observed": "Native playbackEmbedded playbackWeb playerExternal handoff",
+          "pass": true
+        },
+        {
+          "description": "the item declares the 'Web player' realization (multiple realizations of one canonical item)",
+          "expected": "the capability list includes Web player",
+          "observed": "Native playbackEmbedded playbackWeb playerExternal handoff",
+          "pass": true
+        },
+        {
+          "description": "the item declares the 'External handoff' realization (multiple realizations of one canonical item)",
+          "expected": "the capability list includes External handoff",
+          "observed": "Native playbackEmbedded playbackWeb playerExternal handoff",
+          "pass": true
+        },
+        {
+          "description": "the player's precedence trace walks the SAME item's realizations (native, embed, browser, external — one identity, many paths)",
+          "expected": "all four rungs in the trace",
+          "observed": "native: rejected — device cannot realize native playback (canPlay=false; device declares [embed, browser, external]; browser surface: yes) | embed: accepted — realization #3 from connector 'fake-source' | browser: skipped — precedence satisfied by 'embed' | ex",
+          "pass": true
+        },
+        {
+          "description": "the chosen realization is named with its source identity (realization metadata is secondary but present)",
+          "expected": "the accepted line names the realization",
+          "observed": "native: rejected — device cannot realize native playback (canPlay=false; device declares [embed, browser, external]; browser surface: yes) | embed: accepted — realization #3 from connector 'fake-source' | browser: skipped — precedence satisfied by 'embed' | ex",
+          "pass": true
+        },
+        {
+          "description": "every search card carries a distinct canonical identity (the join is identity-keyed, not source-keyed)",
+          "expected": "3 distinct canonical ids",
+          "observed": "wfxitm_06H9CAYWWJY2HC94T91DMYBQ6E, wfxitm_73GY9Q83E5YWXHQ9YH8YQ6A1QS, wfxitm_1FCQ8BDTEV6T1JRK32PZSNPJ96",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j29-j32/j32-source-neutral-identity.png",
+        "evidence/r26-web/verify-j29-j32/j32-source-neutral-identity-same-item-multiple-realizations.snapshot.txt",
+        "evidence/r26-web/verify-j29-j32/j32-source-neutral-identity-same-item-multiple-realizations.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6907
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J31",
+      "kind": "configuration-limit",
+      "note": "The parity COMPARISON (Web vs Desktop semantically equivalent outcomes) requires both adapters running against the same server-side state. The web-side parity anchors (canonical identity, library state, intent, session state) are encoded; the desktop-side comparison is the lead's procedure.",
+      "procedure": "LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/."
+    }
+  ]
+}

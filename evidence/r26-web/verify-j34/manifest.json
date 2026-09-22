@@ -1,0 +1,306 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "af854b3575ffe0beec4ab67bfa32742c2b767c18",
+  "branch": "wfx/r26/web",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-22T17:58:34.488Z",
+    "finishedAt": "2026-09-22T17:59:01.631Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790099921013)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J34",
+      "title": "Capability discoverability from normal product surfaces",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the session menu offers the sign-in / create-profile path (task 1: identity)",
+          "expected": "[data-wfx-session-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu offers the profile & identity settings path (task 1: identity)",
+          "expected": "[data-wfx-session-profile] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Home offers the source-connection CTA in context (task 2: connect a source)",
+          "expected": "[data-wfx-source-connect-cta] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Home offers the bring-your-feed entry (task 3: BYOF)",
+          "expected": "[data-wfx-byof-cta] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-mode control renders the 'foryou' mode (task 4: feed-mode choice)",
+          "expected": "[data-wfx-feed-mode-option='foryou'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-mode control renders the 'following' mode (task 4: feed-mode choice)",
+          "expected": "[data-wfx-feed-mode-option='following'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-mode control renders the 'byof' mode (task 4: feed-mode choice)",
+          "expected": "[data-wfx-feed-mode-option='byof'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-mode control renders the 'hybrid' mode (task 4: feed-mode choice)",
+          "expected": "[data-wfx-feed-mode-option='hybrid'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Personalize control offers the temporary-intent input in context (task 5: temporary intent)",
+          "expected": "[data-wfx-personalize-objective] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the intent control states its scope in the action's own words (task 5)",
+          "expected": "[data-wfx-personalize-set-intent] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Personalize control renders the 'mindful' attention mode (task 6: attention mode)",
+          "expected": "[data-wfx-attention-mode='mindful'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Personalize control renders the 'balanced' attention mode (task 6: attention mode)",
+          "expected": "[data-wfx-attention-mode='balanced'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Personalize control renders the 'immersive' attention mode (task 6: attention mode)",
+          "expected": "[data-wfx-attention-mode='immersive'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Personalize control renders the 'custom' attention mode (task 6: attention mode)",
+          "expected": "[data-wfx-attention-mode='custom'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Home carries ZERO stale completion copy (no 'arrives later / ships with R0x' for accepted lanes)",
+          "expected": "no stale completion markers",
+          "observed": "What your feed shows\n\nFor you\nFollowing\nYour imported feed\nBlend\nManage feeds in Settings\nPersonalize · Balanced\n\nTell W",
+          "pass": true
+        },
+        {
+          "description": "the home feed offers a content card (the item path starts from Home)",
+          "expected": "an aria-labeled card link",
+          "observed": "/item?id=wfxitm_2NT3T31MBD2DZCC5EH6K90TC0R&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the item decision hub offers the recommendation-feedback controls in context (task 7)",
+          "expected": "[data-wfx-feedback-controls] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feedback vocabulary includes 'more-like-this' (task 7: recommendation feedback)",
+          "expected": "[data-wfx-feedback='more-like-this'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feedback vocabulary includes 'not-interested' (task 7: recommendation feedback)",
+          "expected": "[data-wfx-feedback='not-interested'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feedback vocabulary includes 'not-interested-source' (task 7: recommendation feedback)",
+          "expected": "[data-wfx-feedback='not-interested-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feedback vocabulary includes 'already-watched' (task 7: recommendation feedback)",
+          "expected": "[data-wfx-feedback='already-watched'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the item decision hub offers the AI action tray (task 9: AI media actions from content)",
+          "expected": "[data-wfx-ai-tray] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the item decision hub answers 'where can I watch this?' (task 10: Where to watch)",
+          "expected": "[data-wfx-where-to-watch] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Where-to-watch row names every offered way (canonical identity first, realizations second)",
+          "expected": "multiple watch options",
+          "observed": "browser, native, external, embed, authorized-peer-copy",
+          "pass": true
+        },
+        {
+          "description": "the item hub carries the Desktop offline affordance with its explanation (task 11: Desktop/offline path)",
+          "expected": "[data-wfx-acquisition-elsewhere] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline affordance names its next step (the Desktop app), never a dead 'not available'",
+          "expected": "the desktop next step",
+          "observed": "Acquisitions run in the WebFlix desktop app — this status is the honest limited view Web can show. M",
+          "pass": true
+        },
+        {
+          "description": "the AI tray carries the Model & AI management path (task 8: model controls — the contextual entry)",
+          "expected": "a management link",
+          "observed": "/settings?section=model",
+          "pass": true
+        },
+        {
+          "description": "the Model & AI settings section renders (task 8: model/BYOM/local controls)",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section names BYOM (bring-your-own-model) — the vocabulary, never an architecture term as the only path",
+          "expected": "BYOM named",
+          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and c",
+          "pass": true
+        },
+        {
+          "description": "the per-task policy truth renders (the real read models — task 8)",
+          "expected": "[data-wfx-model-policies-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the item hub offers the play decision (the player path starts from the item)",
+          "expected": "a play link",
+          "observed": "/player?id=wfxitm_2NT3T31MBD2DZCC5EH6K90TC0R&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the player carries the same AI action tray (task 9: AI actions from the player)",
+          "expected": "[data-wfx-ai-tray-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player states the active playback realization in user vocabulary (task 10: current realization)",
+          "expected": "[data-wfx-player-mode-label] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the mode label names the mode AND what it means (never a bare protocol word)",
+          "expected": "a mode sentence",
+          "observed": "Playing via embed · plays inside WebFlix (the provider's contained embed) — buffering",
+          "pass": true
+        },
+        {
+          "description": "the player carries the Where-to-watch switch row (task 10: realization switch)",
+          "expected": "[data-wfx-where-to-watch] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library renders its 'watchlist' section (task 12)",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library renders its 'history' section (task 12)",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library renders its 'offline' section (task 12)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the item hub carries ZERO stale completion copy",
+          "expected": "no stale completion markers",
+          "observed": "",
+          "pass": true
+        },
+        {
+          "description": "the player carries ZERO stale completion copy",
+          "expected": "no stale completion markers",
+          "observed": "",
+          "pass": true
+        },
+        {
+          "description": "the model settings carries ZERO stale completion copy",
+          "expected": "no stale completion markers",
+          "observed": "",
+          "pass": true
+        },
+        {
+          "description": "the library carries ZERO stale completion copy",
+          "expected": "no stale completion markers",
+          "observed": "Library\n\nYour watchlist and watch history — canonical items, keyed once across every source.\n\nYour imported feeds\n\nFeeds",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j34/j34-capability-discoverability.png",
+        "evidence/r26-web/verify-j34/j34-capability-discoverability-from-normal-product-surfaces.snapshot.txt",
+        "evidence/r26-web/verify-j34/j34-capability-discoverability-from-normal-product-surfaces.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 17446
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J34",
+      "kind": "local-only",
+      "note": "R21-F: the twelve-task discoverability walk is encoded over the deterministic web-fixture boot (the same product surfaces, the same controls — fresh Home state, normal product paths only). The PRODUCTION parity sweep (J35) is the lead's journey against the live deployment.",
+      "procedure": "LEAD (J35): run the same discoverability sweep against the production deployment and verify the R02/R03/R05/R06/R09/R14/R20 truths on the live surface."
+    }
+  ]
+}

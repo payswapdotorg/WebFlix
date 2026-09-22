@@ -1,0 +1,836 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "af854b3575ffe0beec4ab67bfa32742c2b767c18",
+  "branch": "wfx/r26/web",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-22T18:01:27.805Z",
+    "finishedAt": "2026-09-22T18:03:09.423Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790100098716)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 3,
+    "encoded": 3,
+    "passed": 3,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J40",
+      "title": "YouTube viewer parity",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "Home renders (the parity walk's fresh start)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source-neutral cards render (the R24-C Home feed pairing)",
+          "expected": "[data-wfx-card] present in the DOM",
+          "observed": "14 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search box renders (the unified Search pairing)",
+          "expected": "[data-wfx-searchbox] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search suggestions render under the box (the R24-C Search-suggestions pairing)",
+          "expected": "[data-wfx-suggestions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "at least one suggestion row renders (keyboard-navigable)",
+          "expected": "[data-wfx-suggestion] present in the DOM",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the title search offers the item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_43H2JTBBA3ES0F9D4S0WSGW50D&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the item hub renders (the canonical identity surface)",
+          "expected": "[data-wfx-surface='item'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the queue-add control renders on the item hub",
+          "expected": "[data-wfx-queue-add] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the item hub's queue-add control confirms the add (the pairing's own outcome state)",
+          "expected": "data-wfx-queue-added=true",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the play click lands in the player (the one obvious primary play action)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player chrome renders with the shell (the stable-chrome law)",
+          "expected": "[data-wfx-chrome] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the play/pause control (Space/K grammar)",
+          "expected": "[data-wfx-chrome-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the scrub bar (the direct-manipulation seek)",
+          "expected": "[data-wfx-chrome-seek] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the fullscreen control (F)",
+          "expected": "[data-wfx-chrome-fullscreen] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the settings cluster (speed/quality/captions truths)",
+          "expected": "[data-wfx-chrome-settings] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the keyboard-shortcut sheet (T)",
+          "expected": "[data-wfx-chrome-keyboard] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the speed steps render in the settings panel",
+          "expected": "[data-wfx-chrome-speed] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the quality truth row renders (the honest per-rung sentence)",
+          "expected": "[data-wfx-chrome-quality] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider rung's volume truth renders (realization-exposed, never a fabricated control)",
+          "expected": "[data-wfx-chrome-volume-truth] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the L keyboard seek moves the position (acceptance as evidence — never a ticker)",
+          "expected": "the position readout changed",
+          "observed": "0:00 → 0:10",
+          "pass": true
+        },
+        {
+          "description": "the up-next rail renders beside the player",
+          "expected": "[data-wfx-up-next] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the related projection renders (the source-neutral next content)",
+          "expected": "[data-wfx-up-next-related] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the autoplay toggle renders (the attention-policy-derived control)",
+          "expected": "[data-wfx-autoplay-toggle] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the autoplay policy sentence renders (the policy truth, never a raw switch)",
+          "expected": "[data-wfx-autoplay-policy] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session queue's own seam carries the queued item (the queue pairing's honest state)",
+          "expected": "the /api/queue state lists Deep Field Diary",
+          "observed": "1 entr(ies)",
+          "pass": true
+        },
+        {
+          "description": "the playlist form renders (the named-list write)",
+          "expected": "[data-wfx-watchlist-playlist-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts vertical feed renders",
+          "expected": "[data-wfx-shorts-viewport] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts speed control renders (the Shorts speed row)",
+          "expected": "[data-wfx-shorts-speed] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts clear-screen toggle renders (the distraction-free row)",
+          "expected": "[data-wfx-shorts-clearscreen-toggle] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts inline feedback toggle renders (the recommendation feedback row)",
+          "expected": "[data-wfx-shorts-feedback-toggle] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts feedback menu offers its controls",
+          "expected": "[data-wfx-shorts-feedback-kind] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player's feedback controls render (the parity seam)",
+          "expected": "[data-wfx-feedback-controls] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the 'More like this' control renders (the frozen feedback vocabulary)",
+          "expected": "[data-wfx-feedback='more-like-this'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library renders",
+          "expected": "[data-wfx-library] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Watchlist section renders (the Watch Later pairing)",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the History section renders (the Watch history pairing)",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Playlists section renders (the WebFlix playlists pairing)",
+          "expected": "[data-wfx-library-playlists] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Watchlist section answers its honest fresh-session state (the typed empty state, never fabricated saves)",
+          "expected": "the honest empty state",
+          "observed": "Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical ",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j40-j43/j40-youtube-parity.png",
+        "evidence/r26-web/verify-j40-j43/j40-youtube-viewer-parity.snapshot.txt",
+        "evidence/r26-web/verify-j40-j43/j40-youtube-viewer-parity.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 26008
+    },
+    {
+      "id": "J41",
+      "title": "YouTube-equivalent playback startup",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the benchmark title 'Deep Field Diary' is discoverable through search",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_43H2JTBBA3ES0F9D4S0WSGW50D&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the play click lands in the player",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the first frame records (the stage observer's marker)",
+          "expected": "the first-frame-rendered marker present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the in-page startup trace exists",
+          "expected": "the trace object",
+          "observed": "6 markers",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'play-clicked' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'navigation-start' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'player-surface-visible' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'playable-declared' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the 'first-frame-rendered' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the trace binds the realization",
+          "expected": "browser",
+          "observed": "browser",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the play click bridges onto the trace (the click-to-first-frame origin)",
+          "expected": "offset 0 (the trace origin is the click)",
+          "observed": "0ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: click-to-first-frame is a positive finite measurement",
+          "expected": "> 0 and finite",
+          "observed": "916ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the enrichment section 'ai-tray' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 921ms",
+          "observed": "916ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the enrichment section 'intelligence' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 921ms",
+          "observed": "916ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the enrichment section 'live-captions' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 921ms",
+          "observed": "916ms",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the position anchor stays evidence-anchored while idle (never a fake-buffering tick)",
+          "expected": "the readout unchanged without a command",
+          "observed": "0:00 vs 0:00",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the keyboard seek records its request/confirm pair (the real command round trip)",
+          "expected": "seek-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the play/pause control records its invoked/confirm pair",
+          "expected": "control-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the flushed traces retain on the server seam (the raw observations readable back)",
+          "expected": "the store answers with the retained count",
+          "observed": "3 trace(s)",
+          "pass": true
+        },
+        {
+          "description": "the benchmark title 'Desert Rain Doc' is discoverable through search",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_1R5BE2Y7KHD4STSRGJ66PZF62A&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the play click lands in the player",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the first frame records (the stage observer's marker)",
+          "expected": "the first-frame-rendered marker present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the in-page startup trace exists",
+          "expected": "the trace object",
+          "observed": "6 markers",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'play-clicked' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'navigation-start' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'player-surface-visible' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'playable-declared' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the 'first-frame-rendered' marker records (the pair set the metric derivation consumes)",
+          "expected": "present in the trace",
+          "observed": "play-clicked, navigation-start, player-surface-visible, playable-declared, first-frame-rendered, first-frame-rendered",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the trace binds the realization",
+          "expected": "embed",
+          "observed": "embed",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the play click bridges onto the trace (the click-to-first-frame origin)",
+          "expected": "offset 0 (the trace origin is the click)",
+          "observed": "0ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: click-to-first-frame is a positive finite measurement",
+          "expected": "> 0 and finite",
+          "observed": "905ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the enrichment section 'ai-tray' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 911ms",
+          "observed": "905ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the enrichment section 'intelligence' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 911ms",
+          "observed": "905ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the enrichment section 'live-captions' mounts AFTER the first frame (no nonessential work blocks playback)",
+          "expected": "first frame ≤ 911ms",
+          "observed": "905ms",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the position anchor stays evidence-anchored while idle (never a fake-buffering tick)",
+          "expected": "the readout unchanged without a command",
+          "observed": "0:00 vs 0:00",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the keyboard seek records its request/confirm pair (the real command round trip)",
+          "expected": "seek-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "Desert Rain Doc: the play/pause control records its invoked/confirm pair",
+          "expected": "control-confirmed present",
+          "observed": "true",
+          "pass": true
+        },
+        {
+          "description": "the flushed traces retain on the server seam (the raw observations readable back)",
+          "expected": "the store answers with the retained count",
+          "observed": "4 trace(s)",
+          "pass": true
+        },
+        {
+          "description": "the Where-to-watch row offers the authorized peer copy ('Play this way' — the switch intent)",
+          "expected": "[data-wfx-watch-switch='authorized-peer-copy'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the switch lands on the peer-copy stage (the first-class torrent realization)",
+          "expected": "[data-wfx-torrent-stage] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the realization-switch request records (the switch intent on the player trace)",
+          "expected": "realization-switch-requested at the click origin",
+          "observed": "0ms",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy stage names its rung truth (plays here or the honest Desktop next step)",
+          "expected": "[data-wfx-torrent-rung-detail] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j40-j43/j41-playback-startup.png",
+        "evidence/r26-web/verify-j40-j43/j41-youtube-equivalent-playback-startup.snapshot.txt",
+        "evidence/r26-web/verify-j40-j43/j41-youtube-equivalent-playback-startup.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 22742
+    },
+    {
+      "id": "J43",
+      "title": "Realtime translation",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the realtime-translation media is discoverable through search",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_43H2JTBBA3ES0F9D4S0WSGW50D&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider-contained rung marks live translation unavailable (never a bypass)",
+          "expected": "data-wfx-translate-row-state of [data-wfx-translate-row] is \"restricted-realization\"",
+          "observed": "\"restricted-realization\"",
+          "pass": true
+        },
+        {
+          "description": "the restricted view names the honest alternatives (the transcript + the AI text translation + the peer copy)",
+          "expected": "[data-wfx-translate-alternatives] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playback phase truth renders (playback independent of translation)",
+          "expected": "[data-wfx-player-phase] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Where-to-watch row offers the authorized peer copy (the full-fidelity live lane)",
+          "expected": "[data-wfx-watch-switch='authorized-peer-copy'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy rung (WebFlix owns the media path) offers the realtime translation lane",
+          "expected": "data-wfx-translate-row-state of [data-wfx-translate-row] is \"ready\"",
+          "observed": "\"ready\"",
+          "pass": true
+        },
+        {
+          "description": "the Translate row offers Spanish (the → [target language] control)",
+          "expected": "[data-wfx-translate-target='es'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the realtime session created (the browser → WebFlix bridge → provider chain)",
+          "expected": "the session-created marker",
+          "observed": "[\"session-start-requested\",\"session-bound\",\"session-created\"]",
+          "pass": true
+        },
+        {
+          "description": "the experience island renders the live session state",
+          "expected": "data-wfx-realtime-state of [data-wfx-translate-experience] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the aligned bilingual transcript view renders (never a replacement of the transcript artifact)",
+          "expected": "[data-wfx-bilingual-transcript] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the original transcript surface remains available (the source is never replaced)",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the live caption overlay renders the bilingual lines",
+          "expected": "the source + the translation lines",
+          "observed": "{\"source\":\"Speaker 1: The observatory wakes an hour befor\",\"translation\":\"…\"}",
+          "pass": true
+        },
+        {
+          "description": "the speaker change renders with the simple, contextual label (Speaker 2)",
+          "expected": "a Speaker 2 segment row",
+          "observed": "4",
+          "pass": true
+        },
+        {
+          "description": "the optional translated speech arrives (the real PCM chunk marker)",
+          "expected": "the first-translated-audio-chunk marker",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the translated-speech cluster renders its chunk truth",
+          "expected": "[data-wfx-translate-audio-chunks] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Original audio control renders (the mode is the user's choice)",
+          "expected": "[data-wfx-translate-audio='original'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider network drop surfaces as the typed recoverable error (the stream continues)",
+          "expected": "the recoverable-error marker",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the provider reconnect recovers the session (the domain reconnect operation)",
+          "expected": "the reconnected marker",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the network interruption reconnects through the resume token (the continuity window)",
+          "expected": "the client-disconnected → reconnected pair",
+          "observed": "reconnected → client-disconnected → reconnected",
+          "pass": true
+        },
+        {
+          "description": "base playback continues unchanged through the translation events (never blocked, never stopped)",
+          "expected": "the phase truth unchanged (buffering)",
+          "observed": "buffering",
+          "pass": true
+        },
+        {
+          "description": "the bridge URL in the client record is the WebFlix bridge (no provider endpoint reaches the browser)",
+          "expected": "the WebFlix bridge origin",
+          "observed": "ws://localhost:3102",
+          "pass": true
+        },
+        {
+          "description": "the measured driftMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "2200ms",
+          "pass": true
+        },
+        {
+          "description": "the measured firstSourceTranscriptDeltaMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "460ms",
+          "pass": true
+        },
+        {
+          "description": "the measured firstTranslatedSpeechChunkMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "14276ms",
+          "pass": true
+        },
+        {
+          "description": "the measured firstTranslatedTextDeltaMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "2760ms",
+          "pass": true
+        },
+        {
+          "description": "the measured providerReportedLagMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "2200ms",
+          "pass": true
+        },
+        {
+          "description": "the measured reconnectTimeMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "1206ms",
+          "pass": true
+        },
+        {
+          "description": "the measured stableSegmentMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "3360ms",
+          "pass": true
+        },
+        {
+          "description": "the stable segment observed (the first committed translation)",
+          "expected": "a positive measurement",
+          "observed": "3360ms",
+          "pass": true
+        },
+        {
+          "description": "the reconnect time observed (the R25-L reconnect metric)",
+          "expected": "a positive finite measurement",
+          "observed": "1206ms",
+          "pass": true
+        },
+        {
+          "description": "the drift observed (the source/translation lag — measured, with the provider-reported figure recorded alongside)",
+          "expected": "a positive finite measurement",
+          "observed": "2200ms (provider-reported 2200)",
+          "pass": true
+        },
+        {
+          "description": "the optional sign-in sentence renders (durable preferences — the optional upgrade, never a gate)",
+          "expected": "[data-wfx-translate-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no login gate appeared anywhere in the translation walk (the R23/R25-J accountless law)",
+          "expected": "the anonymous session translated currently playable public media",
+          "observed": "no login wall observed",
+          "pass": true
+        },
+        {
+          "description": "the typed fallback surface names what remains (original captions + playback untouched)",
+          "expected": "[data-wfx-translate-fallback] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the original captions remain available after the translation failure",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "playback continues after the translation failure (the §R25-L frozen law)",
+          "expected": "the phase truth unchanged (buffering)",
+          "observed": "buffering",
+          "pass": true
+        },
+        {
+          "description": "the ended sessions' telemetry retained on the bridge seam (the raw observations readable back)",
+          "expected": "the bridge's telemetry with the ended records",
+          "observed": "1 ended, 2 client records",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/verify-j40-j43/j43-realtime-translation.png",
+        "evidence/r26-web/verify-j40-j43/j43-realtime-translation.snapshot.txt",
+        "evidence/r26-web/verify-j40-j43/j43-realtime-translation.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 39243
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J41",
+      "kind": "configuration-limit",
+      "note": "The R24-W2 web encoding measures the REAL startup path over the fixtures boot (the complete assertable marker set — the click-bridged trace origin, the streamed shell's parse, the phase declaration, the first frame at the contained-surface boundary, the seek/control pairs, the realization-switch pair — plus the MEASURED startup architecture laws: the first frame preceding every enrichment mount, the evidence-anchored position, the retained raw observations). The YouTube COMPARATIVE baseline is honestly out of scope in this configuration: the fixture catalog's content is WebFlix-internal (no identical public YouTube content — the same-content law answers samePublicContentOnYouTube=false), and this sandbox has no route to the public YouTube product. The FRESH-SESSION cold/warm cache battery (a brand-new browser per cold pass, the same browser for the warm pass) is the benchmark harness's own record under evidence/r24-w2/benchmark/ — the journey's session is shared with J01-J40 (its passes are warm by construction, which the journey never claims otherwise).",
+      "procedure": "LEAD (the comparative protocol — the plan's lead-owned 'comparative performance test protocol'): select real public content available on BOTH systems, run the same browser/device/network profile over cold and warm cache passes on WebFlix AND YouTube, record the same metric set (the shared telemetry contract's marker pairs), evaluate the frozen R24-E thresholds (p50 +150ms / p75 +300ms / p95 +750ms TTFF deltas, startup failure +0.5pp, first-60s rebuffer +0.25pp), and attach the traces + the evaluation record under evidence/r24-lab/. The WebFlix-internal benchmark record (evidence/r24-w2/benchmark/) is the standing measurement of this lane's startup architecture laws."
+    },
+    {
+      "journeyId": "J43",
+      "kind": "configuration-limit",
+      "note": "The R25-W2 encoding drives the FULL J43 walk over the fixtures boot's REAL realtime composition: the browser WebSocket → the WebFlix bridge (ws on 3102, started by the dev boot's instrumentation) → the provider session seam (the frozen R25-A domain port) with the deterministic dev provider double behind it (a REAL second WebSocket hop on 3103 — the scripted bilingual media scripts, the real PCM16 translated-speech chunks, the scripted provider drop + the scripted client network blip). The TRANSPORT, the reconnect/resume machinery, the continuity, the cost-policy verdicts (the shared Model-Fabric policy engine), and the R25-L instrumentation are all the real production wiring of this configuration. The provider-side LATENCY figures are the dev double's MODELED profile (the plan's frozen research numbers — the ~2.3s reported lag), honestly recorded as such in the metrics (the provider-reported figure rides alongside the measured one); the LIVE Qwen endpoint's end-to-end latency/cost benchmark — real credentials, real audio, the production Vercel WebSocket deployment — is the lead's R25-L procedure, and the bridge's service-mode deployment (the Vercel function transport) is the lead's R25 deployment verification.",
+      "procedure": "LEAD (the live-provider benchmark): provision the provider credentials server-side (never in the client), register the realtime adapter through Model Fabric, deploy the bridge on the WebSocket-capable function transport, run the same J43 walk + the r25 web latency harness (apps/web/scripts/r25-web-latency.ts --base-url) against the deployed service, and record the measured R25-L numbers (first source/translation deltas, first speech chunk, stable segment, reconnect, drift) with the live provider's provenance under evidence/r25-lab/."
+    },
+    {
+      "journeyId": "J40",
+      "kind": "configuration-limit",
+      "note": "The R24-W2 encoding walks the viewer-parity flow end to end over the fixtures boot: the walk's own watchlist/playlist/queue WRITES answer their typed success at the CONTROLS (the 'Saved' status, the queue-add's outcome state, the write routes' dev-boot bridge resolving the item through the runtime's own search seam), but the cross-PAGE read of those writes (the Library page listing them) is kept apart by the dev boot's per-route module graphs — the same documented doctrine the J12 limitation records for the watch-state fold (the single-bundle production boot shares one runtime instance: the writes are visible there). The Library assertions therefore carry the fresh session's HONEST states (the typed empty states — J11's own law) plus the sections' presence (the pairing laws).",
+      "procedure": "LEAD (the production parity sweep — the J35-class run): deploy the integrated tree (the single-bundle production build), drive the same J40 walk against the deployed boot, and capture the Library showing the walk's own watchlist/playlist writes under evidence/<run>/ (the production runtime is one instance: the writes cross pages)."
+    }
+  ]
+}
