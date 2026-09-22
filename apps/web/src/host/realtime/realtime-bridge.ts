@@ -145,6 +145,12 @@ interface BridgeSocketState {
 
 /** The options for {@link startRealtimeBridge}. */
 export interface RealtimeBridgeOptions {
+  /**
+   * The scripted client network blip's delay (the dev double's
+   * client-side interruption — the tests' compression option; the
+   * journeys + the benchmark keep the real 24 s profile).
+   */
+  readonly clientBlipAfterMs?: number;
   /** The fixed port (default 3102). */
   readonly port?: number;
   /**
@@ -191,6 +197,7 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
     options.anonymousMaxSessionDurationMs ?? DEFAULT_REALTIME_ANONYMOUS_QUOTA.maxSessionDurationMs;
   const allowedOrigins =
     options.allowedOrigins ?? ["http://localhost:3101", "http://127.0.0.1:3101"];
+  const clientBlipAfterMs = options.clientBlipAfterMs ?? SCRIPTED_CLIENT_BLIP_AFTER_MS;
 
   const sessions = new Map<string, BridgeSession>();
   /** The ENDED sessions' telemetry records (the retention seam — readable after close). */
@@ -515,7 +522,7 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
               // The abrupt close (a network-like drop — the client's
               // reconnect loop + the resume run for real).
               session.client.terminate();
-            }, SCRIPTED_CLIENT_BLIP_AFTER_MS);
+            }, clientBlipAfterMs);
           })
           .catch((error: unknown) => {
             if (session.ended) return;

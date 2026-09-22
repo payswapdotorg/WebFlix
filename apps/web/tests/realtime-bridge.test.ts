@@ -168,12 +168,13 @@ let provider: DevRealtimeProviderHandle | null = null;
 
 beforeEach(async () => {
   setRealtimeBridgeStatus({ running: false, port: null, provider: null, targetLanguages: [] });
-  provider = startDevRealtimeProvider({ port: PROVIDER_PORT });
+  provider = startDevRealtimeProvider({ port: PROVIDER_PORT, fastPacing: true });
   bridge = startRealtimeBridge({
     port: BRIDGE_PORT,
     providerSeamFactory: createDevRealtimeSeam(`ws://localhost:${PROVIDER_PORT}`),
     allowedOrigins: ["http://localhost:3101"],
     sessionBudgetUsd: 1.0,
+    clientBlipAfterMs: 2_000,
   });
 });
 
@@ -484,19 +485,13 @@ describe("R25-L — the web latency metric derivation (pure)", () => {
 
 describe("R25-D — the bridge status module (the globalThis doctrine)", () => {
   it("records the running truth on start and the absent truth on stop", async () => {
-    // The beforeEach/afterEach pair already exercised a full lifecycle;
-    // assert the current state transitions through a dedicated pair.
-    const statusBefore = (() => {
-      const { readRealtimeBridgeStatus } = require("../src/host/realtime/realtime-bridge-state");
-      return readRealtimeBridgeStatus();
-    })();
     // The running bridge from beforeEach holds the truth.
+    const statusBefore = readRealtimeBridgeStatus();
     expect(statusBefore.running).toBe(true);
     expect(statusBefore.port).toBe(BRIDGE_PORT);
     expect(statusBefore.provider?.id).toBe(DEV_REALTIME_PROVIDER_ID);
     await bridge!.stop();
     bridge = null;
-    const { readRealtimeBridgeStatus } = require("../src/host/realtime/realtime-bridge-state");
     const statusAfter = readRealtimeBridgeStatus();
     expect(statusAfter.running).toBe(false);
     expect(statusAfter.port).toBeNull();

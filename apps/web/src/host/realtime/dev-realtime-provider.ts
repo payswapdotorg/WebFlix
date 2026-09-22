@@ -198,25 +198,55 @@ const SCRIPTS: Readonly<Record<string, readonly ScriptedSegment[]>> = {
 
 // ---------------------------------------------------------------------------
 // The deterministic timing profile (the modeled latencies — loudly not a
-// measurement of any live endpoint)
+// measurement of any live endpoint). The REAL profile (the journeys +
+// the latency benchmark): the plan's frozen research pacing. The TEST
+// compression (fastPacing — the unit battery's option, never the
+// journeys'): the SAME machinery at compressed wall time.
 // ---------------------------------------------------------------------------
 
-/** Wall-clock delay from session start to the first source delta. */
-const FIRST_SOURCE_DELAY_MS = 400;
-/** Wall-clock pacing between scripted segments (the drive's own pace). */
-const SEGMENT_PACING_MS = 3_200;
-/** Source partial → final gap. */
-const SOURCE_FINAL_OFFSET_MS = 700;
-/** The modeled translation lag (the frozen research profile, ~2.3 s). */
-const TRANSLATION_LAG_MS = 2_300;
-/** Translation delta 1 → delta 2 gap. */
-const TRANSLATION_DELTA_GAP_MS = 300;
-/** Translation final after the second delta. */
-const TRANSLATION_FINAL_GAP_MS = 300;
-/** The audio chunk after the translation final. */
-const AUDIO_CHUNK_OFFSET_MS = 200;
-/** The delay before a resumed session continues (the modeled recovery). */
-const RESUME_DELAY_MS = 500;
+/** The deterministic timing profile (one instance's constants). */
+interface TimingProfile {
+  /** Wall-clock delay from session start to the first source delta. */
+  readonly firstSourceDelayMs: number;
+  /** Wall-clock pacing between scripted segments (the drive's own pace). */
+  readonly segmentPacingMs: number;
+  /** Source partial → final gap. */
+  readonly sourceFinalOffsetMs: number;
+  /** The modeled translation lag (the frozen research profile, ~2.3 s). */
+  readonly translationLagMs: number;
+  /** Translation delta 1 → delta 2 gap. */
+  readonly translationDeltaGapMs: number;
+  /** Translation final after the second delta. */
+  readonly translationFinalGapMs: number;
+  /** The audio chunk after the translation final. */
+  readonly audioChunkOffsetMs: number;
+  /** The delay before a resumed session continues (the modeled recovery). */
+  readonly resumeDelayMs: number;
+}
+
+/** The REAL profile (the journeys + the benchmark). */
+const REAL_TIMING: TimingProfile = {
+  firstSourceDelayMs: 400,
+  segmentPacingMs: 3_200,
+  sourceFinalOffsetMs: 700,
+  translationLagMs: 2_300,
+  translationDeltaGapMs: 300,
+  translationFinalGapMs: 300,
+  audioChunkOffsetMs: 200,
+  resumeDelayMs: 500,
+};
+
+/** The TEST-compressed profile (the unit battery's option). */
+const FAST_TIMING: TimingProfile = {
+  firstSourceDelayMs: 60,
+  segmentPacingMs: 300,
+  sourceFinalOffsetMs: 90,
+  translationLagMs: 180,
+  translationDeltaGapMs: 40,
+  translationFinalGapMs: 40,
+  audioChunkOffsetMs: 30,
+  resumeDelayMs: 60,
+};
 /**
  * The scripted provider DROP: after this segment index (1-based) the
  * provider's connection closes mid-stream — the bridge's provider
@@ -339,6 +369,12 @@ interface ProviderScriptSession {
 export interface DevRealtimeProviderOptions {
   /** The fixed port (the dev boot's 3103; tests inject their own). */
   readonly port: number;
+  /**
+   * The TEST-compressed timing profile (the unit battery's option —
+   * the SAME machinery at compressed wall time; the journeys + the
+   * latency benchmark NEVER set it: they measure the real pacing).
+   */
+  readonly fastPacing?: boolean;
 }
 
 /** The running dev provider handle. */
@@ -361,6 +397,7 @@ export function devRealtimeScriptFor(externalRef: string): readonly ScriptedSegm
 export function startDevRealtimeProvider(
   options: DevRealtimeProviderOptions,
 ): DevRealtimeProviderHandle {
+  const timing: TimingProfile = options.fastPacing === true ? FAST_TIMING : REAL_TIMING;
   const sessions = new Map<string, ProviderScriptSession>();
 
   const emit = (ws: WsServerSocket, frame: DevProviderStreamFrame): void => {
@@ -388,7 +425,7 @@ export function startDevRealtimeProvider(
       const segmentId = `seg-${index + 1}`;
       // The segment's wall origin (relative to the session start; the
       // resume path shifts by the drive delay only — deterministic).
-      const origin = delayMs + FIRST_SOURCE_DELAY_MS + (index - fromIndex) * SEGMENT_PACING_MS;
+      const origin = delayMs + timing.firstSourceDelayMs + (index - fromIndex) * timing.segmentPacingMs;
       const speakerId = segment.speaker === "Speaker 1" ? "speaker-1" : "speaker-2";
       const push = (offsetMs: number, run: () => void): void => {
         session.timers.push(setTimeout(run, origin + offsetMs));
@@ -424,7 +461,7 @@ export function startDevRealtimeProvider(
           });
         }
       });
-      push(SOURCE_FINAL_OFFSET_MS, () => {
+      push(timing.sourceFinalOffsetMs, () => {
         if (session.ended) return;
         session.sourceFinalWall.set(segmentId, Date.now());
         emit(ws, {
@@ -442,7 +479,7 @@ export function startDevRealtimeProvider(
         session.inputs.targetLanguage === SCRIPTED_FAILURE_LANGUAGE &&
         index >= 1
       ) {
-        push(SOURCE_FINAL_OFFSET_MS + 120, () => {
+        push(timing.sourceFinalOffsetMs + 120, () => {
           if (session.ended) return;
           session.ended = true;
           clearTimers(session);
@@ -463,7 +500,7 @@ export function startDevRealtimeProvider(
       const translation = segment.translations[session.inputs.targetLanguage];
       if (translation !== undefined) {
         const half = Math.floor(translation.length / 2);
-        push(TRANSLATION_LAG_MS, () => {
+        push(timing.translationLagMs, () => {
           if (session.ended) return;
           emit(ws, {
             kind: "translation-delta",
@@ -484,7 +521,7 @@ export function startDevRealtimeProvider(
             });
           }
         });
-        push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS, () => {
+        push(timing.translationLagMs + timing.translationDeltaGapMs, () => {
           if (session.ended) return;
           emit(ws, {
             kind: "translation-delta",
@@ -496,7 +533,7 @@ export function startDevRealtimeProvider(
             deltaText: translation.slice(half),
           });
         });
-        push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS + TRANSLATION_FINAL_GAP_MS, () => {
+        push(timing.translationLagMs + timing.translationDeltaGapMs + timing.translationFinalGapMs, () => {
           if (session.ended) return;
           const translationFinalWall = Date.now();
           emit(ws, {
@@ -527,7 +564,7 @@ export function startDevRealtimeProvider(
             sessionId: "",
             occurredAt: new Date().toISOString(),
             usage: {
-              inputAudioTokens: Math.round((SEGMENT_PACING_MS / 1000) * INPUT_AUDIO_TOKENS_PER_SECOND),
+              inputAudioTokens: Math.round((timing.segmentPacingMs / 1000) * INPUT_AUDIO_TOKENS_PER_SECOND),
               textOutputTokens: Math.ceil(translation.length / 4),
               outputAudioTokens: wantsAudio()
                 ? Math.round(1.2 * OUTPUT_AUDIO_TOKENS_PER_SECOND)
@@ -542,7 +579,7 @@ export function startDevRealtimeProvider(
       // (§R25-A "configure") that enables translated speech takes effect
       // from the next segment (honest, never retroactive).
       if (translation !== undefined) {
-        push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS + TRANSLATION_FINAL_GAP_MS + AUDIO_CHUNK_OFFSET_MS, () => {
+        push(timing.translationLagMs + timing.translationDeltaGapMs + timing.translationFinalGapMs + timing.audioChunkOffsetMs, () => {
           if (session.ended || !wantsAudio()) return;
           const chunk = synthesizePcmChunk(index + 1, 1_200, 1);
           emit(ws, {
@@ -567,7 +604,7 @@ export function startDevRealtimeProvider(
       }
       // The scripted provider DROP (once, after the drop segment's events).
       if (index + 1 === SCRIPTED_DROP_AFTER_SEGMENT && !session.dropped) {
-        push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS + TRANSLATION_FINAL_GAP_MS + AUDIO_CHUNK_OFFSET_MS + 300, () => {
+        push(timing.translationLagMs + timing.translationDeltaGapMs + timing.translationFinalGapMs + timing.audioChunkOffsetMs + 300, () => {
           if (session.ended) return;
           session.dropped = true;
           // The modeled provider network blip: the connection closes
@@ -711,7 +748,7 @@ export function startDevRealtimeProvider(
           resumed: true,
         } satisfies ProviderHandshakeFrame),
       );
-      scheduleFrom(ws, session, Number(parsed.lastCommittedSegmentId.replace("seg-", "")), RESUME_DELAY_MS);
+      scheduleFrom(ws, session, Number(parsed.lastCommittedSegmentId.replace("seg-", "")), timing.resumeDelayMs);
       return;
     }
     if (parsed.kind === "provider-audio-append") {

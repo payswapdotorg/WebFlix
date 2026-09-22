@@ -66,6 +66,18 @@ Import the GitHub repo `payswapdotorg/webflix` and configure:
 
 `DATABASE_URL`, `APP_ENCRYPTION_KEY`, `R2_*`, `UPSTASH_*`, `YOUTUBE_*` — these belong to the Experience API service / persistence / sources lanes (WFX-052/054/055). Adding them to the web project would widen the web host's secret surface for no benefit. (Vercel env vars are project-scoped; the web project needs only the two rows above.)
 
+### R25 realtime translation bridge (the WebSocket lane — 2026-09-22)
+
+The R25 realtime translation lane ships a **dev-boot prototype bridge** plus the honest production gap:
+
+| Name | Value | Notes |
+|---|---|---|
+| `WFX_DEV_FIXTURES=1` | (dev only) | The documented dev boot starts the WebFlix realtime bridge (`ws`, port **3102**) + the deterministic dev provider double (**3103**) inside the dev process (the `src/instrumentation.ts` hook — Next's server-boot seam). The browser talks ONLY to the bridge; the provider endpoint never appears in the client. |
+| `WFX_REALTIME_BRIDGE=1` | optional | Starts the bridge WITHOUT the dev provider double (the honest typed `no-realtime-provider-registered` gap until the Model-Fabric-registered adapter binds the seam — the lead's integration step). |
+| `WFX_REALTIME_BRIDGE_PORT` / `WFX_DEV_REALTIME_PROVIDER_PORT` | `3102` / `3103` | Port overrides for parallel local runs. |
+
+**Production truth (honest):** the default production/serverless boot starts NO bridge — the realtime surfaces render the typed `bridge-unavailable` state (never a claimed capability). The production WebSocket transport (a Vercel WebSocket-capable function holding the same provider session seam) is the lead's R25 deployment verification lane; when it lands, the same `ws`-based bridge module (`src/host/realtime/realtime-bridge.ts` — pure `node:http` + `ws`, no native deps) binds behind it. The bridge persists only continuity + telemetry state (never raw media) and has no capability over playback by construction.
+
 ## Build behavior (verified)
 
 `next build` completes cleanly **without any environment variables**: the home route is `force-dynamic` (its content depends on the environment and the configured service's answer at request time), so nothing env-dependent is evaluated during the build. Health is a static deterministic route. A production deployment then either has `WFX_API_BASE` (works) or fails loudly per request (visible, typed) — there is no third, silent-fixture outcome.

@@ -57,10 +57,11 @@ let bridge: ReturnType<typeof startRealtimeBridge> | null = null;
 beforeEach(() => {
   resetWebHostProcessState();
   setRealtimeBridgeStatus({ running: false, port: null, provider: null, targetLanguages: [] });
-  provider = startDevRealtimeProvider({ port: TEST_PROVIDER_PORT });
+  provider = startDevRealtimeProvider({ port: TEST_PROVIDER_PORT, fastPacing: true });
   bridge = startRealtimeBridge({
     port: TEST_BRIDGE_PORT,
     providerSeamFactory: createDevRealtimeSeam(`ws://localhost:${TEST_PROVIDER_PORT}`),
+    clientBlipAfterMs: 2_000,
   });
 });
 
