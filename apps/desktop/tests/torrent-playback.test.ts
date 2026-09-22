@@ -22,6 +22,7 @@ import {
 } from "../src/platform/torrent-playback";
 import type { DesktopTorrentRealization } from "../src/platform/torrent-playback";
 import {
+  R23_INFO_HASH,
   R23_ITEM,
   R23_MAGNET,
   R23_PROVENANCE,
@@ -80,12 +81,16 @@ describe("R23-W3 torrent-playback — the rung decision (the R23-C contract cons
     expect(declaration.accessClass).toBe("public"); // an authorized peer copy needs no provider sign-in
   });
 
-  it("the composed realization carries the NATIVE mode with the peer-copy connector vocabulary", () => {
+  it("the composed realization carries the NATIVE mode with the frozen capability vocabulary (the resolver's law)", () => {
     const realization = peerCopyPlaybackRealization();
     expect(realization.mode).toBe("native");
     expect(realization.connectorId).toBe(AUTHORIZED_PEER_COPY_CONNECTOR_ID);
-    expect(realization.capabilities).toContain("authorized-peer-copy");
-    expect(realization.capabilities).toContain("playback-before-completion");
+    // R26-W3: ONLY frozen Capability values — the frozen Media-Surface
+    // resolver decodes every non-frozen entry as a media demand, so the
+    // composed realization must carry `playNative` (the play-contract
+    // statement), never bespoke strings (the corrective defect this
+    // lane's real-composition journey surfaced).
+    expect(realization.capabilities).toEqual(["playNative"]);
   });
 });
 
@@ -191,7 +196,11 @@ describe("R23-W3 torrent-playback — the play flow (the native rung engaged)", 
     expect(outcome.controller.state().mode).toBe("native"); // the rung — never a torrent mode
     expect(outcome.controller.state().realization.connectorId).toBe(AUTHORIZED_PEER_COPY_CONNECTOR_ID);
     expect(boot.nativeMedia.opens).toHaveLength(1);
-    expect(boot.nativeMedia.opens[0]?.torrentBytes).toBeDefined(); // the authorized open input
+    // R26-W3 (the wire law): the native open carries the MAGNET — the
+    // wire-transportable source. This realization carried only torrent
+    // bytes, so the magnet was DERIVED from the ingestion's own infohash
+    // (the swarm identity the engine just parsed — never invented).
+    expect(boot.nativeMedia.opens[0]?.magnet).toContain(R23_INFO_HASH);
 
     // The acquisition surfaced the preparing lifecycle (the canonical bind).
     boot.acquisition.refreshAcquisition();

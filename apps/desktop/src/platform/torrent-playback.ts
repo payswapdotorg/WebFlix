@@ -201,15 +201,31 @@ export const AUTHORIZED_PEER_COPY_CONNECTOR_ID = "authorized-peer-copy";
 /**
  * Compose the playback realization a peer copy satisfies on Desktop: the
  * NATIVE mode (the rung), the frozen peer-copy connector vocabulary, and
- * the transport truth carried as the realization's capability vocabulary.
- * There is NO torrent playback mode — this is exactly the frozen
+ * the frozen `playNative` capability (the play-contract statement). There
+ * is NO torrent playback mode — this is exactly the frozen
  * `PlaybackRealization` shape every provider realization carries.
+ *
+ * R26-W3 (the corrective fix this lane's journey surfaced): the
+ * capabilities array carries ONLY frozen `Capability` values. The frozen
+ * Media-Surface resolver interprets every non-frozen entry as a MEDIA
+ * DEMAND (a codec the native pipeline must decode) — the previous
+ * `["authorized-peer-copy", "playback-before-completion"]` vocabulary
+ * made the real composition's resolver reject the peer-copy realization
+ * as undecodable (`demands [authorized-peer-copy,
+ * playback-before-completion] not decodable by device codecs`). The
+ * behavior truths those strings gestured at live where they belong: the
+ * playback-before-completion law is the R12 scheduler's own; the
+ * peer-copy identity is the connectorId. The defect was invisible to
+ * the R23 harness (its `createRuntime` boot used the R01 default
+ * resolver, which does not decode demands) and surfaced only on the
+ * REAL `createDesktopApp` composition (the R09 frozen surface resolver)
+ * — exactly the production-first corrective the takeover demanded.
  */
 export function peerCopyPlaybackRealization(): PlaybackRealization {
   return {
     mode: "native",
     connectorId: AUTHORIZED_PEER_COPY_CONNECTOR_ID,
-    capabilities: [AUTHORIZED_PEER_COPY_CONNECTOR_ID, "playback-before-completion"],
+    capabilities: ["playNative"],
   };
 }
 
@@ -632,11 +648,24 @@ export function createDesktopTorrentPlaybackBinding(
       );
 
       // THE NATIVE PLAYBACK ENGAGEMENT (the rung the peer copy satisfies).
+      // R26-W3 (the wire-law fix this lane's real-composition journey
+      // surfaced): the native open input is the MAGNET — the
+      // wire-transportable source (the v1 engine wire protocol carries
+      // JSON DTOs; torrent BYTES cannot cross it, and the engine's own
+      // ingestion lane has already consumed them for the file-selection
+      // truth). A realization without an explicit magnet derives it from
+      // the INGESTION's own infohash (the swarm identity the engine just
+      // parsed — never invented).
+      const openMagnet =
+        realization.magnet !== undefined
+          ? realization.magnet
+          : `magnet:?xt=urn:btih:${ingestion.infoHash}${
+              ingestion.displayName !== undefined
+                ? `&dn=${encodeURIComponent(ingestion.displayName)}`
+                : ""
+            }`;
       return engageNativePlayback(runtime, itemId, {
-        nativeOpen:
-          realization.torrentBytes !== undefined
-            ? { torrentBytes: realization.torrentBytes }
-            : { magnet: realization.magnet! },
+        nativeOpen: { magnet: openMagnet },
         resumePositionMs: playOptions?.resumePositionMs,
         detail: rung.detail,
         sessionId,
@@ -682,7 +711,7 @@ export function createDesktopTorrentPlaybackBinding(
 
 /** The engagement input (the open input + the honest detail). */
 interface EngageInput {
-  readonly nativeOpen: { magnet?: string; torrentBytes?: Uint8Array; localPath?: string };
+  readonly nativeOpen: { magnet?: string; localPath?: string };
   readonly resumePositionMs: number | undefined;
   readonly detail: string;
   /** The acquisition session id (the offline replay carries `offline:<assetId>`). */
