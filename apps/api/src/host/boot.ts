@@ -78,6 +78,7 @@ import {
   PostgresConnectorAccountStore,
   PostgresEventSink,
   PostgresIdentityService,
+  PostgresMediaIntelligenceStore,
   PostgresProfileService,
   PostgresSessionService,
   SystemClock,
@@ -90,8 +91,15 @@ import { RecommendationControlsHost } from "./controls";
 import { createFeedImportHost, type FeedConnectorWiring, type FeedImportHost } from "./feed-import";
 import { createFanOutConnector, type FanOutAuthGate, type FanOutConnector } from "./fan-out";
 import { HistoryHost } from "./history";
+import { IntelligenceHost } from "./intelligence-host";
+import {
+  IntelligenceDerivationPipeline,
+  createHttpIntelligenceModelRuntime,
+  type DerivationPassResult,
+  type IntelligenceModelRuntime,
+} from "./intelligence-pipeline";
 import { ModelControlsHost } from "./model-controls";
-import { seedCatalogIfEmpty, type CatalogSeedResult } from "./seed";
+import { convergeCatalogArtwork, seedCatalogIfEmpty, type CatalogArtworkConvergenceResult, type CatalogSeedResult } from "./seed";
 import {
   createSourceManagementService,
   createYouTubeSourceWiring,
@@ -188,6 +196,21 @@ export interface ApiBoot {
    * importable-source list, never a fixture fallback.
    */
   readonly feedImports: FeedImportHost;
+  /**
+   * R26-W4 — the media-intelligence lane: the derived-artifact store's
+   * read host (the `/experience/intelligence` route's backing), the
+   * derivation pipeline (Model Fabric routing per R23-G), the boot-time
+   * derivation pass's honest summary, and the artwork projection
+   * convergence's result (the catalog's `thumbnailUrl` metadata — the
+   * production-discovery gap's fix). Diagnostics-only fields never gate
+   * the boot; the reads answer their own typed truths.
+   */
+  readonly intelligence: {
+    readonly host: IntelligenceHost;
+    readonly pipeline: IntelligenceDerivationPipeline;
+    readonly derivation: DerivationPassResult;
+    readonly artworkConvergence: CatalogArtworkConvergenceResult;
+  };
 }
 
 /** Compose one service boot over the REAL ports. Never called per-request. */
@@ -216,6 +239,13 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
   //      concurrent cold starts (see host/seed.ts for the decision record
   //      on why this is app-owned, not a shared migration).
   const seed = await seedCatalogIfEmpty(persistence.db);
+
+  // 2.5b. R26-W4 — the artwork projection convergence: the webflix-catalog
+  //      connector's thumbnailUrl projection, applied on EVERY boot
+  //      (idempotent — only rows still missing the key are touched), so
+  //      ALREADY-SEEDED production databases receive the provider's own
+  //      artwork address the moment this code deploys.
+  const artworkConvergence = await convergeCatalogArtwork(persistence.db);
 
   // 2.6. R02 — the server-side identity services over the SAME seams (one
   //      clock, one id source per boot): register/authenticate, session
@@ -416,6 +446,40 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     wirings: feedWirings,
   });
 
+  // R26-W4 — the media-intelligence lane: the derived-artifact store over
+  // the SAME persistence boot (the 0014 migration is part of the real
+  // migration set bootPersistence applied), the derivation pipeline over
+  // Model Fabric (the R23-G routing; the model runtime binds the
+  // operator-provisioned open-model endpoint when
+  // WFX_INTELLIGENCE_MODEL_ENDPOINT is set — honest absence otherwise),
+  // and the boot-time derivation convergence pass (bounded by
+  // WFX_INTELLIGENCE_DERIVATION_LIMIT; per-item failures are recorded
+  // honestly and NEVER fail the boot — the reads answer their own typed
+  // truths against the store).
+  const intelligenceStore = new PostgresMediaIntelligenceStore({
+    db: persistence.db,
+    clock,
+  });
+  const intelligenceRuntime: IntelligenceModelRuntime | null =
+    config.intelligenceModelEndpoint !== null
+      ? createHttpIntelligenceModelRuntime({
+          endpoint: config.intelligenceModelEndpoint,
+        })
+      : null;
+  const intelligencePipeline = new IntelligenceDerivationPipeline({
+    db: persistence.db,
+    store: intelligenceStore,
+    clock,
+    runtime: intelligenceRuntime,
+  });
+  const intelligence = new IntelligenceHost({
+    db: persistence.db,
+    store: intelligenceStore,
+  });
+  const derivation = await intelligencePipeline.deriveCatalog(
+    config.intelligenceDerivationLimit,
+  );
+
   // 6. The service Ports bundle: the fan-out + the 052 transactional
   //    outbox event sink (PostgresEventSink from the persistence boot)
   //    + the shared seams.
@@ -442,6 +506,12 @@ async function bootApi(env: ApiEnv): Promise<ApiBoot> {
     controls,
     modelControls,
     feedImports,
+    intelligence: {
+      host: intelligence,
+      pipeline: intelligencePipeline,
+      derivation,
+      artworkConvergence,
+    },
   };
 }
 

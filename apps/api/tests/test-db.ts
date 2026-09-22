@@ -28,7 +28,7 @@ import {
   type SqlRow,
 } from "@wfx/persistence";
 
-import { seedCatalogIfEmpty } from "../src/host/seed";
+import { convergeCatalogArtwork, seedCatalogIfEmpty } from "../src/host/seed";
 
 /** A PGlite-backed DbClient (the test-side twin of the postgres.js client). */
 export interface TestDb {
@@ -77,13 +77,20 @@ export async function createTestDb(): Promise<TestDb> {
   if (result.applied.length === 0) {
     throw new Error(`test harness: expected fresh migrations, applied none (total ${result.total})`);
   }
-  // The app-owned curated catalog — the SAME convergence step the service
-  // boot performs (seedCatalogIfEmpty, host/seed.ts): the harness baseline
-  // is the seeded webflix-catalog, exactly what production serves.
+  // The app-owned curated catalog — the SAME convergence steps the service
+  // boot performs (seedCatalogIfEmpty + convergeCatalogArtwork, host/seed.ts):
+  // the harness baseline is the seeded webflix-catalog with the connector's
+  // artwork projection applied, exactly what production serves.
   const seed = await seedCatalogIfEmpty(db);
   if (!seed.seeded || seed.itemCount !== 57) {
     throw new Error(
       `test harness: expected the catalog seed to apply 57 items, got ${JSON.stringify(seed)}`,
+    );
+  }
+  const artwork = await convergeCatalogArtwork(db);
+  if (artwork.updated !== 57) {
+    throw new Error(
+      `test harness: expected the artwork convergence to project 57 rows, got ${JSON.stringify(artwork)}`,
     );
   }
   return { db, raw: pglite, close: db.close };
