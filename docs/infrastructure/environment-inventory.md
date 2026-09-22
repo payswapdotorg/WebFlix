@@ -27,6 +27,8 @@ The names below are mirrored in [`.env.example`](../../.env.example) at the repo
 |---|---|---|
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint (`https://<region>-<db>.upstash.io`). **Not currently set** — Upstash is unprovisioned (see [infrastructure-stack.md](./infrastructure-stack.md)). | Lane B — cache layer (WFX-054+). |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST auth token (per-database password). **Not currently set.** | Same. When EITHER of the pair is absent, the app uses the in-memory fallback with typed degraded logging — see the Redis contract in [degradation-behavior.md](./degradation-behavior.md). |
+| `DASHSCOPE_API_KEY` | The Qwen managed-cloud realtime-translation provider credential (Alibaba Cloud Model Studio / DashScope International). **Server-side only** — read exclusively by the Model Fabric provider adapter (`wfx/r25/provider-adapter`, R25-C); it never crosses to the browser, the desktop composition, or any client bundle. Absence (or an empty value) is the typed no-credential path: the adapter's registration refuses honestly and the realtime translation surface answers the no-provider truth — never a fake session. | R25 — the Qwen provider adapter behind Model Fabric (R25-C/R25-L); the live benchmark harness (`packages/model-fabric/scripts/verify-live-qwen-realtime.ts`) reports an honest SKIPPED without it. |
+| `QWEN_LIVETRANSLATE_WS_URL` | Optional override for the Qwen realtime WebSocket endpoint (default: the documented QwenCloud MaaS realtime endpoint; the named alternative is Model Studio International). Absence uses the documented default — no fallback errors. | R25 — same lane (R25-C/R25-L). |
 
 ## Development / test control variables
 
