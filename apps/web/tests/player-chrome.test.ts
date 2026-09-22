@@ -49,6 +49,7 @@ function playerSurfaceProps(view: PlayerView): {
       aiTray: view.aiTray,
       intelligence: view.intelligence,
       liveAsr: view.liveAsr,
+      realtime: view.realtime,
       related: view.related,
     },
   };

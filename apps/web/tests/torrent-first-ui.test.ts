@@ -58,6 +58,7 @@ function playerSurfaceRenderProps(
       aiTray: view.aiTray,
       intelligence: view.intelligence,
       liveAsr: view.liveAsr,
+      realtime: view.realtime,
       related: view.related,
     },
   };

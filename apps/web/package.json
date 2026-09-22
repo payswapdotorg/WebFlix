@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "dev": "next dev -p 3101",
+    "dev": "NODE_OPTIONS=--max-old-space-size=1536 next dev -p 3101",
     "build": "next build",
     "start": "next start"
   },
@@ -22,12 +22,14 @@
     "parse-torrent": "11.0.24",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "webtorrent": "3.0.21"
+    "webtorrent": "3.0.21",
+    "ws": "8.21.3"
   },
   "devDependencies": {
     "@types/node": "^26.5.1",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.1",
     "@wfx/native-media": "workspace:*",
     "@wfx/torrent-engine": "workspace:*"
   }

@@ -55,12 +55,14 @@ function playerEnrichmentsOf(view: {
   aiTray: PlayerEnrichments["aiTray"];
   intelligence: PlayerEnrichments["intelligence"];
   liveAsr: PlayerEnrichments["liveAsr"];
+  realtime: PlayerEnrichments["realtime"];
   related: PlayerEnrichments["related"];
 }): PlayerEnrichments {
   return {
     aiTray: view.aiTray,
     intelligence: view.intelligence,
     liveAsr: view.liveAsr,
+    realtime: view.realtime,
     related: view.related,
   };
 }
