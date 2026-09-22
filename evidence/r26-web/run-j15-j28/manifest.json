@@ -1,0 +1,1276 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "d178a79ff627c6e4600a960486257ccbc7b9c35b",
+  "branch": "wfx/r26/web",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-22T17:21:07.878Z",
+    "finishedAt": "2026-09-22T17:23:31.621Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790097674251)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 14,
+    "encoded": 14,
+    "passed": 14,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J15",
+      "title": "Recommendation feedback controls",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the like feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='like'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the save feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='save'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the share feedback control is present (the event-only vocabulary)",
+          "expected": "[data-wfx-shorts-action='share'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no re-rank decision is rendered before the engagement threshold",
+          "expected": "no re-rank note before 5 forward swipes",
+          "observed": "<none>",
+          "pass": true
+        },
+        {
+          "description": "engagement affects future candidate composition (the re-rank decision renders its typed note)",
+          "expected": "a re-rank explainability note",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        },
+        {
+          "description": "the re-rank note names the composition decision (typed reasons — never a silent swap)",
+          "expected": "a note naming the replacement semantics",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j15-recommendation-feedback.png",
+        "evidence/r26-web/run-j15-j28/j15-recommendation-feedback-controls.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j15-recommendation-feedback-controls.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6357
+    },
+    {
+      "id": "J16",
+      "title": "Anti-tunnel / exploration after a single watched topic",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the composed feed carries more than one distinct item (exploration-capable composition before concentration)",
+          "expected": "multiple distinct cards",
+          "observed": "Midnight Scoop, Rain Check",
+          "pass": true
+        },
+        {
+          "description": "the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)",
+          "expected": "a kept-runway composition note",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        },
+        {
+          "description": "the feed continues presenting its composed position set after the re-rank",
+          "expected": "a position label",
+          "observed": "3 / 3",
+          "pass": true
+        },
+        {
+          "description": "a current card remains presented (the feed never empties into a tunnel)",
+          "expected": "[data-wfx-shorts-card='current'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j16-anti-tunnel.png",
+        "evidence/r26-web/run-j15-j28/j16-anti-tunnel-exploration-after-a-single-watched-topic.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4661
+    },
+    {
+      "id": "J17",
+      "title": "Explicit intent: learn / happier / surprise / tonight / friend taste",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "a stated intent answers the session's candidates (the rain intent composes its results)",
+          "expected": "[data-wfx-search-results] a[data-wfx-card] matches >= 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stated intent is echoed by the surface (the session's retained intent)",
+          "expected": "the query echo names 'rain'",
+          "observed": "3 results for “rain”",
+          "pass": true
+        },
+        {
+          "description": "a new intent composes a fresh answer (the intent is replaceable, never sticky in this session)",
+          "expected": "a fresh result set for 'harbor'",
+          "observed": "1 result cards",
+          "pass": true
+        },
+        {
+          "description": "the replaced intent is what the surface now states (no residue of the earlier intent)",
+          "expected": "the query echo names 'harbor'",
+          "observed": "1 result for “harbor”",
+          "pass": true
+        },
+        {
+          "description": "the home composition renders after the session intents (no corrupted feed)",
+          "expected": "[data-wfx-hero] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the home composition still carries its cards (the session intent corrupted no long-term preference)",
+          "expected": "a[data-wfx-card] matches >= 4",
+          "observed": "14 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j17-explicit-intent.png",
+        "evidence/r26-web/run-j15-j28/j17-explicit-intent-learn-happier-surprise-tonight-friend-taste.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j17-explicit-intent-learn-happier-surprise-tonight-friend-taste.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5957
+    },
+    {
+      "id": "J18",
+      "title": "Attention modes: mindful / balanced / immersive / custom",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the balanced policy does NOT re-rank below its threshold (5th swipe) — the mode's behavior is its policy, not silent optimization",
+          "expected": "no re-rank note after 4 forward swipes",
+          "observed": "<none>",
+          "pass": true
+        },
+        {
+          "description": "the balanced policy re-ranks at its threshold (the attention mode's policy behavior is observable)",
+          "expected": "a re-rank decision note at the 5th forward swipe",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        },
+        {
+          "description": "the current card remains stably presented through the policy re-rank",
+          "expected": "[data-wfx-shorts-card='current'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed's position grammar remains truthful after the policy behavior",
+          "expected": "a position label",
+          "observed": "3 / 3",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j18-attention-modes.png",
+        "evidence/r26-web/run-j15-j28/j18-attention-modes-mindful-balanced-immersive-custom.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j18-attention-modes-mindful-balanced-immersive-custom.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 3905
+    },
+    {
+      "id": "J19",
+      "title": "WebFlix model / BYOM / local model policy",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the Model & AI section renders",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider registry renders over the completed transport (first-party + BYOM + local truth)",
+          "expected": "[data-wfx-model-providers-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the registry carries at least the first-party provider row",
+          "expected": "[data-wfx-model-providers-list] [data-wfx-model-provider] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the per-task policy truth renders (the honest unset — never a fabricated default)",
+          "expected": "[data-wfx-model-policies-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "every frozen ModelTask carries its policy chip (the full task set is visible)",
+          "expected": "[data-wfx-model-policies-list] [data-wfx-model-policy] matches >= 9",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section names the controls' scope (providers, BYOM, local models, policy truth)",
+          "expected": "the scope named in the section",
+          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and commentary — across first-party, your own providers (BYOM), and local models, with each task's current policy. Provider keys stay sealed; they are never shown or sent to a model. AI actions launch from the tray where you watch — any title or player; local-model execution runs in the Desktop app.\n\nFind a title to transform — the AI action tray lives on every title and player\n\nProviders\nWFX-FIRST-PARTY\nRuns locally\nAvailable\n\nTasks: recommendation, ranking, summary, translation, transcription\n\nTask policies\nRECOMMENDATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nRANKING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSUMMARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSLATION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTRANSCRIPTION\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSPEECHTOTEXT\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTEXTTOSPEECH\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nDUBBING\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nCOMMENTARY\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nYour model providers\n\nBring your own model: paste your provider's web address and key — the key is stored encrypted and never shown again. The contextual AI tray (on every title and player) is where you USE AI; this is where you MANAGE which providers WebFlix may use.\n\nAdd your model provider\n\nModel providers belong to your account — sign in or create one to add your own provider.\n\nNo model provider of your own is added yet — WebFlix's built-in local model keeps working, and you can add your own provider anytime.\n\nBuilt-in models\nWFX-FIRST-PARTY\nBuilt-in\nRuns on this device\n\nWebFlix's built-in model — always available, no setup.\n\nrecommendation\nranking\nsummary\ntranslation\ntranscription\nOpen models\n\nResearched open models with their honest licenses, tasks, and registration truth — no model authorizes a playback or acquisition action; your policy and choices stay yours.\n\nNetEase Youdao/Confucius4-R2T2\nCode Apache-2.0 · weights NetEase Model Use License Agreement\nlive streaming (low latency)\nCATALOG ONLY\n\nThe live-captions and voice-input route: true streaming with committed output, typically well under a second behind the audio. Serves: speechToText, transcription. Not registered — a catalog row is not a provider until registered.\n\nRegister for live speech\n\nOpenMOSS-Team/MOSS-Transcribe-Diarize\nCode Apache-2.0 · weights Apache-2.0\nbatch\nCATALOG ONLY\n\nThe long-form companion: multi-speaker transcription with speaker labels, timestamps, and acoustic-event awareness. Serves: transcription. Not registered — a catalog row is not a provider until registered.\n\nRegister for live speech\nPrivate local inference\n\nQuery understanding can run privately in your browser — WebGPU when available, the slower in-browser fallback otherwise, remote only under your policy. WebGPU is optional; the chain below is this browser's honest truth.\n\nThis search understanding runs privately in your browser (WebGPU is off, so it uses the slower in-browser fallback) — nothing leaves this device.\n\nPrivacy impact: local-only — nothing leaves this device.",
+          "pass": true
+        },
+        {
+          "description": "the R22-F BYOM management surface renders inside the Model & AI section (the normal-path management panel)",
+          "expected": "[data-wfx-byom-management] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider entry control renders (discover → configure is a real control, never a hidden API)",
+          "expected": "[data-wfx-byom-action='add'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous state names the sign-in prerequisite honestly (the no-dead-end law)",
+          "expected": "[data-wfx-byom-anonymous-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no placeholder model controls render outside the typed surfaces (BYOM, open-model registration, the local-inference probe — a fixture is never presented as capability)",
+          "expected": "zero interactive controls outside the typed surfaces",
+          "observed": "0 stray controls",
+          "pass": true
+        },
+        {
+          "description": "no fabricated selected-model state renders (the honest unset is named)",
+          "expected": "the policy truth is the honest unset",
+          "observed": "no selected-model lie",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j19-model-policy.png",
+        "evidence/r26-web/run-j15-j28/j19-webflix-model-byom-local-model-policy.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j19-webflix-model-byom-local-model-policy.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2809
+    },
+    {
+      "id": "J20",
+      "title": "AI subtitles / translation / transcription / dubbing / commentary",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the Model & AI section renders (the AI transformation surface's management home)",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'transcription' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions transcription",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'subtitles' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions subtitles",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'translation' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions translation",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'dubbing' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions dubbing",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'commentary' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions commentary",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the AI action tray renders on the item decision hub (the contextual entry — no Settings-first path required)",
+          "expected": "[data-wfx-ai-tray] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the tray names the five-action vocabulary up front",
+          "expected": "transcribe · subtitles · translate · dub · commentary",
+          "observed": "transcribe · subtitles · translate · dub · commentary",
+          "pass": true
+        },
+        {
+          "description": "the tray names which model class will run (the honest 'Not configured' names the first-party default — never a fabricated provider)",
+          "expected": "a model-class sentence",
+          "observed": "Not configured — the WebFlix model (wfx-first-party) runs it.",
+          "pass": true
+        },
+        {
+          "description": "local-model execution carries its honest Desktop platform truth (unsupported is not undiscoverable)",
+          "expected": "the Desktop sentence",
+          "observed": "Local-model execution runs in the Desktop app — on Web the same actions run through your service providers.",
+          "pass": true
+        },
+        {
+          "description": "the subtitles action names its precondition (composes from a transcript — discoverable + explained)",
+          "expected": "the precondition sentence",
+          "observed": "Composes from a transcript — transcribe this title first.",
+          "pass": true
+        },
+        {
+          "description": "the submission answers the TYPED operation state (queued — explicit states only)",
+          "expected": "state='queued'",
+          "observed": "queued",
+          "pass": true
+        },
+        {
+          "description": "the operation renders its state sentence with NO fabricated progress (no percent, no fake bar)",
+          "expected": "a queued sentence without fabricated progress",
+          "observed": "transcript: Queued — the operation starts when your model chain picks it up.",
+          "pass": true
+        },
+        {
+          "description": "the queued operation offers its cancel recovery on the spot",
+          "expected": "[data-wfx-ai-cancel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the cancel recovery answers the typed cancelled state (reversible operations — never a silent no-op)",
+          "expected": "the cancelled sentence",
+          "observed": "transcript: Cancelled — nothing is running.",
+          "pass": true
+        },
+        {
+          "description": "the tray carries the Model & AI management path (one link away)",
+          "expected": "[data-wfx-ai-tray-manage] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player carries the same AI action tray (transforming what is playing — the primary discovery surface)",
+          "expected": "[data-wfx-ai-tray-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player's tray names the transformation vocabulary too",
+          "expected": "the vocabulary on the player tray",
+          "observed": "AI actions\ntranscribe · subtitles · translate · dub · commentary",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j20-ai-transforms.png",
+        "evidence/r26-web/run-j15-j28/j20-ai-subtitles-translation-transcription-dubbing-commentary.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j20-ai-subtitles-translation-transcription-dubbing-commentary.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 41045
+    },
+    {
+      "id": "J21",
+      "title": "Authorized torrent acquisition (web limited-status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the scripted authorized acquisition item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_689TW3983MJ3N6DX42JKD9NKDE&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition's authorized source basis is recorded (the gated diagnostics carry the provenance)",
+          "expected": "the provenance line (authorized source, user-owned basis)",
+          "observed": "vault:family-media (user-owned)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"available\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"available\"",
+          "observed": "\"available\"",
+          "pass": true
+        },
+        {
+          "description": "the \"available\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Ready to be made available offline.\"",
+          "observed": "Ready to be made available offline.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Available",
+          "pass": true
+        },
+        {
+          "description": "the available state offers its typed acquire action (user vocabulary — no torrent terms)",
+          "expected": "[data-wfx-acquisition-action='acquire'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no progress bar renders while progress is honestly unknown (never a fake number)",
+          "expected": "[data-wfx-acquisition-progress] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the preparing state offers its typed pause action",
+          "expected": "[data-wfx-acquisition-action='pause'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the locating step renders no progress bar (the fraction is still honestly unknown)",
+          "expected": "[data-wfx-acquisition-progress] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the advanced diagnostics remain gated closed on the default surface (protocol terminology is not primary UX)",
+          "expected": "the diagnostics disclosure closed",
+          "observed": "closed",
+          "pass": true
+        },
+        {
+          "description": "the default acquisition surface carries NO torrent protocol vocabulary (the J21 web law)",
+          "expected": "no protocol terms in the panel text",
+          "observed": "clean",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j21-authorized-acquisition.png",
+        "evidence/r26-web/run-j15-j28/j21-authorized-torrent-acquisition-web-limited-status-surface.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j21-authorized-torrent-acquisition-web-limited-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 7260
+    },
+    {
+      "id": "J22",
+      "title": "Torrent metadata and file selection (web limited-status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the scripted acquisition is in its preparing phase (the deterministic run order from J21)",
+          "expected": "the preparing state",
+          "observed": "preparing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Preparing the files you selected.\"",
+          "observed": "Preparing the files you selected.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the choosing step renders its truthful known progress (0%)",
+          "expected": "a 0% progress readout",
+          "observed": "0%",
+          "pass": true
+        },
+        {
+          "description": "the gated advanced diagnostics name the file-selection phase (metadata resolved, files being selected)",
+          "expected": "the 'selecting' session state inside the disclosure",
+          "observed": "selecting",
+          "pass": true
+        },
+        {
+          "description": "the choosing detail is user vocabulary (what is being prepared, not protocol jargon)",
+          "expected": "the files-you-selected sentence",
+          "observed": "Preparing the files you selected.",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j22-metadata-file-selection.png",
+        "evidence/r26-web/run-j15-j28/j22-torrent-metadata-and-file-selection-web-limited-status-surface.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j22-torrent-metadata-and-file-selection-web-limited-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5624
+    },
+    {
+      "id": "J23",
+      "title": "Torrent playback before full completion (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"buffering\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"buffering\"",
+          "observed": "\"buffering\"",
+          "pass": true
+        },
+        {
+          "description": "the \"buffering\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Getting enough of the video ready to play smoothly.\"",
+          "observed": "Getting enough of the video ready to play smoothly.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Buffering",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"playing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"playing\"",
+          "observed": "\"playing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"playing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Playing while the rest of the offline copy is finished in the background.\"",
+          "observed": "Playing while the rest of the offline copy is finished in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Playing",
+          "pass": true
+        },
+        {
+          "description": "the playing state states its truthful buffered runway",
+          "expected": "text of [data-wfx-acquisition-runway] is exactly \"92s buffered ahead\"",
+          "observed": "\"92s buffered ahead\"",
+          "pass": true
+        },
+        {
+          "description": "the playing state states its truthful transfer progress",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"55%\"",
+          "observed": "\"55%\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"buffering\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"buffering\"",
+          "observed": "\"buffering\"",
+          "pass": true
+        },
+        {
+          "description": "the \"buffering\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Playback may pause — the video isn't arriving fast enough to keep up.\"",
+          "observed": "Playback may pause — the video isn't arriving fast enough to keep up.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Buffering",
+          "pass": true
+        },
+        {
+          "description": "a deadline-at-risk playback DEMOTES to buffering truthfully (never false playback success)",
+          "expected": "the buffering state after the risk",
+          "observed": "buffering",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j23-playback-before-completion.png",
+        "evidence/r26-web/run-j15-j28/j23-torrent-playback-before-full-completion-web-status-surface.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j23-torrent-playback-before-full-completion-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 11765
+    },
+    {
+      "id": "J24",
+      "title": "Torrent background completion (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the background completion states its truthful progress",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"80%\"",
+          "observed": "\"80%\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Checking the finished files.\"",
+          "observed": "Checking the finished files.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the verification step states the complete transfer truthfully",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"100%\"",
+          "observed": "\"100%\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"ready-offline\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"ready-offline\"",
+          "observed": "\"ready-offline\"",
+          "pass": true
+        },
+        {
+          "description": "the \"ready-offline\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Verified and available to watch without a connection.\"",
+          "observed": "Verified and available to watch without a connection.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Ready offline",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline verdict states its verified size",
+          "expected": "text of [data-wfx-acquisition-size] is exactly \"87 kB · verified offline\"",
+          "observed": "\"87 kB · verified offline\"",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline state offers its typed play-offline action",
+          "expected": "[data-wfx-acquisition-action='play-offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline state offers its typed re-check action",
+          "expected": "[data-wfx-acquisition-action='reverify-offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline verdict renders no progress bar (completion is earned, not in flight)",
+          "expected": "[data-wfx-acquisition-progress] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j24-background-completion.png",
+        "evidence/r26-web/run-j15-j28/j24-torrent-background-completion-web-status-surface.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j24-torrent-background-completion-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 10588
+    },
+    {
+      "id": "J25",
+      "title": "Torrent interruption / restart / resume (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the interrupted-acquisition item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_6FAYJMDV9V0EHERQHSAYQ23MQT&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"failed\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"failed\"",
+          "observed": "\"failed\"",
+          "pass": true
+        },
+        {
+          "description": "the \"failed\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"The download source had a problem. You can try again.\"",
+          "observed": "The download source had a problem. You can try again.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Couldn't finish",
+          "pass": true
+        },
+        {
+          "description": "the failure renders its typed cause",
+          "expected": "data-wfx-acquisition-failure of [data-wfx-acquisition-failure] is \"source-problem\"",
+          "observed": "\"source-problem\"",
+          "pass": true
+        },
+        {
+          "description": "the failure is marked recoverable (typed truth)",
+          "expected": "data-wfx-acquisition-recoverable of [data-wfx-acquisition-failure] is \"true\"",
+          "observed": "\"true\"",
+          "pass": true
+        },
+        {
+          "description": "the recoverable failure states the retry truth",
+          "expected": "text of [data-wfx-acquisition-failure] contains \"You can try again.\"",
+          "observed": "\"You can try again.\"",
+          "pass": true
+        },
+        {
+          "description": "the failed state offers its typed retry action",
+          "expected": "[data-wfx-acquisition-action='retry'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failed state offers its typed dismiss action",
+          "expected": "[data-wfx-acquisition-action='dismiss'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the resumed-session item",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_4RDK9KQW9BP0RZ3P3JAA06222Z&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background. Resuming where it left off — 55% already saved.\"",
+          "observed": "Finishing the offline copy in the background. Resuming where it left off — 55% already saved.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the resumed session carries its Resuming badge (never presented as a fresh start)",
+          "expected": "text of [data-wfx-acquisition-resuming] is exactly \"Resuming\"",
+          "observed": "\"Resuming\"",
+          "pass": true
+        },
+        {
+          "description": "the resumed session states its truthful retained+progressed transfer (62% — not reset, not falsely complete)",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"62%\"",
+          "observed": "\"62%\"",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session does NOT claim completion (the honest in-progress truth)",
+          "expected": "an in-progress state (not ready-offline)",
+          "observed": "completing",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j25-interruption-recovery.png",
+        "evidence/r26-web/run-j15-j28/j25-torrent-interruption-restart-resume-web-status-surface.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9133
+    },
+    {
+      "id": "J26",
+      "title": "Verified local asset appears in Library (web status/read surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the library renders the offline-and-verified section",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section lists the earned offline copies (the seed's verified Harbor Lights + the J24-earned Asteroid Drift)",
+          "expected": "2 offline entries",
+          "observed": "2 entries",
+          "pass": true
+        },
+        {
+          "description": "every offline entry states its Ready-offline verified status",
+          "expected": "verified ready-offline statuses",
+          "observed": "Ready offline · 87 kB · watchable without a connection | Ready offline · 1.5 MB · 2 files · watchable without a connection",
+          "pass": true
+        },
+        {
+          "description": "the offline entries link their canonical items (replay from the library)",
+          "expected": "item links on the entries",
+          "observed": "2 links",
+          "pass": true
+        },
+        {
+          "description": "the verified item's detail renders the ready-offline state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"ready-offline\"",
+          "observed": "\"ready-offline\"",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline item states its verified size",
+          "expected": "text of [data-wfx-acquisition-size] is exactly \"1.5 MB · verified offline\"",
+          "observed": "\"1.5 MB · verified offline\"",
+          "pass": true
+        },
+        {
+          "description": "the ready-offline detail states the verified truth",
+          "expected": "text of [data-wfx-acquisition-detail] is exactly \"Verified and available to watch without a connection.\"",
+          "observed": "\"Verified and available to watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "the verified item offers its typed play-offline action",
+          "expected": "[data-wfx-acquisition-action='play-offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j26-verified-asset-in-library.png",
+        "evidence/r26-web/run-j15-j28/j26-verified-local-asset-appears-in-library-web-status-read-surface.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j26-verified-local-asset-appears-in-library-web-status-read-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5542
+    },
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings capability table declares the native media area (the truth table is complete)",
+          "expected": "the native media & torrent acquisition row",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the web adapter declares native media NOT available on Web (capability honesty, never a fake native path)",
+          "expected": "the native row renders the Not-available-on-Web chip",
+          "observed": "declared not available",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers an unscripted item (no acquisition session)",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_08S8ZQ7MTAAG5NYBZH3CATVW6S&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy panel renders its no-session state",
+          "expected": "[data-wfx-acquisition-none] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy note states where native acquisition runs (the honest desktop truth)",
+          "expected": "text of [data-wfx-acquisition-elsewhere] contains \"WebFlix desktop app\"",
+          "observed": "\"You can make this title available offline in the WebFlix desktop app — it downloads and verifies a copy you can watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "no acquisition lifecycle state is fabricated for the web (the constrained truth)",
+          "expected": "[data-wfx-acquisition-state] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j27-native-playback.png",
+        "evidence/r26-web/run-j15-j28/j27-native-local-media-playback-web-constrained-truth.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j27-native-local-media-playback-web-constrained-truth.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5316
+    },
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the item while the source is signed in",
+          "expected": "an item link",
+          "observed": "/item?id=wfxitm_5410WT6F518WN83F684VW83C3C&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the item page offers its play decision while the source is signed in",
+          "expected": "a player link",
+          "observed": "/player?id=wfxitm_5410WT6F518WN83F684VW83C3C&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the scripted source's card renders (the fixtures' own source truth)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its signed-in truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "the chip label (case-insensitive)",
+          "observed": "CONNECTED",
+          "pass": true
+        },
+        {
+          "description": "no expired marker renders while signed in",
+          "expected": "[data-wfx-source-expired] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired credential renders its OWN named state (never a silent fallback)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"expired\"",
+          "observed": "\"expired\"",
+          "pass": true
+        },
+        {
+          "description": "the expired state carries its explicit marker",
+          "expected": "[data-wfx-source-expired] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired source renders its named Sign-in-expired chip",
+          "expected": "the expired chip label (case-insensitive)",
+          "observed": "SIGN-IN EXPIRED",
+          "pass": true
+        },
+        {
+          "description": "the expired state states its recovery path",
+          "expected": "text of [data-wfx-source-recovery-detail] contains \"reconnect to restore this source\"",
+          "observed": "\"The stored sign-in expired — reconnect to restore this source.\"",
+          "pass": true
+        },
+        {
+          "description": "the availability note names the expired authorization",
+          "expected": "text of [data-wfx-source-notes] contains \"The stored authorization expired\"",
+          "observed": "\"The stored authorization expired — reconnect to restore this source.\"",
+          "pass": true
+        },
+        {
+          "description": "the expired state offers its typed reauthorize (reconnect) action",
+          "expected": "[data-wfx-source-action='reauthorize'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired credential renders the player's typed failure",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure kind is the typed unauthorized (the classified credential)",
+          "expected": "text of [data-wfx-error] contains \"unauthorized\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure NAMES the expired credential (the honest classified state)",
+          "expected": "text of [data-wfx-error] contains \"authorization for this source expired\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure states its re-auth recovery path",
+          "expected": "text of [data-wfx-error] contains \"reconnect\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure offers its recovery path back to the item",
+          "expected": "[data-wfx-surface='player'] a[href*='/item?'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no provider frame renders for an expired credential (never a fake stage)",
+          "expected": "[data-wfx-player-frame] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the reauthorized source is signed in again (the recovery completed)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the expired marker is gone after recovery",
+          "expected": "[data-wfx-source-expired] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the recovered source resolves playback again (the read recovered)",
+          "expected": "a resolved playback mode (not failed)",
+          "observed": "embed",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j15-j28/j28-credential-expiry.png",
+        "evidence/r26-web/run-j15-j28/j28-provider-credential-expiry-recovery.snapshot.txt",
+        "evidence/r26-web/run-j15-j28/j28-provider-credential-expiry-recovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 14655
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J28",
+      "kind": "local-only",
+      "note": "The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    },
+    {
+      "journeyId": "J15",
+      "kind": "local-only",
+      "note": "The full reversible feedback vocabulary (More-like-this / Not-interested / creator-source suppression / Already-watched) is R05's service-side policy surface (apps/api /experience/feedback + /experience/policy routes). The web adapter ships the session re-rank explainability + the typed-absent feedback grammar (both encoded).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + apply each feedback control through the API routes, verify the policy composition change, and capture the affected surfaces."
+    },
+    {
+      "journeyId": "J16",
+      "kind": "local-only",
+      "note": "Profile-LEVEL anti-tunnel (a concentrated watch history not permanently dominating the profile) is R05's service-side recommendation policy; the web fixtures session has no persistent profile. The feed-level exploration mechanics (kept runway, multi-item composition) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + a concentrated watch history through /experience/history, then verify the recommendation composition retains exploration (the R05 policy tests' scenario) with captured evidence."
+    },
+    {
+      "journeyId": "J17",
+      "kind": "local-only",
+      "note": "The explicit intent VOCABULARY (learn/happier/surprise/tonight/friend-taste) is the service-side intent submission (apps/api /experience/intents — session-scoped by design). The web session's query-intent mechanics (state/retain/replace, no preference corruption) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + submit each intent kind through /experience/intents, verify the session-scoped composition and the untouched long-term policy, and capture the affected feed surfaces."
+    },
+    {
+      "journeyId": "J18",
+      "kind": "local-only",
+      "note": "SWITCHING attention modes (mindful=3-swipe / immersive=none / custom) is the service-side policy submission (apps/api /experience/policy). The web session boots the balanced default; its observable threshold behavior (no re-rank below 5, re-rank at 5) is encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + set each attention mode through /experience/policy, then drive the short feed and capture the mode-specific re-rank behavior (mindful fires at 3 swipes; immersive does not auto re-rank)."
+    },
+    {
+      "journeyId": "J19",
+      "kind": "local-only",
+      "note": "R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces."
+    },
+    {
+      "journeyId": "J20",
+      "kind": "local-only",
+      "note": "R21-E: the AI ACTION TRAY is the web surface of the completed transforms transport (the R21-B/R21-C model-controls seam — the fixtures persona answers the service shapes deterministically): the five frozen actions, the model-class truth, the named preconditions, and the typed queued/cancelled operation states are encoded. The full pipeline's running→succeeded transitions (real progress + result payloads) are the service-side fabric (apps/api /experience/transforms).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + start each transformation operation through the tray (or /experience/transforms), capture the explicit running and completed states with results."
+    },
+    {
+      "journeyId": "J21",
+      "kind": "desktop-procedure",
+      "note": "The native ACQUISITION protocol path (real magnet/.torrent ingestion through the torrent engine) is the Desktop native-media lane. The web journey encodes the limited-status lifecycle UX over the deterministic scripted feed (the R14 surface); the native protocol path is the Desktop equivalent procedure.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): run the Desktop app with the native-media engine against an authorized source, drive the real acquisition lifecycle, and capture per-state screenshots + the same manifest format via agent-browser attached to the desktop webview (or the platform's instrumentation)."
+    },
+    {
+      "journeyId": "J23",
+      "kind": "desktop-procedure",
+      "note": "Native playback-before-completion (real verified-range streaming from an in-progress torrent session) is the Desktop path. The web encodes the honest status sequence (buffering → playing with runway → deadline-risk demotion).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): start an authorized acquisition, begin playback before completion, and capture the buffering/playing/rebuffer states with the real scheduler evidence."
+    },
+    {
+      "journeyId": "J24",
+      "kind": "desktop-procedure",
+      "note": "Native background completion with real integrity verification is the Desktop path. The web encodes the completing/verifying/ready-offline status sequence and the earned-verdict grammar.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): let the acquisition complete in the background (app unfocused), capture the verification and Ready-offline states, and the Library exposure."
+    },
+    {
+      "journeyId": "J25",
+      "kind": "desktop-procedure",
+      "note": "Native interruption/restart with persistent session recovery (crash-safe journals, piece-map reuse) is the Desktop path. The web encodes the recoverable-failure/retry/resuming-status grammar.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): interrupt an in-progress acquisition (kill the engine), restart the app, capture the resumed-not-fresh evidence (retained progress, no false completion), then complete it."
+    },
+    {
+      "journeyId": "J27",
+      "kind": "desktop-procedure",
+      "note": "Native local media playback (the local range gateway + verified asset replay) is the Desktop path. The web encodes the constrained capability truth (settings table + the desktop-elsewhere note).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): play a verified offline asset from the Library through the native media engine, capture the playback + replay states."
+    }
+  ]
+}

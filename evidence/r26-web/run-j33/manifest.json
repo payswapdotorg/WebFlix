@@ -1,0 +1,432 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "d178a79ff627c6e4600a960486257ccbc7b9c35b",
+  "branch": "wfx/r26/web",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-22T17:24:33.657Z",
+    "finishedAt": "2026-09-22T17:25:08.763Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790097880523)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J33",
+      "title": "Bring Your Own Feed: import, preview, confirm, sync, provenance",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the BYOF drive state resets to pristine before the journey (determinism)",
+          "expected": "HTTP 200 from the dev-reset drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the Bring your feed panel renders inside the settings sources section (the existing IA)",
+          "expected": "[data-wfx-byof-panel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed-import source card renders (the choose-source step)",
+          "expected": "[data-wfx-byof-source='youtube'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its authorization truth (not connected — never fabricated)",
+          "expected": "data-wfx-byof-source-auth-state of [data-wfx-byof-source='youtube'] is \"not-connected\"",
+          "observed": "\"not-connected\"",
+          "pass": true
+        },
+        {
+          "description": "the source's honest absence (watch history) renders with its reason",
+          "expected": "[data-wfx-byof-absence='history'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source's honest absence (the ranked home feed) renders with its reason",
+          "expected": "[data-wfx-byof-absence='ranked-feed'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the import attempt answers the TYPED unauthorized failure",
+          "expected": "data-wfx-byof-failure-kind of [data-wfx-byof-action-error] is \"unauthorized\"",
+          "observed": "\"unauthorized\"",
+          "pass": true
+        },
+        {
+          "description": "the failure states its recovery path (connect first — actionable, never silent)",
+          "expected": "[data-wfx-byof-failure-recovery] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failed attempt lands its honest trail row",
+          "expected": "[data-wfx-byof-import-status='reauthorization-required'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its connected truth after the connect step",
+          "expected": "data-wfx-byof-source-auth-state of [data-wfx-byof-source='youtube'] is \"connected\"",
+          "observed": "\"connected\"",
+          "pass": true
+        },
+        {
+          "description": "the preview states what will be imported (the count the capture produced)",
+          "expected": "text of [data-wfx-byof-preview-count] contains \"7 items\"",
+          "observed": "\"Ready to bring in 7 items — captured Sep 19, 2026, 12:00 PM UTC.\"",
+          "pass": true
+        },
+        {
+          "description": "the follow summary chip renders",
+          "expected": "[data-wfx-byof-relationship='follow'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the likes summary chip renders",
+          "expected": "[data-wfx-byof-relationship='like'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playlist summary chip renders",
+          "expected": "[data-wfx-byof-relationship='playlist'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch-later summary chip renders",
+          "expected": "[data-wfx-byof-relationship='watchlist'] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the preview labels its order semantics as source-native",
+          "expected": "data-wfx-byof-order-semantics of [data-wfx-byof-preview] is \"source-native\"",
+          "observed": "\"source-native\"",
+          "pass": true
+        },
+        {
+          "description": "the preview states the mode distinction in plain language",
+          "expected": "text of [data-wfx-byof-preview] contains \"not a WebFlix ranking\"",
+          "observed": "\"Preview your import from YouTube\n\nReady to bring in 7 items — captured Sep 19, 2026, 12:00 PM UTC.\n\n2 · Channels you follow\n2 · Liked videos\n1 · Watch Later\n2 · Playlists\n\nIn YouTube's own order — this is the order YouTube lists your feed in, not a WebFlix ranking.\n\nThis capture is a snapshot of your feed as it stood. Because this source can be re-read, the import keeps itself current after you confirm (it will show as Live).\n\nStorm Chasers Lab\nChannels you follow · position 1 as listed by YouTube\nDesert Rain — A Night Documentary\nLiked videos · position 1 as listed by YouTube\nDesert Rain — A Night Documentary\nWatch Later · position 1 as listed by YouTube\nRain Over the Dunes (no embeds)\nPlaylists · position 1 as listed by YouTube\nWebFlix Fixture Channel\nChannels you follow · position 2 as listed by YouTube\nDesert Rain in 45 Seconds\nLiked videos · position 2 as listed by YouTube\nDesert Rain — A Night Documentary\nPlaylists · position 2 as listed by YouTube\n\nConfirming imports exactly what you see above, with where it came from. It never touches your WebFlix watchlist, history, or recommendations — those stay their own thing.\n\nConfirm import\nNot now\"",
+          "pass": true
+        },
+        {
+          "description": "the capture's freshness is the honest snapshot state",
+          "expected": "data-wfx-byof-freshness of [data-wfx-byof-preview] [data-wfx-byof-freshness] is \"snapshot\"",
+          "observed": "\"snapshot\"",
+          "pass": true
+        },
+        {
+          "description": "the freshness states the snapshot truth in plain language",
+          "expected": "text of [data-wfx-byof-preview] [data-wfx-byof-freshness] contains \"This capture is a snapshot\"",
+          "observed": "\"This capture is a snapshot of your feed as it stood. Because this source can be re-read, the import keeps itself current after you confirm (it will show as Live).\"",
+          "pass": true
+        },
+        {
+          "description": "the preview's sample renders the source's own first item (most-recent-first order)",
+          "expected": "Storm Chasers Lab first (the fixture capture's own order)",
+          "observed": "Storm Chasers Lab\nChannels you follow · position 1 as listed by YouTube",
+          "pass": true
+        },
+        {
+          "description": "the post-confirm landing renders its banner (the feed appears)",
+          "expected": "[data-wfx-byof-imported-banner] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the confirmed import renders its durable card",
+          "expected": "[data-wfx-byof-import] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the import card states its provenance (count + method)",
+          "expected": "text of [data-wfx-byof-import] contains \"7 items imported via the authorized API\"",
+          "observed": "\"YouTube\nLive — kept current\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThis import syncs from its source; last synced Sep 20, 2026, 10:00 AM UTC.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 2 · IN YOUTUBE'S OWN ORDER\n\nStorm Chasers Lab\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 2 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain in 45 Seconds\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "the import card states its capture time",
+          "expected": "text of [data-wfx-byof-import] contains \"captured \"",
+          "observed": "\"YouTube\nLive — kept current\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThis import syncs from its source; last synced Sep 20, 2026, 10:00 AM UTC.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 2 · IN YOUTUBE'S OWN ORDER\n\nStorm Chasers Lab\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 2 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain in 45 Seconds\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "the imported follow/subscription summary renders",
+          "expected": "text of [data-wfx-byof-following-summary] contains \"2 followed channels\"",
+          "observed": "\"Following summary: 2 followed channels across your imported feed (the \"Following\" subset of what you imported — shown in each source's own order).\"",
+          "pass": true
+        },
+        {
+          "description": "the imported feed labels its order semantics as source-native",
+          "expected": "data-wfx-byof-order-semantics of [data-wfx-byof-import] is \"source-native\"",
+          "observed": "\"source-native\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix-mode separation is stated (no silent recommendation identity)",
+          "expected": "text of [data-wfx-byof-mode-note] contains \"never silently replaced by this imported feed\"",
+          "observed": "\"Source-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\"",
+          "pass": true
+        },
+        {
+          "description": "the confirmed continuous route lands its live state",
+          "expected": "data-wfx-byof-sync-state of [data-wfx-byof-import] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the live state renders its chip label",
+          "expected": "text of [data-wfx-byof-sync-chip] contains \"Live — kept current\"",
+          "observed": "\"Live — kept current\"",
+          "pass": true
+        },
+        {
+          "description": "the follow group renders",
+          "expected": "[data-wfx-byof-group='follow'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the likes group renders",
+          "expected": "[data-wfx-byof-group='like'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playlist group renders",
+          "expected": "[data-wfx-byof-group='playlist'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch-later group renders",
+          "expected": "[data-wfx-byof-group='watchlist'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix watchlist stays untouched by the import",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix history stays untouched by the import",
+          "expected": "text of [data-wfx-library-history] contains \"No watch history yet\"",
+          "observed": "\"History\n\nNo watch history yet\n\nWatch something — your session's watch state folds here with positions and completion.\"",
+          "pass": true
+        },
+        {
+          "description": "the import card carries its id (the sync action's target)",
+          "expected": "an import id",
+          "observed": "wfximp_00000000000000000000000011",
+          "pass": true
+        },
+        {
+          "description": "the same-data sync reports the honest all-unchanged counts (the server's own report)",
+          "expected": "text of [data-wfx-byof-action-result='sync'] contains \"0 added · 0 updated · 0 removed · 7 unchanged\"",
+          "observed": "\"Synced — here is exactly what changed:\n\n0 added · 0 updated · 0 removed · 7 unchanged. The feed below re-renders on your next visit.\n\nSee your imported feed\"",
+          "pass": true
+        },
+        {
+          "description": "the changed-source drive answers (the scripted source lifecycle)",
+          "expected": "HTTP 200 from the advance-source drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the changed-source sync reports the engine's honest reconciliation counts",
+          "expected": "text of [data-wfx-byof-action-result='sync'] contains \"1 added · 2 updated · 1 removed · 4 unchanged\"",
+          "observed": "\"Synced — here is exactly what changed:\n\n1 added · 2 updated · 1 removed · 4 unchanged. The feed below re-renders on your next visit.\n\nSee your imported feed\"",
+          "pass": true
+        },
+        {
+          "description": "the newly followed channel appears in the feed after the sync",
+          "expected": "text of [data-wfx-byof-feed] contains \"Aurora Nights\"",
+          "observed": "\"Your imported feeds\n\nFeeds you brought from your sources — shown in each source's own order, with where they came from. Your WebFlix watchlist and history below stay their own thing: an import never writes into them, and disconnecting an import never deletes them.\n\nYouTube\nLive — kept current\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThis import syncs from its source; last synced Sep 20, 2026, 10:00 AM UTC.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 3 · IN YOUTUBE'S OWN ORDER\n\nAurora Nights\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nStorm Chasers Lab\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 3 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\n\nFollowing summary: 3 followed channels across your imported feed (the \"Following\" subset of what you imported — shown in each source's own order).\"",
+          "pass": true
+        },
+        {
+          "description": "the removed like is gone after the reconciliation (honest removal, never hidden)",
+          "expected": "no 'Desert Rain in 45 Seconds' row",
+          "observed": "gone",
+          "pass": true
+        },
+        {
+          "description": "the follow summary reflects the reconciled source (3 follows)",
+          "expected": "text of [data-wfx-byof-following-summary] contains \"3 followed channels\"",
+          "observed": "\"Following summary: 3 followed channels across your imported feed (the \"Following\" subset of what you imported — shown in each source's own order).\"",
+          "pass": true
+        },
+        {
+          "description": "the expire-auth drive answers (the scripted grant loss)",
+          "expected": "HTTP 200 from the expire-auth drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the failing sync answers the typed unauthorized failure",
+          "expected": "data-wfx-byof-failure-kind of [data-wfx-byof-action-error] is \"unauthorized\"",
+          "observed": "\"unauthorized\"",
+          "pass": true
+        },
+        {
+          "description": "the import renders the named reauthorization-required state (its own truth)",
+          "expected": "data-wfx-byof-sync-state of [data-wfx-byof-import] is \"reauthorization-required\"",
+          "observed": "\"reauthorization-required\"",
+          "pass": true
+        },
+        {
+          "description": "the reauthorization gap renders its chip label",
+          "expected": "text of [data-wfx-byof-sync-chip] contains \"Authorization needed\"",
+          "observed": "\"Authorization needed\"",
+          "pass": true
+        },
+        {
+          "description": "every record is retained through the authorization gap",
+          "expected": "text of [data-wfx-byof-import] contains \"7 items imported via the authorized API\"",
+          "observed": "\"YouTube\nAuthorization needed\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nThe connection to this source needs your authorization again. Your imported items are kept while you reconnect — nothing is deleted by a failing sync.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 3 · IN YOUTUBE'S OWN ORDER\n\nAurora Nights\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nStorm Chasers Lab\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 3 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nSync now\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "all seven records still render (the survival law)",
+          "expected": "[data-wfx-byof-record] matches >= 7",
+          "observed": "7 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the reconnect drive answers (the scripted grant recovery)",
+          "expected": "HTTP 200 from the connect drive",
+          "observed": "HTTP 200",
+          "pass": true
+        },
+        {
+          "description": "the recovered import is live again (the reauthorization completed)",
+          "expected": "data-wfx-byof-sync-state of [data-wfx-byof-import] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the disconnect result states the retention law",
+          "expected": "text of [data-wfx-byof-retained-truth] contains \"7 imported records are retained\"",
+          "observed": "\"Your 7 imported records are retained with their provenance — you will still see them in your Library. WebFlix stopped syncing this feed; deleting the records is a separate, explicit action.\"",
+          "pass": true
+        },
+        {
+          "description": "the import renders its user-disconnected truth",
+          "expected": "data-wfx-byof-disconnected of [data-wfx-byof-import] is \"true\"",
+          "observed": "\"true\"",
+          "pass": true
+        },
+        {
+          "description": "the disconnected state renders its own chip label",
+          "expected": "text of [data-wfx-byof-sync-chip] contains \"Disconnected — records retained\"",
+          "observed": "\"Disconnected — records retained\"",
+          "pass": true
+        },
+        {
+          "description": "all seven records still render after the disconnect (provenance survives)",
+          "expected": "[data-wfx-byof-record] matches >= 7",
+          "observed": "7 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance (capture time) still renders after the disconnect",
+          "expected": "text of [data-wfx-byof-import] contains \"captured \"",
+          "observed": "\"YouTube\nDisconnected — records retained\n\n7 items imported via the authorized API · captured Sep 19, 2026, 12:00 PM UTC · last synced Sep 20, 2026, 10:00 AM UTC.\n\nYou disconnected this import. Your imported items and where they came from are kept; WebFlix stopped syncing this feed. Deleting the imported records is a separate, explicit action.\n\nSource-native order — as YouTube lists it (not a WebFlix ranking) — WebFlix recommendations stay separate: what Home recommends you is built from your own WebFlix activity, never silently replaced by this imported feed.\n\nCHANNELS YOU FOLLOW — 3 · IN YOUTUBE'S OWN ORDER\n\nAurora Nights\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nStorm Chasers Lab\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nWebFlix Fixture Channel\nposition 3 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nLIKED VIDEOS — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nPLAYLISTS — 2 · IN YOUTUBE'S OWN ORDER\n\nRain Over the Dunes (no embeds)\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDesert Rain — A Night Documentary\nposition 2 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\n\nWATCH LATER — 1 · IN YOUTUBE'S OWN ORDER\n\nDesert Rain — A Night Documentary\nposition 1 as listed by YouTube · captured Sep 19, 2026, 12:00 PM UTC\nDisconnect import\nDelete imported records…\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix watchlist is untouched by the import AND the disconnect",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix history is untouched by the import AND the disconnect",
+          "expected": "text of [data-wfx-library-history] contains \"No watch history yet\"",
+          "observed": "\"History\n\nNo watch history yet\n\nWatch something — your session's watch state folds here with positions and completion.\"",
+          "pass": true
+        },
+        {
+          "description": "the destructive action arms explicitly (a separate deliberate step — never a side effect)",
+          "expected": "[data-wfx-byof-delete-armed='true'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the deletion result states the separation law",
+          "expected": "text of [data-wfx-byof-action-result='deleted'] contains \"watchlist and history were never touched\"",
+          "observed": "\"Deleted 7 imported records.\n\nThe imported records are permanently removed. Your WebFlix watchlist and history were never touched by this import.\n\nSee your Library\"",
+          "pass": true
+        },
+        {
+          "description": "the ended import renders the honest empty state (the feed is gone)",
+          "expected": "[data-wfx-byof-empty] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the empty state is the feed's own truth after the explicit deletion",
+          "expected": "text of [data-wfx-byof-empty] contains \"No imported feeds yet\"",
+          "observed": "\"No imported feeds yet\n\nBring the feed you already have on a source — your follows, likes, and playlists, in your source's own order.\n\nBring your feed\"",
+          "pass": true
+        },
+        {
+          "description": "the WebFlix watchlist survives the deletion untouched",
+          "expected": "text of [data-wfx-library-watchlist] contains \"Nothing saved yet\"",
+          "observed": "\"Watchlist\n\nNothing saved yet\n\nSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.\n\nBrowse content\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r26-web/run-j33/j33-authorization-failure.png",
+        "evidence/r26-web/run-j33/j33-preview.png",
+        "evidence/r26-web/run-j33/j33-feed-appears.png",
+        "evidence/r26-web/run-j33/j33-sync-reconciled.png",
+        "evidence/r26-web/run-j33/j33-reauthorization-required.png",
+        "evidence/r26-web/run-j33/j33-disconnect-retained.png",
+        "evidence/r26-web/run-j33/j33-deleted-explicit.png",
+        "evidence/r26-web/run-j33/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.snapshot.txt",
+        "evidence/r26-web/run-j33/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 25724
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J33",
+      "kind": "local-only",
+      "note": "The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.",
+      "procedure": "LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    }
+  ]
+}
