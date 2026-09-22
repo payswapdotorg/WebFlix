@@ -95,9 +95,19 @@ import {
   type DesktopProvenanceMint,
 } from "./platform/torrent-playback";
 import {
+  createPeerCatalogRealizationSource,
+  createPeerCatalogSourceRegistry,
+} from "./platform/peer-catalog";
+import type { AuthorizedSource } from "@wfx/torrent-engine";
+import { authorizeProvenance } from "@wfx/torrent-engine";
+import {
   createDesktopWhereToWatchSurface,
   type DesktopWhereToWatchSurface,
 } from "./surface/where-to-watch-surface";
+import {
+  createDesktopItemDetailSurface,
+  type DesktopItemDetailSurface,
+} from "./surface/item-detail-surface";
 import {
   createDesktopOpenViewingSurface,
   type DesktopOpenViewingSurface,
@@ -217,27 +227,50 @@ export interface DesktopAppOptions {
     readonly unsupportedOnPlatform?: ReadonlyMap<string, string>;
   };
   /**
-   * R23-W3 — the first-class torrent realization block (OPTIONAL, the
-   * R14 seam precedent): the composition's authorized peer-copy truth
-   * (`realizationOf` — e.g. the user's media vault) + the
-   * authorized-provenance mint (the authorized-source registry's own
-   * `authorizeProvenance` — the ONLY lawful construction path) + the
-   * acquiring identity's effective-profile key derivation (authenticated:
-   * the effective profile; anonymous: the SESSION-scoped key — the R23-B
-   * progress law). When bound TOGETHER with `acquisition`, the app
-   * composes the R23-C binding (an authorized torrent realization
-   * satisfying the NATIVE rung) and the R23-E Where-to-watch surface
-   * ("Authorized peer copy" as a first-class way to watch). Absent ⇒ the
-   * honest absent truth (no peer-copy entry is offered — never a fake
-   * one).
+   * R23-W3 / R26-W3 — the first-class torrent realization block (the
+   * CORRECTIVE DEFAULT: the authorized PEER CATALOG). The composition's
+   * authorized peer-copy truth — the REAL curated catalog of lawfully
+   * peer-shareable films (`platform/peer-catalog.ts`) — is now the
+   * composition's DEFAULT realization source, so the peer realization is
+   * discoverable through the NORMAL product journey in every production
+   * boot (the R26 corrective: "Torrent accessible ONLY through
+   * engineering/admin paths = rejection"). Each member stays overridable:
+   *
+   * - `realizationOf` (default: the peer catalog MERGED with the
+   *   composition's additional vault — the caller's own source wins on
+   *   conflict, the catalog backs the rest);
+   * - `mintProvenance` (default: the peer-catalog registry's own
+   *   `authorizeProvenance` — the ONLY lawful construction path);
+   * - `profileKeyOf` (default: the R23-B session-truth derivation —
+   *   authenticated: the effective profile key; anonymous: the
+   *   SESSION-scoped key, never durable identity).
+   *
+   * When `acquisition` is bound, the R23-C binding + the R23-E
+   * Where-to-watch surface + the item detail surface now ALWAYS compose
+   * (the peer catalog is real content, not a fixture); absent acquisition
+   * ⇒ the honest absent truth (no engine — never a fake entry).
    */
   readonly torrentPlayback?: {
-    /** The composition's authorized-realization truth per canonical item. */
-    readonly realizationOf: DesktopTorrentRealizationSource;
-    /** The authorized-provenance mint (the authorized-source registry). */
-    readonly mintProvenance: DesktopProvenanceMint;
-    /** The acquiring identity's effective-profile key (the R04 composition). */
-    readonly profileKeyOf: () => string;
+    /**
+     * The composition's additional authorized-realization truth per
+     * canonical item (e.g. the user's media vault). MERGED with the peer
+     * catalog — this source wins on conflict.
+     */
+    readonly realizationOf?: DesktopTorrentRealizationSource;
+    /**
+     * The caller's own provenance mint (overrides the default registry).
+     * When provided, `additionalSources` is ignored (the caller owns the
+     * registry).
+     */
+    readonly mintProvenance?: DesktopProvenanceMint;
+    /**
+     * The ADDITIONAL authorized sources registered in the default
+     * registry (the user's vault entries — the peer catalog's source is
+     * always registered).
+     */
+    readonly additionalSources?: readonly AuthorizedSource[];
+    /** The acquiring identity's effective-profile key (default: the R23-B session truth). */
+    readonly profileKeyOf?: () => string;
   };
   /**
    * R23-W3 — the open-viewing block (OPTIONAL): the R23-A/B Desktop
@@ -329,17 +362,27 @@ export interface DesktopApp {
    * R23-W3: the Where-to-watch surface — the R23-E first-class torrent
    * play surface ("Authorized peer copy" in the frozen grouping,
    * eligible for the primary play decision) over the R23-C binding.
-   * Present iff BOTH the `acquisition` and `torrentPlayback` blocks are
-   * bound; absent ⇒ the honest absent truth (the surface answers the
-   * typed not-wired verdict — never a fake peer-copy entry).
+   * R26-W3: present whenever the `acquisition` block is bound (the peer
+   * catalog is the composition's DEFAULT realization truth — real
+   * content, not a fixture); absent ⇒ the honest absent truth (the
+   * surface answers the typed not-wired verdict — never a fake
+   * peer-copy entry).
    */
   readonly whereToWatch: DesktopWhereToWatchSurface | null;
+  /**
+   * R26-W3: the item detail surface — the peer-watch product journey
+   * (browse/search → item → Where to watch → Authorized peer copy →
+   * play → lifecycle → Library), the Desktop parity of the Web's
+   * content-detail surface. Present iff `whereToWatch` is present (the
+   * same acquisition block's truth); absent ⇒ null.
+   */
+  readonly itemDetail: DesktopItemDetailSurface | null;
   /**
    * R23-W3: the R23-C binding — the authorized torrent realization
    * integrated with native media (the NATIVE rung: ingest → file choice
    * → session → canonical-identity bind → native playback → recovery
-   * continuity). Present iff BOTH the `acquisition` and `torrentPlayback`
-   * blocks are bound.
+   * continuity). R26-W3: present whenever the `acquisition` block is
+   * bound (the peer catalog backs the default realization truth).
    */
   readonly torrentPlayback: DesktopTorrentPlaybackBinding | null;
   /**
@@ -525,23 +568,52 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
         })
       : createUnboundModelManagementSurface();
 
-  // R23-W3 — the R23-C torrent realization binding + the R23-E
-  // Where-to-watch surface. The blocks are OPTIONAL (the R14 seam
-  // precedent) AND composed honestly: the binding needs BOTH the
-  // acquisition block (the engine + the R14 source) AND the composition's
-  // authorized-realization truth; absent ⇒ null (no peer-copy entry is
-  // offered — never a fake one).
+  // R23-W3 / R26-W3 — the R23-C torrent realization binding + the R23-E
+  // Where-to-watch surface + the item detail surface. THE CORRECTIVE
+  // DEFAULT: the binding composes whenever the ACQUISITION block is bound
+  // — the authorized PEER CATALOG (real lawfully-shareable films, real
+  // torrents) backs the composition's default realization truth, the
+  // default provenance mint (the peer-catalog registry's own
+  // `authorizeProvenance` — the ONLY lawful construction path), and the
+  // R23-B session-truth profile key. The caller's `torrentPlayback` block
+  // now only ADDS truth (an additional vault source wins on conflict; a
+  // caller-provided mint or profile derivation overrides). Absent
+  // acquisition ⇒ null (no engine — the honest absent truth, never a
+  // fake peer-copy entry).
+  const peerCatalogRealizationOf: DesktopTorrentRealizationSource =
+    createPeerCatalogRealizationSource(options.torrentPlayback?.realizationOf);
+  const peerCatalogRegistry =
+    options.torrentPlayback?.mintProvenance !== undefined
+      ? null
+      : createPeerCatalogSourceRegistry(options.torrentPlayback?.additionalSources ?? []);
+  const defaultProfileKeyOf = (): string => {
+    // The R23-B law: authenticated ⇒ the effective profile key
+    // (`<userId>:<profileId>`); anonymous ⇒ the SESSION-scoped key
+    // (never durable identity). The composition's openViewing truth (or
+    // its honest anonymous default) decides which.
+    const viewer =
+      options.openViewing?.viewerSessionOf !== undefined
+        ? options.openViewing.viewerSessionOf().viewer
+        : "anonymous";
+    const { userId, sessionId, profileId } = options.session.context;
+    if (viewer === "authenticated") {
+      return `${userId}:${profileId ?? "main"}`;
+    }
+    return `session:${sessionId}`;
+  };
   const torrentPlayback: DesktopTorrentPlaybackBinding | null =
-    options.acquisition !== undefined && options.torrentPlayback !== undefined
+    options.acquisition !== undefined
       ? createDesktopTorrentPlaybackBinding({
           runtime,
           capabilities: capabilities as PlatformCapabilities,
           engine: options.acquisition.engine,
           adapter: options.acquisition.adapter,
           source: acquisitionSource!,
-          realizationOf: options.torrentPlayback.realizationOf,
-          mintProvenance: options.torrentPlayback.mintProvenance,
-          profileKeyOf: options.torrentPlayback.profileKeyOf,
+          realizationOf: peerCatalogRealizationOf,
+          mintProvenance:
+            options.torrentPlayback?.mintProvenance ??
+            ((sourceId: string) => authorizeProvenance(peerCatalogRegistry!, sourceId)),
+          profileKeyOf: options.torrentPlayback?.profileKeyOf ?? defaultProfileKeyOf,
         })
       : null;
   const whereToWatch: DesktopWhereToWatchSurface | null =
@@ -550,6 +622,19 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
           capabilities: capabilities as PlatformCapabilities,
           acquisition,
           torrentPlayback,
+        })
+      : null;
+  // R26-W3 — the item detail surface: the peer-watch product journey
+  // (browse/search → item → Where to watch → play → lifecycle → Library),
+  // composed over the same surfaces the production boot owns.
+  const itemDetail: DesktopItemDetailSurface | null =
+    whereToWatch !== null && torrentPlayback !== null
+      ? createDesktopItemDetailSurface({
+          runtime,
+          server: options.server,
+          whereToWatch,
+          torrentPlayback,
+          acquisition,
         })
       : null;
 
@@ -598,6 +683,7 @@ export function createDesktopApp(options: DesktopAppOptions): DesktopApp {
     firstRun,
     modelManagement,
     whereToWatch,
+    itemDetail,
     torrentPlayback,
     openViewing,
     localAi,
@@ -785,6 +871,47 @@ export type {
   DesktopWhereToWatchGroupView,
   DesktopPrimaryPlayView,
 } from "./surface/where-to-watch-surface";
+// R26-W3 — the authorized peer catalog (the production discoverability
+// backbone) + the production engine wiring + the item detail surface.
+export {
+  PEER_CATALOG_CONNECTOR_ID,
+  PEER_CATALOG_SOURCE_ID,
+  PEER_CATALOG_BASIS,
+  PEER_CATALOG_ENTRIES,
+  peerCatalogByItemId,
+  peerCatalogByInfoHash,
+  peerCatalogSearch,
+  peerCatalogTorrentBytes,
+  peerCatalogTorrentRealizationOf,
+  peerCatalogArtworkOf,
+  createPeerCatalogRealizationSource,
+  createPeerCatalogSourceRegistry,
+} from "./platform/peer-catalog";
+export type {
+  PeerCatalogEntry,
+  PeerCatalogFileEntry,
+  PeerCatalogLicense,
+} from "./platform/peer-catalog";
+export { createDesktopTorrentEngine } from "./platform/desktop-torrent-engine";
+export type {
+  DesktopTorrentEngineOptions,
+  DesktopTorrentEngineBlock,
+} from "./platform/desktop-torrent-engine";
+export { desktopCapabilityAvailability } from "./platform/capability-availability";
+export type { DesktopCapabilityAvailabilityInput } from "./platform/capability-availability";
+export {
+  createDesktopItemDetailSurface,
+  itemDetailCopyStrings,
+  PEER_COPY_PRIMARY_LABEL,
+} from "./surface/item-detail-surface";
+export type {
+  DesktopItemDetailSurface,
+  DesktopItemDetailSurfaceOptions,
+  DesktopItemDetailView,
+  DesktopBrowseView,
+  DesktopSearchView,
+  DesktopDiscoveryRowView,
+} from "./surface/item-detail-surface";
 export { createDesktopOpenViewingSurface } from "./surface/open-viewing-surface";
 export type {
   DesktopOpenViewingSurface,

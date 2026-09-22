@@ -225,7 +225,10 @@ describe("R23-W3 — the J38 Desktop journey (first-class torrent playback)", ()
     const handle = boot.runtime.playback.controller(active.sessionId)!;
     ok("W4", "the playback runs through the NATIVE rung (never a torrent mode)", handle.state().mode === "native");
     ok("W4", "the realization is the peer-copy vocabulary", handle.state().realization.connectorId === "authorized-peer-copy");
-    ok("W4", "the open input was the authorized torrent", boot.nativeMedia.opens[0]?.torrentBytes !== undefined);
+    // R26-W3 (the wire law): the native open carries the MAGNET — the
+    // wire-transportable swarm identity (torrent bytes cannot cross the
+    // v1 JSON engine wire; the engine's ingestion lane consumed them).
+    ok("W4", "the open input was the authorized magnet", boot.nativeMedia.opens[0]?.magnet !== undefined);
     ok("W4", "playback engaged BEFORE completion (the progress is under way)", true);
 
     // The scheduler is starting up: the honest Buffering state.

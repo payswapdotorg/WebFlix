@@ -393,7 +393,7 @@ describe("R24 native player affordance parity — the scrub model", () => {
     realization: {
       mode: "native" as const,
       connectorId: "authorized-peer-copy",
-      capabilities: ["authorized-peer-copy", "playback-before-completion"],
+      capabilities: ["playNative"],
     },
     phase: "playing" as const,
     positionMs: 120_000,
