@@ -266,7 +266,7 @@ export async function loadWhereToWatchView(
   // the primary play decision when this adapter's browser rung is
   // satisfied, with the honest Desktop next step / authorization gate
   // named when it is not (never hidden, never a dead unavailable).
-  const peerCopyView = torrentRealizationOf(host, input.externalRef);
+  const peerCopyView = torrentRealizationOf(host, input.externalRef, input.connectorId);
   const peerCopy: PeerCopyOptionView | null =
     peerCopyView !== null
       ? {
