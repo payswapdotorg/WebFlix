@@ -633,6 +633,7 @@ export class IntelligenceDerivationPipeline {
       producedAt,
       ...(transcript !== undefined ? { transcript } : {}),
       ...(chaptersScenes !== undefined ? { chaptersScenes } : {}),
+      ...(videoEmbedding !== undefined ? { videoEmbedding } : {}),
       ...(textEmbedding !== undefined ? { textEmbedding } : {}),
     });
     stageOutcomes.push({
@@ -1008,6 +1009,7 @@ function foldSemanticIndex(input: {
   readonly producedAt: string;
   readonly transcript?: TranscriptArtifact;
   readonly chaptersScenes?: ChaptersScenesArtifact;
+  readonly videoEmbedding?: VideoEmbeddingArtifact;
   readonly textEmbedding?: TextEmbeddingArtifact;
 }): CanonicalSemanticIndex {
   const entries: SemanticIndexEntry[] = [];
@@ -1053,6 +1055,12 @@ function foldSemanticIndex(input: {
     }
     if (!buildProvenance.some((block) => block.modelId === input.chaptersScenes?.model.modelId)) {
       buildProvenance.push(input.chaptersScenes.model);
+    }
+  }
+
+  if (input.videoEmbedding !== undefined) {
+    if (!buildProvenance.some((block) => block.modelId === input.videoEmbedding?.model.modelId)) {
+      buildProvenance.push(input.videoEmbedding.model);
     }
   }
 

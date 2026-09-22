@@ -38,7 +38,7 @@ import {
 } from "@wfx/domain";
 import { runMigrations } from "@wfx/persistence";
 
-import { SEED_CATALOG_SQL, seedCatalogIfEmpty } from "../src/host/seed";
+import { convergeCatalogArtwork, SEED_CATALOG_SQL, seedCatalogIfEmpty } from "../src/host/seed";
 import { createTestDb, type TestDb } from "./test-db";
 
 /** The seed's own statement splitter (the 052 runner's format law). */
@@ -110,7 +110,7 @@ afterAll(async () => {
 });
 
 describe("catalog seed — convergence + idempotency (boot-if-empty, never overwrite)", () => {
-  it("the schema baseline is untouched: the migration set re-verifies clean (fourteen)", async () => {
+  it("the schema baseline is untouched: the migration set re-verifies clean (fifteen)", async () => {
     // R02 added migration 0007 (profiles + profile scoping — SCHEMA, not
     // app-owned data; the seed's never-into-the-migration-dir decision
     // record is about DATA). R03 added migration 0008 (the source-management
@@ -125,11 +125,13 @@ describe("catalog seed — convergence + idempotency (boot-if-empty, never overw
     // R20-A added migration 0012 (the BYOF feed imports/preview staging/
     // idempotent feed records tables — SCHEMA again). R20-C added
     // migration 0013 (the feed import sync-scope relationships column —
-    // SCHEMA again).
+    // SCHEMA again). R26-W4 added migration 0014 (the media-intelligence
+    // derived-artifact store + the realization metadata column — SCHEMA
+    // again; the artwork DATA stays in the seed's convergence step).
     // The re-verify law is unchanged: nothing new applies, no drift.
     const again = await runMigrations(first.db);
     expect(again.applied).toEqual([]);
-    expect(again.total).toBe(14);
+    expect(again.total).toBe(15);
   });
 
   it("a second seedCatalogIfEmpty pass seeds NOTHING (the never-overwrite law)", async () => {
@@ -307,5 +309,105 @@ describe("catalog seed — deterministic canonical ids (stable across environmen
       "SELECT id, canonical_title FROM entertainment_items ORDER BY id",
     );
     expect(secondTitles).toEqual(firstTitles);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// R26-W4 — the artwork projection convergence (every boot, idempotent)
+// ---------------------------------------------------------------------------
+
+describe("catalog artwork convergence — the connector's thumbnailUrl projection", () => {
+  it("the harness baseline is CONVERGED: every webflix-catalog row carries the provider's own artwork address", async () => {
+    // The harness applies the SAME convergence steps the service boot
+    // performs (createTestDb), so the pass here is a no-op (updated 0 —
+    // the idempotency law) and the rows carry the projection.
+    const pass = await convergeCatalogArtwork(first.db);
+    expect(pass.updated).toBe(0);
+    const rows = await first.db.query<{
+      external_ref: string;
+      metadata: { thumbnailUrl?: string };
+    }>(
+      `SELECT external_ref, metadata FROM source_realizations
+        WHERE connector_id = 'webflix-catalog' ORDER BY external_ref`,
+    );
+    expect(rows).toHaveLength(57);
+    for (const row of rows) {
+      expect(row.metadata?.thumbnailUrl).toBe(
+        `https://i.ytimg.com/vi/${row.external_ref}/hqdefault.jpg`,
+      );
+    }
+  });
+
+  it("is IDEMPOTENT — a second pass updates nothing (the convergence law)", async () => {
+    const pass = await convergeCatalogArtwork(first.db);
+    expect(pass.updated).toBe(0);
+  });
+
+  it("NEVER OVERWRITES an operator- or connector-written thumbnailUrl", async () => {
+    await first.db.query(
+      `UPDATE source_realizations
+          SET metadata = '{"thumbnailUrl": "https://example.test/operator-artwork.jpg"}'::jsonb
+        WHERE external_ref = 'jNQXAC9IVRw'`,
+    );
+    const pass = await convergeCatalogArtwork(first.db);
+    expect(pass.updated).toBe(0);
+    const rows = await first.db.query<{ metadata: { thumbnailUrl?: string } }>(
+      `SELECT metadata FROM source_realizations WHERE external_ref = 'jNQXAC9IVRw'`,
+    );
+    expect(rows[0]?.metadata?.thumbnailUrl).toBe("https://example.test/operator-artwork.jpg");
+  });
+
+  it("scopes HONESTLY — non-YouTube-shaped refs and other connectors are untouched", async () => {
+    await first.db.query(
+      `INSERT INTO entertainment_items
+         (id, canonical_type, canonical_title, duration_ms, orientation, creators, topics,
+          created_at, updated_at)
+       VALUES ('wfxitm_01TESTARTWORKSCOPE000001', 'video', 'Scope Test', 60000, 'horizontal',
+               '[]'::jsonb, '[]'::jsonb, '2026-09-22T00:00:00Z', '2026-09-22T00:00:00Z')`,
+    );
+    // A webflix-catalog row with a NON-YouTube-shaped ref (a torrent hash,
+    // say) — the projection must not fabricate a YouTube URL for it.
+    await first.db.query(
+      `INSERT INTO source_realizations
+         (id, entertainment_item_id, connector_id, external_ref, capabilities, availability,
+          playback, created_at, updated_at)
+       VALUES ('wfxsrc_01TESTARTWORKSCOPE000001', 'wfxitm_01TESTARTWORKSCOPE000001',
+               'webflix-catalog', 'deadbeefcafebabe', '["playNative"]'::jsonb, 'available',
+               '[]'::jsonb, '2026-09-22T00:00:00Z', '2026-09-22T00:00:00Z')`,
+    );
+    // A YouTube-shaped ref on ANOTHER connector — out of the projection's
+    // authorization boundary.
+    await first.db.query(
+      `INSERT INTO source_realizations
+         (id, entertainment_item_id, connector_id, external_ref, capabilities, availability,
+          playback, created_at, updated_at)
+       VALUES ('wfxsrc_01TESTARTWORKSCOPE000002', 'wfxitm_01TESTARTWORKSCOPE000001',
+               'some-other-connector', 'jNQXAC9IVRw', '["playEmbed"]'::jsonb, 'available',
+               '[]'::jsonb, '2026-09-22T00:00:00Z', '2026-09-22T00:00:00Z')`,
+    );
+    const pass = await convergeCatalogArtwork(first.db);
+    expect(pass.updated).toBe(0);
+    const rows = await first.db.query<{ connector_id: string; external_ref: string; metadata: unknown }>(
+      `SELECT connector_id, external_ref, metadata FROM source_realizations
+        WHERE entertainment_item_id = 'wfxitm_01TESTARTWORKSCOPE000001'`,
+    );
+    for (const row of rows) {
+      expect((row.metadata as { thumbnailUrl?: string } | null)?.thumbnailUrl).toBeUndefined();
+    }
+  });
+
+  it("converges an ALREADY-SEEDED database missing the projection (the production gap's fix)", async () => {
+    // Simulate the production DB as the R26 sweep found it: seeded rows
+    // carrying NO artwork metadata (the pre-0014 truth).
+    await first.db.query(
+      `UPDATE source_realizations SET metadata = '{}'::jsonb WHERE connector_id = 'webflix-catalog'`,
+    );
+    const pass = await convergeCatalogArtwork(first.db);
+    expect(pass.updated).toBe(57);
+    const rows = await first.db.query<{ count: string }>(
+      `SELECT COUNT(*) AS count FROM source_realizations
+        WHERE connector_id = 'webflix-catalog' AND metadata ? 'thumbnailUrl'`,
+    );
+    expect(Number(rows[0]?.count ?? 0)).toBe(57);
   });
 });

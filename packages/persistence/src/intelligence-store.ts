@@ -143,8 +143,8 @@ function mapRow(row: ArtifactSqlRow): PersistedIntelligenceArtifacts {
       row.derivation_status === "derivation-failed" ? "derivation-failed" : "derived",
     derivationDetail: row.derivation_detail,
     stageOutcomes: mapStageOutcomes(row.stage_outcomes),
-    derivedAt: String(row.derived_at),
-    updatedAt: String(row.updated_at),
+    derivedAt: toIsoTimestamp(row.derived_at),
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
