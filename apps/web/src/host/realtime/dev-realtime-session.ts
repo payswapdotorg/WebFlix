@@ -217,15 +217,29 @@ async function openDevSession(
         started = true;
         setState("starting");
         socket.send(JSON.stringify({ kind: "provider-session-start", inputs } satisfies DevProviderControl));
-        const frame = await awaitControlFrame<HandshakeFrame>(
+        const frame = await awaitControlFrame<HandshakeFrame | RefusalFrame | TerminalFrame>(
           (candidate) => {
             const record = candidate as Record<string, unknown>;
-            return record["kind"] === "provider-session-ready"
-              ? (candidate as unknown as HandshakeFrame)
-              : null;
+            if (record["kind"] === "provider-session-ready") {
+              return candidate as unknown as HandshakeFrame;
+            }
+            if (record["kind"] === "provider-refused" || record["kind"] === "provider-terminal") {
+              return candidate as unknown as RefusalFrame;
+            }
+            return null;
           },
           10_000,
         );
+        if (frame !== "timeout" && frame !== "socket-closed" && frame.kind === "provider-refused") {
+          // The provider REFUSED the session start: start() throws the
+          // typed refusal (the bridge answers the transport refused
+          // before any session-bound — never a bound session that dies
+          // at birth).
+          setState("closed");
+          stream.close();
+          socket.close();
+          throw new Error(`provider-refused:${frame.errorKind}:${frame.detail}:${frame.recovery}`);
+        }
         if (frame === "timeout" || frame === "socket-closed" || frame.kind !== "provider-session-ready") {
           setState("closed");
           push({
@@ -399,23 +413,9 @@ async function openDevSession(
       return;
     }
     if (kind === "provider-refused") {
-      const frame = parsed as unknown as RefusalFrame;
-      setState("closed");
-      push({
-        kind: "terminal-error",
-        sessionId,
-        occurredAt: new Date().toISOString(),
-        errorKind: "provider-failure",
-        detail: frame.detail,
-      });
-      push({
-        kind: "session-closed",
-        sessionId,
-        occurredAt: new Date().toISOString(),
-        reason: "terminal-error",
-      });
-      stream.close();
-      socket.close();
+      // The START handshake's own path (the awaitControlFrame in
+      // start()) owns the refusal — never double-processed here (the
+      // double refuses only at session start).
       return;
     }
     if (typeof kind === "string" && kind !== "provider-session-ready") {

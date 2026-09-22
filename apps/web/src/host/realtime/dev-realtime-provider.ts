@@ -772,9 +772,16 @@ export function startDevRealtimeProvider(
         clearTimers(session);
       }
       sessions.clear();
+      // Terminate the live sockets first (an open WebSocket keeps the
+      // http server's close from completing — the teardown must not
+      // hang on lingering test/tooling connections).
+      for (const client of wss.clients) {
+        client.terminate();
+      }
       wss.close();
       await new Promise<void>((resolve) => {
         httpServer.close(() => resolve());
+        setTimeout(resolve, 500).unref?.();
       });
     },
   };

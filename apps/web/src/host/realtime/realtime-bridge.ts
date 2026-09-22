@@ -488,7 +488,9 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
           },
           envelope: { reportedAverageLagMs: factory.reportedAverageLagMs },
         });
-        // Start the domain session + pump its events.
+        // Start the domain session + pump its events. A typed refusal at
+        // start (the provider seam's own fail-closed gates) answers the
+        // transport refused — never a bound session that dies at birth.
         void seam.session
           .start()
           .then(() => {
@@ -515,8 +517,26 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
               session.client.terminate();
             }, SCRIPTED_CLIENT_BLIP_AFTER_MS);
           })
-          .catch(() => {
+          .catch((error: unknown) => {
             if (session.ended) return;
+            const message = error instanceof Error ? error.message : String(error);
+            if (message.startsWith("provider-refused:")) {
+              const [, errorKind, ...rest] = message.split(":");
+              const detail = rest.slice(0, -1).join(":");
+              const recovery = rest[rest.length - 1] ?? "";
+              sessions.delete(session.sessionId);
+              session.ended = true;
+              session.relayStopped = true;
+              ws.send(
+                JSON.stringify({
+                  transport: "refused",
+                  errorKind: errorKind === "policy" ? "policy" : errorKind === "unsupported-language-direction" ? "unsupported-language-direction" : "provider-failure",
+                  detail,
+                  recovery,
+                } satisfies RealtimeTransportMessage),
+              );
+              return;
+            }
             closeSession(session, "terminal-error", "the provider session could not start");
           });
       })
@@ -823,9 +843,15 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
       sessions.clear();
       endedTelemetry.length = 0;
       clientTelemetry.length = 0;
+      // Terminate the live sockets first (an open WebSocket keeps the
+      // http server's close from completing).
+      for (const client of wss.clients) {
+        client.terminate();
+      }
       wss.close();
       await new Promise<void>((resolve) => {
         httpServer.close(() => resolve());
+        setTimeout(resolve, 500).unref?.();
       });
       setRealtimeBridgeStatus({ running: false, port: null, provider: null, targetLanguages: [] });
     },

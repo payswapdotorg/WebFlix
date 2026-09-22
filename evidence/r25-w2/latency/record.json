@@ -1,0 +1,284 @@
+{
+  "kind": "r25-web-latency",
+  "commit": "ec37ff1e583840915872a774e68f14f401c685ae",
+  "startedAt": "2026-09-22T00:41:10.326Z",
+  "finishedAt": "2026-09-22T00:41:10.326Z",
+  "bootMode": "web-fixtures",
+  "bridgeUrl": "ws://localhost:3102",
+  "provider": {
+    "id": "wfx-dev-realtime",
+    "detail": "the deterministic dev realtime provider (the fixtures double — scripted source/translation content and modeled latencies; a registered Model-Fabric realtime provider serves the live lane in service mode)",
+    "reportedAverageLagMs": 2300
+  },
+  "provenance": "the deterministic dev realtime provider's MODELED profile (the plan's frozen research figures) — the bridge-path transport, the reconnect machinery, the cost-policy verdicts, and the instrumentation are the REAL production wiring of this configuration; the LIVE Qwen endpoint's end-to-end latency benchmark is the lead's R25-L procedure (never presented as the live provider's number)",
+  "passes": [
+    {
+      "pass": 1,
+      "browserSession": "wfx-r25-latency-1-1790037566797",
+      "metrics": {
+        "driftMs": 2200,
+        "firstSourceTranscriptDeltaMs": 476,
+        "firstTranslatedSpeechChunkMs": 14290,
+        "firstTranslatedTextDeltaMs": 2776,
+        "providerReportedLagMs": 2199,
+        "reconnectTimeMs": 1207,
+        "stableSegmentMs": 3376
+      },
+      "markers": [
+        {
+          "atMs": 1790037573162,
+          "marker": "session-start-requested",
+          "note": "es"
+        },
+        {
+          "atMs": 1790037573221,
+          "marker": "session-bound"
+        },
+        {
+          "atMs": 1790037573252,
+          "marker": "session-created",
+          "note": "wfx-dev-realtime"
+        },
+        {
+          "atMs": 1790037573638,
+          "marker": "first-source-transcript-delta"
+        },
+        {
+          "atMs": 1790037575938,
+          "marker": "first-translation-delta"
+        },
+        {
+          "atMs": 1790037576538,
+          "marker": "first-stable-segment"
+        },
+        {
+          "atMs": 1790037583440,
+          "marker": "recoverable-error",
+          "note": "network"
+        },
+        {
+          "atMs": 1790037583448,
+          "marker": "reconnected",
+          "note": "provider-connection"
+        },
+        {
+          "atMs": 1790037587452,
+          "marker": "first-translated-audio-chunk"
+        },
+        {
+          "atMs": 1790037597251,
+          "marker": "client-disconnected"
+        },
+        {
+          "atMs": 1790037598452,
+          "marker": "reconnect-requested"
+        },
+        {
+          "atMs": 1790037598458,
+          "marker": "reconnected",
+          "note": "client-connection"
+        }
+      ],
+      "segments": 8,
+      "screenshot": "pass-1.png",
+      "durationMs": 33506
+    },
+    {
+      "pass": 2,
+      "browserSession": "wfx-r25-latency-2-1790037600303",
+      "metrics": {
+        "driftMs": 2200,
+        "firstSourceTranscriptDeltaMs": 430,
+        "firstTranslatedSpeechChunkMs": 14241,
+        "firstTranslatedTextDeltaMs": 2731,
+        "providerReportedLagMs": 2200,
+        "reconnectTimeMs": 1206,
+        "stableSegmentMs": 3331
+      },
+      "markers": [
+        {
+          "atMs": 1790037604129,
+          "marker": "session-start-requested",
+          "note": "es"
+        },
+        {
+          "atMs": 1790037604157,
+          "marker": "session-bound"
+        },
+        {
+          "atMs": 1790037604165,
+          "marker": "session-created",
+          "note": "wfx-dev-realtime"
+        },
+        {
+          "atMs": 1790037604559,
+          "marker": "first-source-transcript-delta"
+        },
+        {
+          "atMs": 1790037606860,
+          "marker": "first-translation-delta"
+        },
+        {
+          "atMs": 1790037607460,
+          "marker": "first-stable-segment"
+        },
+        {
+          "atMs": 1790037614361,
+          "marker": "recoverable-error",
+          "note": "network"
+        },
+        {
+          "atMs": 1790037614369,
+          "marker": "reconnected",
+          "note": "provider-connection"
+        },
+        {
+          "atMs": 1790037618370,
+          "marker": "first-translated-audio-chunk"
+        },
+        {
+          "atMs": 1790037628161,
+          "marker": "client-disconnected"
+        },
+        {
+          "atMs": 1790037629361,
+          "marker": "reconnect-requested"
+        },
+        {
+          "atMs": 1790037629367,
+          "marker": "reconnected",
+          "note": "client-connection"
+        }
+      ],
+      "segments": 8,
+      "screenshot": "pass-2.png",
+      "durationMs": 30824
+    },
+    {
+      "pass": 3,
+      "browserSession": "wfx-r25-latency-3-1790037631127",
+      "metrics": {
+        "driftMs": 2200,
+        "firstSourceTranscriptDeltaMs": 427,
+        "firstTranslatedSpeechChunkMs": 14237,
+        "firstTranslatedTextDeltaMs": 2727,
+        "providerReportedLagMs": 2200,
+        "reconnectTimeMs": 1205,
+        "stableSegmentMs": 3328
+      },
+      "markers": [
+        {
+          "atMs": 1790037634630,
+          "marker": "session-start-requested",
+          "note": "es"
+        },
+        {
+          "atMs": 1790037634655,
+          "marker": "session-bound"
+        },
+        {
+          "atMs": 1790037634663,
+          "marker": "session-created",
+          "note": "wfx-dev-realtime"
+        },
+        {
+          "atMs": 1790037635057,
+          "marker": "first-source-transcript-delta"
+        },
+        {
+          "atMs": 1790037637357,
+          "marker": "first-translation-delta"
+        },
+        {
+          "atMs": 1790037637958,
+          "marker": "first-stable-segment"
+        },
+        {
+          "atMs": 1790037644858,
+          "marker": "recoverable-error",
+          "note": "network"
+        },
+        {
+          "atMs": 1790037644864,
+          "marker": "reconnected",
+          "note": "provider-connection"
+        },
+        {
+          "atMs": 1790037648867,
+          "marker": "first-translated-audio-chunk"
+        },
+        {
+          "atMs": 1790037658657,
+          "marker": "client-disconnected"
+        },
+        {
+          "atMs": 1790037659858,
+          "marker": "reconnect-requested"
+        },
+        {
+          "atMs": 1790037659862,
+          "marker": "reconnected",
+          "note": "client-connection"
+        }
+      ],
+      "segments": 8,
+      "screenshot": "pass-3.png",
+      "durationMs": 30676
+    }
+  ],
+  "aggregate": [
+    {
+      "metric": "firstSourceTranscriptDeltaMs",
+      "min": 427,
+      "median": 430,
+      "max": 476
+    },
+    {
+      "metric": "firstTranslatedTextDeltaMs",
+      "min": 2727,
+      "median": 2731,
+      "max": 2776
+    },
+    {
+      "metric": "firstTranslatedSpeechChunkMs",
+      "min": 14237,
+      "median": 14241,
+      "max": 14290
+    },
+    {
+      "metric": "stableSegmentMs",
+      "min": 3328,
+      "median": 3331,
+      "max": 3376
+    },
+    {
+      "metric": "reconnectTimeMs",
+      "min": 1205,
+      "median": 1206,
+      "max": 1207
+    },
+    {
+      "metric": "driftMs",
+      "min": 2200,
+      "median": 2200,
+      "max": 2200
+    }
+  ],
+  "fallbackWalk": {
+    "terminalErrorKind": "provider-failure",
+    "playbackPhaseAfter": "buffering",
+    "captionsRemain": true,
+    "fallbackSentenceRendered": true
+  },
+  "bridgeTelemetryAtEnd": {
+    "ended": 3,
+    "clientRecords": 4,
+    "sampleUsage": {
+      "inputAudioTokens": 154,
+      "textOutputTokens": 169,
+      "outputAudioTokens": 60,
+      "imageInputTokens": 0
+    },
+    "sampleDerivedCostUsd": 0.006335
+  }
+}
