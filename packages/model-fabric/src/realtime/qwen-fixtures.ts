@@ -384,16 +384,26 @@ export interface RecordedQwenConnect {
 export interface RecordedQwenTransportScript {
   /** How many times connect() REJECTS before succeeding (the network path). Default 0. */
   readonly failFirstConnects?: number;
-  /** Replay the rate-limit error frame right after session.created (the RPM path). Default false. */
-  readonly rateLimitOnConnect?: boolean;
-  /** Replay the invalid-credential error frame right after session.created. Default false. */
+  /**
+   * Answer the FIRST N session.update frames with the recorded rate-limit error
+   * frame, then acknowledge normally (the RPM retry-then-succeed path).
+   * Default 0 (never).
+   */
+  readonly rateLimitFirstUpdates?: number;
+  /** Answer EVERY session.update with the recorded invalid-credential error frame (the terminal auth path). Default false. */
   readonly authErrorOnConnect?: boolean;
-  /** Drop the connection (un-clean close) after N completed utterance cycles (the reconnect path). Default: never. */
+  /** Drop the connection ONCE (un-clean close) after N completed utterance cycles (the transient-loss reconnect path). Default: never. */
   readonly dropAfterCycles?: number;
   /** Close the connection with session.finished NEVER sent (the un-clean provider close). Default false. */
   readonly closeWithoutFinish?: boolean;
-  /** Replay an arbitrary error frame right after session.created (config-rejection path). */
+  /** Answer EVERY session.update with an arbitrary error frame (the terminal config-rejection path). */
   readonly injectErrorFrame?: string;
+  /**
+   * Deliver one arbitrary frame MID-STREAM (on the first audio append,
+   * before that utterance cycle's frames) — the per-item failure and
+   * the unparsable-frame paths. Delivered once per connection.
+   */
+  readonly injectFrameMidStream?: string;
   /** The output-modality family the utterance cycles use. Default "text". */
   readonly audioOutputModality?: "text" | "text-and-audio";
   /** The utterance cycle content (deterministic; two cycles by default). */
@@ -424,11 +434,12 @@ export interface RecordedQwenTransportDouble {
  * Create the deterministic recorded-frame transport double (TEST
  * FIXTURE — never production). The double implements the injectable
  * `QwenRealtimeTransport` seam: connect() replays the recorded
- * session.created (+ any scripted error), the adapter's session.update
- * is answered with the recorded session.updated echo, and each
- * input_audio_buffer.append drives one recorded utterance cycle
- * (speaker alternation scripted). Microtask delivery — no real
- * timers, fully deterministic.
+ * session.created, the adapter's session.update is answered with the
+ * recorded session.updated echo (or the scripted error frame — the
+ * deterministic error paths), and each input_audio_buffer.append
+ * drives one recorded utterance cycle (speaker alternation scripted;
+ * the scripted drop happens ONCE — the transient-loss reconnect
+ * path). Microtask delivery — no real timers, fully deterministic.
  */
 export function createRecordedQwenTransport(
   script: RecordedQwenTransportScript = {},
@@ -453,10 +464,13 @@ export function createRecordedQwenTransport(
       },
     ];
   const audioOutput = script.audioOutputModality === "text-and-audio";
+  const rateLimitFirstUpdates = script.rateLimitFirstUpdates ?? 0;
+  let sessionUpdatesSeen = 0;
   let connectAttempt = 0;
   let cycleCursor = 0;
   let deliveredCycleCount = 0;
   let open = false;
+  let droppedOnce = false;
 
   const deliver = (connection: FakeConnection, frame: string): void => {
     deliveredFrames.push(frame);
@@ -467,6 +481,7 @@ export function createRecordedQwenTransport(
     private messageHandler: ((text: string) => void) | undefined;
     private closeHandler: ((code: number, reason: string) => void) | undefined;
     private closed = false;
+    private injectedMidStream = false;
 
     send(text: string): void {
       if (this.closed) return;
@@ -497,20 +512,39 @@ export function createRecordedQwenTransport(
 
     emitMessage(frame: string): void {
       if (this.closed) return;
-      // Microtask delivery — deterministic ordering without real timers.
-      void Promise.resolve().then(() => {
-        if (this.closed) return;
-        this.messageHandler?.(frame);
-      });
+      // Deliver on microtasks, WAITING until the adapter has
+      // registered its onMessage handler (a real socket delivers
+      // after open + handler registration — the double mirrors that
+      // ordering deterministically, never dropping the frame). A
+      // queued delivery always LANDS: a real socket delivers every
+      // byte it sent before any close event.
+      const tryDeliver = (): void => {
+        if (this.messageHandler !== undefined) {
+          this.messageHandler(frame);
+        } else {
+          void Promise.resolve().then(tryDeliver);
+        }
+      };
+      void Promise.resolve().then(tryDeliver);
     }
 
     emitClose(code: number, reason: string): void {
       if (this.closed) return;
-      this.closed = true;
-      open = false;
-      void Promise.resolve().then(() => {
-        this.closeHandler?.(code, reason);
-      });
+      // Deliver the close AFTER any already-queued frame deliveries
+      // land (a real socket delivers every byte it sent before the
+      // close event) — a few microtask hops, deterministic.
+      void (async () => {
+        for (let hop = 0; hop < 4; hop++) {
+          await Promise.resolve();
+          if (this.closed) return;
+        }
+        if (this.closed) return;
+        this.closed = true;
+        open = false;
+        void Promise.resolve().then(() => {
+          this.closeHandler?.(code, reason);
+        });
+      })();
     }
 
     private async handleSent(type: string): Promise<void> {
@@ -518,10 +552,32 @@ export function createRecordedQwenTransport(
       await Promise.resolve();
       if (this.closed) return;
       if (type === "session.update") {
+        // The scripted error paths answer the configuration itself —
+        // deterministic (the adapter's ack wait is registered when
+        // the error frame arrives). The rate-limit script is ONE-SHOT
+        // per N (the retry-then-succeed path); the auth/arbitrary
+        // scripts answer EVERY update (the terminal paths).
+        sessionUpdatesSeen += 1;
+        if (sessionUpdatesSeen <= rateLimitFirstUpdates) {
+          deliver(this, RECORDED_QWEN_RATE_LIMIT_ERROR);
+          return;
+        }
+        if (script.authErrorOnConnect === true) {
+          deliver(this, RECORDED_QWEN_AUTH_ERROR);
+          return;
+        }
+        if (script.injectErrorFrame !== undefined) {
+          deliver(this, script.injectErrorFrame);
+          return;
+        }
         deliver(this, RECORDED_QWEN_SESSION_UPDATED);
         return;
       }
       if (type === "input_audio_buffer.append") {
+        if (script.injectFrameMidStream !== undefined && !this.injectedMidStream) {
+          this.injectedMidStream = true;
+          deliver(this, script.injectFrameMidStream);
+        }
         if (cycleCursor >= cycles.length) return; // no more scripted speech
         const cycle = cycles[cycleCursor]!;
         cycleCursor += 1;
@@ -541,8 +597,10 @@ export function createRecordedQwenTransport(
         deliveredCycleCount += 1;
         if (
           script.dropAfterCycles !== undefined &&
+          !droppedOnce &&
           deliveredCycleCount >= script.dropAfterCycles
         ) {
+          droppedOnce = true; // a transient loss: the next connect succeeds
           this.emitClose(1006, "recorded transport loss");
         }
         return;
@@ -579,15 +637,6 @@ export function createRecordedQwenTransport(
       const connection = new FakeConnection();
       open = true;
       deliver(connection, RECORDED_QWEN_SESSION_CREATED);
-      if (script.injectErrorFrame !== undefined) {
-        deliver(connection, script.injectErrorFrame);
-      }
-      if (script.rateLimitOnConnect === true) {
-        deliver(connection, RECORDED_QWEN_RATE_LIMIT_ERROR);
-      }
-      if (script.authErrorOnConnect === true) {
-        deliver(connection, RECORDED_QWEN_AUTH_ERROR);
-      }
       return connection;
     },
   };

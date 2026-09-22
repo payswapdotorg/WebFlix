@@ -204,7 +204,11 @@ export function realtimeRoutingInputFromSpecialists(
  * Route one realtime request against the table and resolve the
  * winning provider's factory — the bridge's one-call seam: the typed
  * routing decision (the router's own honest gaps when nothing can
- * serve) plus the bound factory when a realtime provider won.
+ * serve) plus the bound factory when a realtime provider WON. The
+ * factory resolves ONLY for winning decisions — a gap decision may
+ * name a provider id for context, but the router just said that
+ * provider cannot serve, so it is never resolved (never a
+ * half-service).
  */
 export function routeRealtimeTranslationAgainstSpecialists(
   table: RealtimeSpecialistTable,
@@ -215,16 +219,18 @@ export function routeRealtimeTranslationAgainstSpecialists(
     readonly preferredProviderId?: string;
   },
 ): ReturnType<typeof routeRealtimeTranslation> & {
-  /** The bound factory when the decision names a REGISTERED realtime provider. */
+  /** The bound factory when the decision names a REGISTERED realtime provider that WON. */
   readonly factory: RealtimeTranslationSessionFactory | undefined;
 } {
   const decision = routeRealtimeTranslation(
     realtimeRoutingInputFromSpecialists(table, input),
   );
+  const isWinningRealtimeDecision =
+    decision.kind === "realtime-translation-specialist" ||
+    decision.kind === "realtime-translation-provider" ||
+    decision.kind === "provider-policy-choice";
   const providerId = "providerId" in decision ? decision.providerId : undefined;
   const factory =
-    providerId !== undefined && decision.kind !== "low-latency-source-transcription"
-      ? table.factoryFor(providerId)
-      : undefined;
+    isWinningRealtimeDecision && providerId !== undefined ? table.factoryFor(providerId) : undefined;
   return { ...decision, factory };
 }

@@ -448,6 +448,7 @@ type ProviderSessionAttempt =
   | {
       readonly ok: false;
       readonly terminal: false;
+      readonly errorKind: RealtimeTranslationErrorKind;
       readonly detail: string;
       readonly recovery: string;
     };
@@ -592,7 +593,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
         kind: "recoverable-error",
         sessionId: this.sessionId,
         occurredAt: this.nowIso(),
-        errorKind: "network",
+        errorKind: attempt.errorKind,
         detail: attempt.detail,
         recovery: attempt.recovery,
       });
@@ -810,7 +811,13 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
       });
       if (this.sessionState !== "starting" && this.sessionState !== "reconnecting") {
         connection.close();
-        return { ok: false, terminal: false, detail: "abandoned", recovery: "" };
+        return {
+          ok: false,
+          terminal: false,
+          errorKind: "network",
+          detail: "abandoned",
+          recovery: "",
+        };
       }
       this.connection = connection;
       connection.onMessage((text) => this.handleServerFrame(text));
@@ -826,6 +833,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
         return {
           ok: false,
           terminal: false,
+          errorKind: "network",
           detail: `the provider session handshake did not complete (${created.reason})`,
           recovery: `retrying with bounded exponential backoff (attempt budget ${this.config.maxReconnectAttempts}); base playback is never blocked`,
         };
@@ -851,6 +859,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
             return {
               ok: false,
               terminal: false,
+              errorKind: normalized.errorKind,
               detail: normalized.detail,
               recovery: normalized.recovery,
             };
@@ -861,6 +870,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
       return {
         ok: false,
         terminal: false,
+        errorKind: "network",
         detail: `the provider session configuration was not acknowledged (${ack.kind === "failure" ? ack.reason : "an error frame arrived"})`,
         recovery: `retrying with bounded exponential backoff (attempt budget ${this.config.maxReconnectAttempts}); base playback is never blocked`,
       };
@@ -869,6 +879,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
       return {
         ok: false,
         terminal: false,
+        errorKind: "network",
         detail: `the provider transport connect attempt failed (${error instanceof Error ? error.message : "unknown transport error"})`,
         recovery: `retrying with bounded exponential backoff (attempt budget ${this.config.maxReconnectAttempts}); base playback is never blocked`,
       };
@@ -941,7 +952,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
         kind: "recoverable-error",
         sessionId: this.sessionId,
         occurredAt: this.nowIso(),
-        errorKind: "network",
+        errorKind: attempt.errorKind,
         detail: attempt.detail,
         recovery: attempt.recovery,
       });
@@ -1194,6 +1205,14 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
     language: string | undefined,
   ): void {
     const speakerProviderId = this.speakerByItemId.get(itemId);
+    // NOTE (the honest contract boundary): the frozen neutral contract
+    // carries `sourceLanguage` only on source-transcript-DELTA events;
+    // the pinned model reports the detected language only at
+    // completion — so the detected language cannot cross into the
+    // neutral stream here (a lead-owned contract change would be
+    // needed to surface it on finals; never a silent contract
+    // extension by the adapter).
+    void language;
     this.emitEvent({
       kind: "source-transcript-final",
       sessionId: this.sessionId,
@@ -1201,7 +1220,6 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
       segmentId: itemId,
       text: transcript,
       timing: this.timingFor(itemId),
-      ...(language !== undefined ? { sourceLanguage: language } : {}),
       ...(speakerProviderId !== undefined && this.inputs.speakerAttribution !== "off"
         ? { speakerId: qwenSpeakerId(speakerProviderId) }
         : {}),
@@ -1366,6 +1384,21 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
   }
 
   private assertLegalOperation(operation: RealtimeTranslationOperation): void {
+    // THE NEVER-FORCE LAW gets its own honest sentence (the shared
+    // operation-legality table already refuses the operation; this is
+    // the specific, actionable reason).
+    if (
+      operation === "append-image-frame" &&
+      this.sessionState !== "closed" &&
+      this.sessionState !== "stopped" &&
+      this.inputs.visualContextPolicy === "off"
+    ) {
+      throw new QwenAdapterOperationError(
+        operation,
+        this.sessionState,
+        "the session's visual-context policy is 'off' — image frames are never forced (the R25-F law; the adapter never requests frames on its own)",
+      );
+    }
     if (
       !isRealtimeOperationLegal(operation, this.sessionState, {
         visualContextPolicy: this.inputs.visualContextPolicy,
@@ -1382,16 +1415,21 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
   private emitTerminalError(
     errorKind: RealtimeTranslationErrorKind,
     detail: string,
-    recovery: string,
+    recovery?: string,
   ): void {
+    // The frozen terminal-error event carries no recovery field — the
+    // honest recovery sentence rides IN the detail (never dropped:
+    // a terminal error without its actionable sentence would strand
+    // the caller).
+    const fullDetail =
+      recovery !== undefined && recovery.length > 0 ? `${detail} — recovery: ${recovery}` : detail;
     this.emitEvent({
       kind: "terminal-error",
       sessionId: this.sessionId,
       occurredAt: this.nowIso(),
       errorKind,
-      detail,
+      detail: fullDetail,
     });
-    void recovery; // the recovery sentence lives on the paired recoverable-error/registration path
     this.teardownConnection();
     this.finishNarrative("terminal-error");
     this.sessionState = "closed";
@@ -1399,7 +1437,9 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
 
   private finishNarrative(reason: QwenCloseReason): void {
     if (this.narrativeClosed) return;
-    this.narrativeClosed = true;
+    // Emit while the narrative is still open, THEN close it — the
+    // emitEvent guard must never trip on the narrative's own final
+    // event.
     this.emitEvent({
       kind: "session-closed",
       sessionId: this.sessionId,
@@ -1407,6 +1447,7 @@ class QwenLiveTranslateSession implements RealtimeTranslationSession {
       reason,
       finalUsage: this.usageTotals,
     });
+    this.narrativeClosed = true;
     this.stream.close();
   }
 
