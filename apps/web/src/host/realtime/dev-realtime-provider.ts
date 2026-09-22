@@ -3,26 +3,34 @@
  * fixtures-boot double of the R25-C provider adapter).
  *
  * THE HONEST DOUBLE LAW (the R23-G live-captions precedent, the same
- * discipline): this module is the dev/fixtures composition's stand-in for
- * the Model-Fabric realtime provider adapter (Worker 1's R25-C lane). It
- * speaks the SAME normalized event vocabulary the real adapter will
- * (source-transcript-delta … usage-telemetry — see realtime-contract.ts),
- * over a REAL WebSocket hop (the bridge's provider client connects here),
- * with DETERMINISTIC scripted timing — so the bridge's transport,
- * reconnect, continuity, and instrumentation laws are exercised by the
- * REAL machinery, while the CONTENT and the modeled latencies are loudly
- * the dev double's, never a claimed live-endpoint measurement.
+ * discipline): this module is the dev/fixtures composition's stand-in
+ * for the Model-Fabric realtime provider adapter (the shared R25-A
+ * session port's implementation). Its frames ARE the frozen domain
+ * events (`session-created` … `usage-telemetry` from `@wfx/domain` —
+ * Worker 1's landed contract, bound verbatim; the ONE transport
+ * encoding: the audio chunk's `Uint8Array` rides as `audioBase64` in
+ * the adapter's own JSON protocol), over a REAL WebSocket hop (the
+ * bridge's provider client connects here), with DETERMINISTIC scripted
+ * timing — so the bridge's transport, reconnect, continuity, and
+ * instrumentation laws are exercised by the REAL machinery, while the
+ * CONTENT and the modeled latencies are loudly the dev double's, never
+ * a claimed live-endpoint measurement.
  *
- * WHAT IS REAL HERE: a real WebSocket server; real session
- * start/resume/stop control flow; a real scripted provider DROP (the WS
- * closes mid-stream — the bridge must reconnect and resume); a real
- * terminal-failure direction (de); real PCM16 audio chunks (synthesized
- * tones — real bytes the translated-speech player plays).
+ * WHAT IS REAL HERE: a real WebSocket server; the real session
+ * start/resume/stop control flow; a real scripted provider DROP (the
+ * connection closes mid-stream — the bridge must drive the domain
+ * `reconnect` operation and resume); a real terminal-failure direction
+ * (de); real PCM16 translated-speech chunks (synthesized tones — real
+ * bytes the translated-speech player plays).
  *
- * WHAT IS MODELED (never claimed as measured): the ~2,300 ms translation
- * lag (the plan's documented research profile), the segment pacing, the
- * script's translation text (deterministic dev content derived from the
- * fixture transcript artifact — the committed double's own law).
+ * WHAT IS MODELED (never claimed as measured): the ~2,300 ms reported
+ * average lag (the plan's frozen research figure — rendered as the
+ * REPORTED envelope truth, never a UI promise), the segment pacing,
+ * the script's translation text (deterministic dev content derived
+ * from the fixture transcript artifact — the committed double's own
+ * law), and the usage token counts (the double's documented token
+ * model, consistent with the plan's implied per-hour figures — the
+ * cost MATH itself is the shared cost model's, never this module's).
  *
  * NEVER REACHED IN PRODUCTION: this module is loaded ONLY through the
  * fixtures boot's dynamic import (instrumentation.ts — the R23 lesson:
@@ -34,31 +42,30 @@ import { createServer, type Server as HttpServer } from "node:http";
 import { WebSocket as WsServerSocket, WebSocketServer } from "ws";
 
 import type {
-  RealtimeModality,
-  RealtimeProviderRefusal,
-  RealtimeProviderSession,
-  RealtimeProviderSessionFactory,
-  RealtimeProviderStreamEvent,
-  RealtimeSessionConfig,
-  RealtimeTargetLanguage,
-} from "./realtime-contract";
+  RealtimeTranslationSessionInputs,
+  RealtimeTranslationEvent,
+} from "@wfx/domain";
 
 // ---------------------------------------------------------------------------
-// The provider's declared capability (the bridge's capability read)
+// The provider's declared identity + capability (the seam's truths)
 // ---------------------------------------------------------------------------
 
 /** The dev provider's provider-neutral id (never a real provider's name). */
 export const DEV_REALTIME_PROVIDER_ID = "wfx-dev-realtime";
 
+/** The dev double's pinned model identity (the domain session-created truth). */
+export const DEV_REALTIME_MODEL_ID = "wfx-dev-realtime-double";
+export const DEV_REALTIME_MODEL_REVISION = "r25-dev-1";
+
 /** The honest provider detail (the loud dev badge sentence). */
 export const DEV_REALTIME_PROVIDER_DETAIL =
   "the deterministic dev realtime provider (the fixtures double — scripted source/translation content and modeled latencies; a registered Model-Fabric realtime provider serves the live lane in service mode)";
 
-/** The dev provider's modeled lag profile (the rendered envelope truth). */
-export const DEV_REALTIME_MODELED_LAG_MS = 2_300;
+/** The dev provider's REPORTED average lag (the frozen research figure, rendered never promised). */
+export const DEV_REALTIME_REPORTED_AVERAGE_LAG_MS = 2_300;
 
 /** The target languages the dev provider declares (its supported directions). */
-export const DEV_REALTIME_TARGET_LANGUAGES: readonly RealtimeTargetLanguage[] = [
+export const DEV_REALTIME_TARGET_LANGUAGES: readonly { readonly code: string; readonly label: string }[] = [
   { code: "es", label: "Spanish" },
   { code: "fr", label: "French" },
   { code: "pt", label: "Portuguese" },
@@ -84,8 +91,9 @@ interface ScriptedSegment {
  * script derives from the fixture transcript artifact (the same
  * committed-segment double the live-captions surface drives) — the live
  * diarization's simple labels (Speaker 1 / Speaker 2) map the artifact's
- * named speakers (§R25-G: simple + contextual labels for the live stream;
- * the named labels stay the batch transcript artifact's own truth).
+ * named speakers (§R25-G: simple + contextual labels for the live
+ * stream; the named labels stay the batch transcript artifact's own
+ * truth, `trustedSource: false` on the live attribution events).
  */
 const SCRIPTS: Readonly<Record<string, readonly ScriptedSegment[]>> = {
   "fake:video-1": [
@@ -120,9 +128,9 @@ const SCRIPTS: Readonly<Record<string, readonly ScriptedSegment[]>> = {
       source: "A deep field is not one photograph. It is hours of the same patch of darkness, stacked.",
       translations: {
         es: "Un campo profundo no es una sola fotografía: son horas del mismo fragmento de oscuridad, apiladas.",
-        fr: "un champ profond n'est pas une photographie. Ce sont des heures du même pan d'obscurité, empilées.",
+        fr: "Un champ profond n'est pas une photographie. Ce sont des heures du même pan d'obscurité, empilées.",
         pt: "Um campo profundo não é uma fotografia. São horas do mesmo recanto de escuridão, empilhadas.",
-        ja: "ディープフィールドは一枚の写真ではありません。同じ暗闇的一片を何時間も重ねたものです。",
+        ja: "ディープフィールドは一枚の写真ではありません。同じ暗闇の一片を何時間も重ねたものです。",
       },
     },
     {
@@ -132,7 +140,7 @@ const SCRIPTS: Readonly<Record<string, readonly ScriptedSegment[]>> = {
       source: "The long exposure begins. The telescope tracks a fixed point while the earth turns beneath it.",
       translations: {
         es: "Comienza la larga exposición: el telescopio sigue un punto fijo mientras la tierra gira debajo.",
-        fr: "La longue pose commence. Le télescope suit un point fixe pendant que la Terre tourne beneath lui.",
+        fr: "La longue pose commence. Le télescope suit un point fixe pendant que la Terre tourne sous lui.",
         pt: "Começa a longa exposição. O telescópio acompanha um ponto fixo enquanto a Terra gira por baixo.",
         ja: "長時間露光が始まります。地球が下で回転する間、望遠鏡は定点を追い続けます。",
       },
@@ -146,7 +154,7 @@ const SCRIPTS: Readonly<Record<string, readonly ScriptedSegment[]>> = {
         es: "Las galaxias aparecen una a una: cada mancha de luz, toda una isla de estrellas.",
         fr: "Les galaxies dérivent une à une — chaque tache de lumière, une île entière d'étoiles.",
         pt: "As galáxias surgem uma a uma — cada mancha de luz, uma ilha inteira de estrelas.",
-        ja: "銀河がひとつずつ姿を現します。光の每一个染みが、まるごと一つの星の島なのです。",
+        ja: "銀河がひとつずつ姿を現します。光の染みひとつひとつが、まるごと一つの星の島なのです。",
       },
     },
     {
@@ -199,7 +207,7 @@ const FIRST_SOURCE_DELAY_MS = 400;
 const SEGMENT_PACING_MS = 3_200;
 /** Source partial → final gap. */
 const SOURCE_FINAL_OFFSET_MS = 700;
-/** The modeled translation lag (the documented research profile, ~2.3 s). */
+/** The modeled translation lag (the frozen research profile, ~2.3 s). */
 const TRANSLATION_LAG_MS = 2_300;
 /** Translation delta 1 → delta 2 gap. */
 const TRANSLATION_DELTA_GAP_MS = 300;
@@ -223,11 +231,11 @@ const SCRIPTED_DROP_AFTER_SEGMENT = 3;
 const SCRIPTED_FAILURE_LANGUAGE = "de";
 
 // ---------------------------------------------------------------------------
-// The PCM16 tone synthesis (real bytes the translated-speech player plays)
+// The PCM16 tone synthesis + the double's documented token model
 // ---------------------------------------------------------------------------
 
 /** Synthesize one PCM16/24000 mono chunk (a soft per-segment tone — real audio, honestly synthetic). */
-function synthesizePcmChunk(segmentId: number, durationMs: number, seq: number): string {
+function synthesizePcmChunk(segmentId: number, durationMs: number, seq: number): Uint8Array {
   const sampleRate = 24_000;
   const sampleCount = Math.floor((durationMs / 1000) * sampleRate);
   const bytes = new Uint8Array(sampleCount * 2);
@@ -241,8 +249,67 @@ function synthesizePcmChunk(segmentId: number, durationMs: number, seq: number):
       envelope * (Math.sin(2 * Math.PI * baseFreq * t) + 0.6 * Math.sin(2 * Math.PI * (baseFreq * 1.5) * t));
     view.setInt16(index * 2, Math.max(-32768, Math.min(32767, Math.round(sample * 32767 * 0.5))), true);
   }
-  return Buffer.from(bytes).toString("base64");
+  return bytes;
 }
+
+/**
+ * The double's documented token model (consistent with the plan's
+ * implied per-hour figures — the cost MATH is the shared model's):
+ * input audio ≈ 7 tokens/second; text output ≈ 1 token per 4 chars;
+ * output audio ≈ 12.5 tokens/second.
+ */
+const INPUT_AUDIO_TOKENS_PER_SECOND = 7;
+const OUTPUT_AUDIO_TOKENS_PER_SECOND = 12.5;
+
+// ---------------------------------------------------------------------------
+// The provider's frame vocabulary (the adapter's OWN protocol — the
+// domain events in their wire encoding + the control frames)
+// ---------------------------------------------------------------------------
+
+/**
+ * The double's stream frames: the frozen domain events with
+ * `sessionId: ""` (the adapter-side session stamps the true id) and
+ * the audio chunk carrying `audioBase64` (the one documented transport
+ * encoding — decoded at the adapter boundary).
+ */
+export type DevProviderStreamFrame = RealtimeTranslationEvent & {
+  readonly audioBase64?: string;
+};
+
+/** The ready handshake frame. */
+interface ProviderHandshakeFrame {
+  readonly kind: "provider-session-ready";
+  readonly token: string;
+  readonly providerId: string;
+  readonly modelId: string;
+  readonly modelRevision: string;
+  readonly sourceStream: string;
+  readonly resumed?: boolean;
+}
+
+/** The provider's terminal failure frame (the domain errorKind vocabulary). */
+interface ProviderTerminalFrame {
+  readonly kind: "provider-terminal";
+  readonly errorKind: "provider-failure" | "policy" | "unknown";
+  readonly detail: string;
+  readonly recovery: string;
+}
+
+/** The provider's refusal frame (a session could not start/resume). */
+interface ProviderRefusalFrame {
+  readonly kind: "provider-refused";
+  readonly errorKind: "policy" | "unsupported-language-direction" | "unknown";
+  readonly detail: string;
+  readonly recovery: string;
+}
+
+/** The control messages the double answers (its own protocol — the adapter owns it). */
+export type DevProviderControl =
+  | { kind: "provider-session-start"; inputs: RealtimeTranslationSessionInputs }
+  | { kind: "provider-session-resume"; token: string; lastCommittedSegmentId: string }
+  | { kind: "provider-audio-append"; payloadBase64: string }
+  | { kind: "provider-configure"; outputModality?: "text" | "text-and-audio" }
+  | { kind: "provider-stop" };
 
 // ---------------------------------------------------------------------------
 // The provider WebSocket service
@@ -251,13 +318,15 @@ function synthesizePcmChunk(segmentId: number, durationMs: number, seq: number):
 /** One live provider-side session (the script's drive state). */
 interface ProviderScriptSession {
   readonly token: string;
-  config: RealtimeSessionConfig;
+  inputs: RealtimeTranslationSessionInputs;
   /** The wall clock the session started (script timing origin). */
   readonly startedAtMs: number;
-  /** The script's segment cursor (the last segment EMITTED, 0-based index). */
-  emittedSegments: number;
-  /** The OBSERVED wall time of each segment's committed source final (the timing pair's truth). */
-  readonly sourceFinalWall: Map<number, number>;
+  /** The OBSERVED wall time of each segment's committed source final. */
+  readonly sourceFinalWall: Map<string, number>;
+  /** The first-observation flags (the incremental timing-metadata truth). */
+  firstSourceDeltaObserved: boolean;
+  firstTranslationDeltaObserved: boolean;
+  firstAudioChunkObserved: boolean;
   /** The pending wall timers (cleaned on close). */
   timers: ReturnType<typeof setTimeout>[];
   /** Whether the session ended (terminal/closed). */
@@ -279,27 +348,24 @@ export interface DevRealtimeProviderHandle {
   stop(): Promise<void>;
 }
 
-/** The control message shapes the provider answers (the seam's dev double protocol). */
-type ProviderControl =
-  | { kind: "provider-session-start"; session: RealtimeSessionConfig }
-  | { kind: "provider-session-resume"; token: string; lastCommittedSegmentId: number }
-  | { kind: "provider-audio-append"; payload: string }
-  | { kind: "provider-configure"; modalities?: RealtimeModality[]; subtitleMode?: string }
-  | { kind: "provider-stop" };
+/** The double's active script derivation (null when the item has no script). */
+export function devRealtimeScriptFor(externalRef: string): readonly ScriptedSegment[] | null {
+  return SCRIPTS[externalRef] ?? null;
+}
 
 /**
  * Start the deterministic dev realtime provider (a real WebSocket server).
- * Sessions are keyed per connection; the bridge's provider client is the
- * only intended consumer.
+ * Sessions are keyed per connection; the adapter-side session client
+ * (dev-realtime-session.ts) is the only intended consumer.
  */
 export function startDevRealtimeProvider(
   options: DevRealtimeProviderOptions,
 ): DevRealtimeProviderHandle {
   const sessions = new Map<string, ProviderScriptSession>();
 
-  const emit = (ws: WsServerSocket, event: RealtimeProviderStreamEvent): void => {
+  const emit = (ws: WsServerSocket, frame: DevProviderStreamFrame): void => {
     if (ws.readyState !== WsServerSocket.OPEN) return;
-    ws.send(JSON.stringify(event));
+    ws.send(JSON.stringify(frame));
   };
 
   const clearTimers = (session: ProviderScriptSession): void => {
@@ -314,62 +380,67 @@ export function startDevRealtimeProvider(
     fromIndex: number,
     delayMs: number,
   ): void => {
-    const script = SCRIPTS[session.config.externalRef];
+    const script = SCRIPTS[session.inputs.sourceMedia.externalRef ?? ""];
     if (script === undefined) return;
-    const audioWantedAt = (): boolean => session.config.modalities.includes("audio");
+    const wantsAudio = (): boolean => session.inputs.outputModality === "text-and-audio";
     for (let index = fromIndex; index < script.length; index += 1) {
       const segment = script[index]!;
-      const segmentNumber = index + 1;
+      const segmentId = `seg-${index + 1}`;
       // The segment's wall origin (relative to the session start; the
       // resume path shifts by the drive delay only — deterministic).
       const origin = delayMs + FIRST_SOURCE_DELAY_MS + (index - fromIndex) * SEGMENT_PACING_MS;
-      const previous = index > 0 ? script[index - 1]! : null;
-      const speakerChanged = previous === null || previous.speaker !== segment.speaker;
+      const speakerId = segment.speaker === "Speaker 1" ? "speaker-1" : "speaker-2";
       const push = (offsetMs: number, run: () => void): void => {
         session.timers.push(setTimeout(run, origin + offsetMs));
       };
-      // source-transcript-delta (partial) then final.
+      // source-transcript-delta (the segment's first half, then the full).
       push(0, () => {
         if (session.ended) return;
-        session.emittedSegments = Math.max(session.emittedSegments, index + 1);
         emit(ws, {
           kind: "source-transcript-delta",
           sessionId: "",
-          segmentId: segmentNumber,
-          text: segment.source,
-          startMs: segment.startMs,
-          endMs: null,
-          partial: true,
-          speaker: segment.speaker,
-          atMs: Date.now(),
-        } satisfies RealtimeProviderStreamEvent);
+          occurredAt: new Date().toISOString(),
+          segmentId,
+          deltaText: segment.source.slice(0, Math.floor(segment.source.length / 2)),
+          sourceLanguage: "en",
+          timing: { startedAtMs: segment.startMs, endedAtMs: segment.endMs },
+        });
         emit(ws, {
           kind: "speaker-attribution",
           sessionId: "",
-          segmentId: segmentNumber,
-          speaker: segment.speaker,
-          changed: speakerChanged,
-          atMs: Date.now(),
-        } satisfies RealtimeProviderStreamEvent);
+          occurredAt: new Date().toISOString(),
+          speakerId,
+          label: segment.speaker,
+          segmentId,
+          trustedSource: false,
+        });
+        if (!session.firstSourceDeltaObserved) {
+          session.firstSourceDeltaObserved = true;
+          emit(ws, {
+            kind: "timing-metadata",
+            sessionId: "",
+            occurredAt: new Date().toISOString(),
+            firstSourceTranscriptDeltaMs: Date.now() - session.startedAtMs,
+          });
+        }
       });
       push(SOURCE_FINAL_OFFSET_MS, () => {
         if (session.ended) return;
-        session.sourceFinalWall.set(segmentNumber, Date.now());
+        session.sourceFinalWall.set(segmentId, Date.now());
         emit(ws, {
           kind: "source-transcript-final",
           sessionId: "",
-          segmentId: segmentNumber,
+          occurredAt: new Date().toISOString(),
+          segmentId,
           text: segment.source,
-          startMs: segment.startMs,
-          endMs: segment.endMs,
-          speaker: segment.speaker,
-          atMs: Date.now(),
-        } satisfies RealtimeProviderStreamEvent);
+          speakerId,
+          timing: { startedAtMs: segment.startMs, endedAtMs: segment.endMs },
+        });
       });
       // The scripted terminal failure (the de direction after segment 2).
       if (
-        session.config.targetLanguage === SCRIPTED_FAILURE_LANGUAGE &&
-        segmentNumber >= 2
+        session.inputs.targetLanguage === SCRIPTED_FAILURE_LANGUAGE &&
+        index >= 1
       ) {
         push(SOURCE_FINAL_OFFSET_MS + 120, () => {
           if (session.ended) return;
@@ -378,18 +449,18 @@ export function startDevRealtimeProvider(
           ws.send(
             JSON.stringify({
               kind: "provider-terminal",
-              errorKind: "provider-failed",
+              errorKind: "provider-failure",
               detail:
                 "the provider's German direction failed mid-session (the dev provider's scripted terminal failure — the graceful-fallback walk)",
               recovery: "Start the translation again, or keep watching with the original captions.",
-            }),
+            } satisfies ProviderTerminalFrame),
           );
           ws.close();
         });
         return;
       }
       // translation deltas + final (the modeled lag).
-      const translation = segment.translations[session.config.targetLanguage];
+      const translation = segment.translations[session.inputs.targetLanguage];
       if (translation !== undefined) {
         const half = Math.floor(translation.length / 2);
         push(TRANSLATION_LAG_MS, () => {
@@ -397,60 +468,73 @@ export function startDevRealtimeProvider(
           emit(ws, {
             kind: "translation-delta",
             sessionId: "",
-            segmentId: segmentNumber,
-            targetLanguage: session.config.targetLanguage,
-            text: translation.slice(0, half),
-            partial: true,
-            atMs: Date.now(),
-          } satisfies RealtimeProviderStreamEvent);
+            occurredAt: new Date().toISOString(),
+            segmentId: `${segmentId}-tr`,
+            sourceSegmentId: segmentId,
+            targetLanguage: session.inputs.targetLanguage,
+            deltaText: translation.slice(0, half),
+          });
+          if (!session.firstTranslationDeltaObserved) {
+            session.firstTranslationDeltaObserved = true;
+            emit(ws, {
+              kind: "timing-metadata",
+              sessionId: "",
+              occurredAt: new Date().toISOString(),
+              firstTranslationDeltaMs: Date.now() - session.startedAtMs,
+            });
+          }
         });
         push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS, () => {
           if (session.ended) return;
           emit(ws, {
             kind: "translation-delta",
             sessionId: "",
-            segmentId: segmentNumber,
-            targetLanguage: session.config.targetLanguage,
-            text: translation,
-            partial: true,
-            atMs: Date.now(),
-          } satisfies RealtimeProviderStreamEvent);
+            occurredAt: new Date().toISOString(),
+            segmentId: `${segmentId}-tr`,
+            sourceSegmentId: segmentId,
+            targetLanguage: session.inputs.targetLanguage,
+            deltaText: translation.slice(half),
+          });
         });
         push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS + TRANSLATION_FINAL_GAP_MS, () => {
           if (session.ended) return;
-          const translationFinalAtWall = Date.now();
+          const translationFinalWall = Date.now();
           emit(ws, {
             kind: "translation-segment-final",
             sessionId: "",
-            segmentId: segmentNumber,
-            targetLanguage: session.config.targetLanguage,
+            occurredAt: new Date().toISOString(),
+            segmentId: `${segmentId}-tr`,
+            sourceSegmentId: segmentId,
+            targetLanguage: session.inputs.targetLanguage,
             text: translation,
-            startMs: segment.startMs,
-            endMs: segment.endMs,
-            speaker: segment.speaker,
-            atMs: translationFinalAtWall,
-          } satisfies RealtimeProviderStreamEvent);
-          // timing-metadata (the source/translation pair — §R25-A; the
-          // R25-L drift derivation's input, from OBSERVED wall times).
-          const sourceFinalWall = session.sourceFinalWall.get(segmentNumber) ?? translationFinalAtWall - (TRANSLATION_LAG_MS - SOURCE_FINAL_OFFSET_MS);
-          emit(ws, {
-            kind: "timing-metadata",
-            sessionId: "",
-            segmentId: segmentNumber,
-            sourceStartMs: segment.startMs,
-            sourceFinalAtMs: sourceFinalWall,
-            translationFinalAtMs: translationFinalAtWall,
-            atMs: translationFinalAtWall,
-          } satisfies RealtimeProviderStreamEvent);
-          // usage-telemetry (the provider's own usage truth — §R25-A).
+            timing: { startedAtMs: segment.startMs, endedAtMs: segment.endMs },
+          });
+          // timing-metadata (the source/translation lag — the provider's
+          // own observed pair for this segment, §R25-A).
+          const sourceFinalWall = session.sourceFinalWall.get(segmentId);
+          if (sourceFinalWall !== undefined) {
+            emit(ws, {
+              kind: "timing-metadata",
+              sessionId: "",
+              occurredAt: new Date().toISOString(),
+              sourceToTranslationLagMs: Math.max(0, translationFinalWall - sourceFinalWall),
+            });
+          }
+          // usage-telemetry (the double's documented token model; the
+          // cost MATH is the shared model's — §R25-A).
           emit(ws, {
             kind: "usage-telemetry",
             sessionId: "",
-            inputAudioMs: SEGMENT_PACING_MS,
-            outputTextChars: translation.length,
-            outputAudioMs: audioWantedAt() ? 1_200 : 0,
-            atMs: Date.now(),
-          } satisfies RealtimeProviderStreamEvent);
+            occurredAt: new Date().toISOString(),
+            usage: {
+              inputAudioTokens: Math.round((SEGMENT_PACING_MS / 1000) * INPUT_AUDIO_TOKENS_PER_SECOND),
+              textOutputTokens: Math.ceil(translation.length / 4),
+              outputAudioTokens: wantsAudio()
+                ? Math.round(1.2 * OUTPUT_AUDIO_TOKENS_PER_SECOND)
+                : 0,
+              imageInputTokens: 0,
+            },
+          });
         });
       }
       // The audio chunk (real PCM bytes — the translated-speech player).
@@ -459,25 +543,36 @@ export function startDevRealtimeProvider(
       // from the next segment (honest, never retroactive).
       if (translation !== undefined) {
         push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS + TRANSLATION_FINAL_GAP_MS + AUDIO_CHUNK_OFFSET_MS, () => {
-          if (session.ended || !audioWantedAt()) return;
+          if (session.ended || !wantsAudio()) return;
+          const chunk = synthesizePcmChunk(index + 1, 1_200, 1);
           emit(ws, {
             kind: "translated-audio-chunk",
             sessionId: "",
-            segmentId: segmentNumber,
-            seq: 1,
-            payload: synthesizePcmChunk(segmentNumber, 1_200, 1),
-            format: "pcm16/24000",
-            atMs: Date.now(),
-          } satisfies RealtimeProviderStreamEvent);
+            occurredAt: new Date().toISOString(),
+            sequence: index + 1,
+            audioBase64: Buffer.from(chunk).toString("base64"),
+            format: "pcm16",
+            timing: { startedAtMs: segment.startMs, endedAtMs: segment.endMs },
+          } as unknown as DevProviderStreamFrame);
+          if (!session.firstAudioChunkObserved) {
+            session.firstAudioChunkObserved = true;
+            emit(ws, {
+              kind: "timing-metadata",
+              sessionId: "",
+              occurredAt: new Date().toISOString(),
+              firstTranslatedAudioChunkMs: Date.now() - session.startedAtMs,
+            });
+          }
         });
       }
       // The scripted provider DROP (once, after the drop segment's events).
-      if (segmentNumber === SCRIPTED_DROP_AFTER_SEGMENT && !session.dropped) {
+      if (index + 1 === SCRIPTED_DROP_AFTER_SEGMENT && !session.dropped) {
         push(TRANSLATION_LAG_MS + TRANSLATION_DELTA_GAP_MS + TRANSLATION_FINAL_GAP_MS + AUDIO_CHUNK_OFFSET_MS + 300, () => {
           if (session.ended) return;
           session.dropped = true;
           // The modeled provider network blip: the connection closes
-          // abruptly mid-stream. The bridge must reconnect + resume.
+          // abruptly mid-stream. The bridge must drive the domain
+          // 'reconnect' operation and resume.
           ws.terminate();
         });
         return;
@@ -517,96 +612,127 @@ export function startDevRealtimeProvider(
     });
   });
 
-  /** The provider's message handler (extracted for the ws event wiring). */
+  /** The provider's message handler (the ws event wiring). */
   const handleMessage = (ws: WsServerSocket, message: string): void => {
-        let parsed: ProviderControl;
-        try {
-          parsed = JSON.parse(message) as ProviderControl;
-        } catch {
-          ws.send(JSON.stringify({ kind: "provider-refused", errorKind: "invalid-input", detail: "the control message is not JSON", recovery: "" }));
-          return;
-        }
-        if (parsed.kind === "provider-session-start") {
-          const script = SCRIPTS[parsed.session.externalRef];
-          if (script === undefined) {
-            ws.send(
-              JSON.stringify({
-                kind: "provider-refused",
-                errorKind: "invalid-input",
-                detail: `no scripted media for '${parsed.session.externalRef}' (the dev provider's catalog)`,
-                recovery: "Play an item whose media the dev provider carries.",
-              }),
-            );
-            ws.close();
-            return;
-          }
-          const token = `devrt_${Math.random().toString(36).slice(2, 10)}`;
-          const session: ProviderScriptSession = {
-            token,
-            config: parsed.session,
-            startedAtMs: Date.now(),
-            emittedSegments: 0,
-            sourceFinalWall: new Map(),
-            timers: [],
-            ended: false,
-            dropped: false,
-          };
-          sessions.set(token, session);
-          connectionTokens.set(ws, token);
-          ws.send(
-            JSON.stringify({
-              kind: "provider-session-ready",
-              token,
-              providerId: DEV_REALTIME_PROVIDER_ID,
-              sourceStream: "scripted-dev-double",
-            }),
-          );
-          scheduleFrom(ws, session, 0, 0);
-          return;
-        }
-        if (parsed.kind === "provider-session-resume") {
-          const session = sessions.get(parsed.token);
-          if (session === undefined || session.ended) {
-            ws.send(
-              JSON.stringify({
-                kind: "provider-refused",
-                errorKind: "invalid-input",
-                detail: "the provider session is unknown or ended",
-                recovery: "Start a new session.",
-              }),
-            );
-            ws.close();
-            return;
-          }
-          connectionTokens.set(ws, session.token);
-          ws.send(JSON.stringify({ kind: "provider-session-ready", token: session.token, providerId: DEV_REALTIME_PROVIDER_ID, sourceStream: "scripted-dev-double", resumed: true, lastCommittedSegmentId: parsed.lastCommittedSegmentId }));
-          scheduleFrom(ws, session, parsed.lastCommittedSegmentId, RESUME_DELAY_MS);
-          return;
-        }
-        if (parsed.kind === "provider-audio-append") {
-          // The production capture path's relay target: the dev double
-          // counts the appended audio into its usage truth (honest — the
-          // scripted drive is the fixtures' source, the capture path is
-          // the production source; both are typed, never mixed).
-          return;
-        }
-        if (parsed.kind === "provider-configure") {
-          // The dev provider honors configure by mutating the session's
-          // LIVE config: the audio modality is read at each segment's
-          // emission time (a mid-session translated-speech enable takes
-          // effect from the next segment — honest, never retroactive).
-          const token = connectionTokens.get(ws) ?? null;
-          const session = typeof token === "string" ? sessions.get(token) : undefined;
-          if (session !== undefined && Array.isArray(parsed.modalities)) {
-            const modalities = parsed.modalities.filter(
-              (entry): entry is RealtimeModality => entry === "text" || entry === "audio",
-            );
-            if (modalities.length > 0) {
-              session.config = { ...session.config, modalities };
-            }
-          }
-          return;
-        }
+    let parsed: DevProviderControl;
+    try {
+      parsed = JSON.parse(message) as DevProviderControl;
+    } catch {
+      ws.send(
+        JSON.stringify({
+          kind: "provider-refused",
+          errorKind: "unknown",
+          detail: "the control message is not JSON",
+          recovery: "",
+        } satisfies ProviderRefusalFrame),
+      );
+      return;
+    }
+    if (parsed.kind === "provider-session-start") {
+      const externalRef = parsed.inputs.sourceMedia.externalRef ?? "";
+      const script = SCRIPTS[externalRef];
+      // The double's own fail-closed gates (the shared validator ran
+      // bridge-side already; the provider double re-asserts them).
+      if (script === undefined) {
+        ws.send(
+          JSON.stringify({
+            kind: "provider-refused",
+            errorKind: "policy",
+            detail: `no scripted media for '${externalRef}' (the dev provider's catalog)`,
+            recovery: "Play an item whose media the dev provider carries.",
+          } satisfies ProviderRefusalFrame),
+        );
+        ws.close();
+        return;
+      }
+      if (parsed.inputs.sourceMedia.audioStreamLegallyAvailable !== true) {
+        ws.send(
+          JSON.stringify({
+            kind: "provider-refused",
+            errorKind: "policy",
+            detail: "the source media declares no lawful audio path — the provider refuses (no capture circumvention, ever)",
+            recovery: "Choose a way of watching whose audio WebFlix can lawfully reach.",
+          } satisfies ProviderRefusalFrame),
+        );
+        ws.close();
+        return;
+      }
+      const token = `devrt_${Math.random().toString(36).slice(2, 10)}`;
+      const session: ProviderScriptSession = {
+        token,
+        inputs: parsed.inputs,
+        startedAtMs: Date.now(),
+        sourceFinalWall: new Map(),
+        firstSourceDeltaObserved: false,
+        firstTranslationDeltaObserved: false,
+        firstAudioChunkObserved: false,
+        timers: [],
+        ended: false,
+        dropped: false,
+      };
+      sessions.set(token, session);
+      connectionTokens.set(ws, token);
+      ws.send(
+        JSON.stringify({
+          kind: "provider-session-ready",
+          token,
+          providerId: DEV_REALTIME_PROVIDER_ID,
+          modelId: DEV_REALTIME_MODEL_ID,
+          modelRevision: DEV_REALTIME_MODEL_REVISION,
+          sourceStream: "scripted-dev-double",
+        } satisfies ProviderHandshakeFrame),
+      );
+      scheduleFrom(ws, session, 0, 0);
+      return;
+    }
+    if (parsed.kind === "provider-session-resume") {
+      const session = sessions.get(parsed.token);
+      if (session === undefined || session.ended) {
+        ws.send(
+          JSON.stringify({
+            kind: "provider-refused",
+            errorKind: "policy",
+            detail: "the provider session is unknown or ended",
+            recovery: "Start a new session.",
+          } satisfies ProviderRefusalFrame),
+        );
+        ws.close();
+        return;
+      }
+      connectionTokens.set(ws, session.token);
+      ws.send(
+        JSON.stringify({
+          kind: "provider-session-ready",
+          token: session.token,
+          providerId: DEV_REALTIME_PROVIDER_ID,
+          modelId: DEV_REALTIME_MODEL_ID,
+          modelRevision: DEV_REALTIME_MODEL_REVISION,
+          sourceStream: "scripted-dev-double",
+          resumed: true,
+        } satisfies ProviderHandshakeFrame),
+      );
+      scheduleFrom(ws, session, Number(parsed.lastCommittedSegmentId.replace("seg-", "")), RESUME_DELAY_MS);
+      return;
+    }
+    if (parsed.kind === "provider-audio-append") {
+      // The production capture path's relay target: the dev double
+      // counts the appended audio honestly (the scripted drive is the
+      // fixtures' source; the capture path is the production source;
+      // both are typed, never mixed).
+      return;
+    }
+    if (parsed.kind === "provider-configure") {
+      // The dev provider honors configure by mutating the session's
+      // LIVE inputs: the audio modality is read at each segment's
+      // emission time (a mid-session translated-speech enable takes
+      // effect from the next segment — honest, never retroactive).
+      const token = connectionTokens.get(ws) ?? null;
+      const session = typeof token === "string" ? sessions.get(token) : undefined;
+      if (session !== undefined && (parsed.outputModality === "text" || parsed.outputModality === "text-and-audio")) {
+        session.inputs = { ...session.inputs, outputModality: parsed.outputModality };
+      }
+      return;
+    }
     if (parsed.kind === "provider-stop") {
       const token = connectionTokens.get(ws) ?? null;
       if (typeof token === "string") {
@@ -649,218 +775,6 @@ export function startDevRealtimeProvider(
       wss.close();
       await new Promise<void>((resolve) => {
         httpServer.close(() => resolve());
-      });
-    },
-  };
-}
-
-// ---------------------------------------------------------------------------
-// The provider CLIENT (the bridge's provider-WebSocket leg — the real
-// Browser → bridge → PROVIDER transport hop §R25-D wires)
-// ---------------------------------------------------------------------------
-
-/** The typed handshake the provider client awaits before the session is live. */
-interface ProviderHandshake {
-  readonly kind: "provider-session-ready";
-  readonly token: string;
-  readonly providerId: string;
-  readonly sourceStream: string;
-  readonly resumed?: boolean;
-  readonly lastCommittedSegmentId?: number;
-}
-
-/** The provider's terminal failure frame. */
-interface ProviderTerminalFrame {
-  readonly kind: "provider-terminal";
-  readonly errorKind: string;
-  readonly detail: string;
-  readonly recovery: string;
-}
-
-/** The provider's refusal frame (a session could not start/resume). */
-interface ProviderRefusalFrame {
-  readonly kind: "provider-refused";
-  readonly errorKind: string;
-  readonly detail: string;
-  readonly recovery: string;
-}
-
-/** The stream-event kinds the provider emits (the normalized vocabulary subset). */
-const STREAM_EVENT_KINDS: readonly string[] = [
-  "source-transcript-delta",
-  "source-transcript-final",
-  "translation-delta",
-  "translation-segment-final",
-  "speaker-attribution",
-  "translated-audio-chunk",
-  "timing-metadata",
-  "usage-telemetry",
-];
-
-/**
- * Create the dev provider CLIENT factory — the seam implementation the
- * fixtures-boot bridge consumes. Every `createSession` opens a REAL
- * WebSocket to the dev provider server (the same hop the production
- * bridge opens to the Model-Fabric-registered provider endpoint), drives
- * the start/resume handshake, and surfaces the provider's normalized
- * events/terminal/close through the typed session interface.
- */
-export function createDevRealtimeProviderClient(providerUrl: string): RealtimeProviderSessionFactory {
-  return {
-    providerId: DEV_REALTIME_PROVIDER_ID,
-    providerDetail: DEV_REALTIME_PROVIDER_DETAIL,
-    targetLanguages: DEV_REALTIME_TARGET_LANGUAGES,
-    async createSession(config, resume) {
-      return await new Promise<RealtimeProviderSession | RealtimeProviderRefusal>((resolve) => {
-        let settled = false;
-        let ws: WebSocket;
-        try {
-          ws = new WebSocket(providerUrl);
-        } catch (error) {
-          resolve({
-            ok: false,
-            kind: "no-realtime-provider-registered",
-            detail: `the provider endpoint refused the connection (${error instanceof Error ? error.message : String(error)})`,
-            recovery: "Check the realtime provider registration in Model & AI settings.",
-          });
-          return;
-        }
-        const eventHandlers: ((event: RealtimeProviderStreamEvent) => void)[] = [];
-        const terminalHandlers: ((failure: { errorKind: string; detail: string; recovery: string }) => void)[] = [];
-        const closeHandlers: (() => void)[] = [];
-        let stopped = false;
-        let terminalSeen = false;
-        let handshake: ProviderHandshake | null = null;
-
-        const asStreamEvent = (parsed: Record<string, unknown>): RealtimeProviderStreamEvent | null => {
-          const kind = parsed["kind"];
-          if (typeof kind !== "string" || !STREAM_EVENT_KINDS.includes(kind)) return null;
-          // The normalized vocabulary is closed and bridge-stamped: the
-          // raw frame is spread into the typed shape with the bridge's
-          // sessionId filled by the bridge itself ("" here).
-          return parsed as unknown as RealtimeProviderStreamEvent;
-        };
-
-        ws.addEventListener("open", () => {
-          ws.send(
-            JSON.stringify(
-              resume === undefined
-                ? { kind: "provider-session-start", session: config }
-                : {
-                    kind: "provider-session-resume",
-                    token: resume.providerSessionToken,
-                    lastCommittedSegmentId: resume.lastCommittedSegmentId,
-                  },
-            ),
-          );
-        });
-        ws.addEventListener("message", (event) => {
-          if (typeof event.data !== "string") return;
-          let parsed: Record<string, unknown>;
-          try {
-            parsed = JSON.parse(event.data) as Record<string, unknown>;
-          } catch {
-            return;
-          }
-          const kind = parsed["kind"];
-          if (kind === "provider-session-ready") {
-            handshake = parsed as unknown as ProviderHandshake;
-            if (!settled) {
-              settled = true;
-              resolve({
-                providerId: DEV_REALTIME_PROVIDER_ID,
-                token: handshake.token,
-                send(message: unknown): void {
-                  if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(message));
-                },
-                onEvent(handler): () => void {
-                  eventHandlers.push(handler);
-                  return () => {
-                    const index = eventHandlers.indexOf(handler);
-                    if (index >= 0) eventHandlers.splice(index, 1);
-                  };
-                },
-                onTerminal(handler): () => void {
-                  terminalHandlers.push(handler);
-                  return () => {
-                    const index = terminalHandlers.indexOf(handler);
-                    if (index >= 0) terminalHandlers.splice(index, 1);
-                  };
-                },
-                onClose(handler): () => void {
-                  closeHandlers.push(handler);
-                  return () => {
-                    const index = closeHandlers.indexOf(handler);
-                    if (index >= 0) closeHandlers.splice(index, 1);
-                  };
-                },
-                stop(): void {
-                  if (stopped) return;
-                  stopped = true;
-                  try {
-                    ws.send(JSON.stringify({ kind: "provider-stop" }));
-                  } catch {
-                    // The socket may already be gone — the close below is the truth.
-                  }
-                  ws.close();
-                },
-              });
-            }
-            return;
-          }
-          if (kind === "provider-refused") {
-            const refusal = parsed as unknown as ProviderRefusalFrame;
-            if (!settled) {
-              settled = true;
-              resolve({
-                ok: false,
-                kind: refusal.errorKind === "anonymous-quota-reached" ? "anonymous-quota-reached" : "invalid-input",
-                detail: refusal.detail,
-                recovery: refusal.recovery,
-              });
-            }
-            ws.close();
-            return;
-          }
-          if (kind === "provider-terminal") {
-            const terminal = parsed as unknown as ProviderTerminalFrame;
-            terminalSeen = true;
-            for (const handler of [...terminalHandlers]) {
-              handler({ errorKind: terminal.errorKind, detail: terminal.detail, recovery: terminal.recovery });
-            }
-            ws.close();
-            return;
-          }
-          const streamEvent = asStreamEvent(parsed);
-          if (streamEvent !== null) {
-            for (const handler of [...eventHandlers]) handler(streamEvent);
-          }
-        });
-        ws.addEventListener("close", () => {
-          if (!settled) {
-            settled = true;
-            resolve({
-              ok: false,
-              kind: "no-realtime-provider-registered",
-              detail: "the provider endpoint closed before the session was ready",
-              recovery: "Check the realtime provider registration in Model & AI settings.",
-            });
-            return;
-          }
-          if (stopped || terminalSeen) return;
-          for (const handler of [...closeHandlers]) handler();
-        });
-        ws.addEventListener("error", () => {
-          if (!settled) {
-            settled = true;
-            resolve({
-              ok: false,
-              kind: "no-realtime-provider-registered",
-              detail: "the provider endpoint could not be reached",
-              recovery: "Check the realtime provider registration in Model & AI settings.",
-            });
-          }
-        });
       });
     },
   };

@@ -61,17 +61,18 @@ export async function ensureRealtimeBridgeBooted(): Promise<RealtimeBridgeStatus
     try {
       if (process.env.WFX_DEV_FIXTURES === "1") {
         // The fixtures boot: the bridge + the deterministic dev provider
-        // double (the dynamic import keeps the provider out of every
+        // double (the dynamic imports keep the provider out of every
         // static graph — the R23 lesson).
         const providerModule = await import("./dev-realtime-provider");
         const devProvider = providerModule.startDevRealtimeProvider({
           port: DEV_REALTIME_PROVIDER_PORT,
         });
-        const factory = providerModule.createDevRealtimeProviderClient(devProvider.url);
+        const sessionModule = await import("./dev-realtime-session");
+        const factory = sessionModule.createDevRealtimeSeam(devProvider.url);
         const bridgeModule = await import("./realtime-bridge");
         bridgeModule.startRealtimeBridge({
           port: REALTIME_BRIDGE_PORT,
-          providerFactory: factory,
+          providerSeamFactory: factory,
         });
       } else {
         // The explicit service-side boot: the bridge WITHOUT a provider

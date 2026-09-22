@@ -1,36 +1,42 @@
 /**
  * @wfx/app-web — the R25 WEBFLIX REALTIME BRIDGE (R25-D, the web lane's
- * WebSocket realtime transport).
+ * WebSocket realtime transport, bound to the shared contracts).
  *
  * THE TRANSPORT LAW (§R25-D, frozen):
- *   Browser → WebFlix WebSocket (this bridge) → the provider WebSocket
- *   (through the injected provider-session seam).
+ *   Browser → WebFlix WebSocket (this bridge) → the provider session
+ *   seam (the frozen `RealtimeTranslationSession` port — the shared
+ *   R25-A contract; the deterministic dev double in the fixtures boot,
+ *   the Model-Fabric-registered adapter in the service boot).
  *   NEVER: Browser → the provider with a provider credential.
  *
  * The bridge is the web lane's prototype of the server-side realtime
  * bridge over the local dev server (the mini-service path the dispatch
- * sanctions — one Bun WebSocket server inside the dev process, port 3102,
- * started by instrumentation.ts / the capability route's lazy boot). The
- * provider behind the seam is provider-neutral (the deterministic dev
- * double in the fixtures boot; the Model-Fabric realtime route when
- * Worker 1's contract lands; the honest typed gap when none is
- * registered).
+ * sanctions — one `ws`-based WebSocket server inside the dev process,
+ * port 3102, started by instrumentation.ts). It owns:
  *
- * WHAT THE BRIDGE OWNS:
- * - typed wire validation (parseRealtimeClientMessage — never a trusted cast);
+ * - typed wire validation (parseRealtimeWireClientMessage — the frozen
+ *   OPERATIONS, never a trusted cast) + the SHARED input validation
+ *   (`validateRealtimeTranslationSessionInputs` — Worker 1's
+ *   fail-closed gates: the legal-audio gate, the consent gate);
  * - session identity + the RECONNECTABLE continuity (the resume token,
  *   the retained session window, the last committed segment — §R25-A
  *   reconnect/resume);
- * - the PROVIDER connection lifecycle (create, relay, the provider-drop
- *   reconnect, the terminal failure);
- * - the R25-K cost controls (session duration cap, anonymous session
- *   quota, the audio-output budget's typed text-only downgrade — none of
- *   which ever touch playback);
+ * - the provider session lifecycle (open/start, the event relay, the
+ *   provider-drop `reconnect` operation — legal only from the shared
+ *   `reconnecting` state — and the terminal failures);
+ * - the R25-K cost controls THROUGH THE SHARED POLICY ENGINE
+ *   (`resolveRealtimeOutputModality`, `evaluateRealtimeSessionPolicy`,
+ *   `DEFAULT_REALTIME_ANONYMOUS_QUOTA` — never a second policy);
  * - the R25-L telemetry records (bridge-side observations; the client's
  *   own markers append through POST /telemetry).
  *
- * THE PERSISTENCE LAW (§R25-D): ONLY continuity + telemetry state is kept
- * (in-process). Raw media is relayed, never stored.
+ * THE PERSISTENCE LAW (§R25-D): ONLY continuity + telemetry state is
+ * kept (in-process). Raw media is relayed, never stored.
+ *
+ * THE PLAYBACK LAW (the shared total law): translation starting,
+ * failing, degrading, or ending NEVER blocks, stops, or delays base
+ * playback — this bridge has no capability over the media pipeline at
+ * all (it never touches a playback route).
  */
 
 import { createServer, type Server as HttpServer } from "node:http";
@@ -38,18 +44,31 @@ import { createServer, type Server as HttpServer } from "node:http";
 import { WebSocket as WsServerSocket, WebSocketServer } from "ws";
 
 import type {
-  RealtimeBridgeEvent,
-  RealtimeProviderResume,
-  RealtimeProviderSessionFactory,
-  RealtimeProviderSession,
-  RealtimeSessionClosedEvent,
-  RealtimeSessionConfig,
-} from "./realtime-contract";
-import { parseRealtimeClientMessage } from "./realtime-contract";
+  RealtimeSessionUsage,
+  RealtimeTranslationEvent,
+  RealtimeTranslationSessionInputs,
+} from "@wfx/domain";
+import {
+  DEFAULT_REALTIME_ANONYMOUS_QUOTA,
+  realtimeSessionCostUsd,
+  resolveRealtimeOutputModality,
+  validateRealtimeTranslationSessionInputs,
+  type RealtimeTranslationCostPolicy,
+} from "@wfx/model-fabric";
+
+import type {
+  RealtimeProviderSeamFactory,
+  RealtimeProviderSessionSeam,
+  RealtimeTransportMessage,
+} from "./realtime-wire";
+import {
+  encodeRealtimeWireEvent,
+  parseRealtimeWireClientMessage,
+} from "./realtime-wire";
 import { setRealtimeBridgeStatus } from "./realtime-bridge-state";
 
 // ---------------------------------------------------------------------------
-// The bridge's policy defaults (§R25-K — injectable for tests)
+// The bridge's policy defaults (§R25-K — the SHARED policy, injectable)
 // ---------------------------------------------------------------------------
 
 /** The default bridge port (the dev boot's 3102). */
@@ -58,14 +77,11 @@ export const REALTIME_BRIDGE_DEFAULT_PORT = 3102;
 /** The client-connection resume window (the continuity retention). */
 const CLIENT_RESUME_WINDOW_MS = 30_000;
 
-/** The default session duration cap (§R25-K — a cost control, never a playback block). */
-const DEFAULT_SESSION_DURATION_CAP_MS = 240_000;
-
-/** The default per-session audio-output budget (§R25-K's text-only downgrade trigger). */
-const DEFAULT_AUDIO_OUTPUT_BUDGET_MS = 30_000;
-
-/** The default anonymous session quota (§R25-K anonymous quotas; frictionless, bounded). */
-const DEFAULT_ANONYMOUS_SESSION_QUOTA = 3;
+/**
+ * The bridge's session budget ceiling (§R25-K's budget limit — the
+ * shared policy's `maxSessionCostUsd`; the DEV prototype's ceiling).
+ */
+const DEFAULT_SESSION_BUDGET_USD = 1.0;
 
 // ---------------------------------------------------------------------------
 // The session records
@@ -73,32 +89,36 @@ const DEFAULT_ANONYMOUS_SESSION_QUOTA = 3;
 
 /** One bridge session's full state (continuity + policy + telemetry). */
 interface BridgeSession {
+  /** The DOMAIN session id (the bridge's routing key — one id, one truth). */
   readonly sessionId: string;
   readonly resumeToken: string;
-  config: RealtimeSessionConfig;
+  readonly inputs: RealtimeTranslationSessionInputs;
+  /** The shared cost policy the session runs under. */
+  costPolicy: RealtimeTranslationCostPolicy;
+  /** The effective modality after the shared resolution (§R25-K). */
+  effectiveOutputModality: "text" | "text-and-audio";
   /** "anonymous" or "viewer:<token>" (opaque — the quota key). */
   readonly viewerKey: string;
-  provider: RealtimeProviderSession | null;
-  /** The provider token for the reconnect resume (continuity). */
-  providerToken: string | null;
+  /** The provider session seam (the frozen domain port + extras). */
+  seam: RealtimeProviderSessionSeam;
   client: WsServerSocket | null;
-  /** The last committed source segment (the resume cursor). */
-  lastCommittedSegmentId: number;
+  /** The last committed source segment (the resume cursor — the domain segment ids). */
+  lastCommittedSegmentId: string;
   readonly createdWallMs: number;
   ended: boolean;
-  /** The audio-output downgrade truth (the text-only fallback). */
-  audioDowngraded: boolean;
-  /** Usage totals (the cost accounting). */
-  usage: { inputAudioMs: number; outputTextChars: number; outputAudioMs: number };
+  /** Usage totals (the domain token truth, accumulated for the policy verdicts). */
+  usage: RealtimeSessionUsage;
   /** The bridge-side markers (telemetry). */
-  readonly markers: { marker: string; atMs: number }[];
+  readonly markers: { readonly marker: string; readonly atMs: number }[];
   /** The continuity expiry timer (the client-disconnect retention window). */
   continuityTimer: ReturnType<typeof setTimeout> | null;
-  /** The duration-cap timer. */
+  /** The duration-cap timer (the shared policy's session limit). */
   capTimer: ReturnType<typeof setTimeout> | null;
+  /** The detached relay task (the event pump's stop signal). */
+  relayStopped: boolean;
 }
 
-/** The per-connection routing state (ws → the bridge data). */
+/** The per-connection routing state (ws → the session binding + viewer truth). */
 interface BridgeSocketState {
   sessionId: string | null;
   cookieHeader: string;
@@ -113,15 +133,14 @@ export interface RealtimeBridgeOptions {
   /** The fixed port (default 3102). */
   readonly port?: number;
   /**
-   * The provider-session seam (the Model-Fabric shape). Absent in the
-   * service boot until Worker 1's contract lands — the bridge answers the
-   * honest typed no-realtime-provider-registered gap.
+   * The provider session seam factory (the shared domain port). Absent
+   * in the service boot until the fabric route lands — the bridge
+   * answers the honest typed refusal (never a fixture fallback).
    */
-  readonly providerFactory?: RealtimeProviderSessionFactory;
+  readonly providerSeamFactory?: RealtimeProviderSeamFactory | null;
   /** §R25-K policy overrides (tests). */
-  readonly sessionDurationCapMs?: number;
-  readonly audioOutputBudgetMs?: number;
-  readonly anonymousSessionQuota?: number;
+  readonly sessionBudgetUsd?: number;
+  readonly anonymousMaxSessionDurationMs?: number;
   /** Allowed browser origins for the WS upgrade (absent Origin headers — non-browser tooling — pass). */
   readonly allowedOrigins?: readonly string[];
 }
@@ -130,7 +149,6 @@ export interface RealtimeBridgeOptions {
 export interface RealtimeBridgeHandle {
   readonly port: number;
   readonly url: string;
-  /** The health truth (the status module's read). */
   readonly providerId: string | null;
   stop(): Promise<void>;
 }
@@ -153,9 +171,9 @@ interface ClientTelemetryAppend {
  */
 export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): RealtimeBridgeHandle {
   const port = options.port ?? REALTIME_BRIDGE_DEFAULT_PORT;
-  const durationCapMs = options.sessionDurationCapMs ?? DEFAULT_SESSION_DURATION_CAP_MS;
-  const audioBudgetMs = options.audioOutputBudgetMs ?? DEFAULT_AUDIO_OUTPUT_BUDGET_MS;
-  const anonymousQuota = options.anonymousSessionQuota ?? DEFAULT_ANONYMOUS_SESSION_QUOTA;
+  const sessionBudgetUsd = options.sessionBudgetUsd ?? DEFAULT_SESSION_BUDGET_USD;
+  const anonymousMaxSessionDurationMs =
+    options.anonymousMaxSessionDurationMs ?? DEFAULT_REALTIME_ANONYMOUS_QUOTA.maxSessionDurationMs;
   const allowedOrigins =
     options.allowedOrigins ?? ["http://localhost:3101", "http://127.0.0.1:3101"];
 
@@ -164,18 +182,18 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
   const endedTelemetry: {
     readonly sessionId: string;
     readonly viewer: string;
-    readonly config: RealtimeSessionConfig;
+    readonly targetLanguage: string;
+    readonly effectiveOutputModality: string;
     readonly startedAtWallMs: number;
-    readonly lastCommittedSegmentId: number;
-    readonly audioDowngraded: boolean;
-    readonly usage: BridgeSession["usage"];
+    readonly lastCommittedSegmentId: string;
+    readonly usage: RealtimeSessionUsage;
+    readonly derivedCostUsd: number;
     readonly markers: readonly { readonly marker: string; readonly atMs: number }[];
     readonly ended: { readonly reason: string; readonly atWallMs: number } | null;
   }[] = [];
-  const anonymousCounts = new Map<string, number>();
   const clientTelemetry: ClientTelemetryAppend[] = [];
 
-  const factory = options.providerFactory ?? null;
+  const factory = options.providerSeamFactory ?? null;
 
   /** The CORS headers for the telemetry seam (read + append; no credentials). */
   const telemetryCors = {
@@ -184,29 +202,102 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
     "access-control-allow-headers": "content-type",
   };
 
-  /** Stamp + relay one bridge event to the session's client (when attached). */
-  const relay = (session: BridgeSession, event: RealtimeBridgeEvent): void => {
-    if (session.client === null || session.client.readyState !== WsServerSocket.OPEN) return;
-    try {
-      session.client.send(JSON.stringify(event));
-    } catch {
-      // A dead client socket is the disconnect path's business, not a crash.
-    }
-  };
-
   /** Record one bridge-side marker (telemetry). */
   const mark = (session: BridgeSession, marker: string): void => {
     session.markers.push({ marker, atMs: Date.now() });
   };
 
-  /** Close a session for a typed reason (the single end path). */
+  /** Send one transport envelope message to the session's client (when attached). */
+  const sendTransport = (session: BridgeSession, message: RealtimeTransportMessage): void => {
+    if (session.client === null || session.client.readyState !== WsServerSocket.OPEN) return;
+    try {
+      session.client.send(JSON.stringify(message));
+    } catch {
+      // A dead client socket is the disconnect path's business, not a crash.
+    }
+  };
+
+  /** Relay one domain event to the session's client (the wire encoding). */
+  const relayEvent = (session: BridgeSession, event: RealtimeTranslationEvent): void => {
+    if (session.client === null || session.client.readyState !== WsServerSocket.OPEN) return;
+    try {
+      session.client.send(JSON.stringify({ event: encodeRealtimeWireEvent(event) }));
+    } catch {
+      // The disconnect path's business, never a crash.
+    }
+  };
+
+  /** The event pump: consume the domain session's stream until it ends. */
+  const pumpEvents = (session: BridgeSession): void => {
+    void (async () => {
+      try {
+        for await (const event of session.seam.session.events()) {
+          if (session.relayStopped || session.ended) return;
+          // The usage/cost accumulation (the domain token truth).
+          if (event.kind === "usage-telemetry") {
+            session.usage = {
+              inputAudioTokens: session.usage.inputAudioTokens + event.usage.inputAudioTokens,
+              textOutputTokens: session.usage.textOutputTokens + event.usage.textOutputTokens,
+              outputAudioTokens: session.usage.outputAudioTokens + event.usage.outputAudioTokens,
+              imageInputTokens: session.usage.imageInputTokens + event.usage.imageInputTokens,
+            };
+          }
+          if (event.kind === "source-transcript-final") {
+            session.lastCommittedSegmentId = event.segmentId;
+          }
+          // The §R25-K audio-output filter: the shared modality resolution
+          // says text-only → the audio chunks never reach the client (the
+          // automatic text-only fallback, visible through the policy
+          // reason the session-bound ack carried).
+          if (
+            event.kind === "translated-audio-chunk" &&
+            session.effectiveOutputModality !== "text-and-audio"
+          ) {
+            continue;
+          }
+          relayEvent(session, event);
+          // The §R25-K budget verdict: the shared policy evaluation on the
+          // accumulated usage (degrade to text-only when the budget is
+          // gone — the session continues as text; the shared
+          // never-block-playback law holds).
+          if (event.kind === "usage-telemetry") {
+            const resolution = resolveRealtimeOutputModality({
+              policy: { ...session.costPolicy, requestedOutputModality: session.costPolicy.requestedOutputModality },
+              usageSoFar: session.usage,
+            });
+            if (
+              session.effectiveOutputModality === "text-and-audio" &&
+              resolution.outputModality === "text"
+            ) {
+              session.effectiveOutputModality = "text";
+              mark(session, "audio-downgraded");
+              relayEvent(session, {
+                kind: "recoverable-error",
+                sessionId: session.sessionId,
+                occurredAt: new Date().toISOString(),
+                errorKind: "policy",
+                detail: `translated speech stopped by the cost policy (${resolution.reason})`,
+                recovery: "The translation continues as text; original captions remain available.",
+              });
+            }
+          }
+        }
+      } catch {
+        // The stream ending (the provider session's own close path) — the
+        // session's terminal events already relayed; nothing more to do.
+      }
+    })();
+  };
+
+  /** Close a session for a domain reason (the single end path). */
   const closeSession = (
     session: BridgeSession,
-    reason: RealtimeSessionClosedEvent["reason"],
-    detail: string,
+    reason: "user-stop" | "user-close" | "terminal-error" | "policy" | "provider-closed",
+    _detail: string,
   ): void => {
     if (session.ended) return;
     session.ended = true;
+    session.relayStopped = true;
     if (session.capTimer !== null) clearTimeout(session.capTimer);
     if (session.continuityTimer !== null) clearTimeout(session.continuityTimer);
     mark(session, "session-closed");
@@ -216,252 +307,198 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
     endedTelemetry.push({
       sessionId: session.sessionId,
       viewer: session.viewerKey === "anonymous" ? "anonymous" : "authenticated",
-      config: session.config,
+      targetLanguage: session.inputs.targetLanguage,
+      effectiveOutputModality: session.effectiveOutputModality,
       startedAtWallMs: session.createdWallMs,
       lastCommittedSegmentId: session.lastCommittedSegmentId,
-      audioDowngraded: session.audioDowngraded,
       usage: session.usage,
+      derivedCostUsd: realtimeSessionCostUsd(session.usage),
       markers: [...session.markers],
       ended: { reason, atWallMs: Date.now() },
     });
-    relay(session, {
+    // The domain close event (the frozen vocabulary).
+    relayEvent(session, {
       kind: "session-closed",
       sessionId: session.sessionId,
+      occurredAt: new Date().toISOString(),
       reason,
-      detail,
-      atMs: Date.now(),
     });
-    if (session.provider !== null) {
-      session.provider.stop();
-      session.provider = null;
-    }
+    void session.seam.session.close().catch(() => undefined);
     sessions.delete(session.sessionId);
   };
 
-  /** Wire a provider session's handlers to one bridge session (the relay + recovery laws). */
-  const wireProvider = (session: BridgeSession, provider: RealtimeProviderSession): void => {
-    session.provider = provider;
-    session.providerToken = provider.token;
-    provider.onEvent((event) => {
-      if (session.ended) return;
-      // The cost policy's audio filter: a downgraded session relays
-      // TEXT ONLY (the §R25-K automatic text-only fallback).
-      if (event.kind === "translated-audio-chunk" && (session.audioDowngraded || !session.config.modalities.includes("audio"))) {
-        return;
-      }
-      if (event.kind === "usage-telemetry") {
-        session.usage.inputAudioMs += event.inputAudioMs;
-        session.usage.outputTextChars += event.outputTextChars;
-        session.usage.outputAudioMs += event.outputAudioMs;
-        // §R25-K — the audio-output budget: when the cumulative output
-        // audio would exceed policy, downgrade to text-only (typed,
-        // informative, never a playback block — the stream continues).
-        if (!session.audioDowngraded && session.usage.outputAudioMs > audioBudgetMs) {
-          session.audioDowngraded = true;
-          mark(session, "audio-downgraded");
-          relay(session, {
-            kind: "recoverable-error",
-            sessionId: session.sessionId,
-            errorKind: "audio-output-budget-reached",
-            detail: `translated speech stopped after ${Math.round(audioBudgetMs / 1000)}s of output audio (the cost policy) — the translation continues as text`,
-            atMs: Date.now(),
-          });
-          relay(session, {
-            kind: "usage-telemetry",
-            sessionId: session.sessionId,
-            inputAudioMs: event.inputAudioMs,
-            outputTextChars: event.outputTextChars,
-            outputAudioMs: event.outputAudioMs,
-            audioDowngraded: {
-              detail: "text-only from here (the audio-output budget was reached)",
-            },
-            atMs: Date.now(),
-          });
-        }
-      }
-      if (event.kind === "source-transcript-final") {
-        session.lastCommittedSegmentId = Math.max(session.lastCommittedSegmentId, event.segmentId);
-      }
-      // Relay with the bridge's stamps (sessionId + the bridge receive time).
-      relay(session, { ...event, sessionId: session.sessionId, atMs: Date.now() });
-    });
-    provider.onTerminal((failure) => {
-      if (session.ended) return;
-      mark(session, "terminal-error");
-      relay(session, {
-        kind: "terminal-error",
-        sessionId: session.sessionId,
-        errorKind: "provider-failed",
-        detail: failure.detail,
-        recovery: failure.recovery,
-        atMs: Date.now(),
-      });
-      closeSession(session, "provider-failed", failure.detail);
-    });
-    provider.onClose(() => {
-      if (session.ended || session.provider !== provider) return;
-      // THE PROVIDER-DROP RECOVERY (§R25-A reconnect/resume): a mid-stream
-      // provider disconnect is RECOVERABLE — the bridge reconnects the
-      // provider session with the continuity cursor and resumes.
-      mark(session, "provider-disconnected");
-      session.provider = null;
-      relay(session, {
-        kind: "recoverable-error",
-        sessionId: session.sessionId,
-        errorKind: "provider-disconnected",
-        detail: "the provider connection dropped mid-stream — the bridge is reconnecting the session",
-        atMs: Date.now(),
-      });
-      if (factory === null) {
-        closeSession(session, "provider-failed", "no provider session factory is registered");
-        return;
-      }
-      const resume: RealtimeProviderResume | undefined =
-        session.providerToken === null
-          ? undefined
-          : {
-              providerSessionToken: session.providerToken,
-              lastCommittedSegmentId: session.lastCommittedSegmentId,
-            };
-      void factory
-        .createSession(session.config, resume)
-        .then((outcome) => {
-          if (session.ended) return;
-          if ("ok" in outcome) {
-            relay(session, {
-              kind: "terminal-error",
-              sessionId: session.sessionId,
-              errorKind: "provider-failed",
-              detail: outcome.detail,
-              recovery: outcome.recovery,
-              atMs: Date.now(),
-            });
-            closeSession(session, "provider-failed", outcome.detail);
-            return;
-          }
-          wireProvider(session, outcome);
-          mark(session, "provider-reconnected");
-          relay(session, {
-            kind: "session-reconnected",
-            sessionId: session.sessionId,
-            recovered: "provider-connection",
-            lastCommittedSegmentId: session.lastCommittedSegmentId,
-            atMs: Date.now(),
-          });
-        })
-        .catch(() => {
-          if (session.ended) return;
-          closeSession(session, "provider-failed", "the provider reconnect failed");
-        });
-    });
-  };
-
-  /** Start one session (the session-start message's handler). */
+  /** Start one session (the start operation's handler). */
   const startSession = (
     ws: WsServerSocket,
-    config: RealtimeSessionConfig,
+    inputs: RealtimeTranslationSessionInputs,
     viewerKey: string,
+    socketState: BridgeSocketState,
   ): void => {
     if (factory === null) {
       ws.send(
         JSON.stringify({
-          kind: "terminal-error",
-          sessionId: "none",
-          errorKind: "no-realtime-provider-registered",
+          transport: "refused",
+          errorKind: "provider-failure",
           detail: "no realtime translation provider is registered on this host",
           recovery: "A registered Model-Fabric realtime provider serves this lane in service mode — check Model & AI settings.",
-          atMs: Date.now(),
-        } satisfies RealtimeBridgeEvent),
+        } satisfies RealtimeTransportMessage),
       );
       return;
     }
-    if (viewerKey === "anonymous") {
-      const used = anonymousCounts.get(viewerKey) ?? 0;
-      if (used >= anonymousQuota) {
-        ws.send(
-          JSON.stringify({
-            kind: "terminal-error",
-            sessionId: "none",
-            errorKind: "anonymous-quota-reached",
-            detail: `this session has started ${used} realtime translations (the anonymous quota)`,
-            recovery: "Sign in (optional) for the durable translation lane, or continue watching — original captions stay available.",
-            atMs: Date.now(),
-          } satisfies RealtimeBridgeEvent),
-        );
-        return;
-      }
-      anonymousCounts.set(viewerKey, used + 1);
+    // THE SHARED VALIDATION (Worker 1's fail-closed gates — the
+    // legal-audio gate + the consent gate included, verbatim).
+    const validation = validateRealtimeTranslationSessionInputs(inputs);
+    if (!validation.ok) {
+      ws.send(
+        JSON.stringify({
+          transport: "refused",
+          errorKind: "policy",
+          detail: `the session inputs were refused: ${validation.issues
+            .map((issue) => `${issue.path}: ${issue.message}`)
+            .join("; ")}`,
+          recovery: "Choose a way of watching whose audio WebFlix can lawfully reach, or adjust the requested mode.",
+        } satisfies RealtimeTransportMessage),
+      );
+      return;
     }
-    const sessionId = `wfxrt_${Math.random().toString(36).slice(2, 12)}`;
-    const resumeToken = `wfxres_${Math.random().toString(36).slice(2, 14)}`;
-    const session: BridgeSession = {
-      sessionId,
-      resumeToken,
-      config,
-      viewerKey,
-      provider: null,
-      providerToken: null,
-      client: ws,
-      lastCommittedSegmentId: 0,
-      createdWallMs: Date.now(),
-      ended: false,
-      audioDowngraded: false,
-      usage: { inputAudioMs: 0, outputTextChars: 0, outputAudioMs: 0 },
-      markers: [{ marker: "session-created", atMs: Date.now() }],
-      continuityTimer: null,
-      capTimer: null,
+    // The requested modality → the SHARED resolution (§R25-K: the
+    // automatic text-only fallback with the honest reason).
+    const requestedPolicy: RealtimeTranslationCostPolicy = {
+      requestedOutputModality: inputs.outputModality,
+      maxSessionCostUsd: sessionBudgetUsd,
+      ...(viewerKey === "anonymous"
+        ? {
+            anonymousQuota: {
+              maxSessionDurationMs: anonymousMaxSessionDurationMs,
+              basis: DEFAULT_REALTIME_ANONYMOUS_QUOTA.basis,
+            },
+          }
+        : {}),
+      autoFallbackToTextOnly: true,
     };
-    sessions.set(sessionId, session);
-    socketStates.set(ws, { sessionId, cookieHeader: socketStates.get(ws)?.cookieHeader ?? "" });
+    const modality = resolveRealtimeOutputModality({
+      policy: requestedPolicy,
+      usageSoFar: {
+        inputAudioTokens: 0,
+        textOutputTokens: 0,
+        outputAudioTokens: 0,
+        imageInputTokens: 0,
+      },
+    });
+    const effectiveInputs: RealtimeTranslationSessionInputs = {
+      ...inputs,
+      outputModality: modality.outputModality,
+    };
+    const durationLimitMs =
+      viewerKey === "anonymous" ? anonymousMaxSessionDurationMs : anonymousMaxSessionDurationMs * 2;
     void factory
-      .createSession(config)
+      .open(effectiveInputs)
       .then((outcome) => {
-        if (session.ended) return;
         if ("ok" in outcome) {
-          relay(session, {
-            kind: "terminal-error",
-            sessionId,
-            errorKind: outcome.kind,
-            detail: outcome.detail,
-            recovery: outcome.recovery,
-            atMs: Date.now(),
-          });
-          closeSession(session, "provider-failed", outcome.detail);
+          ws.send(
+            JSON.stringify({
+              transport: "refused",
+              errorKind: outcome.errorKind,
+              detail: outcome.detail,
+              recovery: outcome.recovery,
+            } satisfies RealtimeTransportMessage),
+          );
           return;
         }
-        wireProvider(session, outcome);
-        relay(session, {
-          kind: "session-created",
+        const seam: RealtimeProviderSessionSeam = outcome;
+        const sessionId = seam.session.sessionId;
+        const resumeToken = `wfxres_${Math.random().toString(36).slice(2, 14)}`;
+        const session: BridgeSession = {
           sessionId,
           resumeToken,
-          session: config,
-          provider: { id: factory.providerId, detail: factory.providerDetail },
-          sourceStream: "scripted-dev-double",
-          envelope: { averageLaggingMs: "~2,300 ms (the dev provider's modeled profile)" },
-          costPolicy: {
-            sessionDurationCapMs: durationCapMs,
-            audioOutputBudgetMs: audioBudgetMs,
-            detail: `the session runs at most ${Math.round(durationCapMs / 1000)}s; translated speech stops after ${Math.round(audioBudgetMs / 1000)}s of output audio (the stream continues as text)`,
-          },
-          atMs: Date.now(),
-        });
-        // §R25-K — the duration cap (a typed close, never a playback block).
-        session.capTimer = setTimeout(() => {
+          inputs: effectiveInputs,
+          costPolicy: requestedPolicy,
+          effectiveOutputModality: modality.outputModality,
+          viewerKey,
+          seam,
+          client: ws,
+          lastCommittedSegmentId: "",
+          createdWallMs: Date.now(),
+          ended: false,
+          usage: { inputAudioTokens: 0, textOutputTokens: 0, outputAudioTokens: 0, imageInputTokens: 0 },
+          markers: [{ marker: "session-created", atMs: Date.now() }],
+          continuityTimer: null,
+          capTimer: null,
+          relayStopped: false,
+        };
+        sessions.set(sessionId, session);
+        socketState.sessionId = sessionId;
+        // THE PROVIDER-DROP RECOVERY (the domain reconnect operation): the
+        // seam enters 'reconnecting' (a recoverable provider disconnect)
+        // → the bridge drives 'reconnect' (legal only from that state) →
+        // the transport recovery confirmation relays when it re-streams.
+        seam.onStateChange((state) => {
           if (session.ended) return;
-          closeSession(session, "duration-cap", `the session reached its ${Math.round(durationCapMs / 1000)}s duration cap (the cost policy)`);
-        }, durationCapMs);
+          if (state === "reconnecting") {
+            mark(session, "provider-disconnected");
+            void seam.session.reconnect().catch(() => undefined);
+          }
+          if (state === "streaming") {
+            if (session.markers.some((entry) => entry.marker === "provider-disconnected")) {
+              mark(session, "provider-reconnected");
+              sendTransport(session, {
+                transport: "session-resumed",
+                sessionId,
+                recovered: "provider-connection",
+                lastCommittedSegmentId: session.lastCommittedSegmentId,
+              });
+            }
+          }
+        });
+        // THE TRANSPORT ACK (the bridge's own management facts): the
+        // resume token + the SHARED policy's truths + the honest
+        // source-stream truth (the fixtures double, loudly labeled).
+        sendTransport(session, {
+          transport: "session-bound",
+          sessionId,
+          resumeToken,
+          sourceStream: "scripted-dev-double",
+          policy: {
+            effectiveOutputModality: modality.outputModality,
+            degradedFromRequested: modality.degradedFromRequested,
+            modalityReason: modality.reason,
+            maxSessionDurationMs: durationLimitMs,
+            durationBasis:
+              viewerKey === "anonymous"
+                ? DEFAULT_REALTIME_ANONYMOUS_QUOTA.basis
+                : "the signed-in session limit (twice the anonymous quota)",
+          },
+          envelope: { reportedAverageLagMs: factory.reportedAverageLagMs },
+        });
+        // Start the domain session + pump its events.
+        void seam.session
+          .start()
+          .then(() => {
+            pumpEvents(session);
+            // §R25-K — the duration limit (a typed close, never a playback block).
+            session.capTimer = setTimeout(() => {
+              if (session.ended) return;
+              closeSession(
+                session,
+                "policy",
+                `the session reached its ${Math.round(durationLimitMs / 1000)}s duration limit (the cost policy)`,
+              );
+            }, durationLimitMs);
+          })
+          .catch(() => {
+            if (session.ended) return;
+            closeSession(session, "terminal-error", "the provider session could not start");
+          });
       })
       .catch(() => {
-        if (session.ended) return;
-        relay(session, {
-          kind: "terminal-error",
-          sessionId,
-          errorKind: "provider-failed",
-          detail: "the provider session could not be created",
-          recovery: "Try starting the translation again.",
-          atMs: Date.now(),
-        });
-        closeSession(session, "provider-failed", "the provider session could not be created");
+        ws.send(
+          JSON.stringify({
+            transport: "refused",
+            errorKind: "provider-failure",
+            detail: "the provider session could not be created",
+            recovery: "Try starting the translation again.",
+          } satisfies RealtimeTransportMessage),
+        );
       });
   };
 
@@ -508,19 +545,16 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
         JSON.stringify({
           ok: true,
           bridge: "wfx-realtime-bridge",
+          provider: factory === null ? null : { id: factory.providerId, detail: factory.providerDetail },
           sessions: [...sessions.values()].map((session) => ({
             sessionId: session.sessionId,
             viewer: session.viewerKey === "anonymous" ? "anonymous" : "authenticated",
-            config: {
-              targetLanguage: session.config.targetLanguage,
-              modalities: session.config.modalities,
-              subtitleMode: session.config.subtitleMode,
-              externalRef: session.config.externalRef,
-            },
+            targetLanguage: session.inputs.targetLanguage,
+            effectiveOutputModality: session.effectiveOutputModality,
             startedAtWallMs: session.createdWallMs,
             lastCommittedSegmentId: session.lastCommittedSegmentId,
-            audioDowngraded: session.audioDowngraded,
             usage: session.usage,
+            derivedCostUsd: realtimeSessionCostUsd(session.usage),
             markers: session.markers,
             ended: session.ended,
           })),
@@ -584,92 +618,158 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
 
   /** The bridge's client-message handler (the ws event wiring). */
   const handleMessage = (ws: WsServerSocket, message: string): void => {
-    {
-      const parsed = parseRealtimeClientMessage(message);
-      if (parsed.kind === "invalid") {
-        ws.send(JSON.stringify({ kind: "terminal-error", sessionId: "none", errorKind: "invalid-input", detail: parsed.detail, recovery: "", atMs: Date.now() } satisfies RealtimeBridgeEvent));
+    const parsed = parseRealtimeWireClientMessage(message);
+    const socketState = socketStates.get(ws);
+    if (socketState === undefined) {
+      return;
+    }
+    if (parsed.op === "invalid") {
+      ws.send(
+        JSON.stringify({
+          transport: "refused",
+          errorKind: "unknown",
+          detail: parsed.detail,
+          recovery: "",
+        } satisfies RealtimeTransportMessage),
+      );
+      return;
+    }
+    // The viewer key: the opaque wfx_session cookie (absent → the
+    // anonymous quota lane; present → the viewer's own policy lane).
+    const cookieHeader = socketState.cookieHeader;
+    const viewerKey = cookieHeader.includes("wfx_session=")
+      ? `viewer:${cookieHeader.split("wfx_session=")[1]?.split(";")[0] ?? ""}`
+      : "anonymous";
+    if (parsed.op === "start") {
+      startSession(ws, parsed.inputs, viewerKey, socketState);
+      return;
+    }
+    const session = sessions.get(parsed.sessionId);
+    if (session === undefined || session.ended) {
+      ws.send(
+        JSON.stringify({
+          transport: "refused",
+          errorKind: "unknown",
+          detail: "this realtime session is unknown or ended",
+          recovery: "Start the translation again.",
+        } satisfies RealtimeTransportMessage),
+      );
+      return;
+    }
+    if (parsed.op === "reconnect") {
+      // THE CLIENT RECONNECT (§R25-A reconnect/resume): a retained
+      // session re-attaches to a new connection through its resume
+      // token; the stream continues from the live cursor.
+      if (parsed.resumeToken !== session.resumeToken) {
+        ws.send(
+          JSON.stringify({
+            transport: "refused",
+            errorKind: "unknown",
+            detail: "the resume token does not match this session",
+            recovery: "Start the translation again.",
+          } satisfies RealtimeTransportMessage),
+        );
         return;
       }
-      // The viewer key: the opaque wfx_session cookie (absent → the
-      // anonymous quota key; present → the viewer's own budget lane).
-      const socketState = socketStates.get(ws);
-      const cookieHeader = socketState?.cookieHeader ?? "";
-      const viewerKey = cookieHeader.includes("wfx_session=")
-        ? `viewer:${cookieHeader.split("wfx_session=")[1]?.split(";")[0] ?? ""}`
-        : "anonymous";
-        if (parsed.kind === "session-start") {
-          startSession(ws, parsed.session, viewerKey);
-          return;
-        }
-        const session = sessions.get(parsed.sessionId);
-        if (session === undefined || session.ended) {
-          ws.send(JSON.stringify({ kind: "terminal-error", sessionId: parsed.sessionId, errorKind: "session-expired", detail: "this realtime session is unknown or ended", recovery: "Start the translation again.", atMs: Date.now() } satisfies RealtimeBridgeEvent));
-          return;
-        }
-        if (parsed.kind === "session-resume") {
-          // THE CLIENT RECONNECT (§R25-A reconnect/resume): a retained
-          // session re-attaches to a new connection through its resume
-          // token; the stream continues from the live cursor.
-          if (parsed.resumeToken !== session.resumeToken) {
-            ws.send(JSON.stringify({ kind: "terminal-error", sessionId: parsed.sessionId, errorKind: "session-expired", detail: "the resume token does not match this session", recovery: "Start the translation again.", atMs: Date.now() } satisfies RealtimeBridgeEvent));
-            return;
-          }
-          session.client = ws;
-          const state = socketStates.get(ws);
-          if (state !== undefined) {
-            state.sessionId = session.sessionId;
-          } else {
-            socketStates.set(ws, { sessionId: session.sessionId, cookieHeader: "" });
-          }
-          if (session.continuityTimer !== null) {
-            clearTimeout(session.continuityTimer);
-            session.continuityTimer = null;
-          }
-          mark(session, "client-reconnected");
-          relay(session, {
-            kind: "session-reconnected",
-            sessionId: session.sessionId,
-            recovered: "client-connection",
-            lastCommittedSegmentId: session.lastCommittedSegmentId,
-            atMs: Date.now(),
-          });
-          return;
-        }
-        if (parsed.kind === "stop") {
-          closeSession(session, "stopped", "the viewer stopped the translation");
-          return;
-        }
-        if (parsed.kind === "configure") {
-          session.config = {
-            ...session.config,
-            ...(parsed.modalities !== undefined ? { modalities: parsed.modalities } : {}),
-            ...(parsed.subtitleMode !== undefined ? { subtitleMode: parsed.subtitleMode } : {}),
-          };
-          session.provider?.send({ kind: "provider-configure", modalities: parsed.modalities, subtitleMode: parsed.subtitleMode });
-          return;
-        }
-      if (parsed.kind === "audio-append") {
-        // The production capture path's relay (never stored — §R25-D).
-        session.provider?.send({ kind: "provider-audio-append", payload: parsed.payload });
+      session.client = ws;
+      socketState.sessionId = session.sessionId;
+      socketState.cookieHeader = cookieHeader;
+      if (session.continuityTimer !== null) {
+        clearTimeout(session.continuityTimer);
+        session.continuityTimer = null;
+      }
+      mark(session, "client-reconnected");
+      sendTransport(session, {
+        transport: "session-resumed",
+        sessionId: session.sessionId,
+        recovered: "client-connection",
+        lastCommittedSegmentId: session.lastCommittedSegmentId,
+      });
+      return;
+    }
+    if (parsed.op === "stop" || parsed.op === "close") {
+      closeSession(
+        session,
+        parsed.op === "stop" ? "user-stop" : "user-close",
+        parsed.op === "stop"
+          ? "the viewer stopped the translation"
+          : "the viewer closed the translation session",
+      );
+      return;
+    }
+    if (parsed.op === "configure") {
+      // The domain configure operation (the shared state legality: idle
+      // or streaming) — the modality change re-runs the SHARED policy
+      // resolution (§R25-K).
+      const configuration = parsed.configuration;
+      if (configuration.outputModality !== undefined) {
+        const resolution = resolveRealtimeOutputModality({
+          policy: { ...session.costPolicy, requestedOutputModality: configuration.outputModality },
+          usageSoFar: session.usage,
+        });
+        session.effectiveOutputModality = resolution.outputModality;
+        session.costPolicy = {
+          ...session.costPolicy,
+          requestedOutputModality: configuration.outputModality,
+        };
+        void session.seam.session
+          .configure({ ...configuration, outputModality: resolution.outputModality })
+          .catch(() => undefined);
+      } else {
+        void session.seam.session.configure(configuration).catch(() => undefined);
+      }
+      return;
+    }
+    if (parsed.op === "append-audio") {
+      // The production capture path's relay (never stored — §R25-D).
+      void session.seam.session
+        .appendAudio({
+          audio: Buffer.from(parsed.audioBase64, "base64"),
+          ...(parsed.mediaPositionMs !== undefined ? { mediaPositionMs: parsed.mediaPositionMs } : {}),
+        })
+        .catch(() => undefined);
+      return;
+    }
+    if (parsed.op === "append-image-frame") {
+      // The never-force law: image frames are appended ONLY under an
+      // 'adaptive' visual-context policy (the shared state legality).
+      if (session.inputs.visualContextPolicy !== "adaptive") {
+        ws.send(
+          JSON.stringify({
+            transport: "refused",
+            errorKind: "policy",
+            detail: "this session's visual-context policy is 'off' — image frames are never forced",
+            recovery: "",
+          } satisfies RealtimeTransportMessage),
+        );
         return;
       }
+      void session.seam.session
+        .appendImageFrame({
+          frame: Buffer.from(parsed.frameBase64, "base64"),
+          ...(parsed.mediaPositionMs !== undefined ? { mediaPositionMs: parsed.mediaPositionMs } : {}),
+        })
+        .catch(() => undefined);
+      return;
     }
   };
+
   /** The bridge's close handler (the continuity window's entry). */
   const handleClose = (ws: WsServerSocket): void => {
-    const sessionId = socketStates.get(ws)?.sessionId ?? null;
+    const socketState = socketStates.get(ws);
+    const sessionId = socketState?.sessionId ?? null;
     if (sessionId === null) return;
     const session = sessions.get(sessionId);
     if (session === undefined || session.ended) return;
     if (session.client !== ws) return;
     // THE CONTINUITY WINDOW: the session is retained for the resume;
-    // an unresumed session closes (continuity-expired) after it.
+    // an unresumed session closes (policy) after it.
     session.client = null;
     mark(session, "client-disconnected");
     if (session.continuityTimer !== null) clearTimeout(session.continuityTimer);
     session.continuityTimer = setTimeout(() => {
       if (session.ended) return;
-      closeSession(session, "continuity-expired", "the connection was not re-established within the resume window");
+      closeSession(session, "policy", "the connection was not re-established within the resume window");
     }, CLIENT_RESUME_WINDOW_MS);
   };
 
@@ -688,12 +788,11 @@ export function startRealtimeBridge(options: RealtimeBridgeOptions = {}): Realti
     providerId: factory === null ? null : factory.providerId,
     stop: async (): Promise<void> => {
       for (const session of [...sessions.values()]) {
-        closeSession(session, "stopped", "the bridge is shutting down");
+        closeSession(session, "provider-closed", "the bridge is shutting down");
       }
       sessions.clear();
       endedTelemetry.length = 0;
       clientTelemetry.length = 0;
-      anonymousCounts.clear();
       wss.close();
       await new Promise<void>((resolve) => {
         httpServer.close(() => resolve());

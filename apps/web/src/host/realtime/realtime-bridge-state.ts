@@ -10,7 +10,11 @@
  * status is the honest absent truth (never a claimed capability).
  */
 
-import type { RealtimeTargetLanguage } from "./realtime-contract";
+/** One declared target language (the provider's direction truth). */
+interface BridgeTargetLanguage {
+  readonly code: string;
+  readonly label: string;
+}
 
 /** The bridge's process-wide status (the route view's read). */
 export interface RealtimeBridgeStatus {
@@ -21,7 +25,7 @@ export interface RealtimeBridgeStatus {
   /** The registered provider seam's identity (null when none registered). */
   readonly provider: { readonly id: string; readonly detail: string } | null;
   /** The provider's declared target languages. */
-  readonly targetLanguages: readonly RealtimeTargetLanguage[];
+  readonly targetLanguages: readonly BridgeTargetLanguage[];
   /** The honest reason when the bridge is not running (a failed boot; the gated-off boot). */
   readonly note?: string;
 }

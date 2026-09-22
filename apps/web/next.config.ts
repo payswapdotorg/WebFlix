@@ -43,6 +43,12 @@ const nextConfig: NextConfig = {
     "@wfx/native-media",
     "@wfx/client-runtime",
     "@wfx/platform-contracts",
+    // R25-W2: the realtime lane binds the shared Model-Fabric realtime
+    // contracts (@wfx/model-fabric/src/realtime — the pure derivation
+    // layer: input validation, the cost-policy verdicts, the routing
+    // decision, the anonymous readiness). Pure TypeScript, no I/O — the
+    // same law as the packages above.
+    "@wfx/model-fabric",
   ],
   // The dev-only BYOF fixtures composition (R20-D): the REAL shared
   // service + connector + PGlite, required natively instead of bundled
