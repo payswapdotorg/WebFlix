@@ -151,6 +151,7 @@
         "@wfx/actions": "workspace:*",
         "@wfx/connectors": "workspace:*",
         "@wfx/experience": "workspace:*",
+        "@wfx/model-fabric": "workspace:*",
       },
     },
     "packages/platform-contracts": {

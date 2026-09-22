@@ -54,6 +54,20 @@
  * randomness) — the same ids in every environment, so cross-environment
  * canonical identity is stable.
  *
+ * R26-W4 — THE ARTWORK PROJECTION CONVERGENCE (`convergeCatalogArtwork`):
+ * the seed IS the webflix-catalog connector's projection layer in this
+ * deployment, so the well-known `thumbnailUrl` metadata key (the typed
+ * `ContentArtwork` contract's carrier — the provider's own artwork
+ * address) is projected HERE: YouTube's documented deterministic scheme
+ * `https://i.ytimg.com/vi/<externalRef>/hqdefault.jpg`. The convergence
+ * runs on EVERY boot (idempotent — only rows still missing the key are
+ * updated), so ALREADY-SEEDED production databases receive the projection
+ * the moment this code deploys; fresh databases receive it with the seed
+ * pass. THE CONNECTOR IS THE AUTHORIZATION BOUNDARY: only webflix-catalog
+ * rows with YouTube-shaped external refs (exactly 11 chars [A-Za-z0-9_-])
+ * get the provider's own artwork address — never a fabricated URL for
+ * any other source's rows.
+ *
  * Determinism: STATIC data + FIXED timestamps — no clock is read by the
  * SQL. Statement splitting follows the 052 runner's format law (plain
  * statements, `;` at line-ends — the runner's `splitStatements` rule,
@@ -250,4 +264,58 @@ export async function seedCatalogIfEmpty(db: DbClient): Promise<CatalogSeedResul
     );
   }
   return { seeded: true, itemCount };
+}
+
+// ---------------------------------------------------------------------------
+// R26-W4 — the artwork projection convergence (every boot, idempotent)
+// ---------------------------------------------------------------------------
+
+/** The outcome of one artwork-projection convergence pass. */
+export interface CatalogArtworkConvergenceResult {
+  /** Rows the projection updated on THIS pass (0 on an already-converged database). */
+  readonly updated: number;
+}
+
+/**
+ * Converge the webflix-catalog's `thumbnailUrl` artwork projection — the
+ * R26 production-discovery gap's fix (the sweep found 0 `<img>` on the
+ * production home page because the catalog's source rows carried no
+ * artwork metadata, so the honest placeholder rendered everywhere).
+ *
+ * THE LAW THIS KEEPS:
+ * - THE CONNECTOR IS THE AUTHORIZATION BOUNDARY — the seed is the
+ *   webflix-catalog connector's projection layer in this deployment, and
+ *   YouTube's thumbnail scheme is DOCUMENTED and DETERMINISTIC
+ *   (`https://i.ytimg.com/vi/<videoId>/hqdefault.jpg` — the provider's
+ *   own artwork address, no API key, no per-item lookup);
+ * - IDEMPOTENT — only rows still MISSING the key are touched (`NOT
+ *   metadata ? 'thumbnailUrl'`), so re-boots and concurrent cold starts
+ *   converge to the same truth (both succeed; the second pass updates 0);
+ * - NEVER OVERWRITES — an operator- or connector-written thumbnailUrl is
+ *   preserved verbatim (the convergence is additive, not a sync);
+ * - HONEST SCOPE — only webflix-catalog rows with YouTube-shaped external
+ *   refs (exactly 11 chars [A-Za-z0-9_-]) receive the projection; any
+ *   other source's rows are left exactly as they are.
+ *
+ * The realization's own truth columns (capabilities, availability,
+ * playback, timestamps) are NOT touched — this is a metadata projection,
+ * not a realization change.
+ */
+export async function convergeCatalogArtwork(
+  db: DbClient,
+): Promise<CatalogArtworkConvergenceResult> {
+  const rows = await db.query<{ id: string }>(
+    `UPDATE source_realizations
+        SET metadata = jsonb_set(
+              metadata,
+              '{thumbnailUrl}',
+              to_jsonb('https://i.ytimg.com/vi/' || external_ref || '/hqdefault.jpg'),
+              true
+            )
+      WHERE connector_id = 'webflix-catalog'
+        AND external_ref ~ '^[A-Za-z0-9_-]{11}$'
+        AND NOT (metadata ? 'thumbnailUrl')
+      RETURNING id`,
+  );
+  return { updated: rows.length };
 }

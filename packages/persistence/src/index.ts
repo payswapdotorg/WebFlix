@@ -118,5 +118,10 @@ export * from "./model-policy";
 export * from "./byom-bindings";
 export * from "./transform-operations";
 
+// R26-W4 — the media-intelligence derived-artifact store (migration
+// 0014): the R23-F artifact sets keyed by canonical item id, with the
+// honest derivation lifecycle + per-stage prerequisite truth.
+export * from "./intelligence-store";
+
 // The composition root (Ports bundle + production boot).
 export * from "./ports";
