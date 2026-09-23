@@ -782,7 +782,7 @@ export function PlayerSurface({
                 </p>
                 {view.resumePositionMs > 0 ? (
                   <p className="wfx-player__trace" data-wfx-player-resume>
-                    Resumed at {formatPosition(view.resumePositionMs)}.
+                    Resumed at {formatPosition(view.resumePositionMs)}
                   </p>
                 ) : null}
                 <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
