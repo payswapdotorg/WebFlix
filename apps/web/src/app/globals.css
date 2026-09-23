@@ -3794,7 +3794,10 @@ html[data-theme="light"] .wfx-btn--primary:hover {
    ========================================================================== */
 
 /* — The watch layout: the measured two-column (primary flex + secondary
-   412px @≥1016; the rail drops below at ≤1015 — watch-geometry.md). */
+   412px @≥1016; the rail drops below at ≤1015 — watch-geometry.md). The
+   column gap is the corpus's measured 16px @1440 (watch-geometry.md:
+   "gap between columns: 16px"); the ≥1600 widening applies to the page
+   MARGINS, not the column gap (the corpus states no ≥1600 gap override). */
 .wfx-player__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -3805,7 +3808,7 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 @media (min-width: 1016px) {
   .wfx-player__layout {
     grid-template-columns: minmax(0, 1fr) 412px;
-    gap: 24px;
+    gap: 16px;
   }
 }
 
