@@ -1003,6 +1003,28 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   overflow: hidden;
 }
 
+/* The channel row (the corpus: 14/400 secondary, hover primary). */
+.wfx-card__channel {
+  margin: 2px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+  transition: color var(--wfx-transition);
+}
+
+a.wfx-card:hover .wfx-card__channel,
+a.wfx-card:focus-visible .wfx-card__channel {
+  color: var(--wfx-text);
+}
+
+.wfx-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
 .wfx-card__meta {
   margin: 2px 0 0;
   display: flex;
@@ -1042,14 +1064,25 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0;
   min-height: 0;
-  margin: 0;
+  margin: 0 0 24px;
   padding: 0;
   border-radius: 0;
   border: none;
   overflow: visible;
   background: transparent;
+}
+
+/* The featured card's 16:9 thumb (the same anatomy as its neighbors). */
+.wfx-hero__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--wfx-radius);
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  background: var(--wfx-skeleton);
 }
 
 /* R26-W2 — the hero's REAL SOURCE ARTWORK (the content-led anchor) with
@@ -1061,13 +1094,11 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: var(--wfx-radius);
 }
 
 .wfx-hero__scrim {
   position: absolute;
   inset: 0;
-  border-radius: var(--wfx-radius);
   background: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.7) 0%,

@@ -1,12 +1,21 @@
 /**
- * @wfx/app-web — the home surface (R07).
+ * @wfx/app-web — the home surface (R07; R27-W2 the YouTube home grammar).
  *
- * The home face over the RUNTIME's state: Continue Watching (the runtime's
- * session watch-state fold — honest absence on a fresh session) and the
- * seeded browse rows, each carrying its TYPED section status verbatim: an
- * ERROR section renders as the error state with the failure detail, never
- * as a fake empty row (the honesty law). The hero is the newest resumable
- * continue entry, else the first browse card.
+ * The home face over the RUNTIME's state — now in the corpus anatomy
+ * (app-shell.md): THE CHIP BAR (sticky under the topbar, `All`
+ * inverted-active, the REAL category chips that filter the actual feed),
+ * then the RESPONSIVE GRID (4 ≥1300 / 3 ≥1000 / 2 ≥600 / 1 <600, 16px
+ * gaps) — the grid IS the page. Each typed section renders its cards in
+ * the grid with its honest status verbatim: an ERROR section renders as
+ * the error state with the failure detail, never as a fake empty row
+ * (the honesty law). The SHORTS SHELF (a row of 9:16 cards) renders
+ * between the content rows — the REAL shorts content.
+ *
+ * THE HERO (the frozen J01/J02/J17 journey contract) renders as the
+ * FIRST CARD of the first grid — the same card anatomy as its neighbors
+ * (16:9 real artwork, radius 12, title, meta) with the featured item's
+ * own play affordance. YouTube's home has no hero: the structural
+ * presence is the journey contract's, recorded in DIVERGENCES.
  *
  * Server component: pure presentational projection of the `HomeView` the
  * view pipeline produced (the composition tests render the same tree).
@@ -24,6 +33,7 @@ import type {
 import { artworkViewOfContent } from "@/host/view-models";
 import type { DiscoveryBundle } from "@/host/discoverability";
 import { DiscoveryHeader } from "@/components/discovery/DiscoveryHeader";
+import { ChipBar, type ChipCategory } from "@/components/home/ChipBar";
 import { ItemCard, cardPlayerHref, type CardActionContextInput } from "@/components/cards/ItemCard";
 import { ArtworkImage } from "@/components/cards/ArtworkImage";
 import { itemDetailHref } from "@/app/routing";
@@ -49,7 +59,7 @@ export function SectionStatus({ status, title }: { readonly status: SectionStatu
   );
 }
 
-/** One horizontal, scrollable content row (typed status + cards). */
+/** One grid section: the row's cards in the responsive grid (typed status verbatim). */
 export function Row({
   row,
   actions,
@@ -78,7 +88,7 @@ export function Row({
   );
 }
 
-/** The continue-watching row (resume positions + progress bars). */
+/** The continue-watching grid section (resume positions + progress bars). */
 function ContinueRow({
   entries,
   status,
@@ -137,7 +147,13 @@ function ContinueRow({
   );
 }
 
-/** The hero: the one resume-or-start primary item (content-led — the real source artwork anchors it). */
+/**
+ * THE HERO — the featured card (the first grid cell's anatomy): the
+ * newest resumable continue entry, else the first browse card. The same
+ * card grammar as its neighbors (16:9 REAL artwork, radius 12, title,
+ * meta) + the featured item's own play affordance (the frozen
+ * J01/J02/J17 data-wfx-hero contract rides it).
+ */
 function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
   const resumeEntry = view.continueWatching.entries.find((entry) => entry.status !== "completed") ?? null;
   const startCard = view.rows[0]?.cards[0] ?? view.rows[1]?.cards[0] ?? null;
@@ -157,20 +173,21 @@ function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
         {/* R26-W2 — the hero's REAL SOURCE ARTWORK (the media-product
             grammar: the artwork is the anchor); the deterministic gradient
             stays beneath as the typed fallback. */}
-        {resumeArtwork !== null ? (
-          <ArtworkImage
-            artwork={resumeArtwork}
-            className="wfx-hero__img"
-            alt={`${resumeEntry.title} — artwork served by ${resumeArtwork.connectorId}`}
-            eager
-          />
-        ) : null}
-        <span className="wfx-hero__scrim" aria-hidden="true" />
-        {resumeArtwork === null ? (
-          <span className="wfx-card__art" aria-hidden="true">
-            <span>{placeholderMonogram(resumeEntry.title)}</span>
-          </span>
-        ) : null}
+        <span className="wfx-hero__thumb">
+          {resumeArtwork !== null ? (
+            <ArtworkImage
+              artwork={resumeArtwork}
+              className="wfx-hero__img"
+              alt={`${resumeEntry.title} — artwork served by ${resumeArtwork.connectorId}`}
+              eager
+            />
+          ) : (
+            <span className="wfx-card__art" aria-hidden="true">
+              <span>{placeholderMonogram(resumeEntry.title)}</span>
+            </span>
+          )}
+          <span className="wfx-hero__scrim" aria-hidden="true" />
+        </span>
         <h1 className="wfx-hero__title" data-wfx-hero-title>
           {resumeEntry.title}
         </h1>
@@ -228,19 +245,21 @@ function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
       {/* R26-W2 — the start hero's REAL SOURCE ARTWORK (same law as the
           resume hero: the source's own thumbnail anchors the featured item;
           the deterministic gradient stays beneath as the fallback). */}
-      {startCard.artwork !== undefined ? (
-        <ArtworkImage
-          artwork={startCard.artwork}
-          className="wfx-hero__img"
-          alt={`${startCard.title} — artwork served by ${startCard.artwork.connectorId}`}
-          eager
-        />
-      ) : (
-        <span className="wfx-card__art" aria-hidden="true">
-          <span>{placeholderMonogram(startCard.title)}</span>
-        </span>
-      )}
-      <span className="wfx-hero__scrim" aria-hidden="true" />
+      <span className="wfx-hero__thumb">
+        {startCard.artwork !== undefined ? (
+          <ArtworkImage
+            artwork={startCard.artwork}
+            className="wfx-hero__img"
+            alt={`${startCard.title} — artwork served by ${startCard.artwork.connectorId}`}
+            eager
+          />
+        ) : (
+          <span className="wfx-card__art" aria-hidden="true">
+            <span>{placeholderMonogram(startCard.title)}</span>
+          </span>
+        )}
+        <span className="wfx-hero__scrim" aria-hidden="true" />
+      </span>
       <h1 className="wfx-hero__title" data-wfx-hero-title>
         {startCard.title}
       </h1>
@@ -289,7 +308,7 @@ function ImportedFeedSection({ section }: { readonly section: NonNullable<Discov
           {section.orderSentence} {section.freshnessSentence}
         </p>
       </div>
-      <div className="wfx-row__scroller">
+      <div className="wfx-row__scroller wfx-row__scroller--shorts">
         {section.cards.map((card) => (
           <a
             key={`${card.connectorId}:${card.externalRef}`}
@@ -318,7 +337,10 @@ function ImportedFeedSection({ section }: { readonly section: NonNullable<Discov
   );
 }
 
-/** The home surface. */
+/**
+ * The home surface. R27-W2: `data-wfx-feed-root` names the chip bar's
+ * filtering root (the CSS seam) + `data-wfx-feed-filter` starts at all.
+ */
 export function HomeSurface({
   view,
   discovery,
@@ -336,9 +358,25 @@ export function HomeSurface({
     view.shortsRail.status.state === "error" &&
     view.continueWatching.entries.length === 0;
   const importedSection = discovery?.importedSection ?? null;
+  // R27-W2 — the REAL categories of THIS feed (the cards' own canonical
+  // types, first-seen order — a chip never names a category the feed
+  // cannot fill; "video" is the unmarked default and stays out).
+  const categories: ChipCategory[] = [];
+  const seenCategories = new Set<string>();
+  for (const row of view.rows) {
+    for (const card of row.cards) {
+      const value = card.canonicalType.toLowerCase();
+      if (value === "video" || seenCategories.has(value)) continue;
+      seenCategories.add(value);
+      categories.push({ label: card.canonicalType, value });
+    }
+  }
   return (
-    <div data-wfx-surface="home" data-wfx-home data-wfx-feed-mode={mode}>
+    <div data-wfx-surface="home" data-wfx-home data-wfx-feed-mode={mode} data-wfx-feed-root data-wfx-feed-filter="all">
       {discovery !== undefined ? <DiscoveryHeader bundle={discovery} /> : null}
+      {/* THE CHIP BAR (the corpus anatomy — filters the real feed). */}
+      <ChipBar categories={categories} />
+      {/* The featured card (the hero contract) + the first grid section. */}
       <Hero view={view} />
       <ContinueRow entries={view.continueWatching.entries} status={view.continueWatching.status} />
       {importedSection !== null ? <ImportedFeedSection section={importedSection} /> : null}
@@ -347,6 +385,8 @@ export function HomeSurface({
             <Row key={row.id} row={row} actions={view.cardActions} />
           ))
         : null}
+      {/* THE SHORTS SHELF (the corpus: a row of 9:16 cards between the
+          content rows — the REAL shorts content). */}
       {view.shortsRail.cards.length > 0 ? (
         <section className="wfx-row" data-wfx-row="shorts">
           <div className="wfx-row__header">

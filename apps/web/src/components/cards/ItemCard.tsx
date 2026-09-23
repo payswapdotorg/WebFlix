@@ -108,31 +108,26 @@ export function ItemCard({
         </span>
         {resume !== undefined ? <Progress ratio={resume.completionRatio} /> : null}
       </span>
-      <span>
+      <span className="wfx-card__body">
         <p className="wfx-card__title" data-wfx-card-title>
           {card.title}
+        </p>
+        {/* R27-W2 — the channel row (the corpus: 14/400 secondary, hover
+            primary): the card's honest source identity. */}
+        <p className="wfx-card__channel">
+          {linked && card.connectorId.length > 0 ? (
+            <span data-wfx-card-source>From {card.connectorId}</span>
+          ) : (
+            <span>Source unknown in this session</span>
+          )}
         </p>
         <p className="wfx-card__meta">
           {linked ? (
             availability !== undefined ? (
-              <span className="wfx-capchip" data-wfx-card-availability>
-                {availability}
-              </span>
+              <span data-wfx-card-availability>{availability}</span>
             ) : (
-              <span className="wfx-capchip" data-wfx-card-capability>
-                Playback options on details
-              </span>
+              <span data-wfx-card-capability>Playback options on details</span>
             )
-          ) : (
-            <span className="wfx-capchip">Source unknown in this session</span>
-          )}
-          {/* R24-W2 — the SOURCE CHIP (the channel-profile-pages row: the
-              canonical source identity on the card — the same chip grammar
-              the item hub's source row carries). */}
-          {linked && card.connectorId.length > 0 ? (
-            <span className="wfx-capchip" data-wfx-card-source>
-              From {card.connectorId}
-            </span>
           ) : null}
           {resume !== undefined && resume.resumePositionMs > 0 ? (
             <span data-wfx-resume-position>Resume at {formatDuration(resume.resumePositionMs)}</span>
@@ -141,9 +136,16 @@ export function ItemCard({
       </span>
     </>
   );
+  // R27-W2 — the REAL-CATEGORY filter truth (the chip bar's seam): the
+  // card names its canonical type + starts filter-active (the CSS hides
+  // the non-matching when a topic chip is selected).
+  const filterAttrs = {
+    "data-wfx-card-type": card.canonicalType,
+    "data-wfx-card-active": "true",
+  };
   if (!linked) {
     return (
-      <span className="wfx-card" data-wfx-card={card.itemId} aria-label={`${label} (unlinked)`}>
+      <span className="wfx-card" data-wfx-card={card.itemId} aria-label={`${label} (unlinked)`} {...filterAttrs}>
         {body}
       </span>
     );
@@ -160,7 +162,7 @@ export function ItemCard({
           attentionMode={actions.attentionMode}
           previewable={false}
         />
-        <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label}>
+        <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
           {body}
         </a>
         <CardActions
@@ -179,7 +181,7 @@ export function ItemCard({
     );
   }
   return (
-    <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label}>
+    <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
       {body}
     </a>
   );
