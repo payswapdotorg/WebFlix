@@ -53,12 +53,25 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0b0a10",
+  themeColor: "#0f0f0f",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark" suppressHydrationWarning>
+      <head>
+        {/*
+         * R27-W2 — the theme seam's before-paint script: the persisted
+         * choice (localStorage `wfx-theme`, "dark" | "light") is applied to
+         * `data-theme` BEFORE the first paint (no flash); the server render
+         * stays dark (the default product theme — the corpus law). The
+         * `suppressHydrationWarning` on <html> covers the one-attribute
+         * client-side divergence this honest seam produces.
+         */}
+        <Script id="wfx-theme-seam" strategy="beforeInteractive">
+          {`try{var t=localStorage.getItem("wfx-theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;}}catch(e){}`}
+        </Script>
+      </head>
       <body>
         {children}
         <Script id="wfx-install-prompt-capture" strategy="beforeInteractive">

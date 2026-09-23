@@ -107,18 +107,16 @@ describe("WFX-057 manifest: colors match the shell's design system", () => {
     const bg = cssVariable("wfx-bg");
     expect(manifest.background_color).toBe(bg);
     expect(manifest.theme_color).toBe(bg);
-    expect(bg).toBe("#0b0a10");
+    // R27-W2: the corpus sheet retargeted the canvas to YouTube's own
+    // `#0f0f0f` (dark default) — the pin follows the sheet.
+    expect(bg).toBe("#0f0f0f");
   });
 
-  it("theme_color is the solid equivalent of the shell topbar's tint (same base color)", () => {
-    // The topbar is rgba(11, 10, 16, 0.92) — the same rgb triple as
-    // --wfx-bg (#0b0a10) with alpha. The manifest's solid theme_color
-    // therefore stands for exactly what the chrome paints over.
-    const hex = cssVariable("wfx-bg").replace("#", "");
-    const r = Number.parseInt(hex.slice(0, 2), 16);
-    const g = Number.parseInt(hex.slice(2, 4), 16);
-    const b = Number.parseInt(hex.slice(4, 6), 16);
-    expect(css).toMatch(new RegExp(`background:\\s*rgba\\(\\s*${r}\\s*,\\s*${g}\\s*,\\s*${b}\\s*,`));
+  it("theme_color is the solid the shell topbar paints (the R27 solid topbar)", () => {
+    // R27-W2: the corpus topbar is YouTube's SOLID app-background bar
+    // (`background: var(--wfx-bg)` — no translucent tint). The manifest's
+    // theme_color therefore matches the chrome's own paint exactly.
+    expect(css).toMatch(/\.wfx-topbar\s*\{[^}]*background:\s*var\(--wfx-bg\)/s);
   });
 });
 

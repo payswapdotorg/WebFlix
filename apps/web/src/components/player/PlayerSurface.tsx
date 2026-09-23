@@ -58,7 +58,7 @@ import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
 import { formatPosition } from "@/components/ui/format";
-import { itemDetailHref } from "@/app/routing";
+import { itemDetailHref, playerHref } from "@/app/routing";
 
 /** The mode's user sentence (the R21-C label vocabulary — one source). */
 function modeSentenceOf(mode: PlayerShellView["surfaceMode"]): string {
@@ -209,6 +209,7 @@ async function UpNextSection({
   return (
     <UpNextRail
       currentItemId={view.itemId}
+      sourceId={view.connectorId}
       related={relatedCardsOf(resolved.related)}
       initialQueue={view.queue.entries}
       initialAutoplay={view.queue.autoplay}
@@ -634,20 +635,27 @@ export function PlayerSurface({
           {/* R24-W2 — the stage WRAPPER (the chrome's fullscreen target +
               the player shell the loading/recovery states preserve) + the
               R24-E stage observer (the real startup path's markers). */}
+          {/* R27-W2 - the stage WRAPPER (the chrome's fullscreen target +
+              the player shell the loading/recovery states preserve). The
+              chrome renders INSIDE the wrapper, overlaying the stage's
+              bottom edge - the measured 996x560 16:9 INCLUDING the
+              control bar (the letterbox is the STAGE element's own
+              overflow-hidden; the settings popup escapes the wrapper
+              freely). */}
           <div className="wfx-player__stagewrap" data-wfx-player-stagewrap>
             <Stage view={view} />
             <PlaybackTelemetryObserver />
-          </div>
-          {/* R24-W2 — THE WEBFLIX PLAYER CHROME: the familiar transport bar
-              (play/pause + Space/K, the scrub bar + J/L/arrows/0-9, the
-              settings cluster, fullscreen + F/Escape, the captions overlay +
-              C) wired to the runtime's real commands through /api/playback.
-              The honest per-rung truths render inside (volume where WebFlix
-              owns the stage; the realization-exposed sentences otherwise).
-              R24-E: the chrome renders IN THE SHELL (stable during init);
-              the transcript-derived features (chapter marks + the caption
-              overlay) stream in through their own local suspensions. */}
-          <PlayerChrome
+            {/* R27-W2 - THE WEBFLIX PLAYER CHROME: YouTube's control-bar
+                anatomy (red #f03 progress with the white scrubber dot,
+                play/next/volume+hover-slider/time/captions/settings/
+                miniplayer/theater/fullscreen, ~3s idle fade + mousemove
+                reveal) wired to the runtime's real commands through
+                /api/playback. The honest per-rung truths render inside
+                (volume where WebFlix owns the stage; the realization-
+                exposed sentences otherwise). R24-E: the chrome renders IN
+                THE SHELL (stable during init); the transcript-derived
+                features stream in through their own local suspensions. */}
+            <PlayerChrome
             sessionId={view.sessionId}
             initialPhase={view.phase}
             initialPositionMs={view.resumePositionMs}
@@ -661,82 +669,138 @@ export function PlayerSurface({
             autoplaySentence={autoplaySentence}
             sessionIntent={view.sessionIntent}
             embedControl={view.surfaceMode === "embed" && view.failure === null}
+            nextHref={
+              view.queue.entries.length > 0 && view.queue.entries[0] !== undefined
+                ? playerHref({
+                    itemId: view.queue.entries[0]!.itemId,
+                    connectorId: view.queue.entries[0]!.connectorId,
+                    externalRef: view.queue.entries[0]!.externalRef,
+                    title: view.queue.entries[0]!.title,
+                    canonicalType: view.queue.entries[0]!.canonicalType,
+                    ...(view.queue.entries[0]!.durationMs !== undefined
+                      ? { durationMs: view.queue.entries[0]!.durationMs }
+                      : {}),
+                  })
+                : null
+            }
           />
+          </div>
           <div className="wfx-player__meta">
             <h1 className="wfx-player__title" data-wfx-player-title>
               {view.title}
             </h1>
-            <p className="wfx-detail__meta">
-              <span className="wfx-badge wfx-badge--type">{view.canonicalType}</span>
-              <span data-wfx-player-mode-label>
-                {view.torrent !== null ? (
-                  <>Authorized peer copy · {torrentSentenceOf(view)} — {view.phase}</>
-                ) : (
-                  <>Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)} — {view.phase}</>
-                )}
-              </span>
-              {view.resumePositionMs > 0 ? (
-                <span data-wfx-player-resume>Resumed at {formatPosition(view.resumePositionMs)}</span>
-              ) : null}
-            </p>
-            {/* R23 web-A — the session-scoped progress truth (anonymous
-                sessions keep the place session-local; sign-in is the optional
-                upgrade, never a playback prerequisite). */}
-            <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
-              {view.progressScope.sentence}
-              {view.progressScope.offersSignInUpgrade ? (
-                <>{" "}<a href="/settings?section=general" data-wfx-player-progress-signin>Sign in (optional)</a></>
-              ) : null}
-            </p>
-            <div className="wfx-actionbar">
-              <ActionButtons
-                like={
-                  view.realizationCapabilities.includes("like")
-                    ? {
-                        type: "like",
-                        connectorId: view.connectorId,
-                        externalRef: view.externalRef,
-                        itemId: view.itemId,
-                      }
-                    : null
-                }
-                save={
-                  view.realizationCapabilities.includes("save")
-                    ? {
-                        type: "save",
-                        connectorId: view.connectorId,
-                        externalRef: view.externalRef,
-                        itemId: view.itemId,
-                      }
-                    : null
-                }
-              />
-              {/* R24-W2 — the WebFlix-native watchlist save (the durable
-                  canonical write, independent of provider capability) +
-                  the share control (the canonical link + the source link). */}
-              <WatchlistSave
-                itemId={view.itemId}
-                title={view.title}
-                connectorId={view.connectorId}
-                externalRef={view.externalRef}
-                initiallySaved={view.watchlistSaved}
-                offerPlaylist
-              />
-              <ShareControl
-                canonicalHref={shareHref}
-                title={view.title}
-                sourceId={view.connectorId}
-                {...(view.surfaceUrl !== null ? { sourceUrl: view.surfaceUrl } : {})}
-              />
-              <WatchStateReporter
-                report={{ itemId: view.itemId, type: "complete", playbackSessionId: view.sessionId }}
-                resumePositionMs={view.resumePositionMs}
-              />
+            {/* R27-W2 - THE WATCH HEAD (the measured anatomy): the OWNER row
+                LEFT (40px avatar + the honest source identity + meta) and
+                the ACTIONS row RIGHT (40px pills - the R24-W2 action
+                vocabulary: provider like/save, the WebFlix watchlist save,
+                share, and the watch-state report). */}
+            <div className="wfx-watchhead">
+              <div className="wfx-owner">
+                <span className="wfx-owner__avatar" aria-hidden="true">
+                  {view.connectorId.length > 0 ? view.connectorId[0]!.toUpperCase() : "W"}
+                </span>
+                <span>
+                  <p className="wfx-owner__name">{view.connectorId.length > 0 ? view.connectorId : "WebFlix"}</p>
+                  <p className="wfx-owner__meta" data-wfx-player-mode-label>
+                    {view.torrent !== null ? (
+                      <>Authorized peer copy · {torrentSentenceOf(view)}</>
+                    ) : (
+                      <>Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)}</>
+                    )}
+                  </p>
+                </span>
+              </div>
+              <div className="wfx-actions">
+                <ActionButtons
+                  like={
+                    view.realizationCapabilities.includes("like")
+                      ? {
+                          type: "like",
+                          connectorId: view.connectorId,
+                          externalRef: view.externalRef,
+                          itemId: view.itemId,
+                        }
+                      : null
+                  }
+                  save={
+                    view.realizationCapabilities.includes("save")
+                      ? {
+                          type: "save",
+                          connectorId: view.connectorId,
+                          externalRef: view.externalRef,
+                          itemId: view.itemId,
+                        }
+                      : null
+                  }
+                />
+                {/* R24-W2 - the WebFlix-native watchlist save (the durable
+                    canonical write, independent of provider capability) +
+                    the share control (the canonical link + the source
+                    link) + the honest watch-state report. */}
+                <WatchlistSave
+                  itemId={view.itemId}
+                  title={view.title}
+                  connectorId={view.connectorId}
+                  externalRef={view.externalRef}
+                  initiallySaved={view.watchlistSaved}
+                  offerPlaylist
+                />
+                <ShareControl
+                  canonicalHref={shareHref}
+                  title={view.title}
+                  sourceId={view.connectorId}
+                  {...(view.surfaceUrl !== null ? { sourceUrl: view.surfaceUrl } : {})}
+                />
+                <WatchStateReporter
+                  report={{ itemId: view.itemId, type: "complete", playbackSessionId: view.sessionId }}
+                  resumePositionMs={view.resumePositionMs}
+                />
+              </div>
             </div>
-            <p className="wfx-player__trace" data-wfx-player-phase>
-              Playback phase: {view.phase} (the runtime reports evidence-backed phases only — no fake
-              progress).
-            </p>
+            {/* R27-W2 - THE DESCRIPTION PANEL (the measured anatomy:
+                surface #272727, radius 12, 14/20, collapsed 2-line + the
+                ...more expander). The honest playback truths live here -
+                the description of THIS way of watching. */}
+            <details className="wfx-desc" data-wfx-player-description>
+              <summary className="wfx-desc__summary">
+                <p className="wfx-desc__collapsed">
+                  {view.torrent !== null ? (
+                    <>{torrentSentenceOf(view)} - {view.phase}.</>
+                  ) : (
+                    <>Playing via {view.surfaceMode} - {modeSentenceOf(view.surfaceMode)} ({view.phase}).</>
+                  )}
+                  {view.resumePositionMs > 0 ? (
+                    <> Resumed at {formatPosition(view.resumePositionMs)}.</>
+                  ) : null}
+                </p>
+                <span className="wfx-desc__more">…more</span>
+              </summary>
+              <div className="wfx-desc__body">
+                <p className="wfx-player__trace" data-wfx-player-phase>
+                  Playback phase: {view.phase} (the runtime reports evidence-backed phases only - no fake
+                  progress).
+                </p>
+                {view.resumePositionMs > 0 ? (
+                  <p className="wfx-player__trace" data-wfx-player-resume>
+                    Resumed at {formatPosition(view.resumePositionMs)}
+                  </p>
+                ) : null}
+                <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
+                  {view.progressScope.sentence}
+                  {view.progressScope.offersSignInUpgrade ? (
+                    <>{" "}<a href="/settings?section=general" data-wfx-player-progress-signin>Sign in (optional)</a></>
+                  ) : null}
+                </p>
+                {view.providerAuthorization !== null ? (
+                  <p className="wfx-player__trace" data-wfx-player-provider-auth={view.providerAuthorization.connectorId}>
+                    {view.providerAuthorization.sentence}{" "}
+                    <a href={view.providerAuthorization.reconnectHref} data-wfx-player-provider-reconnect>
+                      Reconnect {view.providerAuthorization.connectorId}
+                    </a>
+                  </p>
+                ) : null}
+              </div>
+            </details>
             {/* R21-E — the player's capability surfaces: the switch row (the
                 active realization understandable + the alternates), the
                 session-scoped feedback controls, and the engineering truth

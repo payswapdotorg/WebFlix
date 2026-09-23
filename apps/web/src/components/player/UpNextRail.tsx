@@ -49,6 +49,8 @@ export interface UpNextRailProps {
   readonly currentItemId: string;
   /** The related/up-next projection (the trending pool minus this item). */
   readonly related: readonly UpNextCard[];
+  /** R27-W2 — the playing item's source id (the related chips' real filter). */
+  readonly sourceId?: string;
   /** The session queue's initial entries (the store's honest state). */
   readonly initialQueue: readonly {
     readonly itemId: string;
@@ -78,6 +80,15 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
   const [autoplay, setAutoplay] = useState(props.initialAutoplay);
   const [outcome, setOutcome] = useState<QueueOutcome | null>(null);
   const [savedList, setSavedList] = useState<string | null>(null);
+  // R27-W2 — the related chips' real filter state ("all" | "from-source"
+  // | "related" — the corpus chips row above the compact cards).
+  const [relatedFilter, setRelatedFilter] = useState<"all" | "from-source" | "related">("all");
+  const relatedCards =
+    relatedFilter === "all"
+      ? props.related
+      : relatedFilter === "from-source"
+        ? props.related.filter((card) => card.connectorId === (props.sourceId ?? ""))
+        : props.related.filter((card) => card.connectorId !== (props.sourceId ?? ""));
 
   /** POST one typed queue mutation; render the store's result. */
   const mutate = useCallback(async (body: Record<string, unknown>): Promise<QueueOutcome | null> => {
@@ -273,12 +284,51 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
         ) : null}
       </div>
 
-      {/* THE RELATED RAIL (the adjacent-content projection — the same cards) */}
+      {/* THE RELATED RAIL (the adjacent-content projection — the same
+          cards) with the corpus CHIPS ROW (All · From <source> · Related
+          — a REAL filter over the projection, never decorative). */}
       {props.related.length > 0 ? (
         <div className="wfx-upnext__related" data-wfx-up-next-related>
           <h3 className="wfx-upnext__queuetitle">More to explore</h3>
+          <div className="wfx-upnext__chips" role="group" aria-label="Filter related">
+            <button
+              type="button"
+              className={`wfx-upnext__chip${relatedFilter === "all" ? " wfx-upnext__chip--active" : ""}`}
+              onClick={() => {
+                setRelatedFilter("all");
+              }}
+              aria-pressed={relatedFilter === "all"}
+              data-wfx-related-chip="all"
+            >
+              All
+            </button>
+            {props.sourceId !== undefined && props.sourceId.length > 0 ? (
+              <button
+                type="button"
+                className={`wfx-upnext__chip${relatedFilter === "from-source" ? " wfx-upnext__chip--active" : ""}`}
+                onClick={() => {
+                  setRelatedFilter("from-source");
+                }}
+                aria-pressed={relatedFilter === "from-source"}
+                data-wfx-related-chip="from-source"
+              >
+                From {props.sourceId}
+              </button>
+            ) : null}
+            <button
+              type="button"
+              className={`wfx-upnext__chip${relatedFilter === "related" ? " wfx-upnext__chip--active" : ""}`}
+              onClick={() => {
+                setRelatedFilter("related");
+              }}
+              aria-pressed={relatedFilter === "related"}
+              data-wfx-related-chip="related"
+            >
+              Related
+            </button>
+          </div>
           <ul className="wfx-upnext__relatedlist">
-            {props.related.slice(0, 6).map((card) => (
+            {relatedCards.slice(0, 6).map((card) => (
               <li key={card.itemId}>
                 <a className="wfx-upnext__link" href={card.href} aria-label={card.title}>
                   <span
@@ -297,7 +347,9 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
                   </span>
                   <span>
                     <strong className="wfx-upnext__itemtitle">{card.title}</strong>
-                    <span className="wfx-capchip">{card.canonicalType}</span>
+                    <span className="wfx-upnext__itemmeta">
+                      {card.connectorId.length > 0 ? `From ${card.connectorId}` : card.canonicalType}
+                    </span>
                   </span>
                 </a>
               </li>

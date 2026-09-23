@@ -1,38 +1,49 @@
 /**
- * @wfx/app-web — the persistent app shell (R07).
+ * @wfx/app-web — the persistent app shell (R07; R27-W2 the YouTube
+ * app-shell anatomy per docs/parity-lab/reference/app-shell.md).
  *
- * The chrome every surface renders inside: a sticky top bar (logo, search,
- * the honest SESSION menu), the left navigation rail on desktop, the bottom
- * navigation bar on mobile, a skip-to-content link, and the footer. The
- * navigation mirrors the RUNTIME's surface vocabulary (home / watch /
- * shorts / search / library / settings — every `SurfaceId` has a route;
- * the mapping lives in `app/routing.ts`).
+ * The chrome every surface renders inside — YouTube's masthead/rail/bottom
+ * nav anatomy with WebFlix's honest surfaces:
  *
- * SESSION HONESTY (the R07 product-framing law): the app is the WEB
- * ADAPTER of the Universal Entertainment OS — there is no Guest-only
- * framing. The session menu renders the honest signed-out/anonymous state
- * from `host/session.ts` (the R02 seam): "Signed out — anonymous session",
- * with the truth about the session id's durability. Nothing pretends to be
- * a profile.
+ * - TOPBAR 56px: hamburger (Guide — the GuideToggle island) + THE WEBFLIX
+ *   WORDMARK (honest identity: our name, YouTube's placement/typography),
+ *   the centered search pill (the SearchBox island), and the honest right
+ *   cluster: create (＋) → the REAL BYOF entry (Settings → Sources), the
+ *   theme toggle (the R27 seam), and the session avatar menu (the honest
+ *   account/settings entry). NO bell (no notification transport — the
+ *   DIVERGENCES law), NO mic (no voice-search transport).
+ * - LEFT RAIL: the corpus groups — primary (Home · Shorts · Watch ·
+ *   Library), divider, the "You" group (History · Offline · Settings —
+ *   WebFlix's REAL surfaces; every unmapped YouTube destination is
+ *   honestly absent, never a dead link), divider, the footnote. 240px
+ *   labeled ≥1280 / 72px icon 792–1279 / drawer <1280 (the GuideToggle's
+ *   overlay) / bottom nav <792 (4 items, 48px + safe-area).
+ *
+ * SESSION HONESTY (the R07 product-framing law, unchanged): the session
+ * menu renders the honest signed-out/anonymous state from
+ * `host/session.ts` — "Signed out — anonymous session", with the truth
+ * about the session id's durability. Nothing pretends to be a profile.
  *
  * Server component: no client JS, no hooks — the session menu is a
- * `details`/`summary` disclosure and the search box is a plain `form`
- * (progressive enhancement; both are keyboard-operable for free).
- *
- * Accessibility laws: semantic landmarks (header/nav/main/footer), a skip
- * link, `aria-current="page"` on the active nav entry, 44px minimum
- * targets, visible focus rings (globals.css), and labeled controls.
+ * `details`/`summary` disclosure; the GuideToggle + ThemeToggle +
+ * SearchBox are the small client islands. Accessibility laws: semantic
+ * landmarks (header/nav/main/footer), a skip link, `aria-current="page"`
+ * on the active nav entry, >=44px targets, visible focus rings
+ * (globals.css), and labeled controls.
  */
 
 import type { JSX, ReactNode } from "react";
 
 import type { WebSessionState } from "@/host/session";
-import { surfaceHref, SHELL_SURFACE_NAV } from "@/app/routing";
+import { surfaceHref } from "@/app/routing";
 import type { SurfaceId } from "@wfx/client-runtime";
 import { Icon, type IconName } from "./Icon";
 import { SearchBox } from "./SearchBox";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdatePrompt } from "./UpdatePrompt";
+// R27-W2 — the guide (hamburger) + theme islands (the corpus masthead).
+import { GuideToggle } from "./GuideToggle";
+import { ThemeToggle } from "./ThemeToggle";
 // R24-E — the play-intent recorder (the document-level listener that
 // records the user's real play/switch clicks for the startup traces).
 import { PlayIntentRecorder } from "./PlayIntentRecorder";
@@ -50,6 +61,76 @@ const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
   library: "library",
   settings: "settings",
 };
+
+/** One rail entry (a surface link + its corpus icon). */
+interface RailEntry {
+  readonly surface: SurfaceId;
+  readonly label: string;
+}
+
+/** The PRIMARY group (the corpus order: Home · Shorts · the long-form browse · Library). */
+const RAIL_PRIMARY: readonly RailEntry[] = [
+  { surface: "home", label: "Home" },
+  { surface: "shorts", label: "Shorts" },
+  { surface: "watch", label: "Watch" },
+  { surface: "library", label: "Library" },
+];
+
+/**
+ * The "You" group (the corpus's You/library section, mapped to WebFlix's
+ * REAL surfaces: History + Offline live in the Library routes; Settings
+ * is the account/settings entry). YouTube destinations WebFlix
+ * truthfully lacks (Subscriptions, Playlists, Your videos, Explore,
+ * Premium…) are honestly ABSENT — recorded in DIVERGENCES.
+ */
+const RAIL_YOU: readonly RailEntry[] = [
+  { surface: "library", label: "History" },
+  { surface: "settings", label: "Settings" },
+];
+
+/** The bottom nav set (the corpus's 4 fixed items, honest mapping). */
+const BOTTOMNAV: readonly RailEntry[] = [
+  { surface: "home", label: "Home" },
+  { surface: "shorts", label: "Shorts" },
+  { surface: "watch", label: "Watch" },
+  { surface: "library", label: "Library" },
+];
+
+/** The History entry's honest href (the Library's History section). */
+const HISTORY_HREF = "/library?section=history";
+
+/** The Offline entry's honest href (the real offline surface). */
+const OFFLINE_HREF = "/offline";
+
+/** Render one rail group's links (the labeled/icon forms answer in CSS). */
+function RailLinks({
+  entries,
+  activeHref,
+}: {
+  readonly entries: readonly RailEntry[];
+  readonly activeHref: string | undefined;
+}): JSX.Element {
+  return (
+    <>
+      {entries.map((entry) => {
+        const href = surfaceHref(entry.surface);
+        return (
+          <a
+            key={`${entry.surface}-${entry.label}`}
+            className="wfx-navlink"
+            href={href}
+            {...(activeHref === href ? { "aria-current": "page" as const } : {})}
+          >
+            <span className="wfx-navlink__icon">
+              <Icon name={SURFACE_ICONS[entry.surface]} />
+            </span>
+            <span>{entry.label}</span>
+          </a>
+        );
+      })}
+    </>
+  );
+}
 
 /** The boot mode badge text (capability honesty, visible chrome). */
 function modeBadge(mode: "fixtures" | "service"): { text: string; className: string } {
@@ -88,7 +169,8 @@ export function AppShell({
           the typed placeholder that always renders beneath it). */}
       <ArtworkFallback />
       <header className="wfx-topbar">
-        <div className="wfx-topbar__side">
+        <div className="wfx-topbar__side wfx-topbar__side--left">
+          <GuideToggle />
           <a className="wfx-logo" href="/" aria-label="WebFlix home">
             <span className="wfx-logo__mark">
               <Icon name="play" size={16} />
@@ -105,7 +187,21 @@ export function AppShell({
               under the box while typing — a hint, never a required step). */}
           <SearchBox />
         </div>
-        <div className="wfx-topbar__side">
+        <div className="wfx-topbar__side wfx-topbar__side--right">
+          {/* The honest create affordance: ＋ → the REAL BYOF entry
+              (Settings → Sources — where the bring-your-own-feed flow
+              lives). Never a dead upload imitation. */}
+          <a
+            className="wfx-topbar__guide"
+            href="/settings?section=sources"
+            aria-label="Add a feed (bring your own feed)"
+            title="Bring your own feed — Settings, Sources"
+            data-wfx-byof-entry
+          >
+            <Icon name="plus" size={22} />
+          </a>
+          {/* R27-W2 — the theme seam's toggle (dark default). */}
+          <ThemeToggle />
           <details className="wfx-avatar-menu">
             <summary className="wfx-avatar-menu__summary" aria-label="Session menu">
               <span className="wfx-avatar-menu__chip" aria-hidden="true">
@@ -136,22 +232,37 @@ export function AppShell({
       </header>
       <div className="wfx-body">
         <nav className="wfx-rail" aria-label="Primary">
-          {SHELL_SURFACE_NAV.map((entry) => {
-            const href = surfaceHref(entry.surface);
-            return (
-              <a
-                key={entry.surface}
-                className="wfx-navlink"
-                href={href}
-                {...(activeHref === href ? { "aria-current": "page" as const } : {})}
-              >
+          {/* The scrim the drawer state paints (click-through close —
+              the GuideToggle island owns the state; the scrim is the
+              honest way out for pointer users). */}
+          <div className="wfx-rail__scrim" data-wfx-rail-scrim aria-hidden="true" />
+          <div className="wfx-rail__inner">
+            <div className="wfx-rail__group">
+              <RailLinks entries={RAIL_PRIMARY} activeHref={activeHref} />
+            </div>
+            <div className="wfx-rail__divider" />
+            <div className="wfx-rail__group">
+              <h3 className="wfx-rail__heading">You</h3>
+              <a className="wfx-navlink" href={HISTORY_HREF}>
                 <span className="wfx-navlink__icon">
-                  <Icon name={SURFACE_ICONS[entry.surface]} />
+                  <Icon name="history" />
                 </span>
-                <span>{entry.label}</span>
+                <span>History</span>
               </a>
-            );
-          })}
+              <a className="wfx-navlink" href={OFFLINE_HREF}>
+                <span className="wfx-navlink__icon">
+                  <Icon name="offline" />
+                </span>
+                <span>Offline</span>
+              </a>
+              <RailLinks entries={RAIL_YOU} activeHref={activeHref} />
+            </div>
+            <div className="wfx-rail__divider" />
+            <p className="wfx-rail__footnote">
+              WebFlix — the Universal Entertainment OS, web adapter. Content arrives through
+              connected sources; capability truth is always shown, never guessed.
+            </p>
+          </div>
         </nav>
         <main className={`wfx-main${mainClass !== undefined ? ` ${mainClass}` : ""}`} id="wfx-main">
           {children}
@@ -161,7 +272,7 @@ export function AppShell({
         </main>
       </div>
       <nav className="wfx-bottomnav" aria-label="Primary mobile">
-        {SHELL_SURFACE_NAV.map((entry) => {
+        {BOTTOMNAV.map((entry) => {
           const href = surfaceHref(entry.surface);
           return (
             <a

@@ -16,6 +16,7 @@ export type IconName =
   | "library"
   | "settings"
   | "like"
+  | "dislike"
   | "save"
   | "share"
   | "play"
@@ -23,6 +24,8 @@ export type IconName =
   | "browser"
   | "arrowUp"
   | "arrowDown"
+  | "arrowLeft"
+  | "arrowRight"
   | "check"
   | "skip"
   | "sparkle"
@@ -32,9 +35,18 @@ export type IconName =
   | "fullscreen"
   | "fullscreenExit"
   | "miniplayer"
+  | "theater"
   | "captions"
   | "translate"
-  | "link";
+  | "link"
+  | "menu"
+  | "history"
+  | "offline"
+  | "plus"
+  | "verified"
+  | "sun"
+  | "moon"
+  | "keyboard";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   home: (
@@ -72,6 +84,9 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   ),
   like: (
     <path d="M7 10.5V20H4.5A1.5 1.5 0 0 1 3 18.5V12a1.5 1.5 0 0 1 1.5-1.5H7Zm0 0 3.6-6.7c.3-.6 1.1-.8 1.6-.4.4.3.6.8.5 1.3L12.2 9h5.3c1.2 0 2.1 1.1 1.8 2.3l-1.8 7A1.9 1.9 0 0 1 15.7 20H7" />
+  ),
+  dislike: (
+    <path d="M17 13.5V4h2.5A1.5 1.5 0 0 1 21 5.5V12a1.5 1.5 0 0 1-1.5 1.5H17Zm0 0-3.6 6.7c-.3.6-1.1.8-1.6.4-.4-.3-.6-.8-.5-1.3l.4-2.3H6.7c-1.2 0-2.1-1.1-1.8-2.3l1.8-7A1.9 1.9 0 0 1 8.3 4H17" />
   ),
   save: (
     <path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4.5L5 21V4a1 1 0 0 1 1-1Z" />
@@ -152,6 +167,48 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
       <path d="M14 14.5h.01M12 18h6M15 13.5l1.8 4.5 1.7-4.5" />
     </>
   ),
+  menu: <path d="M4 6.5h16M4 12h16M4 17.5h16" />,
+  history: (
+    <>
+      <path d="M3.5 12a8.5 8.5 0 1 0 2.5-6L3.5 8.5" />
+      <path d="M3.5 4v4.5H8" />
+      <path d="M12 7.5V12l3 2" />
+    </>
+  ),
+  offline: (
+    <>
+      <path d="M12 4v9" />
+      <path d="M6.2 8.5a8 8 0 1 0 11.6 0" />
+    </>
+  ),
+  plus: <path d="M12 5v14M5 12h14" />,
+  verified: (
+    <>
+      <path d="M12 2.8 14 4.6l2.6-.3 1 2.5 2.4 1.1-.4 2.6 1.4 2.2-1.8 1.9-.2 2.6-2.6.5-1.6 2.1-2.4-1-2.4 1-1.6-2.1-2.6-.5-.2-2.6L2.9 12.7l1.4-2.2-.4-2.6 2.4-1.1 1-2.5 2.6.3L12 2.8Z" />
+      <path d="m8.8 12.2 2.2 2.2 4.2-4.6" />
+    </>
+  ),
+  sun: (
+    <>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" />
+    </>
+  ),
+  moon: <path d="M20 13.2A8.2 8.2 0 1 1 10.8 4a6.6 6.6 0 0 0 9.2 9.2Z" />,
+  theater: (
+    <>
+      <rect x="3" y="7" width="18" height="10" rx="1.5" />
+      <path d="M3 10.5h18" strokeOpacity="0" />
+    </>
+  ),
+  keyboard: (
+    <>
+      <rect x="3" y="6" width="18" height="12" rx="2" />
+      <path d="M6.5 9.5h.01M10 9.5h.01M13.5 9.5h.01M17 9.5h.01M6.5 12.5h.01M10 12.5h.01M13.5 12.5h.01M17 12.5h.01M8 15.5h8" />
+    </>
+  ),
+  arrowLeft: <path d="M20 12H4m0 0 6-6m-6 6 6 6" />,
+  arrowRight: <path d="M4 12h16m0 0-6-6m6 6-6 6" />,
 };
 
 /** One decorative 24px icon (stroke, currentColor). */

@@ -64,7 +64,7 @@ export function ItemCard({
   actions,
 }: {
   readonly card: CardView;
-  readonly variant?: "wide" | "short";
+  readonly variant?: "wide" | "short" | "result";
   readonly resume?: { readonly resumePositionMs: number; readonly completionRatio: number | null };
   readonly linked?: boolean;
   /** The compact availability summary (R21-E — the search surface's). */
@@ -83,6 +83,81 @@ export function ItemCard({
   const label = `${card.title} (${card.canonicalType}${
     card.durationMs !== undefined ? `, ${formatDuration(card.durationMs)}` : ""
   })`;
+  // R27-W2 — the SEARCH RESULT variant: the captured row grammar
+  // (search-card-grammar.json) — thumbnail 360×202 left, 16px gap, the
+  // meta column right (title 18/400/26 2-line, channel, meta, badges).
+  if (variant === "result") {
+    return (
+      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
+        {actions !== undefined ? (
+          <CardPreview
+            itemId={card.itemId}
+            title={card.title}
+            attentionMode={actions.attentionMode}
+            previewable={false}
+          />
+        ) : null}
+        <a
+          className="wfx-result"
+          href={href}
+          data-wfx-card={card.itemId}
+          aria-label={label}
+          data-wfx-card-type={card.canonicalType}
+          data-wfx-card-active="true"
+        >
+          <span className="wfx-result__thumb">
+            <span className="wfx-card__art" aria-hidden="true">
+              <span>{placeholderMonogram(card.title)}</span>
+            </span>
+            {card.artwork !== undefined ? (
+              <ArtworkImage artwork={card.artwork} className="wfx-card__img" />
+            ) : null}
+            {card.durationMs !== undefined ? (
+              <span className="wfx-card__badges">
+                <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
+              </span>
+            ) : null}
+          </span>
+          <span className="wfx-result__meta">
+            <p className="wfx-result__title" data-wfx-card-title>
+              {card.title}
+            </p>
+            <p className="wfx-result__metainfo">
+              {availability !== undefined ? (
+                <span data-wfx-card-availability>{availability}</span>
+              ) : (
+                <span data-wfx-card-capability>Playback options on details</span>
+              )}
+            </p>
+            <p className="wfx-result__channel">
+              {linked && card.connectorId.length > 0 ? (
+                <span data-wfx-card-source>From {card.connectorId}</span>
+              ) : (
+                <span>Source unknown in this session</span>
+              )}
+            </p>
+            <span className="wfx-result__badges">
+              <span className="wfx-badge wfx-badge--type">{card.canonicalType}</span>
+            </span>
+          </span>
+        </a>
+        {actions !== undefined ? (
+          <CardActions
+            target={{
+              itemId: card.itemId,
+              connectorId: card.connectorId,
+              externalRef: card.externalRef,
+              title: card.title,
+              canonicalType: card.canonicalType,
+              ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+              href,
+              initiallySaved: actions.savedItemIds.includes(card.itemId),
+            }}
+          />
+        ) : null}
+      </span>
+    );
+  }
   const body = (
     <>
       <span
@@ -108,31 +183,26 @@ export function ItemCard({
         </span>
         {resume !== undefined ? <Progress ratio={resume.completionRatio} /> : null}
       </span>
-      <span>
+      <span className="wfx-card__body">
         <p className="wfx-card__title" data-wfx-card-title>
           {card.title}
+        </p>
+        {/* R27-W2 — the channel row (the corpus: 14/400 secondary, hover
+            primary): the card's honest source identity. */}
+        <p className="wfx-card__channel">
+          {linked && card.connectorId.length > 0 ? (
+            <span data-wfx-card-source>From {card.connectorId}</span>
+          ) : (
+            <span>Source unknown in this session</span>
+          )}
         </p>
         <p className="wfx-card__meta">
           {linked ? (
             availability !== undefined ? (
-              <span className="wfx-capchip" data-wfx-card-availability>
-                {availability}
-              </span>
+              <span data-wfx-card-availability>{availability}</span>
             ) : (
-              <span className="wfx-capchip" data-wfx-card-capability>
-                Playback options on details
-              </span>
+              <span data-wfx-card-capability>Playback options on details</span>
             )
-          ) : (
-            <span className="wfx-capchip">Source unknown in this session</span>
-          )}
-          {/* R24-W2 — the SOURCE CHIP (the channel-profile-pages row: the
-              canonical source identity on the card — the same chip grammar
-              the item hub's source row carries). */}
-          {linked && card.connectorId.length > 0 ? (
-            <span className="wfx-capchip" data-wfx-card-source>
-              From {card.connectorId}
-            </span>
           ) : null}
           {resume !== undefined && resume.resumePositionMs > 0 ? (
             <span data-wfx-resume-position>Resume at {formatDuration(resume.resumePositionMs)}</span>
@@ -141,9 +211,16 @@ export function ItemCard({
       </span>
     </>
   );
+  // R27-W2 — the REAL-CATEGORY filter truth (the chip bar's seam): the
+  // card names its canonical type + starts filter-active (the CSS hides
+  // the non-matching when a topic chip is selected).
+  const filterAttrs = {
+    "data-wfx-card-type": card.canonicalType,
+    "data-wfx-card-active": "true",
+  };
   if (!linked) {
     return (
-      <span className="wfx-card" data-wfx-card={card.itemId} aria-label={`${label} (unlinked)`}>
+      <span className="wfx-card" data-wfx-card={card.itemId} aria-label={`${label} (unlinked)`} {...filterAttrs}>
         {body}
       </span>
     );
@@ -160,7 +237,7 @@ export function ItemCard({
           attentionMode={actions.attentionMode}
           previewable={false}
         />
-        <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label}>
+        <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
           {body}
         </a>
         <CardActions
@@ -179,7 +256,7 @@ export function ItemCard({
     );
   }
   return (
-    <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label}>
+    <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
       {body}
     </a>
   );

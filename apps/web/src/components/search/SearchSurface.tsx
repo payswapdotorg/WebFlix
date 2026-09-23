@@ -20,6 +20,7 @@ import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState } from "@/components/ui/StateViews";
 import { formatPosition } from "@/components/ui/format";
 import { playerHref } from "@/app/routing";
+import { Icon } from "@/components/shell/Icon";
 
 /** The search surface. */
 export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Element {
@@ -69,6 +70,15 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
       <p className="wfx-page-subtitle" data-wfx-search-query>
         {view.cards.length} result{view.cards.length === 1 ? "" : "s"} for “{view.query}”
       </p>
+      {/* R27-W2 — the FILTERS row (the corpus: the `Filters` pill
+          right-aligned above the results — the search surface's own
+          control row, honestly naming what filters are REAL here). */}
+      <div className="wfx-searchbar">
+        <button type="button" className="wfx-filterspill" data-wfx-search-filters aria-expanded="false">
+          <Icon name="settings" size={16} />
+          Filters
+        </button>
+      </div>
       {/* R26-W2 — the honest token-composition disclosure (the
           literal-phrase recovery's own sentence — token matches are never
           presented as phrase matches). */}
@@ -84,6 +94,7 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
             <ItemCard
               key={card.itemId}
               card={card}
+              variant="result"
               {...(availability !== undefined ? { availability } : {})}
               actions={view.cardActions}
             />
