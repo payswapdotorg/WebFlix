@@ -1,8 +1,12 @@
 /**
- * @wfx/client-runtime — the R24 interaction-policy seams: the playback
- * startup law, the recommendation/AI enrichment boundary, and
- * attention-policy-aware autoplay (Worker 1's shared seams; Workers 2/3
- * bind their surfaces' guarantees to them).
+ * @wfx/client-runtime — the R24 interaction-policy seams + the R27
+ * parity interaction grammar: the playback startup law, the
+ * recommendation/AI enrichment boundary, attention-policy-aware autoplay
+ * (Worker 1's shared seams; Workers 2/3 bind their surfaces' guarantees
+ * to them), and — R27-W1 — the corpus's FEEL/OPERATE vocabulary (hover
+ * dwell, chip select, rail active state, control reveal, focus ring,
+ * toast auto-dismiss) as typed policy rows + pure derivations timed
+ * from the canonical `PARITY_MOTION` contract.
  *
  * THE LAW THIS MODULE FREEZES (docs/plans/
  * 2026-09-20-webflix-youtube-parity-performance-plan.md — R24-E "Startup
@@ -61,6 +65,9 @@ import {
   validateParityTaxonomy,
   type ParityTaxonomyValidation,
 } from "./parity-taxonomy";
+// R27-W1: the parity interaction vocabulary times the canonical motion
+// contract — never a forked table (the single-encoding law).
+import { PARITY_MOTION } from "@wfx/platform-contracts";
 
 // ---------------------------------------------------------------------------
 // The startup work taxonomy (the two lanes of the R24-E startup law)
@@ -642,5 +649,240 @@ export function checkParityRegressionInvariants(): ParityRegressionInvariants {
       thresholds.ttffP95MaxDeltaMs === 750 &&
       thresholds.startupFailureRateMaxDeltaPp === 0.5 &&
       thresholds.first60sRebufferRatioMaxDeltaPp === 0.25,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// The R27 parity interaction grammar (the corpus FEEL/OPERATE vocabulary)
+// ---------------------------------------------------------------------------
+
+/**
+ * The parity interaction kinds the corpus pins (design-tokens.md Motion &
+ * states + app-shell.md + the player-chrome anatomy). This vocabulary is
+ * the SHARED grammar the Web (W2) and Desktop (W3) surfaces implement;
+ * the values come from `@wfx/platform-contracts`'s canonical
+ * `PARITY_MOTION` — never re-declared here (the single-encoding law).
+ */
+export type ParityInteractionKind =
+  /** Card hover dwell (~500ms) before the preview disclosure. */
+  | "hover-dwell"
+  /** Chip selection (single-select; the active chip inverts). */
+  | "chip-select"
+  /** The rail's active-item state (raised bg + weight 500). */
+  | "rail-active"
+  /** The player chrome's idle-fade/control-reveal cycle (~3s). */
+  | "control-reveal"
+  /** The 2px keyboard focus ring (link-family color). */
+  | "focus-ring"
+  /** The toast/snackbar auto-dismiss (~4s). */
+  | "toast-auto-dismiss";
+
+/** One row of the frozen parity interaction policy table. */
+export interface ParityInteractionPolicyRow {
+  readonly kind: ParityInteractionKind;
+  /** The corpus timing (ms) where one applies; null for untimed state laws. */
+  readonly timingMs: number | null;
+  /** The behavior law, in one sentence (the derivation's contract). */
+  readonly law: string;
+  /**
+   * Whether the interaction's payload is AVAILABILITY-GATED (the
+   * capability-truth law, both directions): a hover preview renders only
+   * when the preview capability exists; ungated states (chip select,
+   * focus ring) render for every viewer.
+   */
+  readonly capabilityGated: boolean;
+}
+
+/**
+ * THE frozen parity interaction policy table — every row's timing is the
+ * canonical `PARITY_MOTION` value (the corpus sheet), never a fork.
+ */
+export const PARITY_INTERACTION_POLICY: readonly ParityInteractionPolicyRow[] =
+  [
+    {
+      kind: "hover-dwell",
+      timingMs: PARITY_MOTION.hoverDwellMs,
+      law: "A hovered card discloses its preview only after ~500ms of dwell, and only when the preview capability truthfully exists — otherwise the hover state is the quiet bg lift alone.",
+      capabilityGated: true,
+    },
+    {
+      kind: "chip-select",
+      timingMs: PARITY_MOTION.transitionMs,
+      law: "Chip selection is single-select: the active chip inverts (raised bg + primary ink), the previously active chip releases, and the filter re-resolves within the default transition band.",
+      capabilityGated: false,
+    },
+    {
+      kind: "rail-active",
+      timingMs: PARITY_MOTION.transitionMs,
+      law: "The active rail item carries the raised surface and weight 500; inactive items rest at weight 400 with the hover lift only.",
+      capabilityGated: false,
+    },
+    {
+      kind: "control-reveal",
+      timingMs: PARITY_MOTION.idleFadeMs,
+      law: "The player chrome reveals on pointer/keyboard activity and fades after ~3s of idle while playing; it never hides while paused, buffering, or focus is within the bar (the accessibility truth).",
+      capabilityGated: false,
+    },
+    {
+      kind: "focus-ring",
+      timingMs: null,
+      law: "Every interactive element keeps a visible 2px focus ring in the link color family on keyboard focus — the WebFlix accessibility law, superseding YouTube where they conflict.",
+      capabilityGated: false,
+    },
+    {
+      kind: "toast-auto-dismiss",
+      timingMs: PARITY_MOTION.toastMs,
+      law: "A toast auto-dismisses after ~4s; an action-bearing toast stays until its action resolves or the viewer dismisses it.",
+      capabilityGated: false,
+    },
+  ] as const;
+
+/** The input of the hover-preview disclosure decision (PURE derivation). */
+export interface ParityHoverPreviewInput {
+  /** How long the pointer has dwelled on the card (ms) — caller-supplied. */
+  readonly dwellMs: number;
+  /**
+   * Whether the preview capability TRUTHFULLY exists for this item (the
+   * R26 both-directions law: a transport that is unavailable must never
+   * render as usable, and one that serves must never render as dead).
+   */
+  readonly previewAvailable: boolean;
+}
+
+/** The hover-preview disclosure decision. */
+export interface ParityHoverPreviewDecision {
+  readonly disclose: boolean;
+  readonly reason: string;
+}
+
+/**
+ * Resolve the hover-preview disclosure (PURE, the hover-dwell row):
+ * dwell ≥ ~500ms AND the capability exists. An unavailable preview never
+ * discloses; an available one never discloses early.
+ */
+export function resolveParityHoverPreview(
+  input: ParityHoverPreviewInput,
+): ParityHoverPreviewDecision {
+  if (!input.previewAvailable) {
+    return {
+      disclose: false,
+      reason:
+        "The preview capability does not exist for this item — the hover state is the quiet lift alone (capability truth).",
+    };
+  }
+  if (input.dwellMs < PARITY_MOTION.hoverDwellMs) {
+    return {
+      disclose: false,
+      reason: `Dwell ${String(input.dwellMs)}ms is under the ~${String(PARITY_MOTION.hoverDwellMs)}ms disclosure threshold.`,
+    };
+  }
+  return {
+    disclose: true,
+    reason: `Dwell met (~${String(PARITY_MOTION.hoverDwellMs)}ms) and the preview capability exists.`,
+  };
+}
+
+/** The input of the control-reveal decision (PURE; times are caller-supplied). */
+export interface ParityControlRevealInput {
+  /** The playback truth: chrome never fades while paused/buffering. */
+  readonly playbackActive: boolean;
+  /** Whether keyboard focus is within the chrome (never fade). */
+  readonly focusWithin: boolean;
+  /** When the viewer last moved the pointer/pressed a key (ms epoch or monotonic — caller's clock). */
+  readonly lastActivityMs: number;
+  /** The evaluation time (ms, the SAME clock as lastActivityMs). */
+  readonly nowMs: number;
+}
+
+/** The control-reveal decision. */
+export interface ParityControlRevealDecision {
+  readonly chromeVisible: boolean;
+  readonly reason: string;
+}
+
+/**
+ * Resolve the player-chrome visibility (PURE, the control-reveal row):
+ * visible when focus is within the bar OR playback is not active OR the
+ * idle window (~3s) has not elapsed; faded only on active playback idle.
+ * The derivation never reads a clock — the caller supplies both times,
+ * keeping the runtime's no-wall-clock law intact.
+ */
+export function resolveParityControlReveal(
+  input: ParityControlRevealInput,
+): ParityControlRevealDecision {
+  if (input.focusWithin) {
+    return {
+      chromeVisible: true,
+      reason: "Focus is within the control bar — the chrome stays visible (accessibility truth).",
+    };
+  }
+  if (!input.playbackActive) {
+    return {
+      chromeVisible: true,
+      reason: "Playback is not active (paused/buffering/idle) — the chrome stays visible.",
+    };
+  }
+  const idleMs = input.nowMs - input.lastActivityMs;
+  if (idleMs < PARITY_MOTION.idleFadeMs) {
+    return {
+      chromeVisible: true,
+      reason: `Idle ${String(idleMs)}ms is under the ~${String(PARITY_MOTION.idleFadeMs)}ms fade threshold.`,
+    };
+  }
+  return {
+    chromeVisible: false,
+    reason: `Active playback idle for ${String(idleMs)}ms — the chrome fades (~${String(PARITY_MOTION.idleFadeMs)}ms band).`,
+  };
+}
+
+/** The chip-selection state (single-select, with the honest default). */
+export interface ParityChipSelectionState {
+  /** The selected chip id; ALWAYS non-null (the default "all" when none). */
+  readonly selectedId: string;
+  /** Whether the selection is the default facet. */
+  readonly isDefault: boolean;
+}
+
+/**
+ * Resolve the chip selection (PURE, the chip-select row): single-select
+ * semantics over the honest chip set — an unknown/absent selection falls
+ * back to the default facet, and the default chip ("all") is the honest
+ * no-filter state.
+ */
+export function resolveParityChipSelection(
+  chips: readonly { readonly id: string; readonly isDefault: boolean }[],
+  requestedId: string | null,
+): ParityChipSelectionState {
+  const active = chips.find((chip) => chip.id === requestedId);
+  if (active !== undefined) {
+    return { selectedId: active.id, isDefault: active.isDefault };
+  }
+  const fallback =
+    chips.find((chip) => chip.isDefault) ?? (chips.length > 0 ? chips[0] : undefined);
+  if (fallback === undefined) {
+    return { selectedId: "all", isDefault: true };
+  }
+  return { selectedId: fallback.id, isDefault: fallback.isDefault };
+}
+
+/** One rail item's active-state input (the rail-active row). */
+export interface ParityRailItemStateInput {
+  readonly itemId: string;
+  /** The currently active destination id (null = nothing active). */
+  readonly activeDestinationId: string | null;
+}
+
+/**
+ * Resolve one rail item's active state (PURE, the rail-active row): the
+ * active item renders the raised surface + weight 500; every other item
+ * rests. The state is presentational truth only — navigation semantics
+ * stay the runtime's.
+ */
+export function resolveParityRailItemState(
+  input: ParityRailItemStateInput,
+): { readonly active: boolean } {
+  return {
+    active:
+      input.activeDestinationId !== null && input.itemId === input.activeDestinationId,
   };
 }
