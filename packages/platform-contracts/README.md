@@ -130,3 +130,15 @@ the lead from live youtube.com 2026-09-23):
 Desktop) consume it. App-side mirrors must match it value-for-value (the
 conformance harness asserts this). Values are immutable — the corpus is
 the lead's; drift between apps is a defect.
+
+## R27: the parity conformance harness (the proof instrument)
+
+`src/parity-conformance.ts` (R27-W1) is the lab's proof instrument: a
+PURE CSS-parsing engine + the Web/Desktop surface descriptors +
+`evaluateParitySurfaceConformance` (asserts every canonical token is the
+ACTIVE custom property per theme, plus the CSS-derivable structural
+anatomy — shell, chips, grid, search rows, watch two-column, player
+chrome, scrollbar, skeletons) and `renderParityConformanceReport` (the
+`conformance:status` mode: CONFORMANT / DRIFT / SURFACES-PENDING with a
+DIFF message per finding). The battery suite lives at
+`tests/parity-conformance.test.ts` (the shared test tree).
