@@ -1,0 +1,64 @@
+{
+ "sections": [
+  {
+   "title": "(untitled)",
+   "items": [
+    {
+     "t": "Home",
+     "icon": null
+    },
+    {
+     "t": "Shorts",
+     "icon": null
+    }
+   ]
+  },
+  {
+   "title": "(untitled)",
+   "items": [
+    {
+     "t": "Subscriptions",
+     "icon": null
+    },
+    {
+     "t": "Les Vid\u00e9os de Riles",
+     "icon": null
+    },
+    {
+     "t": "Marques Brownlee",
+     "icon": null
+    },
+    {
+     "t": "Hasan Minhaj",
+     "icon": null
+    },
+    {
+     "t": "LastWeekTonight",
+     "icon": null
+    },
+    {
+     "t": "Jimmy Kimmel Live",
+     "icon": null
+    },
+    {
+     "t": "Bloomberg Originals",
+     "icon": null
+    },
+    {
+     "t": "Mastar",
+     "icon": null
+    },
+    {
+     "t": "Show more",
+     "icon": null
+    },
+    {
+     "t": "Show less",
+     "icon": null
+    }
+   ]
+  }
+ ],
+ "guideCollapsible": false,
+ "allLinks": 12
+}

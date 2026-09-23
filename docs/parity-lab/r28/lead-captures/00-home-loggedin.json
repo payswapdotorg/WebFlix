@@ -1,0 +1,59 @@
+{
+ "avatar": false,
+ "railSubs": [
+  {
+   "items": [
+    {
+     "t": "Home",
+     "active": null
+    },
+    {
+     "t": "Shorts",
+     "active": null
+    }
+   ]
+  },
+  {
+   "items": [
+    {
+     "t": "Subscriptions",
+     "active": null
+    },
+    {
+     "t": "Les Vid\u00e9os de Riles",
+     "active": null
+    },
+    {
+     "t": "Marques Brownlee",
+     "active": null
+    },
+    {
+     "t": "Hasan Minhaj",
+     "active": null
+    },
+    {
+     "t": "LastWeekTonight",
+     "active": null
+    },
+    {
+     "t": "Jimmy Kimmel Live",
+     "active": null
+    },
+    {
+     "t": "Bloomberg Originals",
+     "active": null
+    },
+    {
+     "t": "Mastar",
+     "active": null
+    }
+   ]
+  }
+ ],
+ "chips": [],
+ "cards": 3,
+ "theme": {
+  "dark": false,
+  "attr": null
+ }
+}
