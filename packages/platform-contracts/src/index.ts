@@ -32,6 +32,12 @@
  *                          keyboard grammar, the `--wfx-*` css-name mapping
  *                          (`parityTokenMappingTable`), resolvers, and the
  *                          JSON serialization (`paritySheetJson`)
+ * - `parity-conformance.ts` — R27-W1: the parity conformance ENGINE — the
+ *                          CSS parser + the per-surface descriptors (Web +
+ *                          Desktop) + `evaluateParitySurfaceConformance`
+ *                          (token + structural anatomy checks with DIFF
+ *                          messages) + the conformance:status report
+ *                          renderer (conformant / drift / surfaces-pending)
  */
 
 export * from "./common";
@@ -45,3 +51,4 @@ export * from "./sharing";
 export * from "./capabilities";
 export * from "./capability-availability";
 export * from "./parity-tokens";
+export * from "./parity-conformance";
