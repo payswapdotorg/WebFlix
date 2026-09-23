@@ -63,4 +63,5 @@ export * from "./surface/first-run-surface";
 export * from "./platform/auth-transport";
 export * from "./platform/auth-session-store";
 export * from "./platform/source-connect-flow";
-export * from "./surface/model-management-surface";
+export * from "./surface/model-management-surface";export * from "./surface/r27-parity-tokens";
+export * from "./surface/r27-parity-css";
