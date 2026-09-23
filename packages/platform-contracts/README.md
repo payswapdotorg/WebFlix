@@ -103,3 +103,30 @@ the Web-vs-Desktop acquisition truth), `supportsBrowserHost`,
 2. `SettingsSection` (`sources | model | general`) and the navigation
    surface vocabulary live in `@wfx/client-runtime`; R03/R05/R06 may extend
    the settings sections — coordinate through the lead.
+
+## R27: the parity token contract (the corpus as the shared encoding)
+
+`src/parity-tokens.ts` (R27-W1) is THE canonical machine-readable encoding
+of the YouTube parity corpus (`docs/parity-lab/reference/` — captured by
+the lead from live youtube.com 2026-09-23):
+
+- `PARITY_TOKENS` — the color/surface sheet (22 tokens, dark default +
+  light seam), each row provenance-tagged (`[rendered]`/`[css]`/
+  `[documented]`) with its exact sheet trace;
+- `PARITY_TYPE_SCALE` — the 13-role Roboto ladder;
+- `PARITY_GEOMETRY` + `PARITY_GEOMETRY_PROVENANCE` — the measured
+  geometry (shell, cards, watch two-column, player chrome, scrollbar,
+  skeleton);
+- `PARITY_MOTION` — the motion/states contract (120–300ms ease band,
+  ~500ms hover dwell, ~3s idle control fade);
+- `PARITY_CHROME_CONTROLS` + `PARITY_KEYBOARD` + `PARITY_TOUCH` — the
+  player-chrome OPERATE grammar with honest availability gating
+  (`when-queued`, `capability-gated`);
+- `parityTokenMappingTable()` — the canonical `--wfx-*` css-name mapping
+  both apps' stylesheets carry (the conformance key);
+- `paritySheetJson()` / `paritySheet()` — the JSON serialization.
+
+**The single-encoding law:** ONE canonical module; both apps (Web +
+Desktop) consume it. App-side mirrors must match it value-for-value (the
+conformance harness asserts this). Values are immutable — the corpus is
+the lead's; drift between apps is a defect.

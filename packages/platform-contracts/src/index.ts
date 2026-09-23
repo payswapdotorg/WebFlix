@@ -23,6 +23,15 @@
  *                          `CapabilityAvailabilityReport` (R26-W1: the live
  *                          transport's served/not-served truth per capability
  *                          — the production capability-truth law)
+ * - `parity-tokens.ts`     — R27-W1: THE parity token contract — the corpus
+ *                          sheet (docs/parity-lab/reference/) as the ONE
+ *                          canonical machine-readable shared encoding:
+ *                          `PARITY_TOKENS` (colors, dark + light), the
+ *                          `PARITY_TYPE_SCALE` Roboto ladder, `PARITY_GEOMETRY`,
+ *                          `PARITY_MOTION`, the player-chrome control +
+ *                          keyboard grammar, the `--wfx-*` css-name mapping
+ *                          (`parityTokenMappingTable`), resolvers, and the
+ *                          JSON serialization (`paritySheetJson`)
  */
 
 export * from "./common";
@@ -35,3 +44,4 @@ export * from "./background-work";
 export * from "./sharing";
 export * from "./capabilities";
 export * from "./capability-availability";
+export * from "./parity-tokens";
