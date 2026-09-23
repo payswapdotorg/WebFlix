@@ -192,6 +192,12 @@ export interface PlayerChromeProps {
    * broadcasts are the only evidence that advances the visible phase.
    */
   readonly embedControl: boolean;
+  /**
+   * R27-W2 — the NEXT control's real destination (the session queue
+   * head's player href); null renders no next control (the corpus: next
+   * only when queued — never a dead button).
+   */
+  readonly nextHref?: string | null;
 }
 
 /** The familiar speed steps (the settings cluster's vocabulary). */
@@ -526,7 +532,52 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
   const [rate, setRate] = useState<number>(1);
   const [captionsOn, setCaptionsOn] = useState<boolean>(false);
   const [fullscreenOn, setFullscreenOn] = useState<boolean>(false);
+  // R27-W2 — THEATER (the t key's truth: the stage goes full-bleed) +
+  // the IDLE FADE (controls fade on ~3s idle, reveal on mousemove —
+  // the corpus motion law; focus-within and open menus hold them up).
+  const [theaterOn, setTheaterOn] = useState<boolean>(false);
+  const [chromeIdle, setChromeIdle] = useState<boolean>(false);
+  const [settingsLevel, setSettingsLevel] = useState<1 | 2>(1);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const scrubRef = useRef<HTMLDivElement | null>(null);
+
+  /** Reveal the controls + restart the ~3s idle countdown (the corpus law). */
+  const revealControls = useCallback((): void => {
+    setChromeIdle(false);
+    if (idleTimer.current !== null) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(() => {
+      setChromeIdle(true);
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    const onMove = (): void => {
+      revealControls();
+    };
+    window.addEventListener("mousemove", onMove);
+    revealControls();
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (idleTimer.current !== null) clearTimeout(idleTimer.current);
+    };
+  }, [revealControls]);
+
+  /** THEATER: toggle the full-bleed stage (the t key — the corpus grammar). */
+  const toggleTheater = useCallback((): void => {
+    const stage = document.querySelector<HTMLElement>("[data-wfx-player-stagewrap]");
+    const playerRoot = document.querySelector<HTMLElement>("[data-wfx-surface='player']");
+    setTheaterOn((current) => {
+      const next = !current;
+      if (stage !== null) {
+        stage.classList.toggle("wfx-player__stagewrap--theater", next);
+        stage.dataset.wfxTheater = next ? "true" : "false";
+      }
+      if (playerRoot !== null) {
+        playerRoot.classList.toggle("wfx-player--theater", next);
+      }
+      return next;
+    });
+  }, []);
 
   // R26-W2 — THE PROVIDER EMBED CONTROL CONTRACT's evidence store: when the
   // stage bound the provider's own embed player API (the EmbedStage) and
@@ -837,8 +888,13 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           setCaptionsOn((current) => !current);
           break;
         case "t": {
-          // T toggles the keyboard sheet's own disclosure (the native
-          // details element — found from the DOM, no shadow state).
+          // R27-W2 — T is THEATER (the corpus keyboard grammar: "t
+          // theater"); the shortcut sheet lives in the settings menu's
+          // second level + the ? key.
+          toggleTheater();
+          break;
+        }
+        case "?": {
           const sheet = document.querySelector<HTMLDetailsElement>("[data-wfx-chrome-keyboard-sheet]");
           if (sheet !== null) sheet.open = !sheet.open;
           break;
@@ -864,6 +920,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
     toggleFullscreen,
     toggleMute,
     togglePlay,
+    toggleTheater,
     visiblePositionMs,
   ]);
 
@@ -907,8 +964,16 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
   );
 
   return (
-    <div className="wfx-chrome" data-wfx-chrome data-wfx-chrome-phase={visiblePhase}>
-      {/* THE SCRUB BAR (direct manipulation + chapter marks + honest buffered) */}
+    <div
+      className="wfx-chrome"
+      data-wfx-chrome
+      data-wfx-chrome-phase={visiblePhase}
+      data-wfx-chrome-idle={chromeIdle ? "true" : "false"}
+      onMouseMove={revealControls}
+    >
+      {/* THE SCRUB BAR (direct manipulation + chapter marks + honest
+          buffered) — the red #f03 progress with the white 12px scrubber
+          dot, hover-expanded (the corpus motion law). */}
       <div
         className="wfx-chrome__scrub"
         ref={scrubRef}
@@ -922,6 +987,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         data-wfx-chrome-seek
         onPointerDown={(event) => {
           if (terminal) return;
+          revealControls();
           seekFromEvent(event.clientX);
         }}
         onKeyDown={(event) => {
@@ -944,14 +1010,11 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           </Suspense>
           <span className="wfx-chrome__thumb" style={{ left: `${ratio * 100}%` }} />
         </span>
-        <span className="wfx-chrome__readout" aria-hidden="true">
-          <span data-wfx-chrome-position>{formatReadout(visiblePositionMs)}</span>
-          {" / "}
-          <span data-wfx-chrome-duration>{duration !== null ? formatReadout(duration) : "—"}</span>
-        </span>
       </div>
 
-      {/* THE TRANSPORT BAR (the familiar clusters) */}
+      {/* THE TRANSPORT BAR (the corpus order: play · next · volume ·
+          time · spacer · captions · settings · miniplayer · theater ·
+          fullscreen). */}
       <div className="wfx-chrome__bar" data-wfx-chrome-bar>
         <div className="wfx-chrome__cluster">
           <button
@@ -963,8 +1026,21 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
             data-wfx-chrome-play
             data-wfx-chrome-playing={playing ? "true" : "false"}
           >
-            <Icon name={playing ? "pause" : "play"} size={20} />
+            <Icon name={playing ? "pause" : "play"} size={22} />
           </button>
+          {/* R27-W2 — THE NEXT CONTROL (the corpus: next when queued —
+              the session queue head's real player href; never a dead
+              button). */}
+          {props.nextHref !== undefined && props.nextHref !== null && props.nextHref.length > 0 ? (
+            <a
+              className="wfx-chrome__btn"
+              href={props.nextHref}
+              aria-label="Next (the session queue head)"
+              data-wfx-chrome-next
+            >
+              <Icon name="skip" size={22} />
+            </a>
+          ) : null}
           {props.webflixOwnsStage || embedLive ? (
             <div className="wfx-chrome__volume" data-wfx-chrome-volume>
               <button
@@ -974,7 +1050,7 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                 aria-label={muted ? "Unmute (m)" : "Mute (m)"}
                 data-wfx-chrome-mute
               >
-                <Icon name={muted ? "mute" : "volume"} size={20} />
+                <Icon name={muted ? "mute" : "volume"} size={22} />
               </button>
               <input
                 type="range"
@@ -993,17 +1069,23 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
               />
             </div>
           ) : null}
+          {/* THE TIME READOUT (the corpus: `0:00 / 7:45` in the bar). */}
+          <span className="wfx-chrome__readout" aria-hidden="true">
+            <span data-wfx-chrome-position>{formatReadout(visiblePositionMs)}</span>
+            {" / "}
+            <span data-wfx-chrome-duration>{duration !== null ? formatReadout(duration) : "—"}</span>
+          </span>
         </div>
 
         <div className="wfx-chrome__cluster">
-          <span className="wfx-chrome__phase" data-wfx-chrome-phase-label>
-            {visiblePhase}
-          </span>
           {command !== null && command.detail !== null ? (
             <span className="wfx-chrome__status" role="status" data-wfx-chrome-command-status>
               {command.detail}
             </span>
           ) : null}
+          <span className="wfx-chrome__phase" data-wfx-chrome-phase-label>
+            {visiblePhase}
+          </span>
         </div>
 
         <div className="wfx-chrome__cluster">
@@ -1022,69 +1104,199 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
               }}
             />
           </Suspense>
-          {/* THE SETTINGS CLUSTER (a native disclosure — the honest
-              per-rung truths render in the markup, closed by default,
-              keyboard-operable for free). */}
-          <details className="wfx-chrome__settings" data-wfx-chrome-settings>
+          {/* THE SETTINGS CLUSTER — YouTube's popup-menu anatomy with the
+              TWO-LEVEL navigation (level 2: the shortcuts sheet + the
+              playback stats; a back-arrow header returns). The frozen
+              R24 rows (speed steps, quality truth, the translate
+              languages, autoplay, volume truth) render at LEVEL 1 — the
+              golden-journey contract (J40/J43 walk them on open). */}
+          <details
+            className="wfx-chrome__settings"
+            data-wfx-chrome-settings
+            onToggle={(event) => {
+              revealControls();
+              if (!(event.target as HTMLDetailsElement).open) {
+                setSettingsLevel(1);
+              }
+            }}
+          >
             <summary className="wfx-chrome__btn" aria-label="Playback settings" data-wfx-chrome-settings-toggle>
-              <Icon name="settings" size={20} />
+              <Icon name="settings" size={22} />
             </summary>
             <div className="wfx-chrome__settingspanel" data-wfx-chrome-settings-panel>
-              <p className="wfx-chrome__settingshead">Playback settings</p>
-              <div className="wfx-chrome__settingsrow" data-wfx-chrome-speed>
-                <span>Speed</span>
-                <div className="wfx-chrome__speedsteps" role="group" aria-label="Playback speed">
-                  {SPEED_STEPS.map((step) => (
-                    <button
-                      key={step}
-                      type="button"
-                      className={`wfx-chrome__stepbtn${rate === step ? " wfx-chrome__stepbtn--active" : ""}`}
-                      onClick={() => {
-                        setPlaybackRate(step);
-                      }}
-                      aria-pressed={rate === step}
-                      data-wfx-chrome-speed-step={step}
-                    >
-                      {step === 1 ? "Normal" : `${step}×`}
-                    </button>
-                  ))}
-                </div>
-                <span className="wfx-chrome__settingstruth">
-                  {props.webflixOwnsStage
-                    ? "Applies to this WebFlix stage's playback."
-                    : embedLive
-                      ? "Applies to this provider embed's own player — carried through the provider's embed controls."
-                      : "This way of watching carries its own speed control — the choice applies wherever WebFlix owns the playback."}
-                </span>
-              </div>
-              <div className="wfx-chrome__settingsrow" data-wfx-chrome-quality>
-                <span>Quality</span>
-                <span className="wfx-chrome__settingstruth">{props.qualityTruth}</span>
-              </div>
-              {/* R25-W2 — THE TRANSLATE ROW (the plan's "Translate → [target
-                  language]" control, in the settings cluster's own grammar).
-                  A LOCAL suspension — the settings panel streams the row
-                  when the realtime route view resolves; the transport bar
-                  never suspends. */}
-              {props.translateFeatures !== undefined ? (
-                <Suspense fallback={<div className="wfx-chrome__settingsrow" data-wfx-translate-row data-wfx-translate-row-state="pending" />}>
-                  <TranslateRowLayer features={props.translateFeatures} onSessionStarted={() => {
-                    setCaptionsOn(true);
-                  }} />
-                </Suspense>
-              ) : null}
-              <div className="wfx-chrome__settingsrow" data-wfx-chrome-autoplay-truth>
-                <span>Autoplay</span>
-                <span className="wfx-chrome__settingstruth">{props.autoplaySentence}</span>
-              </div>
-              {!props.webflixOwnsStage && !embedLive ? (
-                <div className="wfx-chrome__settingsrow" data-wfx-chrome-volume-truth>
-                  <span>Volume</span>
-                  <span className="wfx-chrome__settingstruth">
-                    This way of watching carries its own volume control — the provider&apos;s player inside the
-                    contained surface answers it.
+              {settingsLevel === 2 ? (
+                <button
+                  type="button"
+                  className="wfx-chrome__backrow"
+                  onClick={() => {
+                    setSettingsLevel(1);
+                  }}
+                  data-wfx-chrome-settings-back
+                >
+                  <span className="wfx-chrome__backicon">
+                    <Icon name="arrowLeft" size={20} />
                   </span>
-                </div>
+                  <span>Settings</span>
+                </button>
+              ) : null}
+              {settingsLevel === 1 ? (
+                <>
+                  <p className="wfx-chrome__settingshead">Playback settings</p>
+                  <div className="wfx-chrome__settingsrow" data-wfx-chrome-speed>
+                    <span>Speed</span>
+                    <div className="wfx-chrome__speedsteps" role="group" aria-label="Playback speed">
+                      {SPEED_STEPS.map((step) => (
+                        <button
+                          key={step}
+                          type="button"
+                          className={`wfx-chrome__stepbtn${rate === step ? " wfx-chrome__stepbtn--active" : ""}`}
+                          onClick={() => {
+                            setPlaybackRate(step);
+                          }}
+                          aria-pressed={rate === step}
+                          data-wfx-chrome-speed-step={step}
+                        >
+                          {step === 1 ? "Normal" : `${step}×`}
+                        </button>
+                      ))}
+                    </div>
+                    <span className="wfx-chrome__settingstruth">
+                      {props.webflixOwnsStage
+                        ? "Applies to this WebFlix stage's playback."
+                        : embedLive
+                          ? "Applies to this provider embed's own player — carried through the provider's embed controls."
+                          : "This way of watching carries its own speed control — the choice applies wherever WebFlix owns the playback."}
+                    </span>
+                  </div>
+                  <div className="wfx-chrome__settingsrow" data-wfx-chrome-quality>
+                    <span>Quality</span>
+                    <span className="wfx-chrome__settingstruth">{props.qualityTruth}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="wfx-chrome__settingshead">Shortcuts</p>
+                  <div className="wfx-chrome__keysdl">
+                    <div>
+                      <dt>Space / K</dt>
+                      <dd>Play or pause</dd>
+                    </div>
+                    <div>
+                      <dt>J / L</dt>
+                      <dd>Back or forward 10 seconds</dd>
+                    </div>
+                    <div>
+                      <dt>← / →</dt>
+                      <dd>Back or forward 5 seconds</dd>
+                    </div>
+                    <div>
+                      <dt>0–9</dt>
+                      <dd>Jump to 0%–90%</dd>
+                    </div>
+                    <div>
+                      <dt>M</dt>
+                      <dd>Mute{props.webflixOwnsStage || embedLive ? "" : " (WebFlix-owned stages)"}</dd>
+                    </div>
+                    <div>
+                      <dt>F</dt>
+                      <dd>Fullscreen</dd>
+                    </div>
+                    <div>
+                      <dt>T</dt>
+                      <dd>Theater view</dd>
+                    </div>
+                    <div>
+                      <dt>C</dt>
+                      <dd>Captions</dd>
+                    </div>
+                    <div>
+                      <dt>?</dt>
+                      <dd>This shortcut sheet</dd>
+                    </div>
+                  </div>
+                </>
+              )}
+              {settingsLevel === 1 ? (
+                <>
+                  {/* R25-W2 — THE TRANSLATE ROW (the plan's "Translate →
+                      [target language]" control, in the settings cluster's
+                      own grammar). A LOCAL suspension — the settings panel
+                      streams the row when the realtime route view resolves;
+                      the transport bar never suspends. */}
+                  {props.translateFeatures !== undefined ? (
+                    <Suspense fallback={<div className="wfx-chrome__settingsrow" data-wfx-translate-row data-wfx-translate-row-state="pending" />}>
+                      <TranslateRowLayer features={props.translateFeatures} onSessionStarted={() => {
+                        setCaptionsOn(true);
+                      }} />
+                    </Suspense>
+                  ) : null}
+                  <div className="wfx-chrome__settingsrow" data-wfx-chrome-autoplay-truth>
+                    <span>Autoplay</span>
+                    <span className="wfx-chrome__settingstruth">{props.autoplaySentence}</span>
+                  </div>
+                  {!props.webflixOwnsStage && !embedLive ? (
+                    <div className="wfx-chrome__settingsrow" data-wfx-chrome-volume-truth>
+                      <span>Volume</span>
+                      <span className="wfx-chrome__settingstruth">
+                        This way of watching carries its own volume control — the provider&apos;s player inside the
+                        contained surface answers it.
+                      </span>
+                    </div>
+                  ) : null}
+                  {/* The level-2 destinations (YouTube's submenu rows). */}
+                  <button
+                    type="button"
+                    className="wfx-chrome__menurow"
+                    onClick={() => {
+                      setSettingsLevel(2);
+                    }}
+                    data-wfx-chrome-settings-shortcuts
+                  >
+                    <span>Keyboard shortcuts</span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                  <details className="wfx-chrome__keys" data-wfx-chrome-keyboard-sheet>
+                    <summary data-wfx-chrome-keyboard>Keyboard shortcuts</summary>
+                    <dl>
+                      <div>
+                        <dt>Space / K</dt>
+                        <dd>Play or pause</dd>
+                      </div>
+                      <div>
+                        <dt>J / L</dt>
+                        <dd>Back or forward 10 seconds</dd>
+                      </div>
+                      <div>
+                        <dt>← / →</dt>
+                        <dd>Back or forward 5 seconds</dd>
+                      </div>
+                      <div>
+                        <dt>0–9</dt>
+                        <dd>Jump to 0%–90%</dd>
+                      </div>
+                      <div>
+                        <dt>M</dt>
+                        <dd>Mute{props.webflixOwnsStage || embedLive ? "" : " (WebFlix-owned stages)"}</dd>
+                      </div>
+                      <div>
+                        <dt>F</dt>
+                        <dd>Fullscreen</dd>
+                      </div>
+                      <div>
+                        <dt>T</dt>
+                        <dd>Theater view</dd>
+                      </div>
+                      <div>
+                        <dt>C</dt>
+                        <dd>Captions</dd>
+                      </div>
+                      <div>
+                        <dt>?</dt>
+                        <dd>This shortcut sheet</dd>
+                      </div>
+                    </dl>
+                  </details>
+                </>
               ) : null}
             </div>
           </details>
@@ -1095,7 +1307,19 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
             aria-label={fullscreenOn ? "Exit fullscreen (f)" : "Fullscreen (f)"}
             data-wfx-chrome-fullscreen
           >
-            <Icon name={fullscreenOn ? "fullscreenExit" : "fullscreen"} size={20} />
+            <Icon name={fullscreenOn ? "fullscreenExit" : "fullscreen"} size={22} />
+          </button>
+          {/* R27-W2 — THE THEATER CONTROL (the t key's own button — the
+              corpus bar's right cluster). */}
+          <button
+            type="button"
+            className="wfx-chrome__btn"
+            onClick={toggleTheater}
+            aria-label={theaterOn ? "Exit theater view (t)" : "Theater view (t)"}
+            aria-pressed={theaterOn}
+            data-wfx-chrome-theater
+          >
+            <Icon name="theater" size={22} />
           </button>
           {props.webflixOwnsStage || pipAvailable ? (
             <button
@@ -1105,54 +1329,11 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
               aria-label="Miniplayer (picture-in-picture)"
               data-wfx-chrome-miniplayer
             >
-              <Icon name="miniplayer" size={20} />
+              <Icon name="miniplayer" size={22} />
             </button>
           ) : null}
         </div>
       </div>
-
-      {/* THE KEYBOARD GRAMMAR SHEET (the honest, visible map — a native
-          disclosure: closed by default, keyboard-operable, the T key's
-          own target). */}
-      <details className="wfx-chrome__keys" data-wfx-chrome-keyboard-sheet>
-        <summary className="wfx-chrome__keysbtn" data-wfx-chrome-keyboard>
-          Keyboard shortcuts
-        </summary>
-        <dl>
-          <div>
-            <dt>Space / K</dt>
-            <dd>Play or pause</dd>
-          </div>
-          <div>
-            <dt>J / L</dt>
-            <dd>Back or forward 10 seconds</dd>
-          </div>
-          <div>
-            <dt>← / →</dt>
-            <dd>Back or forward 5 seconds</dd>
-          </div>
-          <div>
-            <dt>0–9</dt>
-            <dd>Jump to 0%–90%</dd>
-          </div>
-          <div>
-            <dt>M</dt>
-            <dd>Mute{props.webflixOwnsStage || embedLive ? "" : " (WebFlix-owned stages)"}</dd>
-          </div>
-          <div>
-            <dt>F</dt>
-            <dd>Fullscreen</dd>
-          </div>
-          <div>
-            <dt>C</dt>
-            <dd>Captions</dd>
-          </div>
-          <div>
-            <dt>T</dt>
-            <dd>This shortcut sheet</dd>
-          </div>
-        </dl>
-      </details>
 
       {/* THE CAPTION OVERLAY (R25-W2's dispatcher: the LIVE bilingual
           overlay while a translation session runs; the transcript

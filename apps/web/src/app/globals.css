@@ -1386,6 +1386,14 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   }
 }
 
+/* The search results list: the captured row grammar — ONE column of
+ * result rows, capped at YouTube's own search column width. */
+[data-wfx-search-results].wfx-grid {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1096px;
+  gap: 16px;
+}
+
 /* The RESULT ROW (the captured card grammar): thumb 360×202 left, right
  * column title 18/400/26 2-line clamp, channel, meta, snippet, badges. */
 .wfx-result {
@@ -4189,6 +4197,68 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   font: inherit;
   font-size: 14px;
   cursor: pointer;
+}
+
+/* The level-2 shortcuts rows (the settings popup's second level). */
+.wfx-chrome__keysdl {
+  margin: 0;
+  padding: 4px 16px 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 4px 16px;
+}
+
+.wfx-chrome__keysdl div {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.wfx-chrome__keysdl dt {
+  font-weight: 500;
+  color: var(--wfx-text);
+  min-width: 4.5rem;
+  font-size: 13px;
+}
+
+.wfx-chrome__keysdl dd {
+  margin: 0;
+  color: var(--wfx-text-dim);
+  font-size: 13px;
+}
+
+/* The nested keyboard-sheet disclosure inside the settings panel (the
+   frozen [data-wfx-chrome-keyboard] contract rides it — quiet, honest). */
+.wfx-chrome__settings .wfx-chrome__keys {
+  margin: 0;
+  padding: 0 8px;
+  border: none;
+  border-top: 1px solid var(--wfx-border);
+  border-radius: 0;
+  font-size: 14px;
+}
+
+.wfx-chrome__settings .wfx-chrome__keys summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.wfx-chrome__settings .wfx-chrome__keys summary:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-chrome__settings .wfx-chrome__keys dl {
+  margin: 4px 0 8px;
 }
 
 /* The keyboard sheet. */

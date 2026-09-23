@@ -64,7 +64,7 @@ export function ItemCard({
   actions,
 }: {
   readonly card: CardView;
-  readonly variant?: "wide" | "short";
+  readonly variant?: "wide" | "short" | "result";
   readonly resume?: { readonly resumePositionMs: number; readonly completionRatio: number | null };
   readonly linked?: boolean;
   /** The compact availability summary (R21-E — the search surface's). */
@@ -83,6 +83,81 @@ export function ItemCard({
   const label = `${card.title} (${card.canonicalType}${
     card.durationMs !== undefined ? `, ${formatDuration(card.durationMs)}` : ""
   })`;
+  // R27-W2 — the SEARCH RESULT variant: the captured row grammar
+  // (search-card-grammar.json) — thumbnail 360×202 left, 16px gap, the
+  // meta column right (title 18/400/26 2-line, channel, meta, badges).
+  if (variant === "result") {
+    return (
+      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
+        {actions !== undefined ? (
+          <CardPreview
+            itemId={card.itemId}
+            title={card.title}
+            attentionMode={actions.attentionMode}
+            previewable={false}
+          />
+        ) : null}
+        <a
+          className="wfx-result"
+          href={href}
+          data-wfx-card={card.itemId}
+          aria-label={label}
+          data-wfx-card-type={card.canonicalType}
+          data-wfx-card-active="true"
+        >
+          <span className="wfx-result__thumb">
+            <span className="wfx-card__art" aria-hidden="true">
+              <span>{placeholderMonogram(card.title)}</span>
+            </span>
+            {card.artwork !== undefined ? (
+              <ArtworkImage artwork={card.artwork} className="wfx-card__img" />
+            ) : null}
+            {card.durationMs !== undefined ? (
+              <span className="wfx-card__badges">
+                <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
+              </span>
+            ) : null}
+          </span>
+          <span className="wfx-result__meta">
+            <p className="wfx-result__title" data-wfx-card-title>
+              {card.title}
+            </p>
+            <p className="wfx-result__metainfo">
+              {availability !== undefined ? (
+                <span data-wfx-card-availability>{availability}</span>
+              ) : (
+                <span data-wfx-card-capability>Playback options on details</span>
+              )}
+            </p>
+            <p className="wfx-result__channel">
+              {linked && card.connectorId.length > 0 ? (
+                <span data-wfx-card-source>From {card.connectorId}</span>
+              ) : (
+                <span>Source unknown in this session</span>
+              )}
+            </p>
+            <span className="wfx-result__badges">
+              <span className="wfx-badge wfx-badge--type">{card.canonicalType}</span>
+            </span>
+          </span>
+        </a>
+        {actions !== undefined ? (
+          <CardActions
+            target={{
+              itemId: card.itemId,
+              connectorId: card.connectorId,
+              externalRef: card.externalRef,
+              title: card.title,
+              canonicalType: card.canonicalType,
+              ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+              href,
+              initiallySaved: actions.savedItemIds.includes(card.itemId),
+            }}
+          />
+        ) : null}
+      </span>
+    );
+  }
   const body = (
     <>
       <span
