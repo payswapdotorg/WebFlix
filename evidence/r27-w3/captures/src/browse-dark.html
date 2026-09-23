@@ -1,74 +1,67 @@
-/**
- * @wfx/app-desktop — THE R27 PARITY STYLESHEET EMITTER (the Desktop
- * styling surface, W3's token overhaul).
- *
- * THE LAW: the Desktop webview's stylesheet is GENERATED from the token
- * contract (`./r27-parity-tokens.ts`), never hand-authored — every color
- * rides a `var(--wfx-*)` custom property the theme blocks emit, every
- * geometry/motion number interpolates from `R27_GEOMETRY`/`R27_MOTION`.
- * A value therefore exists exactly once (the single-encoding law); the
- * lead's webview build pipes `r27DesktopStylesheet()` into the frontend
- * dist, and the evidence harness bakes the same output into its captures
- * (the honest window-chrome mapping: the 1440×900 native window is the
- * corpus capture viewport; the OS title bar sits ABOVE this surface).
- *
- * GRAMMAR IDENTITY (the parity-between-apps law): the class grammar is
- * the same YouTube anatomy the Web lane renders (masthead → rail → chip
- * bar → card grid → search rows → measured two-column watch → chrome
- * overlay). Drift between the apps is a defect; both consume the sheet.
- *
- * WHAT THIS MODULE IS NOT: a CSS framework (no runtime deps — one string
- * emitter), a theme engine (the two theme blocks are the whole seam), or
- * component logic (the surfaces' view-models own structure; this owns
- * presentation).
- */
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1440" />
+<title>WebFlix Desktop — R27 parity capture (dark)</title>
+<style>
+/* WebFlix Desktop — the R27 parity stylesheet (GENERATED from
+   apps/desktop/src/surface/r27-parity-tokens.ts; corpus sheet
+   docs/parity-lab/reference/design-tokens.md — do not hand-edit
+   values here; the token contract is the single encoding). */
 
-import {
-  R27_GEOMETRY,
-  R27_MOTION,
-  R27_PARITY_TOKENS,
-  R27_PARITY_TOKEN_NAMES,
-  R27_TYPE_ROLE_NAMES,
-  R27_TYPE_SCALE,
-  type R27ThemeName,
-} from "./r27-parity-tokens";
-
-// ---------------------------------------------------------------------------
-// The theme blocks (the custom properties — the token contract as CSS)
-// ---------------------------------------------------------------------------
-
-/**
- * Emit one theme's custom-property block. Dark lands on `:root` (the
- * DEFAULT product theme); light rides the `html[data-theme="light"]`
- * seam — the webview persists the choice and toggles the attribute.
- */
-export function r27ThemeBlock(theme: R27ThemeName): string {
-  const selector = theme === "dark" ? ":root" : 'html[data-theme="light"]';
-  const lines = R27_PARITY_TOKEN_NAMES.map((name) => {
-    const spec = R27_PARITY_TOKENS[name];
-    return `  ${spec.cssName}: ${spec.dark === spec.light || theme === "dark" ? spec.dark : spec.light};`;
-  });
-  return `${selector} {\n${lines.join("\n")}\n}`;
+/* — The theme seam: dark default, light behind data-theme — */
+:root {
+  --wfx-bg: #0f0f0f;
+  --wfx-bg-raised: #272727;
+  --wfx-bg-hover: rgba(255,255,255,0.1);
+  --wfx-border: rgba(255,255,255,0.2);
+  --wfx-border-hairline: hsla(0,100%,100%,.08);
+  --wfx-text: #f1f1f1;
+  --wfx-text-dim: #aaaaaa;
+  --wfx-text-faint: #717171;
+  --wfx-link: #3ea6ff;
+  --wfx-focus: #3ea6ff;
+  --wfx-accent: #f03;
+  --wfx-cta-bg: #f1f1f1;
+  --wfx-cta-fg: #0f0f0f;
+  --wfx-pill-bg: rgba(0,0,0,0.8);
+  --wfx-pill-fg: #ffffff;
+  --wfx-skeleton: hsl(0, 0%, 16%);
+  --wfx-scrollbar-thumb: hsl(0, 0%, 67%);
+  --wfx-toast-bg: #f1f1f1;
+  --wfx-toast-fg: #0f0f0f;
+  --wfx-chrome-scrim: rgba(0,0,0,0.74);
+  --wfx-chrome-fg: #ffffff;
+  --wfx-stage-black: #000000;
 }
 
-/** The theme seam: dark on :root, light behind the data-theme attribute. */
-export function r27ThemeBlocks(): string {
-  return [
-    "/* — The theme seam: dark default, light behind data-theme — */",
-    r27ThemeBlock("dark"),
-    "",
-    r27ThemeBlock("light"),
-  ].join("\n");
+html[data-theme="light"] {
+  --wfx-bg: #ffffff;
+  --wfx-bg-raised: #f2f2f2;
+  --wfx-bg-hover: rgba(0,0,0,0.05);
+  --wfx-border: rgba(0,0,0,0.1);
+  --wfx-border-hairline: hsl(0,0%,93.3%);
+  --wfx-text: #0f0f0f;
+  --wfx-text-dim: #606060;
+  --wfx-text-faint: #909090;
+  --wfx-link: #065fd4;
+  --wfx-focus: #065fd4;
+  --wfx-accent: #f03;
+  --wfx-cta-bg: #0f0f0f;
+  --wfx-cta-fg: #ffffff;
+  --wfx-pill-bg: rgba(0,0,0,0.8);
+  --wfx-pill-fg: #ffffff;
+  --wfx-skeleton: hsl(0, 0%, 89%);
+  --wfx-scrollbar-thumb: hsl(0, 0%, 76%);
+  --wfx-toast-bg: #0f0f0f;
+  --wfx-toast-fg: #f1f1f1;
+  --wfx-chrome-scrim: rgba(0,0,0,0.74);
+  --wfx-chrome-fg: #ffffff;
+  --wfx-stage-black: #000000;
 }
 
-// ---------------------------------------------------------------------------
-// The base layer (reset, scrollbar, focus, typography utilities)
-// ---------------------------------------------------------------------------
-
-/** The base layer: reset + body + the corpus scrollbar + focus rings. */
-export function r27BaseLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — Base: the corpus body, scrollbar, focus law — */
+/* — Base: the corpus body, scrollbar, focus law — */
 *,
 *::before,
 *::after {
@@ -86,13 +79,13 @@ html[data-theme="light"] {
 
 /* The corpus skeleton CSS scrollbar geometry, verbatim. */
 body::-webkit-scrollbar {
-  width: ${g.scrollbarWidth}px;
+  width: 16px;
 }
 
 body::-webkit-scrollbar-thumb {
-  height: ${g.scrollbarThumbMinHeight}px;
-  border-radius: ${g.scrollbarThumbRadius}px;
-  border: ${g.scrollbarThumbBorder}px solid transparent;
+  height: 56px;
+  border-radius: 8px;
+  border: 4px solid transparent;
   background-clip: content-box;
   background-color: var(--wfx-scrollbar-thumb);
 }
@@ -102,13 +95,13 @@ body {
   min-height: 100vh;
   background: var(--wfx-bg);
   color: var(--wfx-text);
-  font: 400 14px/20px ${'"Roboto", "Arial", sans-serif'};
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 /* The keyboard-focus law: a 2px link-family ring on every interactive. */
 :focus-visible {
-  outline: ${R27_MOTION.focusRingWidth}px solid var(--wfx-focus);
+  outline: 2px solid var(--wfx-focus);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -123,36 +116,114 @@ body {
   clip: rect(0 0 0 0);
   white-space: nowrap;
   border: 0;
-}`;
 }
 
-/** The typography utilities: one class per sheet role. */
-export function r27TypeUtilities(): string {
-  const blocks = R27_TYPE_ROLE_NAMES.map((role) => {
-    const spec = R27_TYPE_SCALE[role];
-    const clamp = spec.lineClamp === 2
-      ? `\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;`
-      : "";
-    const colorProp = R27_PARITY_TOKENS[spec.color].cssName;
-    return `.wfx-type-${spec.role} {
+/* — The typography ladder (the sheet's roles) — */
+.wfx-type-body {
   margin: 0;
-  font-size: ${spec.size}px;
-  font-weight: ${spec.weight};
-  line-height: ${spec.lineHeight}px;
-  color: var(${colorProp});${clamp}
-}`;
-  });
-  return `/* — The typography ladder (the sheet's roles) — */\n${blocks.join("\n")}`;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+.wfx-type-watch-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--wfx-text);
+}
+.wfx-type-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wfx-type-search-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 26px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wfx-type-channel-row {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+}
+.wfx-type-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+.wfx-type-snippet {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wfx-type-pill {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--wfx-pill-fg);
+}
+.wfx-type-badge {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+.wfx-type-button-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+.wfx-type-section-heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--wfx-text);
+}
+.wfx-type-chip-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+.wfx-type-rail-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
 }
 
-// ---------------------------------------------------------------------------
-// The app shell (masthead + rail + main region)
-// ---------------------------------------------------------------------------
-
-/** The app shell: the 56px masthead + the 240/72 rail + the main region. */
-export function r27ShellLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — The app shell: masthead 56, rail 240/72, main region — */
+/* — The app shell: masthead 56, rail 240/72, main region — */
 .wfx-app {
   min-height: 100vh;
   display: flex;
@@ -174,7 +245,7 @@ export function r27ShellLayer(): string {
   display: flex;
   align-items: center;
   gap: 16px;
-  height: ${g.topbarHeight}px;
+  height: 56px;
   padding: 0 16px;
   background: var(--wfx-bg);
   border-bottom: 1px solid var(--wfx-border-hairline);
@@ -191,7 +262,7 @@ export function r27ShellLayer(): string {
   background: transparent;
   color: var(--wfx-text);
   cursor: pointer;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-topbar__guide:hover {
@@ -225,9 +296,9 @@ export function r27ShellLayer(): string {
   display: flex;
   align-items: center;
   width: min(640px, 100%);
-  height: ${g.searchPillHeight}px;
+  height: 40px;
   border: 1px solid var(--wfx-border);
-  border-radius: ${g.searchPillRadius}px;
+  border-radius: 40px;
   background: var(--wfx-bg);
   overflow: hidden;
 }
@@ -256,15 +327,15 @@ export function r27ShellLayer(): string {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: ${g.searchPillHeight}px;
+  width: 40px;
   height: 100%;
   border: none;
   border-left: 1px solid var(--wfx-border);
-  border-radius: 0 ${g.searchPillRadius}px ${g.searchPillRadius}px 0;
+  border-radius: 0 40px 40px 0;
   background: var(--wfx-bg-raised);
   color: var(--wfx-text);
   cursor: pointer;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-topbar__search-submit:hover {
@@ -278,8 +349,8 @@ export function r27ShellLayer(): string {
 }
 
 .wfx-topbar__avatar {
-  width: ${g.topbarAvatar}px;
-  height: ${g.topbarAvatar}px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: var(--wfx-bg-raised);
   display: inline-flex;
@@ -295,12 +366,12 @@ export function r27ShellLayer(): string {
  * bottom-nav grammar never renders on this surface (the honest
  * window-chrome mapping — recorded in DIVERGENCES). */
 .wfx-rail {
-  flex: 0 0 ${g.railWidthLabeled}px;
-  width: ${g.railWidthLabeled}px;
+  flex: 0 0 240px;
+  width: 240px;
   position: sticky;
-  top: ${g.topbarHeight}px;
+  top: 56px;
   align-self: flex-start;
-  max-height: calc(100vh - ${g.topbarHeight}px);
+  max-height: calc(100vh - 56px);
   overflow-y: auto;
   padding: 8px 12px 24px;
 }
@@ -309,10 +380,10 @@ export function r27ShellLayer(): string {
   display: flex;
   align-items: center;
   gap: 24px;
-  height: ${g.railItemHeight}px;
+  height: 48px;
   padding: 0 12px;
   border: none;
-  border-radius: ${g.railItemRadius}px;
+  border-radius: 10px;
   background: transparent;
   color: var(--wfx-text);
   font: 400 14px/20px "Roboto", "Arial", sans-serif;
@@ -320,7 +391,7 @@ export function r27ShellLayer(): string {
   text-decoration: none;
   width: 100%;
   text-align: left;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-rail__item:hover {
@@ -352,10 +423,10 @@ export function r27ShellLayer(): string {
   border-top: 1px solid var(--wfx-border-hairline);
 }
 
-@media (min-width: ${g.bottomNavBreakpoint}px) and (max-width: ${g.railIconBreakpoint - 1}px) {
+@media (min-width: 792px) and (max-width: 1279px) {
   .wfx-rail {
-    flex-basis: ${g.railWidthIcon}px;
-    width: ${g.railWidthIcon}px;
+    flex-basis: 72px;
+    width: 72px;
     padding: 8px 0 24px;
   }
 
@@ -381,15 +452,15 @@ export function r27ShellLayer(): string {
   padding: 0 0 48px;
 }
 
-@media (min-width: ${g.bottomNavBreakpoint}px) and (max-width: ${g.railIconBreakpoint - 1}px) {
+@media (min-width: 792px) and (max-width: 1279px) {
   .wfx-main {
-    margin-left: ${g.railWidthIcon}px;
+    margin-left: 72px;
   }
 }
 
-@media (min-width: ${g.railIconBreakpoint}px) {
+@media (min-width: 1280px) {
   .wfx-main {
-    margin-left: ${g.railWidthLabeled}px;
+    margin-left: 240px;
   }
 }
 
@@ -398,24 +469,16 @@ export function r27ShellLayer(): string {
  * x=16 with no visible rail). */
 .wfx-app--railless .wfx-main {
   margin-left: 0;
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// The chip bar + the card grid (the browse/home grammar)
-// ---------------------------------------------------------------------------
-
-/** The chip bar + the responsive card grid + the card anatomy. */
-export function r27FeedLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — The feed: chip bar + responsive grid + the card anatomy — */
+/* — The feed: chip bar + responsive grid + the card anatomy — */
 .wfx-chips {
   position: sticky;
-  top: ${g.topbarHeight}px;
+  top: 56px;
   z-index: 40;
   display: flex;
   gap: 12px;
-  padding: ${g.chipRowPadding}px ${g.chipRowPadding + 4}px;
+  padding: 12px 16px;
   background: var(--wfx-bg);
   overflow-x: auto;
   scrollbar-width: none;
@@ -430,7 +493,7 @@ export function r27FeedLayer(): string {
   position: sticky;
   flex: 0 0 32px;
   top: 0;
-  height: ${g.chipHeight + 2 * g.chipRowPadding}px;
+  height: 56px;
   pointer-events: none;
   z-index: 41;
   display: none;
@@ -440,16 +503,16 @@ export function r27FeedLayer(): string {
   display: inline-flex;
   align-items: center;
   flex: 0 0 auto;
-  height: ${g.chipHeight}px;
+  height: 32px;
   padding: 0 12px;
   border: none;
-  border-radius: ${g.chipRadius}px;
+  border-radius: 8px;
   background: var(--wfx-bg-hover);
   color: var(--wfx-text);
   font: 500 14px/20px "Roboto", "Arial", sans-serif;
   white-space: nowrap;
   cursor: pointer;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-chip:hover {
@@ -467,33 +530,33 @@ export function r27FeedLayer(): string {
 
 .wfx-grid {
   display: grid;
-  grid-template-columns: repeat(${g.gridColumns.base}, minmax(0, 1fr));
-  gap: ${g.gridGap}px ${g.gridGap}px;
-  padding: 8px ${g.chipRowPadding + 4}px 0;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px 16px;
+  padding: 8px 16px 0;
 }
 
-@media (min-width: ${g.gridBreakpoints.two}px) {
+@media (min-width: 600px) {
   .wfx-grid {
-    grid-template-columns: repeat(${g.gridColumns.min600}, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (min-width: ${g.gridBreakpoints.three}px) {
+@media (min-width: 1000px) {
   .wfx-grid {
-    grid-template-columns: repeat(${g.gridColumns.min1000}, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-@media (min-width: ${g.gridBreakpoints.four}px) {
+@media (min-width: 1300px) {
   .wfx-grid {
-    grid-template-columns: repeat(${g.gridColumns.min1300}, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 .wfx-card {
   display: flex;
   flex-direction: column;
-  gap: ${g.gridCardTextGap}px;
+  gap: 4px;
   background: transparent;
   border: none;
   padding: 0;
@@ -506,7 +569,7 @@ export function r27FeedLayer(): string {
   position: relative;
   aspect-ratio: 16 / 9;
   width: 100%;
-  border-radius: ${g.cardRadius}px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--wfx-skeleton);
 }
@@ -526,8 +589,8 @@ export function r27FeedLayer(): string {
   bottom: 8px;
   display: inline-flex;
   align-items: center;
-  padding: ${g.pillPaddingY}px ${g.pillPaddingX}px;
-  border-radius: ${g.pillRadius}px;
+  padding: 3px 4px;
+  border-radius: 4px;
   background: var(--wfx-pill-bg);
   color: var(--wfx-pill-fg);
   font: 500 12px/16px "Roboto", "Arial", sans-serif;
@@ -545,7 +608,7 @@ export function r27FeedLayer(): string {
 .wfx-card__progress-fill {
   height: 100%;
   background: var(--wfx-accent);
-  transition: width ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: width 150ms ease;
 }
 
 .wfx-card:hover .wfx-card__progress,
@@ -584,7 +647,7 @@ export function r27FeedLayer(): string {
   text-align: left;
   cursor: pointer;
   text-decoration: none;
-  transition: color ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: color 150ms ease;
 }
 
 .wfx-card__channel:hover {
@@ -615,18 +678,18 @@ export function r27FeedLayer(): string {
 .wfx-skel-card {
   display: flex;
   flex-direction: column;
-  gap: ${g.gridCardTextGap}px;
+  gap: 4px;
 }
 
 .wfx-skel-card__thumb {
   aspect-ratio: 16 / 9;
-  border-radius: ${g.cardRadius}px;
+  border-radius: 12px;
   background: var(--wfx-skeleton);
 }
 
 .wfx-skel-card__line {
-  height: ${g.skeletonShellHeight}px;
-  border-radius: ${g.skeletonShellRadius}px;
+  height: 20px;
+  border-radius: 8px;
   background: var(--wfx-skeleton);
 }
 
@@ -639,22 +702,14 @@ export function r27FeedLayer(): string {
   flex-direction: column;
   gap: 8px;
   padding: 8px;
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// The search surface (the row-card grammar)
-// ---------------------------------------------------------------------------
-
-/** The search page: the Filters header row + the result-row grammar. */
-export function r27SearchLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — Search: the row-card grammar (360×202 left, meta column right) — */
+/* — Search: the row-card grammar (360×202 left, meta column right) — */
 .wfx-search {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 24px ${g.chipRowPadding + 4}px 48px;
+  padding: 24px 16px 48px;
   max-width: 1096px;
 }
 
@@ -667,15 +722,15 @@ export function r27SearchLayer(): string {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: ${g.chipHeight}px;
+  height: 32px;
   padding: 0 12px;
   border: none;
-  border-radius: ${g.chipRadius}px;
+  border-radius: 8px;
   background: var(--wfx-bg-hover);
   color: var(--wfx-text);
   font: 500 14px/20px "Roboto", "Arial", sans-serif;
   cursor: pointer;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-search__filters:hover {
@@ -690,7 +745,7 @@ export function r27SearchLayer(): string {
 
 .wfx-srow {
   display: flex;
-  gap: ${g.searchGap}px;
+  gap: 16px;
   padding: 0;
   border: none;
   background: transparent;
@@ -701,10 +756,10 @@ export function r27SearchLayer(): string {
 
 .wfx-srow__thumb {
   position: relative;
-  flex: 0 0 ${g.searchThumbWidth}px;
-  width: ${g.searchThumbWidth}px;
+  flex: 0 0 360px;
+  width: 360px;
   aspect-ratio: 16 / 9;
-  border-radius: ${g.cardRadius}px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--wfx-skeleton);
 }
@@ -775,41 +830,33 @@ export function r27SearchLayer(): string {
   margin-top: 4px;
 }
 
-@media (max-width: ${g.gridBreakpoints.three}px) {
+@media (max-width: 1000px) {
   .wfx-srow__thumb {
     flex-basis: 246px;
     width: 246px;
   }
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// The watch surface (the measured two-column anatomy)
-// ---------------------------------------------------------------------------
-
-/** The watch page: two-column layout, h1, owner/actions, description. */
-export function r27WatchLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — Watch: the measured two-column anatomy — the watch page is RAILLESS
+/* — Watch: the measured two-column anatomy — the watch page is RAILLESS
    (the corpus [rendered] watch capture: the guide collapses; the player
    sits at x=16) with the measured margins: player 996@x=16, secondary
    412@x=1028 flush to the right edge (16+996+16+412=1440). — */
 .wfx-watch {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px ${g.watchColumnGap}px;
-  padding: ${g.watchPlayerTextGap}px 0 48px ${g.watchMargin}px;
+  gap: 24px 16px;
+  padding: 12px 0 48px 16px;
 }
 
-@media (min-width: ${g.watchSingleColumnBreakpoint}px) {
+@media (min-width: 1016px) {
   .wfx-watch {
-    grid-template-columns: minmax(0, 1fr) ${g.watchSecondaryWidth}px;
+    grid-template-columns: minmax(0, 1fr) 412px;
   }
 }
 
-@media (min-width: ${g.watchWideBreakpoint}px) {
+@media (min-width: 1600px) {
   .wfx-watch {
-    padding: 0 0 48px ${g.watchMarginWide}px;
+    padding: 0 0 48px 24px;
   }
 }
 
@@ -822,13 +869,13 @@ export function r27WatchLayer(): string {
 .wfx-watch__stage {
   position: relative;
   aspect-ratio: 16 / 9;
-  border-radius: ${g.playerRadius}px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--wfx-stage-black); /* the corpus player letterbox */
 }
 
 .wfx-watch__title {
-  margin: ${g.watchPlayerTextGap}px 0 0;
+  margin: 12px 0 0;
   font-size: 20px;
   font-weight: 700;
   line-height: 28px;
@@ -852,8 +899,8 @@ export function r27WatchLayer(): string {
 }
 
 .wfx-watch__avatar {
-  width: ${g.watchAvatar}px;
-  height: ${g.watchAvatar}px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--wfx-bg-raised);
   color: var(--wfx-text-dim);
@@ -892,16 +939,16 @@ export function r27WatchLayer(): string {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: ${g.actionPillHeight}px;
+  height: 40px;
   padding: 0 16px;
   border: none;
-  border-radius: ${g.actionPillRadius}px;
+  border-radius: 20px;
   background: var(--wfx-bg-hover);
   color: var(--wfx-text);
   font: 500 14px/20px "Roboto", "Arial", sans-serif;
   white-space: nowrap;
   cursor: pointer;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-pill:hover {
@@ -918,19 +965,19 @@ export function r27WatchLayer(): string {
 }
 
 .wfx-pill-group .wfx-pill:first-child {
-  border-radius: ${g.actionPillRadius}px 0 0 ${g.actionPillRadius}px;
+  border-radius: 20px 0 0 20px;
   border-right: 1px solid var(--wfx-border-hairline);
 }
 
 .wfx-pill-group .wfx-pill:last-child {
-  border-radius: 0 ${g.actionPillRadius}px ${g.actionPillRadius}px 0;
+  border-radius: 0 20px 20px 0;
 }
 
 /* The description panel: raised surface, radius 12, 14/20, expander. */
 .wfx-watch__desc {
   margin: 12px 0 0;
   padding: 12px 16px;
-  border-radius: ${g.descriptionPanelRadius}px;
+  border-radius: 12px;
   background: var(--wfx-bg-raised);
   color: var(--wfx-text);
   font-size: 14px;
@@ -1002,7 +1049,7 @@ export function r27WatchLayer(): string {
 
 .wfx-rcard {
   display: flex;
-  gap: ${g.relatedGap}px;
+  gap: 4px;
   padding: 0;
   border: none;
   background: transparent;
@@ -1013,10 +1060,10 @@ export function r27WatchLayer(): string {
 
 .wfx-rcard__thumb {
   position: relative;
-  flex: 0 0 ${g.relatedThumbWidth}px;
-  width: ${g.relatedThumbWidth}px;
+  flex: 0 0 168px;
+  width: 168px;
   aspect-ratio: 16 / 9;
-  border-radius: ${g.descriptionPanelRadius}px;
+  border-radius: 12px;
   overflow: hidden;
   background: var(--wfx-skeleton);
 }
@@ -1063,17 +1110,9 @@ export function r27WatchLayer(): string {
   font-weight: 400;
   line-height: 16px;
   color: var(--wfx-text-dim);
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// The player chrome (the control grammar, overlaying the stage bottom)
-// ---------------------------------------------------------------------------
-
-/** The player chrome: scrub + bar + the two-level settings popup. */
-export function r27ChromeLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — The player chrome: the control bar anatomy, overlay bottom — */
+/* — The player chrome: the control bar anatomy, overlay bottom — */
 .wfx-chrome {
   position: absolute;
   left: 0;
@@ -1084,7 +1123,7 @@ export function r27ChromeLayer(): string {
   flex-direction: column;
   background: linear-gradient(to top, var(--wfx-chrome-scrim), rgba(0, 0, 0, 0));
   color: var(--wfx-chrome-fg);
-  transition: opacity ${R27_MOTION.chromeFadeMs}ms ease;
+  transition: opacity 300ms ease;
 }
 
 .wfx-chrome[data-wfx-chrome-idle="true"] {
@@ -1111,15 +1150,15 @@ export function r27ChromeLayer(): string {
 .wfx-chrome__track {
   position: relative;
   flex: 1 1 auto;
-  height: ${g.playerScrubTrackHeight}px;
+  height: 3px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
-  transition: height ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: height 150ms ease;
 }
 
 .wfx-chrome__scrub:hover .wfx-chrome__track,
 .wfx-chrome__scrub:focus-visible .wfx-chrome__track {
-  height: ${g.playerScrubTrackHoverHeight}px;
+  height: 5px;
 }
 
 .wfx-chrome__buffered {
@@ -1141,13 +1180,13 @@ export function r27ChromeLayer(): string {
 .wfx-chrome__dot {
   position: absolute;
   top: 50%;
-  width: ${g.playerScrubberDot}px;
-  height: ${g.playerScrubberDot}px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: var(--wfx-accent);
   transform: translate(-50%, -50%);
   opacity: 0;
-  transition: opacity ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: opacity 150ms ease;
 }
 
 .wfx-chrome__scrub:hover .wfx-chrome__dot,
@@ -1169,7 +1208,7 @@ export function r27ChromeLayer(): string {
   align-items: center;
   justify-content: space-between;
   gap: 0;
-  height: ${g.playerControlBarHeight}px;
+  height: 48px;
   padding: 0 8px;
 }
 
@@ -1190,7 +1229,7 @@ export function r27ChromeLayer(): string {
   background: transparent;
   color: var(--wfx-chrome-fg);
   cursor: pointer;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-chrome__btn:hover {
@@ -1206,13 +1245,13 @@ export function r27ChromeLayer(): string {
 .wfx-cmenu {
   position: absolute;
   right: 12px;
-  bottom: ${g.playerControlBarHeight + 8}px;
+  bottom: 56px;
   z-index: 20;
   min-width: 256px;
   max-height: 60%;
   overflow-y: auto;
   padding: 8px 0;
-  border-radius: ${g.descriptionPanelRadius}px;
+  border-radius: 12px;
   background: var(--wfx-bg-raised);
   color: var(--wfx-text);
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
@@ -1276,20 +1315,12 @@ export function r27ChromeLayer(): string {
   width: 20px;
   display: inline-flex;
   justify-content: center;
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// The shorts surface (9:16 + action rail)
-// ---------------------------------------------------------------------------
-
-/** The shorts stage: full-bleed vertical + the right action rail. */
-export function r27ShortsLayer(): string {
-  const g = R27_GEOMETRY;
-  return `/* — Shorts: the 9:16 stage + the action rail — */
+/* — Shorts: the 9:16 stage + the action rail — */
 .wfx-shorts {
   position: relative;
-  height: calc(100vh - ${g.topbarHeight}px);
+  height: calc(100vh - 56px);
   min-height: 480px;
   display: flex;
   align-items: center;
@@ -1301,9 +1332,9 @@ export function r27ShortsLayer(): string {
 .wfx-shorts__stage {
   position: relative;
   aspect-ratio: 9 / 16;
-  height: min(100%, calc(100vh - ${g.topbarHeight + g.shortsChromeHeight}px));
-  max-width: min(100vw - ${g.shortsActionTarget * 2}px, calc((100vh - ${g.topbarHeight + g.shortsChromeHeight}px) * 9 / 16));
-  border-radius: ${g.shortsRadius}px;
+  height: min(100%, calc(100vh - 152px));
+  max-width: min(100vw - 96px, calc((100vh - 152px) * 9 / 16));
+  border-radius: 12px;
   overflow: hidden;
   background: var(--wfx-stage-black);
 }
@@ -1319,7 +1350,7 @@ export function r27ShortsLayer(): string {
 
 .wfx-shorts__rail {
   position: absolute;
-  right: max(24px, calc(50% - ((100vh - ${g.topbarHeight + g.shortsChromeHeight}px) * 9 / 32) - ${g.shortsActionTarget * 2}px));
+  right: max(24px, calc(50% - ((100vh - 152px) * 9 / 32) - 96px));
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -1336,8 +1367,8 @@ export function r27ShortsLayer(): string {
   background: transparent;
   color: var(--wfx-text);
   cursor: pointer;
-  min-width: ${g.shortsActionTarget}px;
-  min-height: ${g.shortsActionTarget}px;
+  min-width: 48px;
+  min-height: 48px;
   padding: 0;
 }
 
@@ -1375,22 +1406,9 @@ export function r27ShortsLayer(): string {
   font-size: 14px;
   font-weight: 400;
   line-height: 20px;
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// The honest WebFlix blocks, styled INTO the grammar
-// ---------------------------------------------------------------------------
-
-/**
- * The WebFlix-first-class surfaces rendered inside the YouTube grammar:
- * Where-to-watch (a viewing-source choice), the acquisition lifecycle
- * states inside the player chrome, library/queue rows, and the toast.
- */
-export function r27WebflixLayer(): string {
-  const g = R27_GEOMETRY;
-  const sectionHeading = R27_TYPE_SCALE["section-heading"];
-  return `/* — The WebFlix-first-class blocks, in the corpus grammar — */
+/* — The WebFlix-first-class blocks, in the corpus grammar — */
 /* Where-to-watch: the viewing-source groups (panel + rows + pills). */
 .wfx-w2w {
   display: flex;
@@ -1398,7 +1416,7 @@ export function r27WebflixLayer(): string {
   gap: 8px;
   margin: 12px 0 0;
   padding: 16px;
-  border-radius: ${g.descriptionPanelRadius}px;
+  border-radius: 12px;
   background: var(--wfx-bg-raised);
 }
 
@@ -1440,13 +1458,13 @@ export function r27WebflixLayer(): string {
   min-height: 44px;
   padding: 8px 12px;
   border: 1px solid transparent;
-  border-radius: ${g.actionPillRadius}px;
+  border-radius: 20px;
   background: transparent;
   color: var(--wfx-text);
   font: 400 14px/20px "Roboto", "Arial", sans-serif;
   cursor: pointer;
   text-align: left;
-  transition: background ${R27_MOTION.transitionMs}ms ${R27_MOTION.transitionEasing};
+  transition: background 150ms ease;
 }
 
 .wfx-w2w__way:hover {
@@ -1518,7 +1536,7 @@ export function r27WebflixLayer(): string {
   height: 100%;
   border-radius: 999px;
   background: var(--wfx-accent);
-  transition: width ${R27_MOTION.chromeFadeMs}ms ease;
+  transition: width 300ms ease;
 }
 
 /* The library/queue rows + panels. */
@@ -1526,7 +1544,7 @@ export function r27WebflixLayer(): string {
   display: flex;
   flex-direction: column;
   gap: 24px;
-  padding: 0 ${g.chipRowPadding + 4}px 48px;
+  padding: 0 16px 48px;
 }
 
 .wfx-library__section {
@@ -1537,9 +1555,9 @@ export function r27WebflixLayer(): string {
 
 .wfx-library__heading {
   margin: 0;
-  font-size: ${sectionHeading.size}px;
-  font-weight: ${sectionHeading.weight};
-  line-height: ${sectionHeading.lineHeight}px;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
   color: var(--wfx-text);
 }
 
@@ -1551,9 +1569,9 @@ export function r27WebflixLayer(): string {
 
 .wfx-library__row {
   display: flex;
-  gap: ${g.relatedGap + 4}px;
+  gap: 8px;
   padding: 12px;
-  border-radius: ${g.descriptionPanelRadius}px;
+  border-radius: 12px;
   background: var(--wfx-bg-raised);
   border: none;
   color: inherit;
@@ -1563,8 +1581,8 @@ export function r27WebflixLayer(): string {
 
 .wfx-library__row-thumb {
   position: relative;
-  flex: 0 0 ${g.relatedThumbWidth}px;
-  width: ${g.relatedThumbWidth}px;
+  flex: 0 0 168px;
+  width: 168px;
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
@@ -1583,7 +1601,7 @@ export function r27WebflixLayer(): string {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  padding: 0 ${g.chipRowPadding + 4}px 48px;
+  padding: 0 16px 48px;
   max-width: 864px;
 }
 
@@ -1592,7 +1610,7 @@ export function r27WebflixLayer(): string {
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  border-radius: ${g.descriptionPanelRadius}px;
+  border-radius: 12px;
   background: var(--wfx-bg-raised);
 }
 
@@ -1633,45 +1651,128 @@ export function r27WebflixLayer(): string {
   color: var(--wfx-toast-fg);
   font: 400 14px/20px "Roboto", "Arial", sans-serif;
   box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
-}`;
 }
 
-// ---------------------------------------------------------------------------
-// THE STYLESHEET (the single emission the webview consumes)
-// ---------------------------------------------------------------------------
 
-/**
- * THE Desktop webview parity stylesheet — the theme seam + every grammar
- * layer, emitted from the token contract. This one string is the styling
- * surface: the lead's frontend dist build writes it into the webview, and
- * the evidence capture harness bakes the identical output.
- */
-export function r27DesktopStylesheet(): string {
-  return [
-    "/* WebFlix Desktop — the R27 parity stylesheet (GENERATED from",
-    "   apps/desktop/src/surface/r27-parity-tokens.ts; corpus sheet",
-    "   docs/parity-lab/reference/design-tokens.md — do not hand-edit",
-    "   values here; the token contract is the single encoding). */",
-    "",
-    r27ThemeBlocks(),
-    "",
-    r27BaseLayer(),
-    "",
-    r27TypeUtilities(),
-    "",
-    r27ShellLayer(),
-    "",
-    r27FeedLayer(),
-    "",
-    r27SearchLayer(),
-    "",
-    r27WatchLayer(),
-    "",
-    r27ChromeLayer(),
-    "",
-    r27ShortsLayer(),
-    "",
-    r27WebflixLayer(),
-    "",
-  ].join("\n");
+/* — The monogram placeholder (the honest artwork fallback) — */
+.wfx-card__img--monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text-dim);
+  font-size: 44px;
+  font-weight: 500;
 }
+.wfx-rcard__img--monogram, .wfx-srow__img--monogram { font-size: 20px; }
+
+/* The capture page pins the corpus viewport (1440×900, no scroll). */
+html, body { width: 1440px; height: 900px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="wfx-app">
+<header class="wfx-topbar">
+  <button class="wfx-topbar__guide" aria-label="Guide"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
+  <a class="wfx-topbar__wordmark" href="#" aria-label="WebFlix home">Web<span class="wfx-topbar__wordmark-mark">Flix</span></a>
+  <div class="wfx-topbar__center">
+    <form class="wfx-topbar__search" role="search" onsubmit="return false">
+      <input type="text" placeholder="Search" aria-label="Search WebFlix" />
+      <button type="submit" class="wfx-topbar__search-submit" aria-label="Search"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg></button>
+    </form>
+  </div>
+  <div class="wfx-topbar__right">
+    <button class="wfx-topbar__guide" aria-label="Bring your feed"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 13h-4v4h-2v-4h-4v-2h4V7h2v4h4v2zM3 5h11v2H3V5zm0 4h11v2H3V9zm0 4h8v2H3v-2z"/></svg></button>
+    <button class="wfx-topbar__avatar" aria-label="Account">WF</button>
+  </div>
+</header>
+<div class="wfx-app__frame">
+<nav class="wfx-rail" aria-label="Primary">
+  <button class="wfx-rail__item wfx-rail__item--active" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="wfx-rail__item" aria-current="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.83c-1.17.62-1.93 1.81-1.99 3.14-.06 1.34.6 2.6 1.73 3.32l.83.51-1.65.87c-1.86.97-2.55 3.24-1.58 5.08.97 1.83 3.24 2.53 5.07 1.56l8.53-4.44c1.14-.6 1.87-1.76 1.93-3.05.06-1.29-.57-2.5-1.67-3.2zM10 14.65v-5.3L15 12l-5 2.65z"/></svg>
+    <span>Shorts</span>
+  </button>
+  <button class="wfx-rail__item" aria-current="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 6h2v12H4V6zm4 0h2v12H8V6zm5.5-.5l1.9-.6 3.4 11.6-1.9.5L13.5 5.5zM20 8h2v10h-2V8z"/></svg>
+    <span>Library</span>
+  </button>
+  <button class="wfx-rail__item" aria-current="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 7 7v2a9 9 0 0 0 0-18zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
+    <span>History</span>
+  </button>
+  <hr class="wfx-rail__divider" />
+  <p class="wfx-rail__heading">Settings</p>
+  <button class="wfx-rail__item">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88L2.83 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.44.33.66.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.11.52.02.66-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+<main class="wfx-main">
+  <div class="wfx-chips" role="tablist" aria-label="Filter">
+      <button class="wfx-chip wfx-chip--active" aria-pressed="true">All</button>
+      <button class="wfx-chip" aria-pressed="false">Video</button>
+  </div>
+  <div class="wfx-grid">
+      <article class="wfx-card">
+  <button class="wfx-card__thumb" aria-label="Big Buck Bunny, by Blender Foundation, Video · CC BY 3.0, 9:56">
+    <img class="wfx-card__img " src="https://studio.blender.org/files/public/thumbnail/25/a9/25a908ff92e1033f02c7b79db2edc398_m.webp" alt="Big Buck Bunny — source artwork" loading="lazy" />
+    <span class="wfx-card__pill">9:56</span>
+    
+  </button>
+  <div class="wfx-card__body">
+    <h3 class="wfx-card__title">Big Buck Bunny</h3>
+    <p class="wfx-card__channel">Blender Foundation</p>
+    <p class="wfx-card__meta">Video · CC BY 3.0</p>
+    <p class="wfx-card__badge">Authorized peer copy</p>
+  </div>
+</article>
+      <article class="wfx-card">
+  <button class="wfx-card__thumb" aria-label="Sintel, by Blender Foundation, Video · CC BY 3.0, 14:48">
+    <img class="wfx-card__img " src="https://durian.blender.org/wp-content/uploads/2011/02/4-DVD-verti-feb2011.jpg" alt="Sintel — source artwork" loading="lazy" />
+    <span class="wfx-card__pill">14:48</span>
+    
+  </button>
+  <div class="wfx-card__body">
+    <h3 class="wfx-card__title">Sintel</h3>
+    <p class="wfx-card__channel">Blender Foundation</p>
+    <p class="wfx-card__meta">Video · CC BY 3.0</p>
+    <p class="wfx-card__badge">Authorized peer copy</p>
+  </div>
+</article>
+      <article class="wfx-card">
+  <button class="wfx-card__thumb" aria-label="Tears of Steel, by Blender Foundation, Video · CC BY 3.0, 12:14">
+    <img class="wfx-card__img " src="https://mango.blender.org/wp-content/uploads/2013/06/12_scients_header.jpg" alt="Tears of Steel — source artwork" loading="lazy" />
+    <span class="wfx-card__pill">12:14</span>
+    
+  </button>
+  <div class="wfx-card__body">
+    <h3 class="wfx-card__title">Tears of Steel</h3>
+    <p class="wfx-card__channel">Blender Foundation</p>
+    <p class="wfx-card__meta">Video · CC BY 3.0</p>
+    <p class="wfx-card__badge">Authorized peer copy</p>
+  </div>
+</article>
+      <article class="wfx-card">
+  <button class="wfx-card__thumb" aria-label="Cosmos Laundromat: First Cycle, by Blender Foundation, Video · CC BY, 12:06">
+    <img class="wfx-card__img " src="https://studio.blender.org/files/public/thumbnail/0d/91/0d91fba6aa9e0934c0d12012ec11189085831203_o_xs.webp" alt="Cosmos Laundromat: First Cycle — source artwork" loading="lazy" />
+    <span class="wfx-card__pill">12:06</span>
+    
+  </button>
+  <div class="wfx-card__body">
+    <h3 class="wfx-card__title">Cosmos Laundromat: First Cycle</h3>
+    <p class="wfx-card__channel">Blender Foundation</p>
+    <p class="wfx-card__meta">Video · CC BY</p>
+    <p class="wfx-card__badge">Authorized peer copy</p>
+  </div>
+</article>
+  </div>
+  <p class="wfx-card__meta" style="padding: 24px 16px 0;">Search reaches your connected sources' catalogs — the authorized peer titles below are always browsable, with or without a source.</p>
+</main>
+</div>
+</div>
+</body>
+</html>

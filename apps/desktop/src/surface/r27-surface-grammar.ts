@@ -590,6 +590,53 @@ function r27AgeLabelOf(iso: string, nowMs: number): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// The shorts surface (the 9:16 grammar, the truthful read)
+// ---------------------------------------------------------------------------
+
+/** One shorts row (the vertical stage's card). */
+export interface R27ShortsRowView {
+  readonly itemId: string;
+  readonly title: string;
+  readonly metaLine: string;
+  readonly artwork: R27ArtworkView;
+}
+
+/** The shorts page view (the full-bleed 9:16 stage grammar). */
+export interface R27ShortsPageView {
+  readonly rows: readonly R27ShortsRowView[];
+  /** The honest empty note (no fabricated shorts rows, ever). */
+  readonly emptyNote: string | null;
+}
+
+/**
+ * Project the shorts page over the runtime's own shorts read
+ * (`runtime.shorts`): the vertical rows the server truthfully serves, or
+ * the honest empty note when none exist. The peer catalog's feature
+ * films are NEVER presented as shorts (they are not shorts — the
+ * honesty law cuts both ways).
+ */
+export function r27ShortsPageView(
+  shorts: { status: { state: string }; hits: readonly { canonicalItemId: string; result: { title: string; canonicalType?: string } }[] },
+): R27ShortsPageView {
+  const rows: R27ShortsRowView[] = [];
+  for (const hit of shorts.hits) {
+    rows.push({
+      itemId: hit.canonicalItemId,
+      title: hit.result.title,
+      metaLine: hit.result.canonicalType ?? "Short",
+      artwork: r27ArtworkViewOf(null, hit.result.title),
+    });
+  }
+  return {
+    rows,
+    emptyNote:
+      rows.length === 0 && shorts.status.state === "ready"
+        ? "No shorts yet — the shorts feed answers your connected sources; nothing here is invented."
+        : null,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // The sharing truth (the Share pill's honest backing)
 // ---------------------------------------------------------------------------
 

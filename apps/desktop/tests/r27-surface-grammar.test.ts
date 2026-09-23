@@ -48,6 +48,7 @@ import {
   r27LibraryPageView,
   r27SearchPageView,
   r27ShellView,
+  r27ShortsPageView,
   r27SurfaceCopyStrings,
   r27WatchPageView,
 } from "../src/surface/r27-surface-grammar";
@@ -137,6 +138,7 @@ function bootGrammar() {
       ]),
   );
   stub.script((url) => url.includes("/experience/library"), () => jsonResponse([]));
+  stub.script((url) => url.includes("/experience/shorts"), () => jsonResponse([]));
   stub.script((url) => url.includes("/experience/history"), () => jsonResponse([]));
   const app = createDesktopApp({
     shell,
@@ -401,5 +403,33 @@ describe("R27-W3 the surface grammar (the real composition walk)", () => {
     expect(page.history).toHaveLength(0);
     expect(page.offlineNote).toContain("verified");
     boot.app.dispose();
+  });
+});
+
+describe("R27-W3 the shorts surface (the 9:16 grammar, the truthful read)", () => {
+  it("renders the honest empty state — never fabricated shorts rows", async () => {
+    const boot = bootGrammar();
+    const shorts = await boot.app.runtime.shorts();
+    const page = r27ShortsPageView(shorts);
+    expect(page.rows).toHaveLength(0);
+    expect(page.emptyNote).not.toBeNull();
+    expect(page.emptyNote).toContain("No shorts yet");
+    boot.app.dispose();
+  });
+
+  it("projects the rows the read truthfully serves", () => {
+    const page = r27ShortsPageView({
+      status: { state: "ready" },
+      hits: [
+        {
+          canonicalItemId: "wfxitm_shorts_1",
+          result: { title: "A real short", canonicalType: "video" },
+        },
+      ],
+    });
+    expect(page.rows).toHaveLength(1);
+    expect(page.rows[0]!.title).toBe("A real short");
+    expect(page.rows[0]!.artwork.kind).toBe("monogram"); // honest: no artwork carried
+    expect(page.emptyNote).toBeNull();
   });
 });
