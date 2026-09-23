@@ -1,0 +1,1737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1440" />
+<title>WebFlix Desktop — R27 parity capture (dark)</title>
+<style>
+/* WebFlix Desktop — the R27 parity stylesheet (GENERATED from
+   apps/desktop/src/surface/r27-parity-tokens.ts; corpus sheet
+   docs/parity-lab/reference/design-tokens.md — do not hand-edit
+   values here; the token contract is the single encoding). */
+
+/* — The theme seam: dark default, light behind data-theme — */
+:root {
+  --wfx-bg: #0f0f0f;
+  --wfx-bg-raised: #272727;
+  --wfx-bg-hover: rgba(255,255,255,0.1);
+  --wfx-border: rgba(255,255,255,0.2);
+  --wfx-border-hairline: hsla(0,100%,100%,.08);
+  --wfx-text: #f1f1f1;
+  --wfx-text-dim: #aaaaaa;
+  --wfx-text-faint: #717171;
+  --wfx-link: #3ea6ff;
+  --wfx-focus: #3ea6ff;
+  --wfx-accent: #f03;
+  --wfx-cta-bg: #f1f1f1;
+  --wfx-cta-fg: #0f0f0f;
+  --wfx-pill-bg: rgba(0,0,0,0.8);
+  --wfx-pill-fg: #ffffff;
+  --wfx-skeleton: hsl(0, 0%, 16%);
+  --wfx-scrollbar-thumb: hsl(0, 0%, 67%);
+  --wfx-toast-bg: #f1f1f1;
+  --wfx-toast-fg: #0f0f0f;
+  --wfx-chrome-scrim: rgba(0,0,0,0.74);
+  --wfx-chrome-fg: #ffffff;
+  --wfx-stage-black: #000000;
+}
+
+html[data-theme="light"] {
+  --wfx-bg: #ffffff;
+  --wfx-bg-raised: #f2f2f2;
+  --wfx-bg-hover: rgba(0,0,0,0.05);
+  --wfx-border: rgba(0,0,0,0.1);
+  --wfx-border-hairline: hsl(0,0%,93.3%);
+  --wfx-text: #0f0f0f;
+  --wfx-text-dim: #606060;
+  --wfx-text-faint: #909090;
+  --wfx-link: #065fd4;
+  --wfx-focus: #065fd4;
+  --wfx-accent: #f03;
+  --wfx-cta-bg: #0f0f0f;
+  --wfx-cta-fg: #ffffff;
+  --wfx-pill-bg: rgba(0,0,0,0.8);
+  --wfx-pill-fg: #ffffff;
+  --wfx-skeleton: hsl(0, 0%, 89%);
+  --wfx-scrollbar-thumb: hsl(0, 0%, 76%);
+  --wfx-toast-bg: #0f0f0f;
+  --wfx-toast-fg: #f1f1f1;
+  --wfx-chrome-scrim: rgba(0,0,0,0.74);
+  --wfx-chrome-fg: #ffffff;
+  --wfx-stage-black: #000000;
+}
+
+/* — Base: the corpus body, scrollbar, focus law — */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  scrollbar-color: var(--wfx-scrollbar-thumb) transparent;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* The corpus skeleton CSS scrollbar geometry, verbatim. */
+body::-webkit-scrollbar {
+  width: 16px;
+}
+
+body::-webkit-scrollbar-thumb {
+  height: 56px;
+  border-radius: 8px;
+  border: 4px solid transparent;
+  background-clip: content-box;
+  background-color: var(--wfx-scrollbar-thumb);
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--wfx-bg);
+  color: var(--wfx-text);
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The keyboard-focus law: a 2px link-family ring on every interactive. */
+:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wfx-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* — The typography ladder (the sheet's roles) — */
+.wfx-type-body {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+.wfx-type-watch-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--wfx-text);
+}
+.wfx-type-card-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wfx-type-search-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 26px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wfx-type-channel-row {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+}
+.wfx-type-meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+.wfx-type-snippet {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.wfx-type-pill {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--wfx-pill-fg);
+}
+.wfx-type-badge {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+.wfx-type-button-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+.wfx-type-section-heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--wfx-text);
+}
+.wfx-type-chip-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+.wfx-type-rail-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+
+/* — The app shell: masthead 56, rail 240/72, main region — */
+.wfx-app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--wfx-bg);
+  color: var(--wfx-text);
+}
+
+.wfx-app__frame {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.wfx-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 56px;
+  padding: 0 16px;
+  background: var(--wfx-bg);
+  border-bottom: 1px solid var(--wfx-border-hairline);
+}
+
+.wfx-topbar__guide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.wfx-topbar__guide:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-topbar__wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--wfx-text);
+  text-decoration: none;
+}
+
+.wfx-topbar__wordmark-mark {
+  color: var(--wfx-accent);
+}
+
+.wfx-topbar__center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1 1 auto;
+  justify-content: center;
+}
+
+.wfx-topbar__search {
+  display: flex;
+  align-items: center;
+  width: min(640px, 100%);
+  height: 40px;
+  border: 1px solid var(--wfx-border);
+  border-radius: 40px;
+  background: var(--wfx-bg);
+  overflow: hidden;
+}
+
+.wfx-topbar__search:focus-within {
+  border-color: var(--wfx-focus);
+}
+
+.wfx-topbar__search input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: 400 16px/24px "Roboto", "Arial", sans-serif;
+  outline: none;
+}
+
+.wfx-topbar__search input::placeholder {
+  color: var(--wfx-text-faint);
+}
+
+.wfx-topbar__search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 100%;
+  border: none;
+  border-left: 1px solid var(--wfx-border);
+  border-radius: 0 40px 40px 0;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.wfx-topbar__search-submit:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wfx-topbar__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--wfx-bg-raised);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wfx-text-dim);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* The rail: 240px labeled ≥1280; 72px icon tiles 792–1279. The Desktop
+ * window's minWidth is 960 (the native shell's own floor), so the <792
+ * bottom-nav grammar never renders on this surface (the honest
+ * window-chrome mapping — recorded in DIVERGENCES). */
+.wfx-rail {
+  flex: 0 0 240px;
+  width: 240px;
+  position: sticky;
+  top: 56px;
+  align-self: flex-start;
+  max-height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 8px 12px 24px;
+}
+
+.wfx-rail__item {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 48px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--wfx-text);
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.wfx-rail__item:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-rail__item--active {
+  background: var(--wfx-bg-raised);
+  font-weight: 500;
+}
+
+.wfx-rail__item svg {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+}
+
+.wfx-rail__heading {
+  margin: 16px 12px 4px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+
+.wfx-rail__divider {
+  margin: 12px 0;
+  border: none;
+  border-top: 1px solid var(--wfx-border-hairline);
+}
+
+@media (min-width: 792px) and (max-width: 1279px) {
+  .wfx-rail {
+    flex-basis: 72px;
+    width: 72px;
+    padding: 8px 0 24px;
+  }
+
+  .wfx-rail__item {
+    flex-direction: column;
+    gap: 4px;
+    height: 74px;
+    padding: 0;
+    justify-content: center;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .wfx-rail__heading,
+  .wfx-rail__divider {
+    display: none;
+  }
+}
+
+.wfx-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0 0 48px;
+}
+
+@media (min-width: 792px) and (max-width: 1279px) {
+  .wfx-main {
+    margin-left: 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .wfx-main {
+    margin-left: 240px;
+  }
+}
+
+/* The railless surface (the watch page): the guide collapses — the
+ * corpus's own watch-shell behavior ([rendered]: the player sits at
+ * x=16 with no visible rail). */
+.wfx-app--railless .wfx-main {
+  margin-left: 0;
+}
+
+/* — The feed: chip bar + responsive grid + the card anatomy — */
+.wfx-chips {
+  position: sticky;
+  top: 56px;
+  z-index: 40;
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--wfx-bg);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wfx-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.wfx-chips__mask-left,
+.wfx-chips__mask-right {
+  position: sticky;
+  flex: 0 0 32px;
+  top: 0;
+  height: 56px;
+  pointer-events: none;
+  z-index: 41;
+  display: none;
+}
+
+.wfx-chip {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+  font: 500 14px/20px "Roboto", "Arial", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.wfx-chip:hover {
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-chip--active {
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+}
+
+.wfx-chip--active:hover {
+  background: var(--wfx-cta-bg);
+}
+
+.wfx-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px 16px;
+  padding: 8px 16px 0;
+}
+
+@media (min-width: 600px) {
+  .wfx-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .wfx-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1300px) {
+  .wfx-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.wfx-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+}
+
+.wfx-card__thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--wfx-skeleton);
+}
+
+.wfx-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wfx-card__pill {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 4px;
+  border-radius: 4px;
+  background: var(--wfx-pill-bg);
+  color: var(--wfx-pill-fg);
+  font: 500 12px/16px "Roboto", "Arial", sans-serif;
+}
+
+.wfx-card__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wfx-card__progress-fill {
+  height: 100%;
+  background: var(--wfx-accent);
+  transition: width 150ms ease;
+}
+
+.wfx-card:hover .wfx-card__progress,
+.wfx-card:focus-visible .wfx-card__progress {
+  height: 4px;
+}
+
+.wfx-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.wfx-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-card__channel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.wfx-card__channel:hover {
+  color: var(--wfx-text);
+}
+
+.wfx-card__meta {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid var(--wfx-border);
+  border-radius: 999px;
+  font: 500 12px/16px "Roboto", "Arial", sans-serif";
+  color: var(--wfx-text-dim);
+  width: fit-content;
+}
+
+/* The feed skeleton: thumbnail shell + 20px text shells, radius 8. */
+.wfx-skel-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wfx-skel-card__thumb {
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  background: var(--wfx-skeleton);
+}
+
+.wfx-skel-card__line {
+  height: 20px;
+  border-radius: 8px;
+  background: var(--wfx-skeleton);
+}
+
+.wfx-skel-card__line--meta {
+  width: 60%;
+}
+
+.wfx-skel-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+}
+
+/* — Search: the row-card grammar (360×202 left, meta column right) — */
+.wfx-search {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 16px 48px;
+  max-width: 1096px;
+}
+
+.wfx-search__header {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wfx-search__filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+  font: 500 14px/20px "Roboto", "Arial", sans-serif;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.wfx-search__filters:hover {
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-search__results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wfx-srow {
+  display: flex;
+  gap: 16px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-srow__thumb {
+  position: relative;
+  flex: 0 0 360px;
+  width: 360px;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--wfx-skeleton);
+}
+
+.wfx-srow__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wfx-srow__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.wfx-srow__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 26px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-srow__channel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-srow__line {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-srow__snippet {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-srow__badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+@media (max-width: 1000px) {
+  .wfx-srow__thumb {
+    flex-basis: 246px;
+    width: 246px;
+  }
+}
+
+/* — Watch: the measured two-column anatomy — the watch page is RAILLESS
+   (the corpus [rendered] watch capture: the guide collapses; the player
+   sits at x=16) with the measured margins: player 996@x=16, secondary
+   412@x=1028 flush to the right edge (16+996+16+412=1440). — */
+.wfx-watch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px 16px;
+  padding: 12px 0 48px 16px;
+}
+
+@media (min-width: 1016px) {
+  .wfx-watch {
+    grid-template-columns: minmax(0, 1fr) 412px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .wfx-watch {
+    padding: 0 0 48px 24px;
+  }
+}
+
+.wfx-watch__primary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.wfx-watch__stage {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--wfx-stage-black); /* the corpus player letterbox */
+}
+
+.wfx-watch__title {
+  margin: 12px 0 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  color: var(--wfx-text);
+}
+
+.wfx-watch__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin: 12px 0 0;
+  flex-wrap: wrap;
+}
+
+.wfx-watch__owner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wfx-watch__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  flex: 0 0 auto;
+}
+
+.wfx-watch__owner-name {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+  margin: 0;
+}
+
+.wfx-watch__owner-meta {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+  margin: 0;
+}
+
+.wfx-watch__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.wfx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 20px;
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+  font: 500 14px/20px "Roboto", "Arial", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.wfx-pill:hover {
+  background: var(--wfx-bg-raised);
+}
+
+/* The segmented like/dislike grammar (20 0 0 20 + 0 20 20 0). */
+.wfx-pill-group {
+  display: inline-flex;
+}
+
+.wfx-pill-group .wfx-pill {
+  border-radius: 0;
+}
+
+.wfx-pill-group .wfx-pill:first-child {
+  border-radius: 20px 0 0 20px;
+  border-right: 1px solid var(--wfx-border-hairline);
+}
+
+.wfx-pill-group .wfx-pill:last-child {
+  border-radius: 0 20px 20px 0;
+}
+
+/* The description panel: raised surface, radius 12, 14/20, expander. */
+.wfx-watch__desc {
+  margin: 12px 0 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+}
+
+.wfx-watch__desc-clamped {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-watch__desc-more {
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+/* The related sidebar: chips row + compact cards (168×94, 4px gap). */
+.wfx-watch__secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wfx-related__chips {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.wfx-related__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.wfx-related-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+  font: 500 14px/20px "Roboto", "Arial", sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.wfx-related-chip--active {
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+}
+
+.wfx-related {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wfx-rcard {
+  display: flex;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-rcard__thumb {
+  position: relative;
+  flex: 0 0 168px;
+  width: 168px;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--wfx-skeleton);
+}
+
+.wfx-rcard__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wfx-rcard__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wfx-rcard__title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-rcard__channel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-rcard__meta-line {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+/* — The player chrome: the control bar anatomy, overlay bottom — */
+.wfx-chrome {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(to top, var(--wfx-chrome-scrim), rgba(0, 0, 0, 0));
+  color: var(--wfx-chrome-fg);
+  transition: opacity 300ms ease;
+}
+
+.wfx-chrome[data-wfx-chrome-idle="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wfx-chrome[data-wfx-chrome-idle="true"]:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wfx-chrome__scrub {
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  height: 20px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.wfx-chrome__track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: height 150ms ease;
+}
+
+.wfx-chrome__scrub:hover .wfx-chrome__track,
+.wfx-chrome__scrub:focus-visible .wfx-chrome__track {
+  height: 5px;
+}
+
+.wfx-chrome__buffered {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.wfx-chrome__played {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--wfx-accent);
+}
+
+.wfx-chrome__dot {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--wfx-accent);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.wfx-chrome__scrub:hover .wfx-chrome__dot,
+.wfx-chrome__scrub:focus-visible .wfx-chrome__dot {
+  opacity: 1;
+}
+
+.wfx-chrome__readout {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  font: 500 12px/16px "Roboto", "Arial", sans-serif;
+  color: var(--wfx-chrome-fg);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wfx-chrome__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0;
+  height: 48px;
+  padding: 0 8px;
+}
+
+.wfx-chrome__cluster {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.wfx-chrome__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-chrome-fg);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.wfx-chrome__btn:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-chrome__btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* The two-level settings popup (back-arrow navigation). */
+.wfx-cmenu {
+  position: absolute;
+  right: 12px;
+  bottom: 56px;
+  z-index: 20;
+  min-width: 256px;
+  max-height: 60%;
+  overflow-y: auto;
+  padding: 8px 0;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.5);
+}
+
+.wfx-cmenu__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 44px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--wfx-border-hairline);
+  font: 500 14px/20px "Roboto", "Arial", sans-serif;
+  color: var(--wfx-text);
+}
+
+.wfx-cmenu__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+}
+
+.wfx-cmenu__back:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-cmenu__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.wfx-cmenu__row:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-cmenu__row--active {
+  color: var(--wfx-text);
+  font-weight: 500;
+}
+
+.wfx-cmenu__check {
+  color: var(--wfx-text);
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+}
+
+/* — Shorts: the 9:16 stage + the action rail — */
+.wfx-shorts {
+  position: relative;
+  height: calc(100vh - 56px);
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wfx-bg);
+  overflow: hidden;
+}
+
+.wfx-shorts__stage {
+  position: relative;
+  aspect-ratio: 9 / 16;
+  height: min(100%, calc(100vh - 152px));
+  max-width: min(100vw - 96px, calc((100vh - 152px) * 9 / 16));
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--wfx-stage-black);
+}
+
+.wfx-shorts__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.wfx-shorts__rail {
+  position: absolute;
+  right: max(24px, calc(50% - ((100vh - 152px) * 9 / 32) - 96px));
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wfx-shorts__action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+}
+
+.wfx-shorts__action svg {
+  width: 24px;
+  height: 24px;
+}
+
+.wfx-shorts__count {
+  font: 500 12px/16px "Roboto", "Arial", sans-serif;
+  color: var(--wfx-text);
+}
+
+.wfx-shorts__overlay {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--wfx-chrome-fg);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.wfx-shorts__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.wfx-shorts__channel {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+/* — The WebFlix-first-class blocks, in the corpus grammar — */
+/* Where-to-watch: the viewing-source groups (panel + rows + pills). */
+.wfx-w2w {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-w2w__heading {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: var(--wfx-text);
+}
+
+.wfx-w2w__group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.wfx-w2w__group-label {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+
+.wfx-w2w__group-detail {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-w2w__way {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--wfx-text);
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.wfx-w2w__way:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-w2w__way--selected {
+  border-color: var(--wfx-link);
+}
+
+.wfx-w2w__way-label {
+  font-weight: 500;
+}
+
+.wfx-w2w__way-detail {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-w2w__way-state {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+  white-space: nowrap;
+}
+
+/* The acquisition lifecycle inside the player chrome (the honest states). */
+.wfx-lifecycle {
+  position: absolute;
+  inset: 0;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.54);
+  color: var(--wfx-chrome-fg);
+  text-align: center;
+}
+
+.wfx-lifecycle__label {
+  margin: 0;
+  font: 500 16px/22px "Roboto", "Arial", sans-serif;
+}
+
+.wfx-lifecycle__detail {
+  margin: 0;
+  max-width: 48ch;
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.wfx-lifecycle__meter {
+  width: min(320px, 70%);
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+
+.wfx-lifecycle__meter-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--wfx-accent);
+  transition: width 300ms ease;
+}
+
+/* The library/queue rows + panels. */
+.wfx-library {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 0 16px 48px;
+}
+
+.wfx-library__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wfx-library__heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+  color: var(--wfx-text);
+}
+
+.wfx-library__rows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.wfx-library__row {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+  border: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-library__row-thumb {
+  position: relative;
+  flex: 0 0 168px;
+  width: 168px;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--wfx-skeleton);
+}
+
+.wfx-library__row-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* The settings panels (the same panel anatomy). */
+.wfx-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 16px 48px;
+  max-width: 864px;
+}
+
+.wfx-settings__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-settings__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 44px;
+}
+
+.wfx-settings__row-label {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+
+.wfx-settings__row-detail {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+/* The toast (bottom-left inverted pill, ~4s). */
+.wfx-toast {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: var(--wfx-toast-bg);
+  color: var(--wfx-toast-fg);
+  font: 400 14px/20px "Roboto", "Arial", sans-serif;
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+}
+
+
+/* — The monogram placeholder (the honest artwork fallback) — */
+.wfx-card__img--monogram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text-dim);
+  font-size: 44px;
+  font-weight: 500;
+}
+.wfx-rcard__img--monogram, .wfx-srow__img--monogram { font-size: 20px; }
+
+/* The capture page pins the corpus viewport (1440×900, no scroll). */
+html, body { width: 1440px; height: 900px; overflow: hidden; }
+</style>
+</head>
+<body>
+<div class="wfx-app">
+<header class="wfx-topbar">
+  <button class="wfx-topbar__guide" aria-label="Guide"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
+  <a class="wfx-topbar__wordmark" href="#" aria-label="WebFlix home">Web<span class="wfx-topbar__wordmark-mark">Flix</span></a>
+  <div class="wfx-topbar__center">
+    <form class="wfx-topbar__search" role="search" onsubmit="return false">
+      <input type="text" placeholder="Search" aria-label="Search WebFlix" />
+      <button type="submit" class="wfx-topbar__search-submit" aria-label="Search"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg></button>
+    </form>
+  </div>
+  <div class="wfx-topbar__right">
+    <button class="wfx-topbar__guide" aria-label="Bring your feed"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 13h-4v4h-2v-4h-4v-2h4V7h2v4h4v2zM3 5h11v2H3V5zm0 4h11v2H3V9zm0 4h8v2H3v-2z"/></svg></button>
+    <button class="wfx-topbar__avatar" aria-label="Account">WF</button>
+  </div>
+</header>
+<div class="wfx-app__frame">
+<nav class="wfx-rail" aria-label="Primary">
+  <button class="wfx-rail__item" aria-current="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l9 8h-3v10h-5v-6H11v6H6V11H3l9-8z"/></svg>
+    <span>Home</span>
+  </button>
+  <button class="wfx-rail__item" aria-current="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.77 10.32l-1.2-.5L18 9.06c1.84-.96 2.53-3.23 1.56-5.06s-3.24-2.53-5.07-1.56L6 6.83c-1.17.62-1.93 1.81-1.99 3.14-.06 1.34.6 2.6 1.73 3.32l.83.51-1.65.87c-1.86.97-2.55 3.24-1.58 5.08.97 1.83 3.24 2.53 5.07 1.56l8.53-4.44c1.14-.6 1.87-1.76 1.93-3.05.06-1.29-.57-2.5-1.67-3.2zM10 14.65v-5.3L15 12l-5 2.65z"/></svg>
+    <span>Shorts</span>
+  </button>
+  <button class="wfx-rail__item wfx-rail__item--active" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 6h2v12H4V6zm4 0h2v12H8V6zm5.5-.5l1.9-.6 3.4 11.6-1.9.5L13.5 5.5zM20 8h2v10h-2V8z"/></svg>
+    <span>Library</span>
+  </button>
+  <button class="wfx-rail__item" aria-current="false">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 3a9 9 0 0 0-9 9H1l4 4 4-4H6a7 7 0 1 1 7 7v2a9 9 0 0 0 0-18zm-1 5v5l4.25 2.52.77-1.28-3.52-2.09V8H12z"/></svg>
+    <span>History</span>
+  </button>
+  <hr class="wfx-rail__divider" />
+  <p class="wfx-rail__heading">Settings</p>
+  <button class="wfx-rail__item">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94a7.07 7.07 0 0 0 0-1.88l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.03 7.03 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.07 7.07 0 0 0 0 1.88L2.83 14.5a.5.5 0 0 0-.12.64l1.92 3.32c.14.24.44.33.66.22l2.39-.96c.49.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.11.52.02.66-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/></svg>
+    <span>Settings</span>
+  </button>
+</nav>
+<main class="wfx-main">
+  <div class="wfx-library">
+    <section class="wfx-library__section">
+      <h2 class="wfx-library__heading">Watch later</h2>
+      <div class="wfx-library__rows">
+      <p class="wfx-card__meta">Nothing saved yet — Save lands titles here.</p>
+      </div>
+    </section>
+    <section class="wfx-library__section">
+      <h2 class="wfx-library__heading">History</h2>
+      <div class="wfx-library__rows">
+      <p class="wfx-card__meta">Nothing watched yet — what you watch lands here, with your place kept.</p>
+      </div>
+    </section>
+    <section class="wfx-library__section">
+      <h2 class="wfx-library__heading">Offline</h2>
+      <p class="wfx-card__meta">Verified peer copies you can watch offline land here — each one earned by a completed, integrity-verified fetch.</p>
+    </section>
+  </div>
+</main>
+</div>
+</div>
+</body>
+</html>
