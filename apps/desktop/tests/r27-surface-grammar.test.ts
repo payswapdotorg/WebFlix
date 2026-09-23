@@ -315,7 +315,7 @@ describe("R27-W3 the surface grammar (the real composition walk)", () => {
 
     // The h1 + owner + description panel grammar.
     expect(watch.title).toBe(SINTEL.title);
-    expect(watch.owner.name).toBe(SINTEL.creators[0]);
+    expect(watch.owner.name).toBe(SINTEL.creators[0] ?? SINTEL.title);
     expect(watch.owner.meta).toContain(String(SINTEL.year));
     expect(watch.description.collapsed).toBe(true);
     expect(watch.description.moreLabel).toBe("…more");
