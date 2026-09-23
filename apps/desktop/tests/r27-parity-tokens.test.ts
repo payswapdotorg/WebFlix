@@ -68,8 +68,8 @@ describe("R27-W3 the token contract (the corpus sheet, typed)", () => {
     for (const [name, expected] of Object.entries(SHEET_EXPECTATIONS)) {
       const spec = R27_PARITY_TOKENS[name as keyof typeof R27_PARITY_TOKENS];
       expect(spec, `token ${name} exists`).toBeDefined();
-      expect(spec.dark, `token ${name} dark`).toBe(expected.dark);
-      expect(spec.light, `token ${name} light`).toBe(expected.light);
+      expect(spec.dark as string, `token ${name} dark`).toBe(expected.dark);
+      expect(spec.light as string, `token ${name} light`).toBe(expected.light);
     }
     // And the converse: no token escapes the mirror.
     expect(Object.keys(R27_PARITY_TOKENS)).toEqual(Object.keys(SHEET_EXPECTATIONS));

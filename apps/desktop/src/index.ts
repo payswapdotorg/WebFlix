@@ -65,3 +65,5 @@ export * from "./platform/auth-session-store";
 export * from "./platform/source-connect-flow";
 export * from "./surface/model-management-surface";export * from "./surface/r27-parity-tokens";
 export * from "./surface/r27-parity-css";
+export * from "./surface/r27-card-grammar";
+export * from "./surface/r27-surface-grammar";
