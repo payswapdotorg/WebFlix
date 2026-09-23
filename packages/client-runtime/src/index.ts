@@ -183,6 +183,7 @@ export * from "./parity-taxonomy";
 export * from "./playback-telemetry";
 export * from "./capability-placement";
 export * from "./interaction-policy";
+export * from "./parity-card-grammar";
 export * from "./account-creation";
 export * from "./secret-guard";
 export * from "./byom-management";
