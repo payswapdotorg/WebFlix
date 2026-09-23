@@ -1,0 +1,18 @@
+bun test v1.3.14 (0d9b296a)
+
+apps/desktop/tests/r26-peer-watch-journey.test.ts:
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > composes the first-class peer realization WITHOUT an explicit block (the corrective core) [3.70ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > browse → the authorized peer titles are first-class discovery rows (real artwork) [0.78ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > search → the merged surface: server rows AND the authorized peer rows (the same grammar) [1.73ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > item → Where to watch: the authorized peer copy side by side, primary-eligible [1.25ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > item → a server row renders the provider ways + the honest no-peer truth [1.01ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > play → the honest auto-selection of the REAL metadata → native playback starts [4.79ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > the file-choice step renders when the metadata reveals a REAL choice [0.82ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > lifecycle → Buffering → Playing → seek → background completion → Ready offline → Library [5.50ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > keeps the shared product language (the parity pass: the frozen vocabulary, W1's contracts) [1.39ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > the anonymous profile key is session-scoped (the R23-B law on the real composition) [0.35ms]
+
+ 10 pass
+ 0 fail
+ 99 expect() calls
+Ran 10 tests across 1 file. [142.00ms]

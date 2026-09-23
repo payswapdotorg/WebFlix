@@ -1,0 +1,70 @@
+bun test v1.3.14 (0d9b296a)
+
+apps/desktop/tests/r27-parity-tokens.test.ts:
+(pass) R27-W3 the token contract (the corpus sheet, typed) > mirrors EVERY sheet row's dark and light values exactly [0.23ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > every token carries its custom-property name + provenance + sheet row [0.25ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > resolves by theme, dark DEFAULT (the resolver is the only read path) [0.12ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > is frozen — mutation attempts fail (the immutable-sheet law) [0.06ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > the typography ladder mirrors the sheet's roles [0.09ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > r27TypeStyle composes the role with the theme's color [0.05ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > the geometry contract mirrors the measured/documented values [0.11ms]
+(pass) R27-W3 the token contract (the corpus sheet, typed) > the motion contract pins the sheet's band values [0.04ms]
+(pass) R27-W3 the generated stylesheet (the single encoding) > dark rides :root (the DEFAULT); light rides the data-theme seam [0.21ms]
+(pass) R27-W3 the generated stylesheet (the single encoding) > emits every token's custom property in both themes [0.86ms]
+(pass) R27-W3 the generated stylesheet (the single encoding) > carries the corpus geometry verbatim (the grammar's skeleton) [0.25ms]
+(pass) R27-W3 the generated stylesheet (the single encoding) > emits no hand-authored theme colors — every color rides a var() [0.65ms]
+(pass) R27-W3 the generated stylesheet (the single encoding) > grammar-identity classes exist for every corpus surface [0.30ms]
+
+apps/desktop/tests/r27-chrome-surface.test.ts:
+(pass) R27-W3 the chrome control bar (the corpus order) > renders the corpus order, left→right [0.19ms]
+(pass) R27-W3 the chrome control bar (the corpus order) > next renders ONLY when the session queue holds an entry (the corpus law) [0.09ms]
+(pass) R27-W3 the chrome control bar (the corpus order) > volume answers the honest per-rung truth (native: not-exposed-yet; embed: realization-exposed) [0.08ms]
+(pass) R27-W3 the chrome control bar (the corpus order) > the time readout carries the honest numbers (cur / dur; cur-only while unknown) [0.23ms]
+(pass) R27-W3 the scrub (the red #f03 grammar over the truthful runway) > pins the corpus geometry + the red fill + the honest fractions [0.11ms]
+(pass) R27-W3 the scrub (the red #f03 grammar over the truthful runway) > the verified-copy demotion law stays UNCHANGED underneath (R26) [0.08ms]
+(pass) R27-W3 the idle fade (the corpus motion) > fades at ~3s idle; mousemove/focus reveals; the fade is 300ms [0.04ms]
+(pass) R27-W3 the keyboard map (the corpus retarget: t = theater) > binds the corpus keys [0.24ms]
+(pass) R27-W3 the keyboard map (the corpus retarget: t = theater) > parses events; unbound keys and modified chords answer null [0.11ms]
+(pass) R27-W3 the settings popup (two-level; the capability rows live inside) > carries EVERY WebFlix capability row — gated on truthful availability, never removed [0.33ms]
+(pass) R27-W3 the settings popup (two-level; the capability rows live inside) > the gates flip with the truth (capability truth BOTH directions) [0.10ms]
+(pass) R27-W3 the settings popup (two-level; the capability rows live inside) > the two-level navigation: speed/quality submenus + the back-arrow pop [0.13ms]
+(pass) R27-W3 the settings popup (two-level; the capability rows live inside) > the quality submenu answers the honest per-rung truth [0.69ms]
+(pass) R27-W3 the stage modes (the corpus stage law) > default: 16:9 radius 12; theater/fullscreen: full-bleed radius 0 [0.06ms]
+
+apps/desktop/tests/r27-chrome-journey.test.ts:
+(pass) R27-W3 the chrome journey (the R26 lifecycle inside the corpus chrome) > where-to-watch reads as the viewing-source choice; play starts the peer copy [9.22ms]
+(pass) R27-W3 the chrome journey (the R26 lifecycle inside the corpus chrome) > the lifecycle renders inside the chrome — Buffering(verified fraction) → Playing → seek demotion [5.08ms]
+(pass) R27-W3 the chrome journey (the R26 lifecycle inside the corpus chrome) > completing → Ready offline: the earned arrival renders; the settings rows gate on truth [1.21ms]
+
+apps/desktop/tests/r27-surface-grammar.test.ts:
+(pass) R27-W3 the card grammar (pure projections) > duration labels render the corpus format; absence stays absence [0.10ms]
+(pass) R27-W3 the card grammar (pure projections) > the feed card renders real artwork, pills, and honest meta [1.56ms]
+(pass) R27-W3 the card grammar (pure projections) > absent artwork renders the typed placeholder — never a fabricated image [0.05ms]
+(pass) R27-W3 the card grammar (pure projections) > the watched red edge carries the honest fold truth [0.06ms]
+(pass) R27-W3 the card grammar (pure projections) > chips derive real facets with honest counts; the filter matches [0.13ms]
+(pass) R27-W3 the card grammar (pure projections) > skeletons render the loading shells (2 text lines each) [0.07ms]
+(pass) R27-W3 the surface grammar (the real composition walk) > the shell renders the honest destinations — no dead rail rows [0.70ms]
+(pass) R27-W3 the surface grammar (the real composition walk) > browse renders the corpus feed: chips + real-artwork cards + skeletons [1.03ms]
+(pass) R27-W3 the surface grammar (the real composition walk) > watch renders the two-column anatomy with the peer journey FIRST-CLASS [1.07ms]
+(pass) R27-W3 the surface grammar (the real composition walk) > the honest lifecycle maps onto the stage state VERBATIM [0.63ms]
+(pass) R27-W3 the surface grammar (the real composition walk) > search renders the row grammar — merged server + peer rows, honest statuses [1.70ms]
+(pass) R27-W3 the surface grammar (the real composition walk) > library renders the rows grammar + the verified-offline note [1.05ms]
+(pass) R27-W3 the shorts surface (the 9:16 grammar, the truthful read) > renders the honest empty state — never fabricated shorts rows [0.45ms]
+(pass) R27-W3 the shorts surface (the 9:16 grammar, the truthful read) > projects the rows the read truthfully serves [0.07ms]
+
+apps/desktop/tests/r26-peer-watch-journey.test.ts:
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > composes the first-class peer realization WITHOUT an explicit block (the corrective core) [0.48ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > browse → the authorized peer titles are first-class discovery rows (real artwork) [0.29ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > search → the merged surface: server rows AND the authorized peer rows (the same grammar) [0.55ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > item → Where to watch: the authorized peer copy side by side, primary-eligible [0.39ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > item → a server row renders the provider ways + the honest no-peer truth [0.71ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > play → the honest auto-selection of the REAL metadata → native playback starts [0.76ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > the file-choice step renders when the metadata reveals a REAL choice [0.64ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > lifecycle → Buffering → Playing → seek → background completion → Ready offline → Library [2.38ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > keeps the shared product language (the parity pass: the frozen vocabulary, W1's contracts) [1.11ms]
+(pass) R26-W3 — the corrective peer-watch journey (the REAL composition, the peer-catalog default) > the anonymous profile key is session-scoped (the R23-B law on the real composition) [0.30ms]
+
+ 54 pass
+ 0 fail
+ 652 expect() calls
+Ran 54 tests across 5 files. [179.00ms]
