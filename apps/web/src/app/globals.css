@@ -187,11 +187,23 @@ body {
   min-width: 0;
 }
 
+/* The balanced sides keep the search pill centered in the viewport
+ * (YouTube's masthead geometry). */
+.wfx-topbar__side--left {
+  flex: 1 1 0;
+}
+
+.wfx-topbar__side--right {
+  flex: 1 1 0;
+  justify-content: flex-end;
+}
+
 .wfx-topbar__center {
-  flex: 1;
+  flex: 0 1 auto;
   display: flex;
   justify-content: center;
   min-width: 0;
+  width: min(640px, 40vw);
 }
 
 /* The hamburger (Guide) button — 40px target, YouTube's masthead left. */
@@ -466,6 +478,70 @@ body {
 
 /* The rail's section groups (the corpus guide anatomy: primary group →
  * divider → secondary group → divider → footer links). */
+.wfx-rail__inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* The drawer scrim (visible only in the drawer state, <1280px). */
+.wfx-rail__scrim {
+  display: none;
+}
+
+/* The DRAWER on mobile (<792px): the same labeled overlay over the
+ * bottom-nav layout (the GuideToggle's one honest behavior everywhere). */
+html[data-wfx-guide="drawer"] .wfx-rail {
+  display: flex;
+  position: fixed;
+  top: var(--wfx-topbar-h);
+  bottom: 0;
+  left: 0;
+  z-index: 140;
+  width: var(--wfx-rail-w-wide);
+  flex-direction: column;
+  background: var(--wfx-bg);
+  border-right: 1px solid var(--wfx-border);
+  box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
+  padding: 8px 0;
+  overflow-y: auto;
+}
+
+html[data-wfx-guide="drawer"] .wfx-rail__scrim {
+  display: block;
+  position: fixed;
+  inset: var(--wfx-topbar-h) 0 0 0;
+  z-index: 130;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+html[data-wfx-guide="drawer"] .wfx-rail .wfx-navlink {
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 24px;
+  width: auto;
+  height: 48px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 10px;
+}
+
+html[data-wfx-guide="drawer"] .wfx-rail__group {
+  align-items: stretch;
+  padding: 0 12px;
+}
+
+html[data-wfx-guide="drawer"] .wfx-rail__divider {
+  width: auto;
+  margin: 12px;
+}
+
+html[data-wfx-guide="drawer"] .wfx-rail__heading,
+html[data-wfx-guide="drawer"] .wfx-rail__footnote {
+  display: block;
+}
+
 .wfx-rail__group {
   display: flex;
   flex-direction: column;
@@ -539,6 +615,57 @@ body {
   .wfx-main {
     padding: 0 0 3rem;
   }
+
+  /* The DRAWER state (<1280px): the labeled rail as a fixed overlay with
+   * a scrim (the GuideToggle island's second behavior). */
+  html[data-wfx-guide="drawer"] .wfx-rail {
+    position: fixed;
+    top: var(--wfx-topbar-h);
+    bottom: 0;
+    left: 0;
+    z-index: 140;
+    width: var(--wfx-rail-w-wide);
+    background: var(--wfx-bg);
+    border-right: 1px solid var(--wfx-border);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
+    padding: 8px 0;
+    overflow-y: auto;
+  }
+
+  html[data-wfx-guide="drawer"] .wfx-rail__scrim {
+    display: block;
+    position: fixed;
+    inset: var(--wfx-topbar-h) 0 0 0;
+    z-index: 130;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  html[data-wfx-guide="drawer"] .wfx-rail__group {
+    align-items: stretch;
+    padding: 0 12px;
+  }
+
+  html[data-wfx-guide="drawer"] .wfx-rail__divider {
+    width: auto;
+    margin: 12px;
+  }
+
+  html[data-wfx-guide="drawer"] .wfx-rail__heading,
+  html[data-wfx-guide="drawer"] .wfx-rail__footnote {
+    display: block;
+  }
+
+  html[data-wfx-guide="drawer"] .wfx-rail .wfx-navlink {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 24px;
+    width: auto;
+    height: 48px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: 10px;
+  }
 }
 
 /* The labeled rail (≥1280px): 240px, 48px rows, radius 10 hover, active
@@ -582,6 +709,38 @@ body {
 
   .wfx-rail__heading {
     display: block;
+  }
+
+  /* The COLLAPSED state (≥1280px): the guide button folds the labeled
+   * rail back to the 72px icon tiles (YouTube's own collapse). */
+  html[data-wfx-guide="collapsed"] .wfx-rail {
+    width: var(--wfx-rail-w);
+  }
+
+  html[data-wfx-guide="collapsed"] .wfx-rail__group {
+    align-items: center;
+    padding: 0;
+  }
+
+  html[data-wfx-guide="collapsed"] .wfx-rail__divider {
+    width: 48px;
+    margin: 8px auto;
+  }
+
+  html[data-wfx-guide="collapsed"] .wfx-rail__heading,
+  html[data-wfx-guide="collapsed"] .wfx-rail__footnote {
+    display: none;
+  }
+
+  html[data-wfx-guide="collapsed"] .wfx-rail .wfx-navlink {
+    flex-direction: column;
+    gap: 0.375rem;
+    width: 64px;
+    height: auto;
+    padding: 16px 0 14px;
+    font-size: 10px;
+    font-weight: 500;
+    border-radius: var(--wfx-radius);
   }
 }
 
