@@ -1,0 +1,4 @@
+- button "Retry" [ref=e223]
+- button "Open Next.js Dev Tools" [expanded=false, ref=e224]
+- button "Open issues overlay" [ref=e225]
+- button "Collapse issues badge" [ref=e226]
