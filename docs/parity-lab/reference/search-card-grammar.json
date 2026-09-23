@@ -1,0 +1,321 @@
+{
+  "_provenance": "Captured 2026-09-23 from live youtube.com search (blender open movie), ytInitialData.videoRenderer normalized by the lead. [rendered] evidence — the search-card grammar contract.",
+  "_anatomy": {
+    "layout": "row card: thumbnail 360x202 (16:9) left, 16px gap, meta column right",
+    "metaColumn": [
+      "title 18px/400/26px 2-line clamp, primary color, video-link",
+      "channel 14px/400 secondary + verified glyph when present",
+      "meta line 12px/400 secondary: viewCountText + publishedTimeText",
+      "description snippet 12px/400/18px 2-line clamp secondary",
+      "badges row (e.g. CC badge: 12px/500 secondary, 1px border pill)"
+    ],
+    "durationPill": "bottom-right of thumbnail: 12px/500 #fff on rgba(0,0,0,0.8), radius 4px, padding 3px 4px",
+    "hover": "thumbnail preview after dwell; title color unchanged (YouTube search hover is subtle)"
+  },
+  "examples": [
+    {
+      "videoId": "WhWc3b3KhnY",
+      "watchUrl": "/watch?v=WhWc3b3KhnY&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "Spring - Blender Open Movie",
+      "titleAccessibilityLabel": "Spring - Blender Open Movie 7 分鐘 45 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/WhWc3b3KhnY/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/WhWc3b3KhnY/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "7 年前",
+      "lengthText": "7:45",
+      "lengthAccessibility": "7 分鐘 45 秒",
+      "viewCountText": "收看次數：10,900,151 次",
+      "badges": [
+        {
+          "label": "字幕",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        }
+      ]
+    },
+    {
+      "videoId": "UXqq0ZvbOnk",
+      "watchUrl": "/watch?v=UXqq0ZvbOnk&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "CHARGE - Blender Open Movie",
+      "titleAccessibilityLabel": "CHARGE - Blender Open Movie 4 分鐘 23 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/UXqq0ZvbOnk/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/UXqq0ZvbOnk/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "3 年前",
+      "lengthText": "4:23",
+      "lengthAccessibility": "4 分鐘 23 秒",
+      "viewCountText": "收看次數：2,547,007 次",
+      "badges": [
+        {
+          "label": "4K",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        }
+      ]
+    },
+    {
+      "videoId": "_cMxraX_5RE",
+      "watchUrl": "/watch?v=_cMxraX_5RE&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll0gcJCSsMAYcqIYzv",
+      "title": "Sprite Fright - Blender Open Movie",
+      "titleAccessibilityLabel": "Sprite Fright - Blender Open Movie 10 分鐘 30 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/_cMxraX_5RE/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/_cMxraX_5RE/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "4 年前",
+      "lengthText": "10:30",
+      "lengthAccessibility": "10 分鐘 30 秒",
+      "viewCountText": "收看次數：9,396,366 次",
+      "badges": [
+        {
+          "label": "字幕",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        }
+      ]
+    },
+    {
+      "videoId": "6qKZw8oPoiE",
+      "watchUrl": "/watch?v=6qKZw8oPoiE&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "The Making of SINGULARITY - Blender Open Movie",
+      "titleAccessibilityLabel": "The Making of SINGULARITY - Blender Open Movie 16 分鐘",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/6qKZw8oPoiE/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/6qKZw8oPoiE/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "「Blender Studio」及「Blender」",
+        "url": null
+      },
+      "publishedTimeText": "4 個月前",
+      "lengthText": "16:59",
+      "lengthAccessibility": "16 分鐘 59 秒",
+      "viewCountText": "收看次數：54,227 次",
+      "badges": [
+        {
+          "label": "4K",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        },
+        {
+          "label": "字幕",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        }
+      ]
+    },
+    {
+      "videoId": "u9lj-c29dxI",
+      "watchUrl": "/watch?v=u9lj-c29dxI&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "WING IT! - Blender Open Movie",
+      "titleAccessibilityLabel": "WING IT! - Blender Open Movie 3 分鐘 58 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/u9lj-c29dxI/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/u9lj-c29dxI/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "3 年前",
+      "lengthText": "3:58",
+      "lengthAccessibility": "3 分鐘 58 秒",
+      "viewCountText": "收看次數：1,182,196 次",
+      "badges": []
+    },
+    {
+      "videoId": "-hwMHF1rXvU",
+      "watchUrl": "/watch?v=-hwMHF1rXvU&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "We are making a feature film!",
+      "titleAccessibilityLabel": "We are making a feature film! 1 分鐘 10 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/-hwMHF1rXvU/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/-hwMHF1rXvU/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "2 個月前",
+      "lengthText": "1:10",
+      "lengthAccessibility": "1 分鐘 10 秒",
+      "viewCountText": "收看次數：185,665 次",
+      "badges": [
+        {
+          "label": "4K",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        }
+      ]
+    },
+    {
+      "videoId": "PVGeM40dABA",
+      "watchUrl": "/watch?v=PVGeM40dABA&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "Coffee Run - Blender Open Movie",
+      "titleAccessibilityLabel": "Coffee Run - Blender Open Movie 3 分鐘 5 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/PVGeM40dABA/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/PVGeM40dABA/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "6 年前",
+      "lengthText": "3:05",
+      "lengthAccessibility": "3 分鐘 5 秒",
+      "viewCountText": "收看次數：1,011,411 次",
+      "badges": []
+    },
+    {
+      "videoId": "mN0zPOpADL4",
+      "watchUrl": "/watch?v=mN0zPOpADL4&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "Agent 327: Operation Barbershop",
+      "titleAccessibilityLabel": "Agent 327: Operation Barbershop 3 分鐘 52 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/mN0zPOpADL4/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/mN0zPOpADL4/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "9 年前",
+      "lengthText": "3:52",
+      "lengthAccessibility": "3 分鐘 52 秒",
+      "viewCountText": "收看次數：9,466,911 次",
+      "badges": [
+        {
+          "label": "字幕",
+          "style": "BADGE_STYLE_TYPE_MEDIA"
+        }
+      ]
+    },
+    {
+      "videoId": "kMZiOQ6V2wk",
+      "watchUrl": "/watch?v=kMZiOQ6V2wk&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll0gcJCSsMAYcqIYzv",
+      "title": "\"DEBRIS\" a short film made in Blender",
+      "titleAccessibilityLabel": "\"DEBRIS\" a short film made in Blender 3 分鐘 8 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/kMZiOQ6V2wk/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/kMZiOQ6V2wk/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Mark B Design & Film",
+        "url": "/@markbdesign_film"
+      },
+      "publishedTimeText": "4 年前",
+      "lengthText": "3:08",
+      "lengthAccessibility": "3 分鐘 8 秒",
+      "viewCountText": "收看次數：81,428 次",
+      "badges": []
+    },
+    {
+      "videoId": "R7TLwKwixZA",
+      "watchUrl": "/watch?v=R7TLwKwixZA&pp=ygUSYmxlbmRlciBvcGVuIG1vdmll",
+      "title": "Spring - Blender Open Movie Showreel",
+      "titleAccessibilityLabel": "Spring - Blender Open Movie Showreel 3 分鐘 9 秒",
+      "thumbnails": [
+        {
+          "url": "https://i.ytimg.com/vi/R7TLwKwixZA/hq720.jpg",
+          "w": 360,
+          "h": 202
+        },
+        {
+          "url": "https://i.ytimg.com/vi/R7TLwKwixZA/hq720.jpg",
+          "w": 720,
+          "h": 404
+        }
+      ],
+      "channel": {
+        "name": "Blender Studio",
+        "url": "/@BlenderStudio"
+      },
+      "publishedTimeText": "7 年前",
+      "lengthText": "3:09",
+      "lengthAccessibility": "3 分鐘 9 秒",
+      "viewCountText": "收看次數：1,457,739 次",
+      "badges": []
+    }
+  ]
+}
