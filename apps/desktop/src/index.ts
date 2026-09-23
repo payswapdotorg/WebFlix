@@ -67,3 +67,4 @@ export * from "./surface/model-management-surface";export * from "./surface/r27-
 export * from "./surface/r27-parity-css";
 export * from "./surface/r27-card-grammar";
 export * from "./surface/r27-surface-grammar";
+export * from "./surface/r27-chrome-surface";
