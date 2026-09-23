@@ -1960,12 +1960,13 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 
 .wfx-shorts {
   position: relative;
-  height: calc(100vh - var(--wfx-topbar-h));
+  height: calc(100dvh - var(--wfx-topbar-h));
   min-height: 520px;
   overflow: hidden;
   touch-action: none;
   display: flex;
   justify-content: center;
+  background: var(--wfx-bg);
 }
 
 .wfx-shorts__viewport {
@@ -2007,8 +2008,9 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 
 .wfx-shortcard__title {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
 
@@ -2204,9 +2206,9 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   text-align: center;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 791px) {
   .wfx-shorts {
-    height: calc(100vh - var(--wfx-topbar-h) - var(--wfx-bottomnav-h));
+    height: calc(100dvh - var(--wfx-topbar-h) - var(--wfx-bottomnav-h) - env(safe-area-inset-bottom, 0px));
   }
 
   .wfx-shortcard__actions {
