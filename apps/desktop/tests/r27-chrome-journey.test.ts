@@ -225,7 +225,6 @@ describe("R27-W3 the chrome journey (the R26 lifecycle inside the corpus chrome)
   it("completing → Ready offline: the earned arrival renders; the settings rows gate on truth", async () => {
     const boot = bootChromeJourney();
     const itemDetail = boot.app.itemDetail!;
-    const item = await itemDetail.item({ itemId: SINTEL.itemId });
     const outcome = await itemDetail.playPeerCopy(SINTEL.itemId);
     if (outcome.kind !== "started") throw new Error("expected started");
     const sessionId = outcome.sessionId;
