@@ -1,47 +1,89 @@
 /*
- * @wfx/app-web — the WebFlix visual identity (WFX-051).
+ * @wfx/app-web — the WebFlix visual identity (WFX-051; R27-W2 the
+ * YouTube parity retarget).
  *
- * Dark theme with the red/rose accent (the WebFlix convention — see the
- * lead console). No CSS framework: the design system is custom properties
- * + component classes, subtle CSS transitions only (no framer-motion — it
- * is not in the closure). Responsive law: 390px (bottom nav) / 768px
- * (icon rail) / 1280px+ (labeled rail). Every interactive element keeps a
- * visible focus ring and a >=44px touch target.
+ * R27-W2 — THE TOKEN OVERHAUL: the architecture of classes stays; the
+ * VALUES are the R27 parity corpus sheet (docs/parity-lab/reference/
+ * design-tokens.md — captured from live youtube.com 2026-09-23). Dark is
+ * the DEFAULT product theme (`#0f0f0f` canvas / `#f1f1f1` primary /
+ * `#aaa` secondary / `#717171` tertiary / `#272727` raised / progress
+ * red `#f03` / interactive `#3ea6ff`); LIGHT is the second supported
+ * theme through the `html[data-theme="light"]` seam (YouTube's light:
+ * `#fff` canvas / `#0f0f0f` text / `#606060` secondary / `#f2f2f2`
+ * raised). Font stack: Roboto, Arial, sans-serif with system fallback
+ * (no new runtime deps). Scrollbar per the corpus skeleton CSS (16px
+ * track, 8px-radius thumb, 4px transparent border, 56px min height).
+ * No CSS framework: custom properties + component classes, subtle CSS
+ * transitions only. Responsive law: 792px (bottom nav) / 1280px+
+ * (labeled 240px rail). Every interactive element keeps a visible
+ * focus ring (2px `#3ea6ff` family) and a >=44px touch target — the
+ * WebFlix accessibility law, superseding YouTube where they conflict.
  */
 
 :root {
-  /* Palette — near-black violet-tinted surfaces, rose accent. */
-  --wfx-bg: #0b0a10;
-  --wfx-bg-raised: #141218;
-  --wfx-bg-hover: #1c1923;
-  --wfx-surface: #17151d;
-  --wfx-surface-2: #1e1b26;
-  --wfx-border: #2a2633;
-  --wfx-border-strong: #3a3547;
-  --wfx-text: #ececf1;
-  --wfx-text-dim: #a8a3b3;
-  --wfx-text-faint: #736e80;
-  --wfx-accent: #f43f5e;
-  --wfx-accent-strong: #e11d48;
-  --wfx-accent-soft: rgba(244, 63, 94, 0.14);
-  --wfx-accent-border: rgba(244, 63, 94, 0.45);
-  --wfx-ok: #34d399;
-  --wfx-warn: #fbbf24;
-  --wfx-focus: #fb7185;
+  /* Palette — the R27 corpus sheet, dark default (YouTube's own). */
+  --wfx-bg: #0f0f0f;
+  --wfx-bg-raised: #272727;
+  --wfx-bg-hover: rgba(255, 255, 255, 0.1);
+  --wfx-surface: #212121;
+  --wfx-surface-2: #3f3f3f;
+  --wfx-menu: #282828;
+  --wfx-border: rgba(255, 255, 255, 0.2);
+  --wfx-border-strong: #303030;
+  --wfx-text: #f1f1f1;
+  --wfx-text-dim: #aaaaaa;
+  --wfx-text-faint: #717171;
+  --wfx-accent: #f03;
+  --wfx-accent-strong: #f03;
+  --wfx-accent-soft: rgba(255, 0, 51, 0.14);
+  --wfx-accent-border: rgba(255, 0, 51, 0.45);
+  /* The Subscribe-style primary CTA (YouTube's white-on-dark pill). */
+  --wfx-cta-bg: #f1f1f1;
+  --wfx-cta-fg: #0f0f0f;
+  --wfx-link: #3ea6ff;
+  --wfx-ok: #43d17c;
+  --wfx-warn: #fdd663;
+  --wfx-focus: #3ea6ff;
+  /* Skeleton shells (the corpus skeleton CSS: dark hsl(0,0%,16%)). */
+  --wfx-skeleton: hsl(0, 0%, 16%);
 
-  /* Geometry. */
-  --wfx-radius: 0.75rem;
-  --wfx-radius-sm: 0.5rem;
+  /* Geometry — the corpus sheet. */
+  --wfx-radius: 12px;
+  --wfx-radius-sm: 8px;
+  --wfx-radius-xs: 4px;
   --wfx-topbar-h: 56px;
   --wfx-rail-w: 72px;
-  --wfx-rail-w-wide: 216px;
-  --wfx-bottomnav-h: 60px;
+  --wfx-rail-w-wide: 240px;
+  --wfx-bottomnav-h: 48px;
 
-  /* Motion — subtle only. */
-  --wfx-transition: 160ms ease;
+  /* Motion — 120–200ms ease (the corpus band). */
+  --wfx-transition: 150ms ease;
 
-  --wfx-font:
-    system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --wfx-font: Roboto, Arial, Helvetica, sans-serif;
+
+  color-scheme: dark;
+}
+
+/* The LIGHT theme seam (YouTube's light values — the toggle's target). */
+html[data-theme="light"] {
+  --wfx-bg: #ffffff;
+  --wfx-bg-raised: #f2f2f2;
+  --wfx-bg-hover: rgba(0, 0, 0, 0.05);
+  --wfx-surface: #f7f7f7;
+  --wfx-surface-2: #e5e5e5;
+  --wfx-menu: #ffffff;
+  --wfx-border: rgba(0, 0, 0, 0.1);
+  --wfx-border-strong: #cccccc;
+  --wfx-text: #0f0f0f;
+  --wfx-text-dim: #606060;
+  --wfx-text-faint: #909090;
+  --wfx-cta-bg: #0f0f0f;
+  --wfx-cta-fg: #ffffff;
+  --wfx-link: #065fd4;
+  --wfx-focus: #065fd4;
+  --wfx-skeleton: hsl(0, 0%, 89%);
+
+  color-scheme: light;
 }
 
 *,
@@ -52,6 +94,30 @@
 
 html {
   color-scheme: dark;
+  /* The corpus skeleton CSS scrollbar-color (dark). */
+  scrollbar-color: hsl(0, 0%, 67%) transparent;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  scrollbar-color: hsl(0, 0%, 76%) transparent;
+}
+
+/* The corpus skeleton CSS scrollbar geometry, verbatim. */
+body::-webkit-scrollbar {
+  width: 16px;
+}
+
+body::-webkit-scrollbar-thumb {
+  height: 56px;
+  border-radius: 8px;
+  border: 4px solid transparent;
+  background-clip: content-box;
+  background-color: hsl(0, 0%, 67%);
+}
+
+html[data-theme="light"] body::-webkit-scrollbar-thumb {
+  background-color: hsl(0, 0%, 76%);
 }
 
 body {
@@ -60,6 +126,8 @@ body {
   background: var(--wfx-bg);
   color: var(--wfx-text);
   font-family: var(--wfx-font);
+  font-size: 14px;
+  line-height: 20px;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -70,7 +138,7 @@ body {
 :focus-visible {
   outline: 2px solid var(--wfx-focus);
   outline-offset: 2px;
-  border-radius: var(--wfx-radius-sm);
+  border-radius: var(--wfx-radius-xs);
 }
 
 .wfx-skip-link {
@@ -90,7 +158,7 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * App shell: top bar / rail / bottom nav / main
+ * App shell: top bar / rail / bottom nav / main — the corpus app-shell.md
  * ------------------------------------------------------------------------- */
 
 .wfx-shell {
@@ -105,11 +173,10 @@ body {
   z-index: 100;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.25rem;
   height: var(--wfx-topbar-h);
-  padding: 0 1rem;
-  background: rgba(11, 10, 16, 0.92);
-  backdrop-filter: blur(10px);
+  padding: 0 16px;
+  background: var(--wfx-bg);
   border-bottom: 1px solid var(--wfx-border);
 }
 
@@ -127,17 +194,44 @@ body {
   min-width: 0;
 }
 
+/* The hamburger (Guide) button — 40px target, YouTube's masthead left. */
+.wfx-topbar__guide {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+  transition: background var(--wfx-transition);
+  flex: none;
+}
+
+.wfx-topbar__guide:hover {
+  background: var(--wfx-bg-hover);
+}
+
+/* The WebFlix wordmark — HONEST IDENTITY: our name, YouTube's placement
+ * and typography (the 20px/700 logotype next to the guide button). */
 .wfx-logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.375rem;
   color: var(--wfx-text);
   text-decoration: none;
-  font-weight: 800;
-  font-size: 1.15rem;
+  font-weight: 700;
+  font-size: 1.25rem;
   letter-spacing: -0.02em;
   padding: 0.375rem 0.5rem;
   border-radius: var(--wfx-radius-sm);
+  white-space: nowrap;
+}
+
+.wfx-logo:hover {
+  background: var(--wfx-bg-hover);
 }
 
 .wfx-logo__mark {
@@ -146,62 +240,66 @@ body {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: 0.55rem;
-  background: linear-gradient(135deg, var(--wfx-accent) 0%, var(--wfx-accent-strong) 100%);
+  border-radius: 0.375rem;
+  background: var(--wfx-accent);
   color: #fff;
   flex: none;
 }
 
 .wfx-logo__word {
-  background: linear-gradient(90deg, #fff 30%, var(--wfx-accent) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--wfx-text);
 }
 
-/* Search (a plain form — works without JS). */
+/* Search (a plain form — works without JS): the YouTube pill — 40px
+ * height, radius 40, 1px border, magnifier cap button. */
 .wfx-search {
   display: flex;
-  width: min(560px, 100%);
+  width: min(640px, 100%);
   min-width: 0;
 }
 
 .wfx-search__input {
   flex: 1;
   min-width: 0;
-  height: 44px;
-  padding: 0 1rem;
+  height: 40px;
+  padding: 0 4px 0 16px;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem;
   color: var(--wfx-text);
-  background: var(--wfx-bg-raised);
+  background: var(--wfx-bg);
   border: 1px solid var(--wfx-border-strong);
   border-right: none;
-  border-radius: 999px 0 0 999px;
+  border-radius: 40px 0 0 40px;
 }
 
 .wfx-search__input::placeholder {
   color: var(--wfx-text-faint);
 }
 
+.wfx-search__input:focus-visible {
+  outline: 1px solid var(--wfx-focus);
+  outline-offset: -1px;
+  border-color: var(--wfx-focus);
+}
+
 .wfx-search__submit {
-  height: 44px;
-  min-width: 56px;
+  height: 40px;
+  min-width: 64px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0 1rem;
   font: inherit;
-  color: var(--wfx-text-dim);
-  background: var(--wfx-surface-2);
+  color: var(--wfx-text);
+  background: var(--wfx-bg-raised);
   border: 1px solid var(--wfx-border-strong);
-  border-radius: 0 999px 999px 0;
+  border-radius: 0 40px 40px 0;
   cursor: pointer;
   transition: background var(--wfx-transition), color var(--wfx-transition);
 }
 
 .wfx-search__submit:hover {
-  background: var(--wfx-bg-hover);
+  background: var(--wfx-surface-2);
   color: var(--wfx-text);
 }
 
@@ -249,13 +347,13 @@ body {
 .wfx-avatar-menu__panel {
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);
-  min-width: 240px;
+  top: calc(100% + 8px);
+  min-width: 280px;
   padding: 0.5rem;
-  background: var(--wfx-bg-raised);
+  background: var(--wfx-menu);
   border: 1px solid var(--wfx-border);
   border-radius: var(--wfx-radius);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
 }
 
 .wfx-avatar-menu__panel p {
@@ -302,9 +400,11 @@ body {
 .wfx-main {
   flex: 1;
   min-width: 0;
-  padding: 1.25rem 1rem 5rem;
+  padding: 0 0 3rem;
 }
 
+/* The bottom nav (mobile <792px): 48px + safe-area, app-bg, top hairline
+ * (the corpus app-shell anatomy). */
 .wfx-bottomnav {
   position: fixed;
   left: 0;
@@ -312,9 +412,9 @@ body {
   bottom: 0;
   z-index: 100;
   display: flex;
-  height: var(--wfx-bottomnav-h);
-  background: rgba(11, 10, 16, 0.96);
-  backdrop-filter: blur(10px);
+  height: calc(var(--wfx-bottomnav-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--wfx-bg);
   border-top: 1px solid var(--wfx-border);
 }
 
@@ -329,8 +429,8 @@ body {
   padding: 0.375rem 0.5rem;
   color: var(--wfx-text-dim);
   text-decoration: none;
-  font-size: 0.62rem;
-  font-weight: 600;
+  font-size: 10px;
+  font-weight: 500;
   letter-spacing: 0.01em;
   border-radius: var(--wfx-radius-sm);
   transition: color var(--wfx-transition), background var(--wfx-transition);
@@ -342,7 +442,7 @@ body {
 }
 
 .wfx-navlink[aria-current="page"] {
-  color: var(--wfx-accent);
+  color: var(--wfx-text);
 }
 
 .wfx-navlink__icon {
@@ -358,13 +458,46 @@ body {
 }
 
 .wfx-footer {
-  padding: 1.5rem 1rem 2rem;
-  border-top: 1px solid var(--wfx-border);
+  margin-top: auto;
+  padding: 2rem 1rem 2.5rem;
   color: var(--wfx-text-faint);
-  font-size: 0.75rem;
+  font-size: 12px;
 }
 
-@media (min-width: 768px) {
+/* The rail's section groups (the corpus guide anatomy: primary group →
+ * divider → secondary group → divider → footer links). */
+.wfx-rail__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 12px;
+}
+
+.wfx-rail__divider {
+  height: 1px;
+  margin: 8px 0;
+  background: var(--wfx-border);
+}
+
+.wfx-rail__heading {
+  margin: 0;
+  padding: 8px 12px 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wfx-text);
+}
+
+.wfx-rail__footnote {
+  margin: 0;
+  padding: 12px 16px 16px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wfx-text-faint);
+  font-weight: 500;
+}
+
+/* The icon rail (792–1279px): 72px tiles, label under 24px icon. */
+@media (min-width: 792px) {
   .wfx-bottomnav {
     display: none;
   }
@@ -372,114 +505,255 @@ body {
   .wfx-rail {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
     width: var(--wfx-rail-w);
     flex: none;
-    padding: 0.75rem 0.5rem;
-    border-right: 1px solid var(--wfx-border);
+    padding: 0;
+    border-right: none;
+    overflow-y: auto;
+  }
+
+  .wfx-rail__group {
+    padding: 0;
+    align-items: center;
+  }
+
+  .wfx-rail__divider {
+    width: 48px;
+    margin: 8px auto;
+  }
+
+  .wfx-rail__heading,
+  .wfx-rail__footnote {
+    display: none;
   }
 
   .wfx-rail .wfx-navlink {
     flex-direction: column;
-    gap: 0.3rem;
-    padding: 0.625rem 0.25rem;
-    font-size: 0.62rem;
+    gap: 0.375rem;
+    width: 64px;
+    padding: 16px 0 14px;
+    font-size: 10px;
+    border-radius: var(--wfx-radius);
   }
 
   .wfx-main {
-    padding: 1.75rem 1.5rem 4rem;
+    padding: 0 0 3rem;
   }
 }
 
+/* The labeled rail (≥1280px): 240px, 48px rows, radius 10 hover, active
+ * raised + 500 (the corpus item anatomy). */
 @media (min-width: 1280px) {
   .wfx-rail {
     width: var(--wfx-rail-w-wide);
-    padding: 1rem 0.75rem;
+    overflow-y: auto;
+  }
+
+  .wfx-rail__group {
+    align-items: stretch;
+    padding: 0 12px;
+  }
+
+  .wfx-rail__divider {
+    width: auto;
+    margin: 12px 12px;
   }
 
   .wfx-rail .wfx-navlink {
     flex-direction: row;
     justify-content: flex-start;
-    gap: 0.875rem;
-    padding: 0.75rem 1rem;
-    font-size: 0.875rem;
+    gap: 24px;
+    width: auto;
+    height: 48px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: 10px;
   }
 
-  .wfx-main {
-    max-width: 1560px;
-    padding: 2rem 2.25rem 4rem;
+  .wfx-rail .wfx-navlink:hover {
+    background: var(--wfx-bg-hover);
+  }
+
+  .wfx-rail .wfx-navlink[aria-current="page"] {
+    background: var(--wfx-bg-raised);
+    font-weight: 500;
+  }
+
+  .wfx-rail__heading {
+    display: block;
   }
 }
 
 /* ---------------------------------------------------------------------------
- * Content rows + cards (the YouTube-like browsing grammar)
+ * Content rows + cards (the YouTube browsing grammar — app-shell.md)
  * ------------------------------------------------------------------------- */
 
 .wfx-row {
-  margin: 0 0 2rem;
+  margin: 0 0 24px;
 }
 
 .wfx-row__header {
   display: flex;
   align-items: baseline;
   gap: 0.75rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 12px;
 }
 
 .wfx-row__title {
   margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .wfx-row__reason {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--wfx-text-faint);
 }
 
+/* The feed grid (the corpus: 4 ≥1300 / 3 ≥1000 / 2 ≥600 / 1 <600,
+ * 16px×16px gaps — 4px vertical between thumb and text block). */
 .wfx-row__scroller {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(230px, 260px);
-  gap: 0.875rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-  scroll-snap-type: x proximity;
-  scrollbar-width: thin;
-  scrollbar-color: var(--wfx-border-strong) transparent;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .wfx-row__scroller--shorts {
-  grid-auto-columns: 145px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 160px;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.wfx-row__scroller--shorts::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 600px) {
+  .wfx-row__scroller {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .wfx-row__scroller {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1300px) {
+  .wfx-row__scroller {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* THE CHIP BAR (the corpus: sticky under topbar, `All` inverted-active,
+ * topic chips 32px radius 8, horizontal scroll with fade masks). */
+.wfx-chipbar {
+  position: sticky;
+  top: var(--wfx-topbar-h);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  padding: 8px 16px 12px;
+  background: var(--wfx-bg);
+  overflow: hidden;
+}
+
+.wfx-chipbar__track {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 12px),
+    transparent 100%
+  );
+}
+
+.wfx-chipbar__track::-webkit-scrollbar {
+  display: none;
+}
+
+.wfx-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wfx-text);
+  background: var(--wfx-bg-raised);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--wfx-transition), color var(--wfx-transition);
+}
+
+.wfx-chip:hover {
+  background: var(--wfx-surface-2);
+}
+
+.wfx-chip--active {
+  /* The INVERTED active chip (the corpus: `#f1f1f1` bg with `#0f0f0f`
+   * text on dark — the `All` chip when selected). */
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+}
+
+/* The real feed filter (a chip's own filtering truth): when a topic chip
+ * is active, non-matching cards leave the layout. */
+[data-wfx-feed-filter]:not([data-wfx-feed-filter="all"]) [data-wfx-card-type]:not([data-wfx-card-active="true"]) {
+  display: none;
 }
 
 .wfx-card {
   display: flex;
   flex-direction: column;
-  gap: 0.55rem;
+  gap: 4px;
   text-decoration: none;
   color: inherit;
   scroll-snap-align: start;
-  border-radius: var(--wfx-radius);
-  transition: transform var(--wfx-transition);
+  border-radius: 0;
+  transition: none;
 }
 
 .wfx-card:hover,
 .wfx-card:focus-visible {
-  transform: translateY(-2px);
+  transform: none;
 }
 
 .wfx-card__thumb {
   position: relative;
   aspect-ratio: 16 / 9;
   border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border);
+  border: none;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
-  padding: 0.5rem;
+  padding: 0;
+  background: var(--wfx-skeleton);
 }
 
 .wfx-card__thumb--vertical {
@@ -522,33 +796,37 @@ body {
   opacity: 0.9;
 }
 
+/* The badges overlay (bottom-right of the thumbnail, YouTube placement). */
 .wfx-card__badges {
-  position: relative;
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
 }
 
 .wfx-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.12rem 0.5rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  border-radius: 999px;
-  background: rgba(10, 9, 14, 0.72);
-  border: 1px solid var(--wfx-border-strong);
-  color: var(--wfx-text-dim);
-  backdrop-filter: blur(4px);
+  padding: 3px 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: var(--wfx-radius-xs);
+  background: rgba(0, 0, 0, 0.8);
+  border: none;
+  color: #fff;
+  line-height: 1.2;
 }
 
+/* The type chip (the canonical type — a WebFlix capability row, rendered
+ * in the quiet badge grammar above the duration pill). */
 .wfx-badge--type {
-  background: var(--wfx-accent-soft);
-  border-color: var(--wfx-accent-border);
-  color: #fda4af;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
 }
 
 .wfx-badge--duration {
@@ -556,10 +834,10 @@ body {
 }
 
 .wfx-card__title {
-  margin: 0;
-  font-size: 0.92rem;
-  font-weight: 600;
-  line-height: 1.35;
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -567,12 +845,25 @@ body {
 }
 
 .wfx-card__meta {
-  margin: 0;
+  margin: 2px 0 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem 0.6rem;
-  font-size: 0.74rem;
-  color: var(--wfx-text-faint);
+  gap: 2px 6px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-card__meta a,
+.wfx-card__channel {
+  color: var(--wfx-text-dim);
+  transition: color var(--wfx-transition);
+}
+
+.wfx-card__meta a:hover,
+.wfx-card__channel:hover {
+  color: var(--wfx-text);
 }
 
 .wfx-capchip {
@@ -582,21 +873,24 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Hero
+ * Hero — the featured card (the frozen J01/J02/J17 journey contract keeps
+ * the hero's presence; the R27 grammar renders it as the FIRST CARD of the
+ * feed — the same card anatomy as its neighbors, the featured item's own
+ * play affordance — recorded in DIVERGENCES: YouTube home has no hero).
  * ------------------------------------------------------------------------- */
 
 .wfx-hero {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  gap: 0.75rem;
-  min-height: 300px;
-  margin: 0 0 2rem;
-  padding: 1.5rem;
-  border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border);
-  overflow: hidden;
+  gap: 4px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  overflow: visible;
+  background: transparent;
 }
 
 /* R26-W2 — the hero's REAL SOURCE ARTWORK (the content-led anchor) with
@@ -608,38 +902,46 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: var(--wfx-radius);
 }
 
 .wfx-hero__scrim {
   position: absolute;
   inset: 0;
+  border-radius: var(--wfx-radius);
   background: linear-gradient(
     to top,
-    rgba(11, 10, 16, 0.94) 0%,
-    rgba(11, 10, 16, 0.66) 46%,
-    rgba(11, 10, 16, 0.28) 78%,
-    rgba(11, 10, 16, 0.12) 100%
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.24) 46%,
+    rgba(0, 0, 0, 0.06) 78%,
+    rgba(0, 0, 0, 0) 100%
   );
 }
 
 .wfx-hero__title {
   position: relative;
   z-index: 1;
-  margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2.4rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  max-width: 22ch;
+  margin: 8px 0 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  max-width: none;
+  letter-spacing: 0;
 }
 
 .wfx-hero__meta {
   position: relative;
   z-index: 1;
-  margin: 0;
+  margin: 2px 0 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
-  font-size: 0.85rem;
+  gap: 2px 6px;
+  font-size: 12px;
+  line-height: 18px;
   color: var(--wfx-text-dim);
 }
 
@@ -648,49 +950,51 @@ body {
   z-index: 1;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.5rem;
+  gap: 8px;
+  margin-top: 8px;
 }
 
-/* Buttons. */
+/* Buttons — the YouTube pill grammar: secondary = raised surface 36–40px
+ * pills; primary = the inverted CTA (white on dark / black on light). */
 .wfx-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  min-height: 44px;
-  padding: 0 1.25rem;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 999px;
-  border: 1px solid var(--wfx-border-strong);
-  background: var(--wfx-surface-2);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 18px;
+  border: none;
+  background: var(--wfx-bg-raised);
   color: var(--wfx-text);
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--wfx-transition), border-color var(--wfx-transition),
-    transform var(--wfx-transition);
+  transition: background var(--wfx-transition);
 }
 
 .wfx-btn:hover {
-  background: var(--wfx-bg-hover);
-  border-color: var(--wfx-accent-border);
+  background: var(--wfx-surface-2);
 }
 
 .wfx-btn:active {
-  transform: scale(0.98);
+  transform: none;
 }
 
 .wfx-btn--primary {
-  background: var(--wfx-accent);
-  border-color: var(--wfx-accent);
-  color: #fff;
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
 }
 
 .wfx-btn--primary:hover {
-  background: var(--wfx-accent-strong);
-  border-color: var(--wfx-accent-strong);
+  background: var(--wfx-cta-bg);
+  filter: brightness(0.92);
+}
+
+html[data-theme="light"] .wfx-btn--primary:hover {
+  filter: brightness(1.2);
 }
 
 .wfx-btn--ghost {
@@ -698,9 +1002,9 @@ body {
 }
 
 .wfx-btn--sm {
-  min-height: 44px;
-  padding: 0 1rem;
-  font-size: 0.82rem;
+  min-height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
 }
 
 .wfx-btn[disabled] {
@@ -708,62 +1012,80 @@ body {
   cursor: not-allowed;
 }
 
-/* Continue-watching progress bar (on cards + hero). */
+/* Continue-watching progress bar (on cards): the red watched edge
+ * (the corpus: 2px→4px bottom, red #f03). */
 .wfx-progress {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 4px;
-  border-radius: 2px;
-  background: var(--wfx-border-strong);
+  border-radius: 0 0 var(--wfx-radius) var(--wfx-radius);
+  background: rgba(255, 255, 255, 0.2);
   overflow: hidden;
 }
 
 .wfx-progress__fill {
   position: absolute;
   inset: 0 auto 0 0;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--wfx-accent);
 }
 
 /* ---------------------------------------------------------------------------
- * Typed states: skeletons / empty / error
+ * Typed states: skeletons / empty / error — the captured skeleton grammar
+ * (text shells 20px height, radius 8px, dark `hsl(0,0%,16%)` /
+ * light `hsl(0,0%,89%)` — the corpus skeleton CSS era).
  * ------------------------------------------------------------------------- */
 
 .wfx-skeleton-row {
-  margin: 0 0 2rem;
+  margin: 0 0 24px;
 }
 
 .wfx-skeleton-row__title {
-  height: 1.1rem;
+  height: 20px;
   width: 180px;
-  margin: 0 0 0.75rem;
-  border-radius: 6px;
-  background: linear-gradient(90deg, var(--wfx-surface) 25%, var(--wfx-surface-2) 50%, var(--wfx-surface) 75%);
-  background-size: 200% 100%;
-  animation: wfx-shimmer 1.4s ease infinite;
+  margin: 0 0 12px;
+  border-radius: var(--wfx-radius-sm);
+  background: var(--wfx-skeleton);
 }
 
 .wfx-skeleton-row__cards {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(230px, 260px);
-  gap: 0.875rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 600px) {
+  .wfx-skeleton-row__cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .wfx-skeleton-row__cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1300px) {
+  .wfx-skeleton-row__cards {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 
 .wfx-skeleton-card__thumb {
   aspect-ratio: 16 / 9;
   border-radius: var(--wfx-radius);
-  background: linear-gradient(90deg, var(--wfx-surface) 25%, var(--wfx-surface-2) 50%, var(--wfx-surface) 75%);
-  background-size: 200% 100%;
-  animation: wfx-shimmer 1.4s ease infinite;
+  background: var(--wfx-skeleton);
 }
 
+/* The text shells: 20px height, radius 8px (the corpus skeleton CSS). */
 .wfx-skeleton-card__line {
-  height: 0.85rem;
-  margin-top: 0.6rem;
-  border-radius: 4px;
-  background: linear-gradient(90deg, var(--wfx-surface) 25%, var(--wfx-surface-2) 50%, var(--wfx-surface) 75%);
-  background-size: 200% 100%;
-  animation: wfx-shimmer 1.4s ease infinite;
+  height: 20px;
+  margin-top: 12px;
+  border-radius: var(--wfx-radius-sm);
+  background: var(--wfx-skeleton);
 }
 
 .wfx-skeleton-card__line--wide {
@@ -780,6 +1102,24 @@ body {
   }
   to {
     background-position: -200% 0;
+  }
+}
+
+/* The quiet pulse the corpus era skeletons carry (opacity breath, no
+   gradient sweep — the captured grammar is static shells). */
+.wfx-skeleton-card__thumb,
+.wfx-skeleton-card__line,
+.wfx-skeleton-row__title {
+  animation: wfx-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes wfx-skeleton-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
   }
 }
 
@@ -840,13 +1180,142 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Search results grid
+ * Search results — the captured row grammar (search-card-grammar.json:
+ * thumbnail 360×202 left, 16px gap, meta column right).
  * ------------------------------------------------------------------------- */
 
 .wfx-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.25rem 0.875rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px 16px;
+}
+
+@media (min-width: 1000px) {
+  .wfx-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* The RESULT ROW (the captured card grammar): thumb 360×202 left, right
+ * column title 18/400/26 2-line clamp, channel, meta, snippet, badges. */
+.wfx-result {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.wfx-result__thumb {
+  position: relative;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--wfx-radius);
+  overflow: hidden;
+  background: var(--wfx-skeleton);
+}
+
+@media (min-width: 700px) {
+  .wfx-result {
+    flex-direction: row;
+  }
+
+  .wfx-result__thumb {
+    width: 360px;
+    max-width: 45%;
+    aspect-ratio: auto;
+    height: 202px;
+  }
+}
+
+.wfx-result__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.wfx-result__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 26px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-result__channel {
+  margin: 4px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+  transition: color var(--wfx-transition);
+}
+
+.wfx-result__channel:hover {
+  color: var(--wfx-text);
+}
+
+.wfx-result__metainfo {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-result__snippet {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-result__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+/* The search filters row (the corpus: `Filters` pill right-aligned). */
+.wfx-searchbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 16px;
+}
+
+.wfx-filterspill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wfx-text);
+  background: var(--wfx-bg-raised);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background var(--wfx-transition);
+}
+
+.wfx-filterspill:hover {
+  background: var(--wfx-surface-2);
 }
 
 /* ---------------------------------------------------------------------------
@@ -884,9 +1353,9 @@ body {
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(11, 10, 16, 0.5) 0%,
-    rgba(11, 10, 16, 0.06) 55%,
-    rgba(11, 10, 16, 0) 100%
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0.06) 55%,
+    rgba(0, 0, 0, 0) 100%
   );
 }
 
@@ -899,7 +1368,7 @@ body {
   padding: 0.35rem 0.65rem;
   font-size: 0.68rem;
   color: var(--wfx-text-faint);
-  background: rgba(11, 10, 16, 0.72);
+  background: rgba(0, 0, 0, 0.72);
   border-top: 1px solid var(--wfx-border);
 }
 
@@ -941,22 +1410,38 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
- * Player surface
+ * Player surface — the measured watch layout (watch-geometry.md:
+ * @1440 primary 1012 + secondary 412, 16px gap, 16px margins → 24 @≥1600;
+ * player 16:9 radius 12 letterboxed-black; single column ≤1015,
+ * full-bleed player ≤1000).
  * ------------------------------------------------------------------------- */
 
 .wfx-player {
-  max-width: 1080px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
+  padding: 24px 24px 48px;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 0;
+}
+
+@media (max-width: 1015px) {
+  .wfx-player {
+    padding: 0 0 48px;
+  }
+}
+
+@media (min-width: 1600px) {
+  .wfx-player {
+    padding: 24px 32px 48px;
+  }
 }
 
 .wfx-player__stage {
   position: relative;
   aspect-ratio: 16 / 9;
   border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border);
+  border: none;
   overflow: hidden;
   background: #000;
 }
@@ -996,24 +1481,184 @@ body {
   word-break: break-all;
 }
 
+/* The watch meta column: title 20/700/28, then the owner row LEFT +
+ * the actions row RIGHT (the measured anatomy). */
 .wfx-player__meta {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 12px;
+  padding: 12px 0 0;
+}
+
+@media (max-width: 1015px) {
+  .wfx-player__meta {
+    padding: 12px 12px 0;
+  }
 }
 
 .wfx-player__title {
   margin: 0;
-  font-size: clamp(1.15rem, 2.5vw, 1.6rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 28px;
+  letter-spacing: 0;
+}
+
+.wfx-watchhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 12px 0 0;
+}
+
+/* The owner row LEFT: 40px avatar + source name + honest meta. */
+.wfx-owner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wfx-owner__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--wfx-surface-2);
+  color: var(--wfx-text);
+  font-weight: 700;
+  font-size: 16px;
+  flex: none;
+}
+
+.wfx-owner__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.wfx-owner__meta {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+}
+
+/* The actions row RIGHT: 40px pills, radius 20, segmented like/dislike. */
+.wfx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.wfx-actions__segmented {
+  display: inline-flex;
+  align-items: stretch;
+  height: 40px;
+  border-radius: 20px;
+  background: var(--wfx-bg-raised);
+  overflow: hidden;
+}
+
+.wfx-actions__segmented > *:first-child {
+  border-radius: 20px 0 0 20px;
+}
+
+.wfx-actions__segmented > *:last-child {
+  border-radius: 0 20px 20px 0;
+}
+
+.wfx-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 44px;
+  padding: 0 14px;
+  height: 100%;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wfx-text);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--wfx-transition);
+}
+
+.wfx-actions__btn:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-actions__divider {
+  width: 1px;
+  margin: 8px 0;
+  background: var(--wfx-border);
+}
+
+/* The description panel: surface #272727, radius 12, 14/20, collapsed
+ * 2-line + expander (the measured anatomy). */
+.wfx-desc {
+  margin: 12px 0 0;
+  padding: 12px;
+  background: var(--wfx-bg-raised);
+  border-radius: var(--wfx-radius);
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.wfx-desc__summary {
+  display: block;
+  cursor: pointer;
+  list-style: none;
+}
+
+.wfx-desc__summary::-webkit-details-marker {
+  display: none;
+}
+
+.wfx-desc__collapsed {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--wfx-text);
+}
+
+.wfx-desc[open] .wfx-desc__collapsed {
+  display: block;
+}
+
+.wfx-desc__more {
+  margin: 4px 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wfx-text);
+  cursor: pointer;
+}
+
+.wfx-desc__body {
+  margin: 8px 0 0;
+  color: var(--wfx-text);
+  white-space: pre-line;
 }
 
 .wfx-player__trace {
   margin: 0;
-  font-size: 0.72rem;
+  font-size: 12px;
   color: var(--wfx-text-faint);
-  line-height: 1.5;
+  line-height: 18px;
 }
 
 .wfx-actionbar {
@@ -1175,14 +1820,14 @@ body {
   flex-wrap: wrap;
   gap: 0.35rem 0.75rem;
   font-size: 0.75rem;
-  color: rgba(236, 236, 241, 0.82);
+  color: rgba(255, 255, 255, 0.82);
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
 }
 
 .wfx-shortcard__tailreason {
   margin: 0;
   font-size: 0.68rem;
-  color: rgba(236, 236, 241, 0.66);
+  color: rgba(255, 255, 255, 0.66);
   font-style: italic;
 }
 
@@ -1196,27 +1841,27 @@ body {
   z-index: 3;
 }
 
+/* The shorts action rail (the corpus: 48px targets, counts 12/500 under
+ * each — the YouTube shorts grammar). */
 .wfx-roundbtn {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
-  gap: 0.1rem;
+  width: 48px;
+  height: 48px;
+  gap: 2px;
   border-radius: 50%;
-  border: 1px solid var(--wfx-border-strong);
-  background: rgba(20, 18, 24, 0.82);
-  color: var(--wfx-text);
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
   cursor: pointer;
   backdrop-filter: blur(6px);
-  transition: background var(--wfx-transition), border-color var(--wfx-transition),
-    transform var(--wfx-transition);
+  transition: background var(--wfx-transition), color var(--wfx-transition);
 }
 
 .wfx-roundbtn:hover {
-  background: rgba(44, 40, 54, 0.9);
-  border-color: var(--wfx-accent-border);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .wfx-roundbtn:active {
@@ -1225,14 +1870,13 @@ body {
 
 .wfx-roundbtn--active {
   color: var(--wfx-accent);
-  border-color: var(--wfx-accent-border);
-  background: var(--wfx-accent-soft);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .wfx-roundbtn__label {
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
 }
 
 .wfx-shorts__nav {
@@ -1259,8 +1903,8 @@ body {
   bottom: 0.75rem;
   z-index: 4;
   font-size: 0.68rem;
-  color: rgba(236, 236, 241, 0.55);
-  background: rgba(10, 9, 14, 0.6);
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(0, 0, 0, 0.6);
   padding: 0.3rem 0.75rem;
   border-radius: 999px;
   backdrop-filter: blur(4px);
@@ -1274,8 +1918,8 @@ body {
   z-index: 4;
   font-size: 0.7rem;
   font-weight: 600;
-  color: rgba(236, 236, 241, 0.75);
-  background: rgba(10, 9, 14, 0.6);
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(0, 0, 0, 0.6);
   padding: 0.25rem 0.8rem;
   border-radius: 999px;
   backdrop-filter: blur(4px);
@@ -1475,21 +2119,21 @@ body {
   border: none;
   border-radius: 999px;
   overflow: hidden;
-  background: var(--wfx-surface, #17151d);
+  background: var(--wfx-surface);
 }
 
 .wfx-acquisition__progress::-webkit-progress-bar {
-  background: var(--wfx-surface, #17151d);
+  background: var(--wfx-surface);
   border-radius: 999px;
 }
 
 .wfx-acquisition__progress::-webkit-progress-value {
-  background: var(--wfx-accent, #f43f5e);
+  background: var(--wfx-accent);
   border-radius: 999px;
 }
 
 .wfx-acquisition__progress::-moz-progress-bar {
-  background: var(--wfx-accent, #f43f5e);
+  background: var(--wfx-accent);
   border-radius: 999px;
 }
 
@@ -1528,7 +2172,7 @@ body {
 
 .wfx-acquisition__diagnostics {
   margin-top: 0.75rem;
-  border: 1px dashed var(--wfx-border-strong, #3a3547);
+  border: 1px dashed var(--wfx-border-strong);
   border-radius: 0.75rem;
   padding: 0.5rem 0.85rem;
 }
@@ -1586,31 +2230,38 @@ body {
  * - touch targets stay >= 44px (the shared .wfx-btn law extends here).
  * ------------------------------------------------------------------------- */
 
+/* R27-W2 — the BYOF + discovery registers retargeted to the parity
+ * token system: the SAME class architecture, the VALUES now resolve to
+ * the corpus sheet through the global custom properties (a raised
+ * `#272727` panel on dark / `#f2f2f2`-family on light — YouTube's panel
+ * grammar, theme-aware end to end; the frozen laws of semantic-state-
+ * paired-with-text and 44px targets carry over unchanged). */
+
 .wfx-byof {
-  --byof-bg: #f8f6f2;
-  --byof-surface: #fffefb;
-  --byof-surface-2: #f1eee7;
-  --byof-border: #e5e1d8;
-  --byof-border-strong: #d3cec1;
-  --byof-text: #33302a;
-  --byof-text-dim: #6d685d;
-  --byof-text-faint: #8f897b;
-  --byof-ok: #0f766e;
-  --byof-ok-soft: #e4f0ec;
-  --byof-warn: #a05a09;
-  --byof-warn-soft: #f9eeda;
-  --byof-error: #b3261e;
-  --byof-error-soft: #f9e9e7;
-  --byof-neutral: #6d685d;
-  --byof-neutral-soft: #eceada;
+  --byof-bg: var(--wfx-bg-raised);
+  --byof-surface: var(--wfx-surface);
+  --byof-surface-2: var(--wfx-surface-2);
+  --byof-border: var(--wfx-border);
+  --byof-border-strong: var(--wfx-border-strong);
+  --byof-text: var(--wfx-text);
+  --byof-text-dim: var(--wfx-text-dim);
+  --byof-text-faint: var(--wfx-text-faint);
+  --byof-ok: var(--wfx-ok);
+  --byof-ok-soft: color-mix(in srgb, var(--wfx-ok) 14%, transparent);
+  --byof-warn: var(--wfx-warn);
+  --byof-warn-soft: color-mix(in srgb, var(--wfx-warn) 14%, transparent);
+  --byof-error: #f03;
+  --byof-error-soft: var(--wfx-accent-soft);
+  --byof-neutral: var(--wfx-text-dim);
+  --byof-neutral-soft: var(--wfx-bg-hover);
 
   display: block;
   margin: 2rem 0 0;
-  padding: 1.5rem;
+  padding: 16px;
   background: var(--byof-bg);
   color: var(--byof-text);
-  border: 1px solid var(--byof-border);
-  border-radius: 1rem;
+  border: none;
+  border-radius: var(--wfx-radius);
 }
 
 .wfx-byof__heading {
@@ -2030,28 +2681,28 @@ body {
  * ------------------------------------------------------------------------- */
 
 .wfx-disc {
-  --disc-bg: #f8f6f2;
-  --disc-surface: #fffefb;
-  --disc-surface-2: #f1eee7;
-  --disc-border: #e5e1d8;
-  --disc-border-strong: #d3cec1;
-  --disc-text: #33302a;
-  --disc-text-dim: #6d685d;
-  --disc-text-faint: #8f897b;
-  --disc-ok: #0f766e;
-  --disc-ok-soft: #e4f0ec;
-  --disc-warn: #a05a09;
-  --disc-warn-soft: #f9eeda;
-  --disc-error: #b3261e;
-  --disc-error-soft: #f9e9e7;
+  --disc-bg: var(--wfx-bg-raised);
+  --disc-surface: var(--wfx-surface);
+  --disc-surface-2: var(--wfx-surface-2);
+  --disc-border: var(--wfx-border);
+  --disc-border-strong: var(--wfx-border-strong);
+  --disc-text: var(--wfx-text);
+  --disc-text-dim: var(--wfx-text-dim);
+  --disc-text-faint: var(--wfx-text-faint);
+  --disc-ok: var(--wfx-ok);
+  --disc-ok-soft: color-mix(in srgb, var(--wfx-ok) 14%, transparent);
+  --disc-warn: var(--wfx-warn);
+  --disc-warn-soft: color-mix(in srgb, var(--wfx-warn) 14%, transparent);
+  --disc-error: #f03;
+  --disc-error-soft: var(--wfx-accent-soft);
 
   display: block;
-  margin: 0 0 1.5rem;
-  padding: 1rem 1.25rem;
+  margin: 0 0 16px;
+  padding: 12px 16px;
   background: var(--disc-bg);
   color: var(--disc-text);
-  border: 1px solid var(--disc-border);
-  border-radius: 1rem;
+  border: none;
+  border-radius: var(--wfx-radius);
 }
 
 .wfx-disc--compact {
@@ -2424,7 +3075,7 @@ body {
   gap: 0.5rem;
   margin: 0.5rem 0;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(42, 38, 51, 0.5);
+  border-top: 1px solid var(--wfx-border);
 }
 
 /* The settings empty-state actions row (the next useful action). */
@@ -2456,7 +3107,7 @@ body {
 
 .wfx-shorts__discovery .wfx-disc--compact {
   padding: 0.35rem 0.55rem;
-  background: rgba(10, 9, 14, 0.55);
+  background: rgba(0, 0, 0, 0.55);
   border-radius: 0.9rem;
   backdrop-filter: blur(6px);
 }
@@ -2471,32 +3122,32 @@ body {
 .wfx-shorts__discovery .wfx-disc__plabel,
 .wfx-shorts__discovery .wfx-disc__phint,
 .wfx-shorts__discovery .wfx-disc__link {
-  color: rgba(236, 236, 241, 0.85);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .wfx-shorts__discovery .wfx-disc__modechip,
 .wfx-shorts__discovery .wfx-disc__personalize-toggle {
-  background: rgba(20, 18, 24, 0.72);
-  border-color: rgba(236, 236, 241, 0.35);
-  color: rgba(236, 236, 241, 0.92);
+  background: rgba(0, 0, 0, 0.72);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .wfx-shorts__discovery .wfx-disc__modechip--active {
-  background: rgba(236, 236, 241, 0.92);
-  border-color: rgba(236, 236, 241, 0.92);
-  color: #14121a;
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 0.92);
+  color: #0f0f0f;
 }
 
 .wfx-shorts__discovery .wfx-disc__personalize-panel,
 .wfx-shorts__discovery .wfx-disc__refusal {
-  background: rgba(20, 18, 24, 0.92);
-  border-color: rgba(236, 236, 241, 0.25);
-  color: rgba(236, 236, 241, 0.92);
+  background: rgba(0, 0, 0, 0.92);
+  border-color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(6px);
 }
 
 .wfx-shorts__discovery .wfx-disc__refusal-detail {
-  color: #fbbf24;
+  color: var(--wfx-warn);
 }
 
 .wfx-shorts__discovery .wfx-disc__intents {
@@ -2504,22 +3155,22 @@ body {
 }
 
 .wfx-shorts__discovery .wfx-disc__intents li {
-  color: #34d399;
+  color: var(--wfx-ok);
 }
 
 .wfx-shorts__discovery .wfx-disc__input {
-  background: rgba(10, 9, 14, 0.6);
-  border-color: rgba(236, 236, 241, 0.3);
-  color: rgba(236, 236, 241, 0.92);
+  background: rgba(0, 0, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .wfx-shorts__discovery .wfx-disc__failure {
-  color: #f87171;
+  color: #f66;
   background: rgba(248, 113, 113, 0.12);
 }
 
 .wfx-shorts__discovery .wfx-disc__intentmark {
-  color: #34d399;
+  color: var(--wfx-ok);
   background: rgba(52, 211, 153, 0.15);
 }
 
@@ -2601,29 +3252,29 @@ body {
 .wfx-player__wheretowatch,
 .wfx-player__diagnostics,
 [data-wfx-where-to-watch] {
-  --disc-bg: #f8f6f2;
-  --disc-surface: #fffefb;
-  --disc-surface-2: #f1eee7;
-  --disc-border: #e5e1d8;
-  --disc-border-strong: #d3cec1;
-  --disc-text: #33302a;
-  --disc-text-dim: #6d685d;
-  --disc-text-faint: #8f897b;
-  --disc-ok: #0f766e;
-  --disc-ok-soft: #e4f0ec;
-  --disc-warn: #a05a09;
-  --disc-warn-soft: #f9eeda;
-  --disc-error: #b3261e;
-  --disc-error-soft: #f9e9e7;
+  --disc-bg: var(--wfx-bg-raised);
+  --disc-surface: var(--wfx-surface);
+  --disc-surface-2: var(--wfx-surface-2);
+  --disc-border: var(--wfx-border);
+  --disc-border-strong: var(--wfx-border-strong);
+  --disc-text: var(--wfx-text);
+  --disc-text-dim: var(--wfx-text-dim);
+  --disc-text-faint: var(--wfx-text-faint);
+  --disc-ok: var(--wfx-ok);
+  --disc-ok-soft: color-mix(in srgb, var(--wfx-ok) 14%, transparent);
+  --disc-warn: var(--wfx-warn);
+  --disc-warn-soft: color-mix(in srgb, var(--wfx-warn) 14%, transparent);
+  --disc-error: #f03;
+  --disc-error-soft: var(--wfx-accent-soft);
 }
 
 [data-wfx-where-to-watch] {
   background: var(--disc-bg);
   color: var(--disc-text);
-  border: 1px solid var(--disc-border);
-  border-radius: 0.85rem;
-  padding: 1rem 1.25rem;
-  margin: 0 0 1.5rem;
+  border: none;
+  border-radius: var(--wfx-radius);
+  padding: 12px 16px;
+  margin: 0 0 16px;
 }
 
 /* The Where-to-watch options list: one row per way to watch. */
@@ -2942,29 +3593,31 @@ body {
    grammar, the app's own visual language — interaction grammar only).
    ========================================================================== */
 
-/* — The player layout: the stage column + the up-next rail (stacked on
-   narrow screens — the rail follows the stage, never overlapping it). */
+/* — The watch layout: the measured two-column (primary flex + secondary
+   412px @≥1016; the rail drops below at ≤1015 — watch-geometry.md). */
 .wfx-player__layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 1.25rem;
+  gap: 0;
   align-items: start;
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 1016px) {
   .wfx-player__layout {
-    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-template-columns: minmax(0, 1fr) 412px;
+    gap: 24px;
   }
 }
 
 /* The stage wrapper (the chrome's fullscreen target + the shell the
-   loading/recovery states preserve). */
+   loading/recovery states preserve) — 16:9, radius 12, black letterbox,
+   THEATER mode full-bleed (the corpus player stage). */
 .wfx-player__stagewrap {
   position: relative;
   background: #000;
   border-radius: var(--wfx-radius);
   overflow: hidden;
-  border: 1px solid var(--wfx-border);
+  border: none;
 }
 
 .wfx-player__stagewrap:fullscreen {
@@ -2972,36 +3625,81 @@ body {
   border: none;
 }
 
-/* — The chrome: the transport bar under the stage. */
+/* THEATER (the t key's truth): the stage takes the full viewport width,
+   the watch meta follows at full width below it. */
+.wfx-player__stagewrap--theater {
+  border-radius: 0;
+}
+
+@media (min-width: 1016px) {
+  .wfx-player--theater .wfx-player__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wfx-player--theater .wfx-player__stagewrap {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    border-radius: 0;
+  }
+}
+
+/* — The chrome: YouTube's control bar anatomy — the bar OVERLAYS the
+   stage's bottom edge (the measured 996×560 = 16:9 INCLUDING the chrome;
+   the chrome renders inside the stagewrap, absolutely anchored to its
+   bottom, while the overflow-hidden letterbox is the STAGE element
+   beneath it so the settings popup escapes freely). The bar fades on
+   ~3s idle, reveals on mousemove (the data-wfx-chrome-idle seam). */
 .wfx-chrome {
-  margin-top: 0.5rem;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.74), rgba(0, 0, 0, 0));
+  transition: opacity 300ms ease;
+}
+
+.wfx-chrome[data-wfx-chrome-idle="true"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wfx-chrome[data-wfx-chrome-idle="true"]:focus-within {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .wfx-chrome__scrub {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 0.25rem;
-  border-radius: var(--wfx-radius-sm);
+  gap: 0;
+  padding: 0 12px;
+  height: 20px;
   cursor: pointer;
-  min-height: 44px;
 }
 
 .wfx-chrome__scrub:focus-visible {
   outline: 2px solid var(--wfx-focus);
-  outline-offset: 2px;
+  outline-offset: -2px;
+  border-radius: var(--wfx-radius-xs);
 }
 
 .wfx-chrome__track {
   position: relative;
   flex: 1;
-  height: 6px;
+  height: 3px;
   border-radius: 999px;
-  background: var(--wfx-border);
+  background: rgba(255, 255, 255, 0.2);
   overflow: visible;
+  transition: height 150ms ease;
+}
+
+.wfx-chrome__scrub:hover .wfx-chrome__track,
+.wfx-chrome__scrub:focus-visible .wfx-chrome__track {
+  height: 5px;
 }
 
 .wfx-chrome__buffered {
@@ -3009,9 +3707,10 @@ body {
   inset: 0 auto 0 0;
   height: 100%;
   border-radius: 999px;
-  background: var(--wfx-border-strong);
+  background: rgba(255, 255, 255, 0.4);
 }
 
+/* The red progress: #f03 fill, white 12px scrubber dot (the corpus). */
 .wfx-chrome__played {
   position: absolute;
   inset: 0 auto 0 0;
@@ -3022,43 +3721,55 @@ body {
 
 .wfx-chrome__chaptermark {
   position: absolute;
-  top: -3px;
+  top: -2px;
   width: 2px;
-  height: 12px;
+  height: 7px;
   border-radius: 1px;
-  background: var(--wfx-text-faint);
+  background: rgba(255, 255, 255, 0.6);
 }
 
 .wfx-chrome__thumb {
   position: absolute;
   top: 50%;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
-  background: var(--wfx-accent-strong);
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.25);
+  background: #f03;
+  transform: translate(-50%, -50%) scale(1);
+  box-shadow: none;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.wfx-chrome__scrub:hover .wfx-chrome__thumb,
+.wfx-chrome__scrub:focus-visible .wfx-chrome__thumb {
+  opacity: 1;
 }
 
 .wfx-chrome__readout {
-  font-size: 0.8rem;
-  color: var(--wfx-text-dim);
+  font-size: 12px;
+  color: #fff;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  height: 100%;
 }
 
 .wfx-chrome__bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+  gap: 0;
+  flex-wrap: nowrap;
+  height: 48px;
+  padding: 0 8px;
 }
 
 .wfx-chrome__cluster {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0;
 }
 
 .wfx-chrome__btn {
@@ -3067,17 +3778,16 @@ body {
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 999px;
-  border: 1px solid transparent;
+  border-radius: 50%;
+  border: none;
   background: transparent;
-  color: var(--wfx-text);
+  color: #fff;
   cursor: pointer;
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition: background-color 150ms ease;
 }
 
 .wfx-chrome__btn:hover {
-  background: var(--wfx-bg-hover);
-  border-color: var(--wfx-border);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .wfx-chrome__btn:focus-visible {
@@ -3091,38 +3801,49 @@ body {
 }
 
 .wfx-chrome__btn--active {
-  color: var(--wfx-accent);
-  border-color: var(--wfx-accent-border);
-  background: var(--wfx-accent-soft);
+  color: #fff;
 }
 
+/* The volume cluster: slider expands on hover (YouTube's hover slider). */
 .wfx-chrome__volume {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0;
 }
 
 .wfx-chrome__volume input[type="range"] {
-  width: 88px;
-  accent-color: var(--wfx-accent);
+  width: 0;
+  opacity: 0;
+  transition: width 150ms ease, opacity 150ms ease;
+  accent-color: #fff;
+  height: 44px;
+  min-width: 0;
+}
+
+.wfx-chrome__volume:hover input[type="range"],
+.wfx-chrome__volume input[type="range"]:focus-visible {
+  width: 72px;
+  opacity: 1;
 }
 
 .wfx-chrome__phase {
-  font-size: 0.8rem;
-  color: var(--wfx-text-dim);
+  font-size: 12px;
+  color: #fff;
   text-transform: capitalize;
-  padding: 0.25rem 0.6rem;
-  border-radius: 999px;
-  border: 1px solid var(--wfx-border);
-  background: var(--wfx-surface);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .wfx-chrome__status {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--wfx-warn);
 }
 
-/* The settings popover (progressive disclosure). */
+/* The settings popover: YouTube's popup menu anatomy (raised #282828,
+   radius 12, rows with hover; the two-level menu's back arrow rides the
+   level-2 header). */
 .wfx-chrome__settings {
   position: relative;
 }
@@ -3130,79 +3851,153 @@ body {
 .wfx-chrome__settingspanel {
   position: absolute;
   right: 0;
-  bottom: calc(100% + 0.5rem);
+  bottom: calc(100% + 8px);
   z-index: 30;
   min-width: 300px;
   max-width: min(92vw, 380px);
-  padding: 0.9rem 1rem;
+  padding: 8px 0;
   border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border-strong);
-  background: var(--wfx-bg-raised);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  border: none;
+  background: var(--wfx-menu);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0;
 }
 
 .wfx-chrome__settingshead {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--wfx-text-faint);
+  padding: 8px 16px 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--wfx-text);
 }
 
 .wfx-chrome__settingsrow {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.85rem;
+  gap: 4px;
+  font-size: 14px;
+  padding: 8px 16px;
+}
+
+.wfx-chrome__settingsrow:hover {
+  background: var(--wfx-bg-hover);
 }
 
 .wfx-chrome__settingsrow > span:first-child {
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .wfx-chrome__speedsteps {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.3rem;
+  gap: 0;
 }
 
 .wfx-chrome__stepbtn {
-  min-height: 34px;
-  padding: 0 0.7rem;
-  border-radius: 999px;
-  border: 1px solid var(--wfx-border);
-  background: var(--wfx-surface);
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 0;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
   color: var(--wfx-text-dim);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
 }
 
+.wfx-chrome__stepbtn:hover {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+}
+
 .wfx-chrome__stepbtn--active {
-  color: var(--wfx-accent);
-  border-color: var(--wfx-accent-border);
-  background: var(--wfx-accent-soft);
+  color: var(--wfx-text);
+  border-bottom-color: var(--wfx-text);
 }
 
 .wfx-chrome__settingstruth {
-  font-size: 0.78rem;
+  font-size: 12px;
+  line-height: 16px;
   color: var(--wfx-text-faint);
+}
+
+/* The two-level menu's YouTube anatomy: a level-1 row with a chevron that
+   opens the level-2 panel (the back-arrow header below). */
+.wfx-chrome__menurow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-chrome__menurow:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-chrome__menurow span:last-child {
+  color: var(--wfx-text-dim);
+  font-size: 12px;
+}
+
+/* The two-level menu's level-2 back-arrow header (YouTube's submenu
+   anatomy: ← label at the panel top). */
+.wfx-chrome__backrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 8px 0 0;
+  border: none;
+  border-bottom: 1px solid var(--wfx-border);
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wfx-chrome__backrow:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-chrome__backicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
 }
 
 .wfx-chrome__keysbtn {
   align-self: flex-start;
-  min-height: 34px;
-  padding: 0 0.8rem;
-  border-radius: 999px;
-  border: 1px solid var(--wfx-border);
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 0;
+  border: none;
   background: transparent;
   color: var(--wfx-text-dim);
   font: inherit;
-  font-size: 0.8rem;
+  font-size: 14px;
   cursor: pointer;
 }
 
@@ -3261,42 +4056,85 @@ body {
   color: var(--wfx-accent);
 }
 
-/* — The up-next rail. */
+/* — The up-next rail: the related sidebar (the measured anatomy: chips
+   row above + compact cards — 168×94 thumbnail, 4px gap, title 2-line,
+   channel, meta). */
 .wfx-upnext {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding-top: 0.25rem;
+  gap: 8px;
+  padding-top: 0;
 }
 
 .wfx-upnext__title {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 28px;
+}
+
+/* The related chips row (All · From <source> · Related). */
+.wfx-upnext__chips {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.wfx-upnext__chips::-webkit-scrollbar {
+  display: none;
+}
+
+.wfx-upnext__chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--wfx-text);
+  background: var(--wfx-bg-raised);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--wfx-transition);
+}
+
+.wfx-upnext__chip:hover {
+  background: var(--wfx-surface-2);
+}
+
+.wfx-upnext__chip--active {
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
 }
 
 .wfx-upnext__card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.9rem;
-  border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border);
-  background: var(--wfx-surface);
+  gap: 8px;
+  padding: 0;
+  border-radius: 0;
+  border: none;
+  background: transparent;
 }
 
 .wfx-upnext__link {
   display: flex;
-  gap: 0.7rem;
+  gap: 4px;
   align-items: flex-start;
   text-decoration: none;
   color: inherit;
   border-radius: var(--wfx-radius-sm);
-  padding: 0.3rem;
+  padding: 0;
 }
 
 .wfx-upnext__link:hover,
 .wfx-upnext__link:focus-visible {
-  background: var(--wfx-bg-hover);
+  background: transparent;
 }
 
 .wfx-upnext__link:focus-visible {
@@ -3304,29 +4142,37 @@ body {
   outline-offset: 2px;
 }
 
+/* The compact related card's thumbnail: 168×94 (the measured value). */
 .wfx-card__thumb--rail {
-  flex: 0 0 120px;
+  flex: 0 0 168px;
+  width: 168px;
   aspect-ratio: 16 / 9;
   border-radius: var(--wfx-radius-sm);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  background: var(--wfx-skeleton);
 }
 
 .wfx-upnext__itemtitle {
-  display: block;
-  font-size: 0.95rem;
-  margin-bottom: 0.3rem;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  margin-bottom: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .wfx-upnext__autoplay {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.85rem;
-  color: var(--wfx-text-dim);
-  min-height: 34px;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--wfx-text);
+  min-height: 36px;
 }
 
 .wfx-upnext__autoplay input {
@@ -3337,26 +4183,27 @@ body {
 
 .wfx-upnext__policy {
   margin: 0;
-  font-size: 0.78rem;
+  font-size: 12px;
   color: var(--wfx-text-faint);
 }
 
 .wfx-upnext__empty {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 14px;
   color: var(--wfx-text-faint);
 }
 
 .wfx-upnext__queuetitle {
-  margin: 0 0 0.5rem;
-  font-size: 0.95rem;
+  margin: 12px 0 8px;
+  font-size: 16px;
+  font-weight: 500;
 }
 
 .wfx-upnext__queue {
-  padding: 0.9rem;
+  padding: 12px;
   border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border);
-  background: var(--wfx-surface);
+  border: none;
+  background: var(--wfx-bg-raised);
 }
 
 .wfx-upnext__queuelist {
@@ -3365,20 +4212,20 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 4px;
 }
 
 .wfx-upnext__queueitem {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  padding: 0.5rem;
+  gap: 8px;
+  padding: 4px;
   border-radius: var(--wfx-radius-sm);
-  background: var(--wfx-bg-raised);
+  background: transparent;
 }
 
 .wfx-upnext__queueposition {
-  font-size: 0.8rem;
+  font-size: 12px;
   color: var(--wfx-text-faint);
   min-width: 1.2rem;
 }
@@ -3387,30 +4234,31 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.88rem;
+  gap: 2px;
+  font-size: 14px;
 }
 
 .wfx-upnext__queueactions {
   display: flex;
-  gap: 0.2rem;
+  gap: 0;
 }
 
 .wfx-upnext__queueactions .wfx-chrome__btn {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
+  color: var(--wfx-text);
 }
 
 .wfx-upnext__queuefoot {
-  margin-top: 0.7rem;
+  margin-top: 8px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .wfx-upnext__saved {
-  font-size: 0.8rem;
+  font-size: 12px;
   color: var(--wfx-ok);
 }
 
@@ -3437,19 +4285,19 @@ body {
 
 .wfx-share__panel {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 8px);
   left: 0;
   z-index: 30;
-  min-width: 260px;
+  min-width: 280px;
   max-width: min(92vw, 340px);
-  padding: 0.7rem;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0;
   border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border-strong);
-  background: var(--wfx-bg-raised);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  border: none;
+  background: var(--wfx-menu);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
 }
 
 .wfx-share__row {
@@ -3604,36 +4452,38 @@ body {
   color: var(--wfx-text-faint);
 }
 
-/* — The search suggestions island. */
+/* — The search suggestions island (the corpus: raised surface, radius 12,
+   shadow, 12px-ish items with glyphs). */
 .wfx-search {
   position: relative;
 }
 
 .wfx-search__suggestions {
   position: absolute;
-  top: calc(100% + 0.4rem);
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
   z-index: 60;
-  padding: 0.4rem;
+  padding: 8px 0;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0;
   border-radius: var(--wfx-radius);
-  border: 1px solid var(--wfx-border-strong);
-  background: var(--wfx-bg-raised);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  border: none;
+  background: var(--wfx-menu);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
 }
 
 .wfx-search__suggestion {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 12px;
   min-height: 40px;
-  padding: 0 0.6rem;
-  border-radius: var(--wfx-radius-sm);
+  padding: 0 16px;
+  border-radius: 0;
   color: var(--wfx-text);
-  font-size: 0.88rem;
+  font-size: 16px;
+  font-weight: 400;
   text-decoration: none;
 }
 
@@ -3644,7 +4494,7 @@ body {
 }
 
 .wfx-search__suggestion--active {
-  outline: 1px solid var(--wfx-accent-border);
+  outline: none;
 }
 
 /* — The shorts parity controls. */

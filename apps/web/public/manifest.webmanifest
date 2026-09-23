@@ -2,12 +2,12 @@
   "name": "WebFlix",
   "short_name": "WebFlix",
   "id": "/",
-  "description": "WebFlix — the universal entertainment surface: browse, search, and watch movies, series, and shorts from the sources you connect. Capability truth is always shown, never guessed.",
+  "description": "WebFlix \u2014 the universal entertainment surface: browse, search, and watch movies, series, and shorts from the sources you connect. Capability truth is always shown, never guessed.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0b0a10",
-  "theme_color": "#0b0a10",
+  "background_color": "#0f0f0f",
+  "theme_color": "#0f0f0f",
   "icons": [
     {
       "src": "/icon-main.png",

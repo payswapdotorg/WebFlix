@@ -71,8 +71,8 @@ describe("WFX-057 offline page (no boot, honest state)", () => {
     // The page carries its own styles (the design tokens re-declared) so
     // zero-network + zero-warm-caches still renders the identity.
     expect(markup).toContain("<style>");
-    expect(markup).toContain("#0b0a10"); // --wfx-bg
-    expect(markup).toContain("#f43f5e"); // --wfx-accent
+    expect(markup).toContain("#0f0f0f"); // --wfx-bg (the R27 corpus sheet)
+    expect(markup).toContain("#f03"); // --wfx-accent (the corpus progress red)
     // The retry wiring is inline — no chunk fetch required.
     expect(markup).toContain("<script>");
     expect(markup).toContain('getElementById("wfx-offline-retry")');

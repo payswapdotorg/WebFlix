@@ -29,40 +29,41 @@ import type { JSX } from "react";
 
 /**
  * Critical inline styles (the design system's tokens, cited):
- * background #0b0a10 = --wfx-bg; surface #17151d = --wfx-surface;
- * borders #2a2633/#3a3547 = --wfx-border/--wfx-border-strong; text
- * #ececf1/#a8a3b3 = --wfx-text/--wfx-text-dim; accent #f43f5e =
+ * background #0f0f0f = --wfx-bg (the R27 corpus sheet);
+ * borders rgba(255,255,255,0.2) = --wfx-border; text
+ * #f1f1f1/#aaaaaa = --wfx-text/--wfx-text-dim; accent #f03 =
  * --wfx-accent; radius/geometry per --wfx-radius/--wfx-topbar-h; focus
- * ring #fb7185 = --wfx-focus. Scoped to this page's own classes so the
+ * ring #3ea6ff = --wfx-focus. Scoped to this page's own classes so the
  * (optional, possibly-uncached) global stylesheet never changes the
  * offline promise.
  */
 const OFFLINE_STYLE = `
 :root { color-scheme: dark; }
 .wfx-offline, .wfx-offline *, .wfx-offline *::before, .wfx-offline *::after { box-sizing: border-box; }
-.wfx-offline { min-height: 100vh; display: flex; flex-direction: column; background: #0b0a10; color: #ececf1;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+.wfx-offline { min-height: 100vh; display: flex; flex-direction: column; background: #0f0f0f; color: #f1f1f1;
+  font-family: Roboto, Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased; }
 .wfx-offline__bar { display: flex; align-items: center; gap: 0.625rem; height: 56px; padding: 0 1rem;
-  border-bottom: 1px solid #2a2633; }
+  border-bottom: 1px solid rgba(255,255,255,0.2); }
 .wfx-offline__mark { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px;
-  border-radius: 0.55rem; background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); color: #fff; flex: none; }
-.wfx-offline__word { font-weight: 800; font-size: 1.15rem; letter-spacing: -0.02em; }
+  border-radius: 0.375rem; background: #f03; color: #fff; flex: none; }
+.wfx-offline__word { font-weight: 700; font-size: 1.25rem; letter-spacing: -0.02em; }
 .wfx-offline__main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
 .wfx-offline__state { display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
-  max-width: 52ch; padding: 3.5rem 1.5rem; text-align: center; border: 1px dashed #3a3547;
-  border-radius: 0.75rem; color: #a8a3b3; }
+  max-width: 52ch; padding: 3.5rem 1.5rem; text-align: center; border: 1px dashed rgba(255,255,255,0.28);
+  border-radius: 0.75rem; color: #aaaaaa; }
 .wfx-offline__state-icon { display: inline-flex; width: 48px; height: 48px; align-items: center; justify-content: center;
-  border-radius: 50%; background: rgba(244, 63, 94, 0.14); color: #f43f5e; }
-.wfx-offline__state-title { margin: 0; font-size: 1.05rem; font-weight: 700; color: #ececf1; }
+  border-radius: 50%; background: rgba(255, 0, 51, 0.14); color: #f03; }
+.wfx-offline__state-title { margin: 0; font-size: 1.05rem; font-weight: 700; color: #f1f1f1; }
 .wfx-offline__state-detail { margin: 0; font-size: 0.85rem; line-height: 1.5; }
 .wfx-offline__retry { display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
   margin-top: 0.5rem; padding: 0 1.25rem; font: inherit; font-size: 0.9rem; font-weight: 600;
-  border-radius: 999px; border: 1px solid #f43f5e; background: #f43f5e; color: #fff; cursor: pointer; }
-.wfx-offline__retry:hover { background: #e11d48; border-color: #e11d48; }
-.wfx-offline__retry:focus-visible { outline: 2px solid #fb7185; outline-offset: 2px; }
-.wfx-offline__noscript { margin: 0; font-size: 0.8rem; color: #a8a3b3; }
-.wfx-offline__footer { padding: 1rem; border-top: 1px solid #2a2633; color: #736e80; font-size: 0.8rem; }
+  border-radius: 18px; border: none; cursor: pointer; }
+.wfx-offline__retry { background: #f1f1f1; color: #0f0f0f; }
+.wfx-offline__retry:hover { background: #d9d9d9; }
+.wfx-offline__retry:focus-visible { outline: 2px solid #3ea6ff; outline-offset: 2px; }
+.wfx-offline__noscript { margin: 0; font-size: 0.8rem; color: #aaaaaa; }
+.wfx-offline__footer { padding: 1rem; border-top: 1px solid rgba(255,255,255,0.2); color: #717171; font-size: 0.8rem; }
 .wfx-offline__footer p { margin: 0; }
 `;
 
