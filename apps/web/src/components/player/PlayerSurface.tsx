@@ -669,6 +669,20 @@ export function PlayerSurface({
             autoplaySentence={autoplaySentence}
             sessionIntent={view.sessionIntent}
             embedControl={view.surfaceMode === "embed" && view.failure === null}
+            nextHref={
+              view.queue.entries.length > 0 && view.queue.entries[0] !== undefined
+                ? playerHref({
+                    itemId: view.queue.entries[0]!.itemId,
+                    connectorId: view.queue.entries[0]!.connectorId,
+                    externalRef: view.queue.entries[0]!.externalRef,
+                    title: view.queue.entries[0]!.title,
+                    canonicalType: view.queue.entries[0]!.canonicalType,
+                    ...(view.queue.entries[0]!.durationMs !== undefined
+                      ? { durationMs: view.queue.entries[0]!.durationMs }
+                      : {}),
+                  })
+                : null
+            }
           />
           </div>
           <div className="wfx-player__meta">
