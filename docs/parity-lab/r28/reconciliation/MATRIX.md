@@ -118,6 +118,11 @@ cites A's sheet + measured value. Placeholder until first fetch lands:
 | N20 | Shorts shelf card | **corpus: A@7aa0e94 home-anatomy.md** — `ytm-shorts-lockup-view-model` **208×387 card, 208×311 (9:16) thumb**, ~4px gutters, 5–6 columns in 1152 width, title below, no duration badge | WebFlix shorts surface exists (stage with content, 1/3 counter) — shelf-on-home card grammar needs B-side check | PAR | OPEN | The shelf interleaving on home is YouTube's rhythm; WebFlix home has no shorts shelf. |
 | N21 | Watch two-column geometry | **corpus: A@7aa0e94 watch-page-anatomy.md** — page margins **16px sides @1440** (player x=16); player **996×560 @(16,68)** below 56px masthead; primary 1012; secondary **412 @x1028, 16px gutter**; below player: title → info/actions → description → comments; flexy theater/fullscreen/miniplayer states | C measured: `.wfx-player__layout` 724px+412px gap 16px (rail-open); `.wfx-player` padding **24px** (corpus 16px); player is an iframe stage, not a 16:9 996×560 box | PAR | OPEN | D14 re-confirmed: A measured page margins 16px — the `.wfx-player` 24px padding is a live drift on main. |
 | N22 | Related/up-next column | **corpus: A@7aa0e94 watch-page-anatomy.md** — `ytd-compact-video-renderer` rows: thumb **168×94** left, title 14px/500 2-line + channel + meta right, **4px gap**; autoplay toggle row with paper switch at section head; hover row → preview singleton | WebFlix has "Up next" + "More to explore" (cards with 168px-class thumbs per R27 harness) + Autoplay checkbox — re-verify row pitch/toggle grammar on B's build | PAR | OPEN | Closest-to-parity surface already; the paper-switch toggle + 4px pitch are the refinements. |
+| N23 | Search filters dialog | **corpus: A@25ba5e7 search-anatomy.md** — Filters button → **696×518** dialog r12 + shadow; groups TYPE/DURATION/UPLOAD DATE/FEATURES/PRIORITIZE; query-contextual chips (All, Shorts, Unwatched, Watched, Videos, Recently uploaded, Live) | WebFlix search has no filters dialog, no chips row | PAR | OPEN | A full 5-group dialog contract; B can build type/duration honestly. |
+| N24 | Settings gear menu (masthead) | **corpus: A@25ba5e7 FEATURE-INVENTORY.md** — multi-page menu: Your data / Appearance (Light↔Dark) / Display language / Restricted Mode / Location / Keyboard shortcuts / Settings / Help / Send feedback | WebFlix has no masthead settings gear (theme toggle button instead) | PAR | OPEN | The gear menu is YouTube's theme path (N15). B's theme toggle ≠ the Appearance menu. |
+| N25 | Player keyboard transport | **corpus: A@25ba5e7 FEATURE-INVENTORY.md** — k space j l m f t i arrows 0-9 c (labels carry hints, e.g. `Play (k)`) | WebFlix player: `Play (k)` + `Fullscreen (f)` + `Theater view (t)` labels exist — key handling needs re-verify (R27 interaction policy carried the vocabulary) | PAR | OPEN | Partial parity exists (labels); verify the full key set works. |
+| N26 | Toast/snackbar family | **corpus: A@25ba5e7 FEATURE-INVENTORY.md** — `yt-snackbar` transient feedback ~4s (R27) | WebFlix has a toast surface (R27 grammar) — Copy action currently gives no "copied" toast | PAR | OPEN | O4's Copy→toast is the concrete case. |
+| N27 | Shorts vertical shell | **corpus: A@25ba5e7 shorts-anatomy.md** — `/shorts/<id>` route; reel renderer + #shorts-player; shell controls Play CTA / Close / More / playlist / watch-later / nav arrows; action rail (like/dislike/comments-count/share/more) + audio toggle + inline title/@channel/Subscribe — CORPUS-PENDING pixels | WebFlix shorts surface: stage + speed menu + swipe hints + "1 / 3" counter; no action rail, no audio toggle | PAR | OPEN | Shell grammar partially there; the action rail + audio toggle are the parity deltas. |
 
 ---
 
@@ -125,7 +130,7 @@ cites A's sheet + measured value. Placeholder until first fetch lands:
 
 | measure | count |
 |---|---|
-|  Total rows | 7 + 21 + 5 + 7 + 22 = **62** |
+|  Total rows | 7 + 21 + 5 + 7 + 27 = **67** |
 | OPERATOR-BLOCKING (OB) | **12** (O1–O7, D9, D15, L-series dedup into O-series) |
 | PARITY (PAR) | **13** |
 | COSMETIC (COS) | **2** |
