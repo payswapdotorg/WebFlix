@@ -51,10 +51,93 @@ row below was confirmed LIVE on the base (both boots) before the loop began.
 
 ## SCOREBOARD
 
-(counted after the verification rounds — see the verification log)
+**Machine-counted verdict census (this file's Section-1 rows, per `r29-pixels`-style
+scripted count over the table cells):**
+
+| measure | count |
+|---|---|
+| Section-1 rows (the second-order set) | **19** |
+| PARITY (PAR) | **16** |
+| COSMETIC (COS) | **3** (D8/N4, O6-res, O6-meta) |
+| OPEN (red — the baseline-confirmed set) | **18** |
+| VERIFIED (green) | **1** (N9-c — the R28-carried description panel, conformant) |
+| WONT-FIX honest | 0 (no HD rows in this wave's set yet) |
+| B claims pushed to `wfx/r29/web` | **0** |
+
+**The honest closing state of this window:** B's lane `wfx/r29/web` was polled
+continuously (30-second intervals, ~2.5 h of polling windows from the baseline
+push at `283dbd5` through the final window) and **never appeared on origin** —
+zero B commits, zero claims, therefore zero verifications. Per the doctrine, an
+unverified fix is a red row and an ABSENT fix is the red row it already was:
+every row above stands at its C-measured baseline state (all 18 red rows
+confirmed LIVE on `main @ ab49392` in BOTH boots — BASELINE-OBSERVATION.md).
+The loop is armed: the instrument (`r29-probe.ts` + `r29-pixels.py` +
+`r29-round.sh` over the reused R28 harness) is committed, tested against the
+base, and carries the honesty instrumentation (mic getUserMedia/WebSpeech taps,
+like-count local-truth read, subscribe real-save click probe, filters
+wiring-toggle probe, gear row census, theater/miniplayer geometry + persistence
+checks). The next B push verifies through:
+`bash evidence/r29-recon/r29-round.sh <sha> <tag> [fixtures|service]`.
+
+**The kept honest red rows (the operator's next ask):** the full Section-1 OPEN
+set — action row/channel row (the watch second act), search rows 360×202 +
+dead Filters pill, gear menu, sign-in pill, keyboard set beyond m+f, theater
+1296-geometry, in-app miniplayer, duration-badge grammar, shorts-shelf card
+geometry, rail grammar, duplicate History, player padding 24px, raised-gray
+residual, N29 channel slot, mic (honestly absent until a real transport
+exists), stale meta-theme-color.
 
 ## Verification log (chronological; every B claim gets a row)
 
 | when | B claim | C's check | verdict |
 |---|---|---|---|
 | seed | — | baseline observation of `main @ ab49392` complete — BASELINE-OBSERVATION.md + `base-{fixtures,service}.r29probe.json` + VLM set; the R28 regression floor holds (fonts/one-click/light boot/share dialog/comments) | n/a — the loop is armed |
+| 2026-09-24 (window close) | **none pushed** — `wfx/r29/web` absent from origin across the entire polling window (16 windows × ~9 min, 30s cadence, from lane head 283dbd5 through 31c2670) | nothing to verify; the red baseline stands; the instrument is armed and committed | **no B claims verified — honestly reported, not silently passed** |
+
+---
+
+## DIVERGENCES — for the operator
+
+1. **B's lane never landed in this window.** The R29 second-order implementation
+   set (watch second act, search rows + filters, masthead gear + sign-in +
+   keyboard + modes, rail/badge/shelf, O6/N29/mic) was issued to lane
+   `wfx/r29/web`, which origin never received during ~2.5 h of continuous
+   30s-cadence polling. The recon lane's verdict set therefore contains ZERO
+   B-side rows — every red row is the baseline truth, honestly kept. (If B's
+   session ran long/failed, this is the loud record of it — the operator should
+   re-issue or check B's environment.)
+2. **N20 re-baseline (a correction to the R28 matrix):** "WebFlix home has no
+   shorts shelf" is no longer true on main @ ab49392 — a Shorts shelf section
+   IS live (vertical scroller + "Shorts" h2). The R28 row's observation was
+   recorded against an earlier main; the row now tracks the CARD GEOMETRY delta
+   (160×284 service / 297×528 fixtures vs corpus 208×311 in 208×387, 4px
+   gutters, 5–6 cols) + the non-YouTube "Vertical, swipe-driven" reason line.
+3. **The raised-gray number is instrument-bound.** C's R29 census (bucket-precise
+   classifier, `r29-pixels.py`) reads **6.6%** on the service light home vs the
+   R28-C classifier's 7.7% at 96bb075 and B's claimed 5.0% — all against the
+   corpus 4.1% light reference. The residual is real but its magnitude depends
+   on how artwork-internal darks are classified; a region-scoped (UI-surfaces
+   only) survey would settle the operator-facing number if exactness matters.
+4. **Theater geometry diverges in kind, not just magnitude:** WebFlix's `t`
+   mode is a REAL mode (verified live) but renders a 1440px full-viewport bleed
+   (measured stagewrap 1440 @x120 — overflowing the right viewport edge) where
+   the corpus records 1296px full-content-width. B's fix should re-anchor the
+   mode to the content-width law, not just toggle.
+5. **The miniplayer is environment-gated on base:** the control's render is
+   gated on Document Picture-in-Picture availability (absent in headless
+   Chromium — and not the corpus's in-app bottom-right floating persistent
+   player in any case). The corpus grammar (in-app floating + persistence
+   across navigation) is the contract; the probe carries the persistence check
+   ready.
+6. **`k`/`c`/`j`/`l`/`0–9` remain honestly unproven** (no observable state
+   change on base; the command channel round-trips through /api/playback but
+   the visible evidence is iframe-internal in this egress) — the same ambiguity
+   the R28 matrix recorded. B's full-keyboard claim will need per-key visible
+   evidence (label flips, overlay mounts, position readouts).
+
+## ESCALATIONS — lead-owned
+
+- The B-lane absence (divergence 1) — the lead owns re-issuing/confirming the
+  R29-B dispatch; C's loop is armed and will verify on the next push.
+- The N20 re-baseline (divergence 2) touches the R28 matrix's recorded state —
+  the lead may want the R28 doc footnoted on the next merge.
