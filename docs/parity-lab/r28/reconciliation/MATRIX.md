@@ -130,13 +130,14 @@ cites A's sheet + measured value. Placeholder until first fetch lands:
 
 | measure | count |
 |---|---|
-|  Total rows | 7 + 21 + 5 + 7 + 27 = **67** |
-| OPERATOR-BLOCKING (OB) | **12** (O1–O7, D9, D15, L-series dedup into O-series) |
-| PARITY (PAR) | **13** |
-| COSMETIC (COS) | **2** |
-| HONEST-DIVERGENCE (HD) | **10** (4 WONT-FIX honest accepted, 6 open-lead/env) |
-| CLOSED on base | **4** (D5, D18, D20, F1) |
-| VERIFIED (green) | **0** — no B fixes have landed yet (lane `wfx/r28/web` not pushed at seed) |
+|  Total rows | 7 (operator) + 21 (R27 divergences) + 5 (lead follow-ups) + 7 (lead recon reproductions) + 27 (corpus rows) = **67** |
+| OPERATOR-BLOCKING (OB) | **20** (machine-counted) |
+| PARITY (PAR) | **26** |
+| COSMETIC (COS) | **5** |
+| HONEST-DIVERGENCE (HD) | **10** |
+| WONT-FIX honest | **9** accepted |
+| CLOSED on base | **5** (D5, D18, D20, F1 + the share-placement correction) |
+| VERIFIED (green) | **0** — no B fixes have landed yet (lane `wfx/r28/web` not pushed as of this checkpoint) |
 
 **The red core (the operator's first screen, 30 seconds in):** no hover preview,
 3 clicks to a play attempt, no comments, a one-button share with a raw internal
