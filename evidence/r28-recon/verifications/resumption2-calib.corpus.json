@@ -1,0 +1,92 @@
+{
+  "tag": "resumption2-calib",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T07:01:32.566Z",
+  "checks": {
+    "chips": {
+      "count": 4,
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "found": true,
+      "h": 32,
+      "pad": "0px 12px",
+      "radius": "8px"
+    },
+    "cards": {
+      "badgePresent": false,
+      "badgeText": null,
+      "card": "1200x675",
+      "count": 54,
+      "found": true,
+      "thumb": null,
+      "thumbAspect": null,
+      "thumbRadius": null
+    },
+    "typography": {
+      "cardOrHeadingTitle": {
+        "font": "Roboto, Arial, Helvetica, sans-serif",
+        "size": "16px",
+        "weight": "500"
+      },
+      "metaLine": {
+        "font": "Roboto, Arial, Helvetica, sans-serif",
+        "size": "12px",
+        "weight": "400"
+      }
+    },
+    "watchPage": {
+      "actionRow": [
+        "save neon rain to your watchlist",
+        "save to a playlist"
+      ],
+      "descMore": false,
+      "descriptionPresent": false,
+      "keyLabels": [
+        "Play (k)",
+        "Fullscreen (f)",
+        "Theater view (t)"
+      ],
+      "layoutCols": "724px 412px",
+      "layoutGap": "16px",
+      "playerPadding": "24px 24px 48px",
+      "stageBox": "724x407"
+    },
+    "related": {
+      "autoplayToggle": true,
+      "autoplayType": "INPUT.checkbox",
+      "firstThumb": "168x95",
+      "rows": 6
+    },
+    "commentsAnatomy": {
+      "actionPills": 0,
+      "bodyFont": null,
+      "composerPlaceholder": null,
+      "headerCount": null,
+      "sortControl": null,
+      "threadAvatar": null,
+      "threads": 0
+    },
+    "shareDialog": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "box": "85x40",
+      "controls": [
+        "Copy WebFlix link",
+        "Open on fake-source"
+      ],
+      "found": true,
+      "hasShortLink": false,
+      "hasStartAt": false,
+      "radius": "0px",
+      "socialTargets": [
+        "x"
+      ],
+      "text": "Share\nCopy WebFlix link\nOpen on fake-source\n/item?id=wfxitm_7PZ5VPEEJYC6BXB29MKNZQYF5N&connector=fake-source&ref=fake%3Ashort-1&title=Neon%20Rain&type=short"
+    },
+    "shortsShell": {
+      "actionRailButtons": 0,
+      "audioToggle": false,
+      "railLabels": [],
+      "stageBox": null
+    }
+  }
+}

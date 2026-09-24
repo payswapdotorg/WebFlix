@@ -1,0 +1,95 @@
+{
+  "tag": "b1-1d32ed8-service",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T02:23:06.741Z",
+  "checks": {
+    "chips": {
+      "count": 2,
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "found": true,
+      "h": 32,
+      "pad": "0px 12px",
+      "radius": "8px"
+    },
+    "cards": {
+      "badgePresent": true,
+      "badgeText": "short",
+      "card": "288x334",
+      "count": 460,
+      "found": true,
+      "thumb": "288x162",
+      "thumbAspect": 1.78,
+      "thumbRadius": "12px"
+    },
+    "typography": {
+      "cardOrHeadingTitle": {
+        "font": "Roboto, Arial, Helvetica, sans-serif",
+        "size": "16px",
+        "weight": "500"
+      },
+      "metaLine": {
+        "font": "Roboto, Arial, Helvetica, sans-serif",
+        "size": "12px",
+        "weight": "400"
+      }
+    },
+    "watchPage": {
+      "actionRow": [
+        "save 1 hour rainy day in airport ✈️ | cozy lofi for relax, study & sleep #lofirainy #1hourlofi to your watchlist",
+        "save to a playlist"
+      ],
+      "descMore": false,
+      "descriptionPresent": false,
+      "keyLabels": [
+        "Play (k)",
+        "Mute (m)",
+        "Fullscreen (f)",
+        "Theater view (t)"
+      ],
+      "layoutCols": "724px 412px",
+      "layoutGap": "16px",
+      "playerPadding": "24px 24px 48px",
+      "stageBox": "724x407"
+    },
+    "related": {
+      "autoplayToggle": true,
+      "autoplayType": "INPUT.checkbox",
+      "firstThumb": "168x95",
+      "rows": 6
+    },
+    "commentsAnatomy": {
+      "actionPills": 0,
+      "bodyFont": null,
+      "composerPlaceholder": null,
+      "headerCount": null,
+      "sortControl": null,
+      "threadAvatar": null,
+      "threads": 0
+    },
+    "shareDialog": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "box": "84x40",
+      "controls": [
+        "Copy WebFlix link"
+      ],
+      "found": true,
+      "hasShortLink": false,
+      "hasStartAt": false,
+      "radius": "0px",
+      "socialTargets": [
+        "x",
+        "x",
+        "x",
+        "x"
+      ],
+      "text": "Share\nCopy WebFlix link\nOpen on wfx-experience-service\n/item?id=wfxitm_6KFVX75E9GFDZ2GJQHK2J3DN9H&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1%20HOUR%20Rainy%20Day%20in%20Airport%20%E2%9C%"
+    },
+    "shortsShell": {
+      "actionRailButtons": 0,
+      "audioToggle": false,
+      "railLabels": [],
+      "stageBox": null
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "tag": "b2-96bb075",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T07:28:37.223Z",
+  "checks": {
+    "dwell": {
+      "chrome": {
+        "clickLayer": true,
+        "infoBtn": [
+          "Preview information"
+        ],
+        "progressBar": true,
+        "speedPill": [
+          "2x"
+        ],
+        "unmute": "Tap to unmute"
+      },
+      "frameBox": "312x186",
+      "frameSrc": "https://www.youtube-nocookie.com/embed/mPZkdNFkNps?enablejsapi=1&autoplay=1&mute=1",
+      "log": [
+        {
+          "state": "idle",
+          "t": 6262.4000000003725
+        },
+        {
+          "state": "resolving",
+          "t": 6459.600000000093
+        },
+        {
+          "state": "playing",
+          "t": 6486.5
+        }
+      ],
+      "state": "playing"
+    },
+    "unhoverObserver": {
+      "elementRetained": true,
+      "finalFrameCount": 0,
+      "finalOpacity": "0",
+      "log": [
+        {
+          "cls": "wfx-hoverpreview",
+          "opacity": "1",
+          "t": 9217.900000000373
+        },
+        {
+          "cls": "wfx-hoverpreview",
+          "opacity": "0",
+          "t": 9419
+        }
+      ]
+    },
+    "commentRow": {
+      "author": {
+        "font": "12px/500",
+        "text": "@probe_one"
+      },
+      "avatar": {
+        "box": "36x36",
+        "radius": "50%"
+      },
+      "body": {
+        "font": "14px/400/20px",
+        "text": "The corpus anatomy probe — top"
+      },
+      "expanderText": "1 reply",
+      "found": true,
+      "header": {
+        "font": "15px/700",
+        "text": "3 Comments"
+      },
+      "pills": [
+        {
+          "bg": "rgba(0, 0, 0, 0)",
+          "box": "32x32",
+          "label": "Like this commen"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0)",
+          "box": "32x32",
+          "label": "Dislike this com"
+        }
+      ],
+      "replyBtn": {
+        "font": "12px/500",
+        "text": "Reply"
+      },
+      "rowW": 724,
+      "time": {
+        "color": "rgb(170, 170, 170)",
+        "font": "12px/400",
+        "text": "1 hour ago"
+      }
+    },
+    "copyToastStubbed": {
+      "bodyMatch": "copied to clipboard",
+      "toasts": [
+        "Install app",
+        "Link copied to clipboard"
+      ]
+    },
+    "kebab": {
+      "box": "40x40",
+      "found": true,
+      "label": "Actions for 1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi"
+    },
+    "kebabMenu": {
+      "found": true,
+      "items": [
+        "Details"
+      ]
+    }
+  }
+}

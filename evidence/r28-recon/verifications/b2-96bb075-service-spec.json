@@ -1,0 +1,703 @@
+{
+  "tag": "b2-96bb075-service",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T07:23:22.490Z",
+  "checks": {
+    "themeDefault": {
+      "appBg": "rgba(0, 0, 0, 0)",
+      "bodyBg": "rgb(255, 255, 255)",
+      "colorScheme": "light",
+      "htmlAttrs": [
+        "lang=en",
+        "data-theme=light"
+      ],
+      "htmlBg": "rgba(0, 0, 0, 0)",
+      "htmlClass": null,
+      "lightField": true,
+      "metaTheme": "#0f0f0f",
+      "themeToggle": [
+        "Switch to dark theme"
+      ]
+    },
+    "hover": {
+      "target": {
+        "cardBox": "288x242",
+        "found": true,
+        "thumbBox": "288x162",
+        "x": 384,
+        "y": 351
+      },
+      "at250ms": {
+        "gifs": 0,
+        "mediaCount": 0,
+        "previews": [
+          {
+            "box": "312x186",
+            "children": 0,
+            "cls": "wfx-hoverpreview wfx-hoverpreview--open",
+            "opacity": "0.924715",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          }
+        ],
+        "videoDetail": [],
+        "videos": 0
+      },
+      "at1_7s": {
+        "previews": 83,
+        "videos": 0
+      },
+      "afterUnhover": {
+        "faded": 1,
+        "previewEls": 77,
+        "videos": 0
+      }
+    },
+    "comments": {
+      "authorFont": null,
+      "avatarBox": "24x24",
+      "avatarRadius": "50%",
+      "bodyFont": "14px/400/20px",
+      "composer": false,
+      "composerPlaceholder": null,
+      "headerFont": "14px/400",
+      "headerText": "0 CommentsTop commentsTopNewest",
+      "likePills": [],
+      "region": true,
+      "regionCls": "wfx-comments",
+      "sortMenu": [
+        "Top",
+        "Newest"
+      ],
+      "threadCount": 0
+    },
+    "shareEntry": {
+      "count": 1,
+      "labels": [
+        "Share 1 HOUR Rainy D"
+      ],
+      "playerPage": true
+    },
+    "shareDialog": {
+      "box": "470x337",
+      "cls": "wfx-share__panel",
+      "copyPill": {
+        "box": "64x40",
+        "radius": "20px"
+      },
+      "embedFirst": false,
+      "found": true,
+      "hasToast": false,
+      "header": "Share",
+      "linkRaw": null,
+      "linkValue": "",
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 24px 12px",
+      "socialTargets": [
+        "Embed",
+        "WhatsApp",
+        "Facebook",
+        "X",
+        "Email",
+        "Reddit",
+        "Pinterest",
+        "LinkedIn"
+      ],
+      "startAt": true,
+      "tileCount": 14,
+      "tiles": [
+        {
+          "box": "36x36",
+          "label": "Cancel"
+        },
+        {
+          "box": "40x40",
+          "label": "Previous share t"
+        },
+        {
+          "box": "70x93",
+          "label": "Embed"
+        },
+        {
+          "box": "28x28",
+          "label": ""
+        },
+        {
+          "box": "37x16",
+          "label": "Embed"
+        },
+        {
+          "box": "70x93",
+          "label": "Messages"
+        },
+        {
+          "box": "28x28",
+          "label": ""
+        },
+        {
+          "box": "55x16",
+          "label": "Messages"
+        },
+        {
+          "box": "70x93",
+          "label": "WhatsApp"
+        },
+        {
+          "box": "28x28",
+          "label": ""
+        },
+        {
+          "box": "55x16",
+          "label": "WhatsApp"
+        },
+        {
+          "box": "70x93",
+          "label": "Facebook"
+        },
+        {
+          "box": "28x28",
+          "label": ""
+        },
+        {
+          "box": "52x16",
+          "label": "Facebook"
+        }
+      ]
+    },
+    "copyToast": {
+      "snackbar": true,
+      "toastText": null
+    }
+  }
+}

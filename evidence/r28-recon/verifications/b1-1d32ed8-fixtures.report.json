@@ -1,0 +1,126 @@
+{
+  "tag": "b1-1d32ed8-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T02:20:31.513Z",
+  "checks": {
+    "fonts": {
+      "declared": "Roboto, Arial, Helvetica, sans-serif",
+      "geistOnly": false,
+      "loadedFonts": [
+        "Roboto",
+        "Roboto",
+        "__nextjs-Geist",
+        "__nextjs-Geist Mono",
+        "__nextjs-Geist",
+        "__nextjs-Geist Mono"
+      ],
+      "robotoLoaded": true
+    },
+    "background": {
+      "bodyBg": "rgb(15, 15, 15)",
+      "tokenCorrect": true
+    },
+    "clickTrace": {
+      "firstCard": {
+        "href": "/player?id=wfxitm_3Z833QA3S5XRWVS8AS0S6NPBNF&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+        "label": "Neon Rain (short, 45s)"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "after": "click card",
+          "hasIframe": true,
+          "hasPlayControl": true,
+          "hasVideo": false,
+          "title": "Neon Rain",
+          "url": "/player"
+        }
+      ],
+      "userActionsToPlayAttempt": 1
+    },
+    "hoverPreview": {
+      "gifs": 0,
+      "previewScaffolding": [
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 0,
+          "cls": "wfx-cardpreview"
+        }
+      ],
+      "videos": 0,
+      "dwellMs": 1700
+    },
+    "comments": {
+      "bodyHasCommentsWord": 1,
+      "commentEls": 0,
+      "composer": false,
+      "headings": []
+    },
+    "share": {
+      "controlTags": [
+        "SUMMARY:Share Neon Rain"
+      ],
+      "onPlayerPage": true,
+      "shareControlCount": 1,
+      "openedSurface": {
+        "buttons": 2,
+        "hasEmbed": false,
+        "hasStartAt": false,
+        "linkIsRawParamPath": true,
+        "socialTargets": [
+          "Copy"
+        ],
+        "text": "Share\nCopy WebFlix link\nOpen on fake-source\n/item?id=wfxitm_3Z833QA3S5XRWVS8AS0S6NPBNF&connector=fake-source&ref=fake%3Ashort-1&title=Neon%20Rain&type=short"
+      }
+    },
+    "chrome": {
+      "feedConfigText": false,
+      "gradientThumbs": 14,
+      "hasBell": false,
+      "hasMic": false,
+      "hero": null,
+      "railHistoryCount": 2,
+      "realImgThumbs": 0,
+      "topbarH": 56
+    }
+  }
+}
