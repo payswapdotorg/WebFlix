@@ -1,0 +1,108 @@
+{
+  "tag": "b-b852d977-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:01:36.965Z",
+  "checks": {
+    "rail": {
+      "explore": false,
+      "footer": false,
+      "historyCount": 1,
+      "historyHref": "http://localhost:3101/library?section=history",
+      "itemAnatomy": {
+        "font": "14px/500/20px",
+        "h": 40,
+        "radius": "10px"
+      },
+      "items": [
+        "Home",
+        "Shorts",
+        "Watch",
+        "Library",
+        "History",
+        "Offline",
+        "Settings"
+      ],
+      "locationChip": false,
+      "moreFromYT": false,
+      "promo": {
+        "pillBg": "rgb(6, 95, 212)",
+        "pillBox": "97x36",
+        "pillHref": "/settings?section=general",
+        "pillRadius": "20px",
+        "text": "Sign in to like videos, comment, and subscribe."
+      },
+      "railW": 240
+    },
+    "railActive": {
+      "font": "14px/500",
+      "found": true,
+      "label": "Home"
+    },
+    "railDrawer": {
+      "drawerRailW": 72,
+      "itemAnatomy": {
+        "font": "10px/500/20px",
+        "h": 80,
+        "radius": "12px"
+      },
+      "promoInDrawer": true
+    },
+    "badge": {
+      "ariaKeepsType": [
+        "Neon Rain (short, 0:45)",
+        "Rain Check (short, 0:30)"
+      ],
+      "badgeCount": 10,
+      "found": true,
+      "sample": [
+        {
+          "bg": "rgba(0, 0, 0, 0.6)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "m:ss|h:mm:ss",
+          "inset": {
+            "bottom": 8,
+            "right": 8
+          },
+          "pad": "1px 4px",
+          "radius": "4px",
+          "text": "0:45"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0.6)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "m:ss|h:mm:ss",
+          "inset": {
+            "bottom": 8,
+            "right": 8
+          },
+          "pad": "1px 4px",
+          "radius": "4px",
+          "text": "0:30"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0.6)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "m:ss|h:mm:ss",
+          "inset": {
+            "bottom": 8,
+            "right": 8
+          },
+          "pad": "1px 4px",
+          "radius": "4px",
+          "text": "40:00"
+        }
+      ],
+      "typeBadges": []
+    },
+    "badgeSearchRow": {
+      "found": false
+    },
+    "shortsShelf": {
+      "found": false,
+      "headings": 1
+    }
+  }
+}

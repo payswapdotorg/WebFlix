@@ -1,0 +1,403 @@
+{
+  "tag": "b-b852d977-service",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:05:06.646Z",
+  "checks": {
+    "rail": {
+      "footerLinks": false,
+      "hasExplore": false,
+      "hasMoreFromYouTube": false,
+      "hasShorts": true,
+      "hasSubscriptions": false,
+      "historyCount": 1,
+      "installEntry": true,
+      "items": [
+        "Home",
+        "Shorts",
+        "Watch",
+        "Library",
+        "History",
+        "Offline",
+        "Settings",
+        "Sign in",
+        "Install app",
+        "Home",
+        "Shorts",
+        "Watch",
+        "Library"
+      ]
+    },
+    "metaTheme": {
+      "bodyBg": "rgb(255, 255, 255)",
+      "content": "#ffffff",
+      "dataTheme": "light"
+    },
+    "durationBadge": {
+      "badges": [],
+      "card": "288x288",
+      "cardCount": 904,
+      "found": true,
+      "thumb": "288x162"
+    },
+    "shortsShelf": {
+      "hasShortsHeading": true,
+      "shelfSectionFound": true,
+      "verticalThumbCards": [
+        "208x311",
+        "208x311",
+        "208x311",
+        "208x311",
+        "208x311",
+        "208x311"
+      ]
+    },
+    "channelSlot": {
+      "connectorIdSlots": 3,
+      "slots": [
+        {
+          "channelText": "From wfx-experience-service",
+          "metaText": ""
+        },
+        {
+          "channelText": "From wfx-experience-service",
+          "metaText": ""
+        },
+        {
+          "channelText": "From wfx-experience-service",
+          "metaText": ""
+        }
+      ]
+    },
+    "masthead": {
+      "gearButton": {
+        "label": "Settings"
+      },
+      "micButton": null,
+      "rightClusterText": "Sign inWSigned outYou are watching in an anonymous session — no account is needed to watch public content. Sign in only ",
+      "signinPill": {
+        "bg": "rgb(6, 95, 212)",
+        "border": "1px solid rgba(0, 0, 0, 0.2)",
+        "box": "101x40",
+        "color": "rgb(255, 255, 255)",
+        "radius": "20px"
+      }
+    },
+    "micTransport": {
+      "instrument": {
+        "getUserMediaCalls": [],
+        "mediaRecorder": true,
+        "speechApiUsed": true
+      },
+      "overlay": [],
+      "permissionDenied": false,
+      "present": true,
+      "searchBoxFocused": false,
+      "lateState": {
+        "instrument": {
+          "getUserMediaCalls": [],
+          "mediaRecorder": true,
+          "speechApiUsed": true
+        },
+        "overlayCount": 0
+      }
+    },
+    "gearMenu": {
+      "hasAppearance": false,
+      "hasKeyboardShortcuts": false,
+      "opened": true,
+      "rows": [
+        "Sign in / Create a profile",
+        "Profile & identity settings"
+      ]
+    },
+    "searchQueryTried": [
+      {
+        "q": "neon",
+        "rows": 0
+      },
+      {
+        "q": "rain",
+        "rows": 217
+      }
+    ],
+    "searchRows": {
+      "found": true,
+      "gridCols": "1152px",
+      "layout": "grid",
+      "n": 190,
+      "row": "1152x327",
+      "rowClass": "wfx-cardwrap",
+      "thumb": "500x281",
+      "thumbRadius": "12px",
+      "titleFont": "18px/400"
+    },
+    "filters": {
+      "button": {
+        "expanded": "false",
+        "found": true
+      },
+      "dialog": {
+        "bg": "rgba(0, 0, 0, 0.4)",
+        "box": "1440x900",
+        "checkboxCount": 0,
+        "found": true,
+        "groups": [
+          "TYPE",
+          "DURATION"
+        ],
+        "radius": "0px",
+        "title": "Search filters"
+      },
+      "wiring": {
+        "note": "no controls found",
+        "rowsBefore": 217,
+        "toggled": false
+      }
+    },
+    "watchGeometry": {
+      "layoutCols": "996px 412px",
+      "layoutGap": "16px",
+      "playerPadding": "12px 0px 48px 16px",
+      "stageBox": "996x560",
+      "stagewrap": "996x560 @(16,68)"
+    },
+    "watchhead": {
+      "actionsText": "— the count is this browser's own recordShareSaveAdd to queueSave to playlistMark as watchedStop and record skipDetails",
+      "box": "996x42",
+      "found": true,
+      "ownerText": "",
+      "pills": [
+        {
+          "box": "97x40",
+          "t": "Rate this video"
+        },
+        {
+          "box": "48x40",
+          "t": "Like this video"
+        },
+        {
+          "box": "48x40",
+          "t": "Dislike this video"
+        },
+        {
+          "box": "86x40",
+          "t": "Share 1 HOUR Rainy Day in Airp"
+        },
+        {
+          "box": "36x20",
+          "t": "Share"
+        },
+        {
+          "box": "84x40",
+          "t": "Save"
+        },
+        {
+          "box": "84x40",
+          "t": "Save 1 HOUR Rainy Day in Airpo"
+        },
+        {
+          "box": "30x20",
+          "t": "Save"
+        },
+        {
+          "box": "220x40",
+          "t": "Add to queue"
+        },
+        {
+          "box": "159x40",
+          "t": "Save 1 HOUR Rainy Day in Airpo"
+        }
+      ],
+      "splitPillClasses": [
+        "wfx-actions__segmented"
+      ]
+    },
+    "likeSplit": {
+      "containerBox": "97x40",
+      "containerClass": "wfx-actions__segmented",
+      "containerRadius": "20px",
+      "dislikeCountText": null,
+      "dislikePill": {
+        "label": "Dislike this video"
+      },
+      "likeCountText": null,
+      "likePill": {
+        "box": "48x40",
+        "label": "Like this video"
+      },
+      "afterClick": {
+        "dislikeText": "",
+        "likeText": "",
+        "localStorage": {
+          "wfx-reactions-v1": "{\"wfxitm_46YE2W00XBC8ZJCVG3WJTWDHAF\":\"like\"}"
+        }
+      }
+    },
+    "subscribe": {
+      "bg": "rgb(255, 0, 51)",
+      "box": "95x36",
+      "color": "rgb(255, 255, 255)",
+      "found": true,
+      "label": "Subscribe to wfx-experience-se",
+      "radius": "18px",
+      "afterClick": {
+        "labelNow": "",
+        "subscribeKeys": [],
+        "toast": "Subscribed"
+      }
+    },
+    "description": {
+      "bodyFont": "14px/400/20px",
+      "collapsedHeight": 68,
+      "expanderText": "...",
+      "found": true,
+      "open": null,
+      "tag": "DIV"
+    },
+    "keyboard": {
+      "preState": {
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "url": "/player"
+      },
+      "press_m": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Unmute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      },
+      "press_k": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      },
+      "press_t": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 1296,
+        "theater": true,
+        "url": "/player"
+      },
+      "press_i": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": null,
+        "playLabel": null,
+        "position": null,
+        "stagewrapW": null,
+        "theater": false,
+        "url": "/"
+      },
+      "press_f": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": true,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 1440,
+        "theater": false,
+        "url": "/player"
+      },
+      "press_c": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      },
+      "press_j": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      },
+      "press_l": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      },
+      "press_0": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      },
+      "postRevert": {
+        "captionsOverlay": false,
+        "commandStatus": null,
+        "floatingMini": false,
+        "fullscreen": false,
+        "muteLabel": "Mute (m)",
+        "playLabel": "Play (k)",
+        "position": null,
+        "stagewrapW": 996,
+        "theater": false,
+        "url": "/player"
+      }
+    },
+    "theater": {
+      "control": "Theater view (t)",
+      "on": "false",
+      "after": {
+        "layoutCols": "996px 412px",
+        "stagewrapW": 996,
+        "stagewrapX": 16,
+        "theaterClass": false
+      }
+    },
+    "miniplayer": {
+      "control": "Miniplayer (i)",
+      "after": {
+        "bodyChanged": false,
+        "commandToast": null,
+        "floatingMini": false
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "tag": "b-b852d977-service-searchbadge",
+  "method": "C manual targeted probe (r29c-manual session): /search?q=the rows 1-6, the .wfx-badge--duration computed grammar",
+  "at": "2026-09-24T23:55:00.000Z",
+  "rows": [
+    { "title": "Aliens: Are We Really Al", "badge": null, "thumb": "500x281", "note": "no durationMs -> no badge (the honest leave)" },
+    { "title": "Cosmic Phenomena: The St", "badge": "2:30:27", "thumb": "500x281", "inset": "8/8", "font": "12px/500", "bg": "rgba(0, 0, 0, 0.6)", "note": "BYTE-EXACT — B's claimed live measure '2:30:27' at the 8px inset reproduced" },
+    { "title": "Embrace the tranquility ", "badge": null, "thumb": "500x281" },
+    { "title": "GALAXIES: the evolution ", "badge": null, "thumb": "500x281" },
+    { "title": "Heavy Rain and Thunder S", "badge": null, "thumb": "500x281" },
+    { "title": "How Do Supermassive Blac", "badge": null, "thumb": "500x281" }
+  ],
+  "verdict": "N19 search-variant claim VERIFIED: the corner badge renders inside the 500x281 thumb at the 8px inset with the exact corner grammar; rows without durationMs carry no badge (the honest leave)"
+}
