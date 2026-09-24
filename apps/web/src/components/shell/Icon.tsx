@@ -47,7 +47,18 @@ export type IconName =
   | "sun"
   | "moon"
   | "keyboard"
-  | "info";
+  | "info"
+  | "more"
+  | "copy"
+  | "code"
+  | "embed"
+  | "messages"
+  | "whatsapp"
+  | "facebook"
+  | "xsocial"
+  | "reddit"
+  | "pinterest"
+  | "linkedin";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   home: (
@@ -215,6 +226,68 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
       <circle cx="12" cy="12" r="9" />
       <path d="M12 11v5.5" />
       <path d="M12 7.5h.01" />
+    </>
+  ),
+  // R28-B — the card kebab + the share panel's glyph set (simple stroke
+  // marks: the labels carry the targets' names — honest glyphs, never
+  // claimed brand marks).
+  more: (
+    <>
+      <circle cx="12" cy="5" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="19" r="1.4" fill="currentColor" stroke="none" />
+    </>
+  ),
+  copy: (
+    <>
+      <rect x="9" y="9" width="11" height="11" rx="2" />
+      <path d="M5 15H4.5A1.5 1.5 0 0 1 3 13.5v-9A1.5 1.5 0 0 1 4.5 3h9A1.5 1.5 0 0 1 15 4.5V5" />
+    </>
+  ),
+  code: <path d="m8.5 7-5 5 5 5m7-10 5 5-5 5" />,
+  embed: (
+    <>
+      <path d="m8.5 7-5 5 5 5m7-10 5 5-5 5" />
+      <path d="M13 5 11 19" />
+    </>
+  ),
+  messages: (
+    <>
+      <path d="M12 3.5c-4.8 0-8.5 3.1-8.5 7 0 2 1 3.8 2.7 5v3l3.1-1.6c.9.2 1.8.3 2.7.3 4.8 0 8.5-3.1 8.5-7s-3.7-6.7-8.5-6.7Z" />
+    </>
+  ),
+  whatsapp: (
+    <>
+      <path d="M12 3.5a8.4 8.4 0 0 0-7.2 12.8L3.5 20.5l4.3-1.2A8.4 8.4 0 1 0 12 3.5Z" />
+      <path d="M9 8.8c.3 2.6 3.6 5.9 6.2 6.2l.8-1.6-2-1.2-1 .8a6 6 0 0 1-2-2l.8-1-1.2-2-1.6.8Z" />
+    </>
+  ),
+  facebook: (
+    <>
+      <path d="M13.5 21v-8h2.7l.8-3.2h-3.5V7.8c0-1 .5-1.6 1.6-1.6h2V3.2h-2.7c-2.7 0-4.4 1.6-4.4 4.4v2.2H7.5V13h2.5v8h3.5Z" />
+    </>
+  ),
+  xsocial: <path d="M4 4h3.9l4.3 5.9L16.8 4H20l-6 7.3L20.5 20h-3.9l-4.6-6.3L7.2 20H4l6.3-7.6L4 4Z" />,
+  reddit: (
+    <>
+      <circle cx="12" cy="13" r="8" />
+      <circle cx="9" cy="12.5" r="0.6" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12.5" r="0.6" fill="currentColor" stroke="none" />
+      <path d="M12 5V3.2M12 3.2c1.1-.6 2.5-.4 3 .6" />
+      <circle cx="15.4" cy="3.6" r="1.1" />
+      <path d="M9.3 15.4c1.6 1.2 3.8 1.2 5.4 0" />
+    </>
+  ),
+  pinterest: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M10.5 20.5 12 14m-2.8-3.4c0-2 1.5-3.4 3.4-3.4 1.8 0 3.2 1.2 3.2 3 0 2.2-1.2 3.8-2.8 3.8-.9 0-1.5-.6-1.3-1.4" />
+    </>
+  ),
+  linkedin: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" />
+      <path d="M8 10.5V17M8 7.4v.1M12 17v-3.6c0-1.2.8-2.1 2-2.1s2 .9 2 2.1V17" />
     </>
   ),
 };

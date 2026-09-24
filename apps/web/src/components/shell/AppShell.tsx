@@ -264,6 +264,11 @@ export function AppShell({
               <RailLinks entries={RAIL_YOU} activeHref={activeHref} />
             </div>
             <div className="wfx-rail__divider" />
+            {/* R28-B — the install affordance lives in the rail now (the
+                N28 fix: no in-page floating install chrome; the REAL
+                deferred prompt stays one disclosure away, quiet-first).
+                Service mode only, exactly as the WFX-057 law keeps it. */}
+            {mode === "service" ? <InstallPrompt /> : null}
             <p className="wfx-rail__footnote">
               WebFlix — the Universal Entertainment OS, web adapter. Content arrives through
               connected sources; capability truth is always shown, never guessed.
@@ -304,7 +309,6 @@ export function AppShell({
       {mode === "service" ? (
         <>
           <UpdatePrompt enabled />
-          <InstallPrompt />
         </>
       ) : null}
     </div>

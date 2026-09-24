@@ -731,7 +731,10 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   }
 
   .wfx-rail .wfx-navlink[aria-current="page"] {
-    background: var(--wfx-bg-raised);
+    /* R28-B — the corpus chip-family overlay (rgba(255,255,255,0.1) dark /
+       rgba(0,0,0,0.05) light) — the active pill's own tone, not the
+       raised-surface token (the pixel-field fix). */
+    background: var(--wfx-bg-hover);
     font-weight: 500;
   }
 
@@ -2300,6 +2303,71 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   max-width: min(360px, calc(100vw - 2rem));
 }
 
+/* R28-B — the rail-anchored install region (the N28 fix): the entry and
+ * its disclosure sheet live INSIDE the rail's dark field — no in-page
+ * floating install chrome (YouTube never shows one). */
+.wfx-install {
+  position: static;
+  max-width: none;
+  padding: 0 0.75rem;
+}
+
+.wfx-install__row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.wfx-install__entry {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--wfx-text-dim);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-install__entry:hover,
+.wfx-install__entry:focus-visible {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+  outline: none;
+}
+
+.wfx-install__dismiss {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text-faint);
+  cursor: pointer;
+}
+
+.wfx-install__dismiss:hover {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+}
+
+.wfx-install__sheet .wfx-pwa-card {
+  margin-top: 0.5rem;
+  background: var(--wfx-menu);
+  box-shadow: none;
+}
+
 .wfx-pwa-region--update {
   top: calc(var(--wfx-topbar-h) + 0.75rem);
   bottom: auto;
@@ -2309,6 +2377,12 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   .wfx-pwa-region {
     /* never cover the mobile bottom nav (44px law) */
     bottom: calc(var(--wfx-bottomnav-h) + 0.75rem);
+  }
+
+  /* the rail-anchored install entry is drawer-scoped on mobile (the rail
+     is the guide drawer under 1280px — the entry rides inside it). */
+  .wfx-install {
+    padding: 0;
   }
 }
 
@@ -4606,62 +4680,282 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 }
 
 /* — The share control. */
+/*
+ * R28-B — THE UNIFIED SHARE PANEL (the corpus share-dialog.md): the
+ * 470x337 r12 dialog with the dialog shadow, the Share header + X, the
+ * scrollable 70x93 target tiles with arrows, the link field + the Copy
+ * pill (r20), the Start-at checkbox, and the snackbar toast.
+ */
 .wfx-share {
   position: relative;
   display: inline-flex;
 }
 
-.wfx-share__panel {
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-  z-index: 30;
-  min-width: 280px;
-  max-width: min(92vw, 340px);
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  border-radius: var(--wfx-radius);
-  border: none;
-  background: var(--wfx-menu);
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+.wfx-share__trigger {
+  gap: 0.4rem;
 }
 
-.wfx-share__row {
+.wfx-share__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  min-height: 40px;
-  padding: 0 0.6rem;
-  border-radius: var(--wfx-radius-sm);
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.wfx-share__panel {
+  width: 470px;
+  max-width: calc(100vw - 2rem);
+  height: 337px;
+  max-height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  border: none;
+  background: var(--wfx-menu);
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 24px 12px;
+  padding: 0 0 18px;
+  overflow: hidden;
+}
+
+.wfx-share__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 4px 24px;
+}
+
+.wfx-share__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--wfx-text);
+}
+
+.wfx-share__close {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+}
+
+.wfx-share__close:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-share__targets {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.wfx-share__track {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  padding: 0 4px;
+}
+
+.wfx-share__track::-webkit-scrollbar {
+  display: none;
+}
+
+.wfx-share__target {
+  flex: none;
+  width: 70px;
+  height: 93px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.wfx-share__target:hover,
+.wfx-share__target:focus-visible {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-share__targetglyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wfx-text);
+}
+
+.wfx-share__targetlabel {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-share__arrow {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  cursor: pointer;
+}
+
+.wfx-share__arrow:hover {
+  background: var(--wfx-surface-2);
+}
+
+.wfx-share__linkrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px 0;
+}
+
+.wfx-share__field {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  border: 1px solid var(--wfx-border);
+  border-radius: 8px;
+  background: var(--wfx-bg);
+  padding: 0 12px;
+  height: 40px;
+  align-items: center;
+}
+
+.wfx-share__field input {
+  width: 100%;
   border: none;
   background: transparent;
   color: var(--wfx-text);
   font: inherit;
-  font-size: 0.88rem;
-  text-decoration: none;
+  font-size: 14px;
+  font-weight: 400;
+  padding: 0;
+  outline: none;
+  text-overflow: ellipsis;
+}
+
+.wfx-share__copy {
+  flex: none;
+  width: 64px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid var(--wfx-border);
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
 }
 
-.wfx-share__row:hover,
-.wfx-share__row:focus-visible {
+.wfx-share__copy:hover,
+.wfx-share__copy:focus-visible {
   background: var(--wfx-bg-hover);
 }
 
-.wfx-share__link {
-  font-size: 0.72rem;
-  color: var(--wfx-text-faint);
+.wfx-share__startat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px 0;
+  font-size: 13px;
+  color: var(--wfx-text-dim);
+  cursor: pointer;
+}
+
+.wfx-share__startat input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--wfx-focus);
+}
+
+.wfx-share__embedview {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 24px 0;
+  min-height: 0;
+}
+
+.wfx-share__code {
+  flex: 1;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--wfx-border);
+  background: var(--wfx-bg);
+  color: var(--wfx-text-dim);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: pre-wrap;
   word-break: break-all;
+  overflow: auto;
 }
 
-.wfx-share__status {
-  font-size: 0.78rem;
-  color: var(--wfx-ok);
+.wfx-share__truth {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
 }
 
-.wfx-share__status--error {
-  color: var(--wfx-warn);
+.wfx-share__copyrow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wfx-share__linkbutton {
+  height: 40px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 20px;
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* The snackbar toast (the corpus's "Link copied to clipboard"). */
+.wfx-share__toast {
+  position: fixed;
+  left: 24px;
+  bottom: 24px;
+  z-index: 120;
+  margin: 0;
+  padding: 12px 20px;
+  border-radius: 8px;
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+  font: inherit;
+  font-size: 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
 /* — The watchlist save. */
@@ -4698,18 +4992,121 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   color: var(--wfx-warn);
 }
 
-/* — The cards' quiet action row + the preview mount. */
+/* — R28-B: THE CARD KEBAB (the corpus card grammar — the 40×40 "More
+   actions" button + the raised menu; replaces the always-visible quiet
+   action row C's pixel survey measured as the raised-gray field). */
 .wfx-cardwrap {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
 }
 
-.wfx-card__actions {
+.wfx-kebab {
+  position: relative;
+  /* The corpus placement: bottom-right of the card's metadata area. */
+  margin-left: auto;
+}
+
+.wfx-kebab__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text-dim);
+  cursor: pointer;
+  transition: background var(--wfx-transition);
+}
+
+.wfx-kebab__btn:hover,
+.wfx-kebab__btn:focus-visible {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+}
+
+.wfx-kebab__btn:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+.wfx-kebab__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  z-index: 50;
+  min-width: 220px;
+  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  background: var(--wfx-menu);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.4);
+}
+
+.wfx-kebab__menuwrap {
+  display: contents;
+}
+
+.wfx-kebab__share {
+  display: contents;
+}
+
+.wfx-kebab__item {
   display: flex;
   align-items: center;
+  gap: 14px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wfx-kebab__item:hover,
+.wfx-kebab__item:focus-visible {
+  background: var(--wfx-bg-hover);
+  outline: none;
+}
+
+.wfx-sharemenu__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+
+.wfx-sharemenu__item:hover,
+.wfx-sharemenu__item:focus-visible {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-sharemenu__item svg {
+  flex: none;
+}
+
+.wfx-card__actionwrap {
+  display: inline-flex;
+  align-items: center;
   gap: 0.35rem;
-  flex-wrap: wrap;
 }
 
 .wfx-card__actionbtn {
@@ -4736,20 +5133,6 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 .wfx-card__actionbtn:focus-visible {
   outline: 2px solid var(--wfx-focus);
   outline-offset: 2px;
-}
-
-.wfx-card__actionlabel {
-  font-weight: 600;
-}
-
-/* R28-B — the card's quiet DETAILS link (the /item deep surface's entry:
- * the card's primary action is the player now — one-click play). */
-a.wfx-card__actionlink {
-  text-decoration: none;
-}
-
-a.wfx-card__actionlink:visited {
-  color: var(--wfx-text-dim);
 }
 
 .wfx-card__actionstatus {
@@ -5051,7 +5434,8 @@ a.wfx-card__actionlink:visited {
   .wfx-chrome__btn,
   .wfx-card__actionbtn,
   .wfx-search__suggestion,
-  .wfx-share__row {
+  .wfx-share__target,
+  .wfx-hoverpreview {
     transition: none;
   }
 }

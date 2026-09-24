@@ -749,6 +749,8 @@ export function PlayerSurface({
                   canonicalHref={shareHref}
                   title={view.title}
                   sourceId={view.connectorId}
+                  connectorId={view.connectorId}
+                  externalRef={view.externalRef}
                   {...(view.surfaceUrl !== null ? { sourceUrl: view.surfaceUrl } : {})}
                 />
                 <WatchStateReporter
