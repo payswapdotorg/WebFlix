@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) Yes, the layout follows the standard YouTube structure (top bar, left rail, chip filter bar, and a grid of video cards).\n2) No, there is no large hero or settings panel between the chips and the grid; only a small \"For you\" text header is present.\n3) Yes, the cards display real photographic thumbnails of nature and people.\n4) Duration/type info appears as a corner badge overlaid on the bottom-right of the thumbnail.\n5) Yes: The branding is \"WebFlix\" instead of YouTube; there is an \"Install WebFlix\" PWA prompt in the bottom right; and the action buttons include \"Queue\" and \"Share\" directly on the card face.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790217069,
+  "id": "202609241031020e99b417c656448d",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609241031020e99b417c656448d",
+  "usage": {
+    "completion_tokens": 147,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1804,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1951
+  }
+}

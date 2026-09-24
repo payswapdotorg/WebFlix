@@ -123,6 +123,7 @@ cites A's sheet + measured value. Placeholder until first fetch lands:
 | N25 | Player keyboard transport | **corpus: A@25ba5e7 FEATURE-INVENTORY.md** — k space j l m f t i arrows 0-9 c (labels carry hints, e.g. `Play (k)`) | WebFlix player: `Play (k)` + `Fullscreen (f)` + `Theater view (t)` labels exist — key handling needs re-verify (R27 interaction policy carried the vocabulary) | PAR | OPEN | Partial parity exists (labels); verify the full key set works. |
 | N26 | Toast/snackbar family | **corpus: A@25ba5e7 FEATURE-INVENTORY.md** — `yt-snackbar` transient feedback ~4s (R27) | WebFlix has a toast surface (R27 grammar) — Copy action currently gives no "copied" toast | PAR | OPEN | O4's Copy→toast is the concrete case. |
 | N27 | Shorts vertical shell | **corpus: A@25ba5e7 shorts-anatomy.md** — `/shorts/<id>` route; reel renderer + #shorts-player; shell controls Play CTA / Close / More / playlist / watch-later / nav arrows; action rail (like/dislike/comments-count/share/more) + audio toggle + inline title/@channel/Subscribe — CORPUS-PENDING pixels | WebFlix shorts surface: stage + speed menu + swipe hints + "1 / 3" counter; no action rail, no audio toggle | PAR | OPEN | Shell grammar partially there; the action rail + audio toggle are the parity deltas. |
+| N28 | PWA install prompt on home | YouTube: no install prompt on the home field (app-install lives in the 3-dot browser chrome, never in-page) | **C@1d32ed8 (VLM sighting, service home)**: "Install WebFlix" PWA prompt bottom-right of the home viewport — in-page install chrome YouTube never shows. `b1-1d32ed8-vlm-home.json` | COS | OPEN | New row (O7 "on and on"): real WebFlix capability honestly exposed, but in-page placement is operator-visible non-YouTube chrome. B candidate: move to settings/menu surface. |
 
 ---
 
@@ -130,10 +131,10 @@ cites A's sheet + measured value. Placeholder until first fetch lands:
 
 | measure | count |
 |---|---|
-|  Total rows | 7 (operator) + 21 (R27 divergences) + 5 (lead follow-ups) + 7 (lead recon reproductions) + 27 (corpus rows) = **67** |
+|  Total rows | 7 (operator) + 21 (R27 divergences) + 5 (lead follow-ups) + 7 (lead recon reproductions) + 28 (corpus + C-found rows) = **68** (N28 added 2026-09-24) |
 | OPERATOR-BLOCKING (OB) | **22** (machine-counted: class-cell census; corrects the seed's "20" — the seed counter evidently deduped the L-mirror rows; this count is reproducible: O1–O7 · D9 · D15 · L1–L7 · N5 · N6 · N7 · N8 · N11 · N15) |
 | PARITY (PAR) | **26** |
-| COSMETIC (COS) | **5** |
+| COSMETIC (COS) | **6** (N28 added) |
 | HONEST-DIVERGENCE (HD) | **10** |
 | class `—` (closed-by-corpus, seed rows) | **4** (D5, D18, D20, F1) |
 | WONT-FIX honest | **7** (machine-counted: D1, D2, D7, D10, D12, D19, D21 — corrects the seed's "9") |
