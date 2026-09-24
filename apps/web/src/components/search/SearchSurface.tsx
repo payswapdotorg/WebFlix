@@ -20,7 +20,9 @@ import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState } from "@/components/ui/StateViews";
 import { formatPosition } from "@/components/ui/format";
 import { playerHref } from "@/app/routing";
-import { Icon } from "@/components/shell/Icon";
+// R29-B — the REAL filters dialog (N23): the corpus 696px paper dialog,
+// honestly wired (only the filters with a real truth behind them).
+import { SearchFilters } from "@/components/search/SearchFilters";
 
 /** The search surface. */
 export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Element {
@@ -50,35 +52,82 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
     );
   }
   if (view.cards.length === 0) {
+    // R29-B — the FILTERED empty state: the query HAD real matches, the
+    // applied filter hid them all (a different truth than no matches —
+    // named honestly, never a fake "no results").
+    const filtered =
+      view.filters.type !== undefined || view.filters.duration !== undefined;
     return (
       <div data-wfx-surface="search" data-wfx-search-state="no-results">
         <h1 className="wfx-page-title">Search</h1>
         <p className="wfx-page-subtitle" data-wfx-search-query>
           Results for “{view.query}”
         </p>
-        <EmptyState
-          title="No title matches"
-          detail={`Nothing in your sources matches “${view.query}” by name — WebFlix does not fabricate results. Matches by meaning (below) may still find what you mean.`}
-        />
-        <SemanticResults semantic={view.semantic} query={view.query} />
+        <SearchFilters query={view.query} filters={view.filters} typeCounts={view.typeCounts} />
+        {filtered ? (
+          <EmptyState
+            title="Nothing matches this filter"
+            detail={`Your search had real matches, but the applied filter hides them all — clear the filter to see every result. WebFlix does not fabricate results.`}
+          />
+        ) : (
+          <>
+            <EmptyState
+              title="No title matches"
+              detail={`Nothing in your sources matches “${view.query}” by name — WebFlix does not fabricate results. Matches by meaning (below) may still find what you mean.`}
+            />
+            <SemanticResults semantic={view.semantic} query={view.query} />
+          </>
+        )}
       </div>
     );
   }
+  const videoCount = view.typeCounts.get("video") ?? 0;
+  const shortCount = view.typeCounts.get("short") ?? 0;
   return (
     <div data-wfx-surface="search" data-wfx-search-state="results">
       <h1 className="wfx-page-title">Search</h1>
       <p className="wfx-page-subtitle" data-wfx-search-query>
         {view.cards.length} result{view.cards.length === 1 ? "" : "s"} for “{view.query}”
+        {view.filters.type !== undefined || view.filters.duration !== undefined ? " (filtered)" : ""}
       </p>
-      {/* R27-W2 — the FILTERS row (the corpus: the `Filters` pill
-          right-aligned above the results — the search surface's own
-          control row, honestly naming what filters are REAL here). */}
-      <div className="wfx-searchbar">
-        <button type="button" className="wfx-filterspill" data-wfx-search-filters aria-expanded="false">
-          <Icon name="settings" size={16} />
-          Filters
-        </button>
+      {/* R29-B — THE CONTEXTUAL CHIPS (N23): the corpus chip bar under the
+          header — every chip a REAL type filter over the result set (the
+          chips render only the types actually present; the corpus's
+          Unwatched/Watched/Recently-uploaded/Live chips have no real
+          backing on this host and are honestly absent). */}
+      <div className="wfx-chipbar" data-wfx-search-chips>
+        <div className="wfx-chipbar__track">
+          <a
+            className={`wfx-chip${view.filters.type === undefined ? " wfx-chip--active" : ""}`}
+            href={`/search?q=${encodeURIComponent(view.query)}`}
+            data-wfx-search-chip="all"
+          >
+            All
+          </a>
+          {videoCount > 0 ? (
+            <a
+              className={`wfx-chip${view.filters.type === "video" ? " wfx-chip--active" : ""}`}
+              href={`/search?q=${encodeURIComponent(view.query)}&type=video`}
+              data-wfx-search-chip="video"
+            >
+              Videos
+            </a>
+          ) : null}
+          {shortCount > 0 ? (
+            <a
+              className={`wfx-chip${view.filters.type === "short" ? " wfx-chip--active" : ""}`}
+              href={`/search?q=${encodeURIComponent(view.query)}&type=short`}
+              data-wfx-search-chip="short"
+            >
+              Shorts
+            </a>
+          ) : null}
+        </div>
       </div>
+      {/* R29-B — the REAL Filters control (the corpus 696px dialog — the
+          honest TYPE/DURATION groups; the unsupported groups stay
+          honestly absent, named inside). */}
+      <SearchFilters query={view.query} filters={view.filters} typeCounts={view.typeCounts} />
       {/* R26-W2 — the honest token-composition disclosure (the
           literal-phrase recovery's own sentence — token matches are never
           presented as phrase matches). */}

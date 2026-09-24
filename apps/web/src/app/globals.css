@@ -1418,15 +1418,17 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 }
 
 /* The search results list: the captured row grammar — ONE column of
- * result rows, capped at YouTube's own search column width. */
+ * result rows, capped at YouTube's own search column width (R29-B: the
+ * corpus row is 1152w @1440). */
 [data-wfx-search-results].wfx-grid {
   grid-template-columns: minmax(0, 1fr);
-  max-width: 1096px;
+  max-width: 1152px;
   gap: 16px;
 }
 
-/* The RESULT ROW (the captured card grammar): thumb 360×202 left, right
- * column title 18/400/26 2-line clamp, channel, meta, snippet, badges. */
+/* The RESULT ROW (the R28 corpus grammar): thumb 500×281 left (r12),
+ * right column title 18/400/26 2-line clamp, channel (24 avatar + 12/400),
+ * meta, snippet, badges. */
 .wfx-result {
   display: flex;
   flex-direction: column;
@@ -1448,13 +1450,18 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 @media (min-width: 700px) {
   .wfx-result {
     flex-direction: row;
+    gap: 16px;
   }
 
+  /* R29-B (N3) — the corpus measure @1440: the 500×281 large thumbnail
+     (a#thumbnail r12; the img object-fit cover inside). The max-width
+     keeps narrower viewports honest (the thumb never eats the text). */
   .wfx-result__thumb {
-    width: 360px;
+    width: 500px;
     max-width: 45%;
     aspect-ratio: auto;
-    height: 202px;
+    height: 281px;
+    border-radius: var(--wfx-radius);
   }
 }
 
@@ -1480,12 +1487,30 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   margin: 4px 0 0;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 8px;
+  /* R29-B (N3) — the corpus channel row: 12px/400 #606060 (the dim
+     token) + the 24×24 avatar. */
+  font-size: 12px;
   font-weight: 400;
-  line-height: 20px;
+  line-height: 18px;
   color: var(--wfx-text-dim);
   transition: color var(--wfx-transition);
+}
+
+/* The honest monogram avatar (24×24 circular — this host's sources
+ * carry no channel photos, never a fabricated photo). */
+.wfx-result__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--wfx-surface-2);
+  color: var(--wfx-text);
+  font-size: 12px;
+  font-weight: 700;
+  flex: none;
 }
 
 .wfx-result__channel:hover {
@@ -1545,6 +1570,115 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 
 .wfx-filterspill:hover {
   background: var(--wfx-surface-2);
+}
+
+/* R29-B — THE SEARCH FILTERS DIALOG (N23, the corpus search-anatomy.md):
+ * the 696px paper dialog, r12, the corpus dialog shadow
+ * `rgba(0,0,0,0.15) 0 0 24px 12px` (the share panel's own family), the
+ * "Search filters" title + the X close, the groups in YouTube's two-column
+ * layout with the option rows (14px/400, the active row raised). */
+.wfx-filtersdialog__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.wfx-filtersdialog {
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  border-radius: 12px;
+  border: none;
+  background: var(--wfx-menu);
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 24px 12px;
+  color: var(--wfx-text);
+  padding: 0 0 12px;
+}
+
+.wfx-filtersdialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 24px 8px;
+}
+
+.wfx-filtersdialog__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.wfx-filtersdialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+}
+
+.wfx-filtersdialog__close:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-filtersdialog__groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 24px;
+  padding: 0 24px;
+}
+
+@media (max-width: 640px) {
+  .wfx-filtersdialog__groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.wfx-filtersdialog__grouphead {
+  margin: 8px 0 4px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-filtersdialog__option {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--wfx-text);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wfx-filtersdialog__option:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-filtersdialog__option--active {
+  background: var(--wfx-bg-hover);
+  font-weight: 500;
+}
+
+.wfx-filtersdialog__absence {
+  margin: 12px 24px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
 }
 
 /* ---------------------------------------------------------------------------

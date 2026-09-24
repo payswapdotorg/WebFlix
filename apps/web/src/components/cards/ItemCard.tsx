@@ -129,7 +129,13 @@ export function ItemCard({
                 <span data-wfx-card-availability>{availability}</span>
               ) : null}
             </p>
+            {/* R29-B (N3) — the corpus channel row: the 24×24 avatar (the
+                honest monogram — this host's sources carry no channel
+                photos) + the 12px/400 channel name. */}
             <p className="wfx-result__channel">
+              <span className="wfx-result__avatar" aria-hidden="true">
+                {card.connectorId.length > 0 ? card.connectorId[0]!.toUpperCase() : "W"}
+              </span>
               {linked && card.connectorId.length > 0 ? (
                 <span data-wfx-card-source>From {card.connectorId}</span>
               ) : (

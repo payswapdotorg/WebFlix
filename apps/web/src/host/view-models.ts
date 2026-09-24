@@ -544,6 +544,28 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
 // ---------------------------------------------------------------------------
 
 /** The search view model (the typed query + results with statuses). */
+/**
+ * R29-B — THE SEARCH FILTERS (N23): the honestly wireable vocabulary.
+ * TYPE derives from the canonical item type; DURATION from the real
+ * durationMs the results carry. The corpus's other groups (UPLOAD DATE /
+ * FEATURES / PRIORITIZE) have NO real backing on this host's sources and
+ * are honestly ABSENT — never a dead imitation (the frozen law).
+ */
+export interface SearchFilterSelection {
+  readonly type?: "video" | "short";
+  readonly duration?: "under-3" | "3-20" | "over-20";
+}
+
+/** One duration bucket's honest test over a card's real duration. */
+export function durationBucketOf(
+  durationMs: number | undefined,
+): "under-3" | "3-20" | "over-20" | null {
+  if (durationMs === undefined) return null; // no duration ⇒ no bucket claim
+  if (durationMs < 180_000) return "under-3";
+  if (durationMs <= 1_200_000) return "3-20";
+  return "over-20";
+}
+
 export interface SearchView {
   readonly mode: "fixtures" | "service";
   readonly query: string;
@@ -567,6 +589,10 @@ export interface SearchView {
   readonly semantic: SemanticSearchView;
   /** R24-W2 \u2014 the cards' action context (queue/save/share + the preview policy). */
   readonly cardActions: CardActionContext;
+  /** R29-B — the APPLIED filters (the URL-driven state, verbatim). */
+  readonly filters: SearchFilterSelection;
+  /** R29-B — the UNFILTERED per-type counts (the contextual chips' truth). */
+  readonly typeCounts: ReadonlyMap<string, number>;
 }
 
 /** The compact availability summary of one result card (R21-E, pure). */
@@ -636,7 +662,12 @@ function mergeTokenHits(
 }
 
 /** Load the search view for one query (canonical-joined results). */
-export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Promise<SearchView> {
+export async function loadSearchView(
+  host: WebRuntimeHost,
+  rawQuery: string,
+  /** R29-B — the URL-driven filter selection (the honestly wireable set). */
+  selection: SearchFilterSelection = {},
+): Promise<SearchView> {
   const query = rawQuery.trim();
   // The empty query is NOT a search (the state machine's invalid-target
   // law): the typed empty state answers WITHOUT asking the runtime —
@@ -658,6 +689,8 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
         meaningSearchAvailable: false,
       },
       cardActions: cardActionContextOf(host),
+      filters: {},
+      typeCounts: new Map<string, number>(),
     };
   }
   // R23-H: the semantic search runs alongside the title search (search
@@ -714,15 +747,33 @@ export async function loadSearchView(host: WebRuntimeHost, rawQuery: string): Pr
       availability.set(card.itemId, "Playback options on details");
     }
   }
+  // R29-B — THE FILTERS (N23): a presentation filter over the REAL result
+  // set (never a second search claim). The per-type counts derive from the
+  // UNFILTERED cards (the contextual chips' truth); the duration bucket
+  // derives from each card's real durationMs (no duration ⇒ no bucket
+  // claim — the item honestly leaves the filtered set).
+  const typeCounts = new Map<string, number>();
+  for (const card of cards) {
+    typeCounts.set(card.canonicalType, (typeCounts.get(card.canonicalType) ?? 0) + 1);
+  }
+  const filtered = cards.filter((card) => {
+    if (selection.type !== undefined && card.canonicalType !== selection.type) return false;
+    if (selection.duration !== undefined && durationBucketOf(card.durationMs) !== selection.duration) {
+      return false;
+    }
+    return true;
+  });
   return {
     mode: host.mode,
     query,
     status: statusView(model.status),
-    cards,
+    cards: filtered,
     resultsNote,
     availability,
     semantic,
     cardActions: cardActionContextOf(host),
+    filters: selection,
+    typeCounts,
   };
 }
 
