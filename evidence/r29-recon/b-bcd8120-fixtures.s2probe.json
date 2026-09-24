@@ -1,0 +1,210 @@
+{
+  "tag": "b-bcd8120-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T22:36:51.871Z",
+  "checks": {
+    "query": {
+      "query": "neon",
+      "rows": 1
+    },
+    "rowAnatomy": {
+      "avatar": "24x24",
+      "avatarRadius": "50%",
+      "avatarText": "F",
+      "channelFont": "12px/400",
+      "found": true,
+      "grid": {
+        "cols": "none",
+        "display": "flex",
+        "gap": "6.4px",
+        "gridBox": 1152,
+        "maxWidth": "none"
+      },
+      "meta": {
+        "color": "rgb(15, 15, 15)",
+        "font": "14px/400/20px"
+      },
+      "row": "1152x281",
+      "rowCount": 1,
+      "thumb": "500x281",
+      "thumbOverflow": "hidden",
+      "thumbRadius": "12px",
+      "title": {
+        "clamp": "2",
+        "display": "flow-root",
+        "font": "18px/400/26px",
+        "overflow": "hidden"
+      }
+    },
+    "chips": {
+      "chips": [
+        {
+          "active": true,
+          "href": "/search?q=neon",
+          "text": "All"
+        },
+        {
+          "active": false,
+          "href": "/search?q=neon&type=short",
+          "text": "Shorts"
+        }
+      ],
+      "unbackedChips": []
+    },
+    "filtersButton": {
+      "box": "87x36",
+      "expanded": "false",
+      "found": true
+    },
+    "filtersDialog": {
+      "absenceNamesGroups": [
+        "UPLOAD DATE"
+      ],
+      "absenceNote": "Only filters with a real truth behind them appear here — this host’s sources carry no upload dates, feature flags, or popularity signals to filter by.",
+      "bg": "rgb(255, 255, 255)",
+      "box": "696x308",
+      "checkboxCount": 0,
+      "closeButton": "40x40",
+      "found": true,
+      "groupHeadings": [
+        "TYPE",
+        "DURATION"
+      ],
+      "groups": [
+        "type",
+        "duration"
+      ],
+      "options": [
+        {
+          "active": false,
+          "href": "/search?q=neon",
+          "text": "All",
+          "wfx": null
+        },
+        {
+          "active": false,
+          "href": "/search?q=neon&type=short",
+          "text": "Shorts",
+          "wfx": null
+        },
+        {
+          "active": false,
+          "href": "/search?q=neon",
+          "text": "Any length",
+          "wfx": null
+        },
+        {
+          "active": false,
+          "href": "/search?q=neon&duration=under-3",
+          "text": "Under 3 minutes",
+          "wfx": null
+        },
+        {
+          "active": false,
+          "href": "/search?q=neon&duration=3-20",
+          "text": "3 – 20 minutes",
+          "wfx": null
+        },
+        {
+          "active": false,
+          "href": "/search?q=neon&duration=over-20",
+          "text": "Over 20 minutes",
+          "wfx": null
+        }
+      ],
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 24px 12px",
+      "title": "Search filters"
+    },
+    "dialogCloses": true,
+    "urlState": {
+      "all": {
+        "chips": [
+          "All",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": false,
+        "rows": 1,
+        "subtitle": "1 result for “neon”"
+      },
+      "typeVideo": {
+        "chips": [],
+        "emptyFiltered": true,
+        "emptyText": "Nothing matches this filter",
+        "filtered": false,
+        "rows": 0,
+        "subtitle": "Results for “neon”"
+      },
+      "typeShort": {
+        "chips": [
+          "All",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": true,
+        "rows": 1,
+        "subtitle": "1 result for “neon” (filtered)"
+      },
+      "typeBogus": {
+        "chips": [
+          "All",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": false,
+        "rows": 1,
+        "subtitle": "1 result for “neon”"
+      },
+      "durUnder3": {
+        "chips": [
+          "All",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": true,
+        "rows": 1,
+        "subtitle": "1 result for “neon” (filtered)"
+      },
+      "dur3to20": {
+        "chips": [],
+        "emptyFiltered": true,
+        "emptyText": "Nothing matches this filter",
+        "filtered": false,
+        "rows": 0,
+        "subtitle": "Results for “neon”"
+      },
+      "durOver20": {
+        "chips": [],
+        "emptyFiltered": true,
+        "emptyText": "Nothing matches this filter",
+        "filtered": false,
+        "rows": 0,
+        "subtitle": "Results for “neon”"
+      },
+      "durBogus": {
+        "chips": [
+          "All",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": false,
+        "rows": 1,
+        "subtitle": "1 result for “neon”"
+      }
+    },
+    "noMatchesState": {
+      "bodyHead": "Search\n\nResults for “zzzznotathing”\n\nFilters\n\nNo title matches\n\nNothing in your sources matches “zzzznotathing” by name — WebFlix does not fabricate results. Ma",
+      "nothingMatches": false,
+      "rows": 0
+    },
+    "wiring": {
+      "target": null
+    }
+  }
+}

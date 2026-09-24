@@ -395,6 +395,15 @@ for (const key of ["m", "k", "t", "i", "f", "c", "j", "l", "0"]) {
   if (key === "t") { await ab("press", "t"); await sleep(600); }
   if (key === "m") { await ab("press", "m"); await sleep(400); }
   if (key === "f") { await ab("press", "Escape"); await sleep(500); }
+  // R29 instrument adaptation (post stage-3): "i" now docks the playback
+  // AND navigates to the browse surface — snapshot the post-nav state, then
+  // clear the dock + return to the watch surface so the remaining keys and
+  // the mode checks below stay on the player surface (independence law).
+  if (key === "i") {
+    await evalJS(`(() => { try { sessionStorage.removeItem('wfx-miniplayer'); } catch {} return 'cleared'; })()`);
+    await open(watchUrl);
+    await sleep(1600);
+  }
 }
 report.checks.keyboard.postRevert = await snapAfterKey();
 await shot("watch-keyboard-after");
@@ -451,6 +460,11 @@ if (report.checks.miniplayer?.control) {
       floatingBox: (() => { const f = document.querySelector('[class*=miniplayer]'); if (!f) return null; const b = f.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; })(),
     }))()`);
     await shot("miniplayer-persistence");
+    // R29 instrument adaptation (post stage-3): close the dock + clear the
+    // entry so the home-field pixel survey below measures the FIELD, never
+    // the dock's dark pixels (independence law).
+    await evalJS(`(() => { try { sessionStorage.removeItem('wfx-miniplayer'); } catch {} const c = document.querySelector('[data-wfx-miniplayer-close]'); if (c) c.click(); return 'cleaned'; })()`);
+    await sleep(700);
   }
 }
 
