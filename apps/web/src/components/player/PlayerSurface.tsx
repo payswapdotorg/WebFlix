@@ -43,6 +43,9 @@ import { EmbedStage } from "@/components/player/EmbedStage";
 import { UpNextRail, type UpNextCard } from "@/components/player/UpNextRail";
 import { ShareControl } from "@/components/player/ShareControl";
 import { WatchlistSave } from "@/components/player/WatchlistSave";
+// R28-B — the comments section (the operator's #3 — the corpus anatomy
+// on WebFlix's own honest local per-user transport).
+import { CommentsSection } from "@/components/comments/CommentsSection";
 import { WatchStateReporter } from "@/components/player/WatchStateReporter";
 import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
 import { PlaybackTelemetryObserver } from "@/components/player/PlaybackTelemetryObserver";
@@ -509,9 +512,12 @@ function Stage({ view }: { readonly view: PlayerShellView }): JSX.Element {
 export function PlayerSurface({
   view,
   enrichments,
+  session,
 }: {
   readonly view: PlayerShellView;
   readonly enrichments: EnrichmentInput;
+  /** R28-B — the session's sign-in truth (the comments composer's gate). */
+  readonly session?: { readonly signedIn: boolean; readonly profileName?: string };
 }): JSX.Element {
   const webflixOwnsStage =
     view.torrent !== null && view.torrent.rungKind === "satisfies-browser-rung";
@@ -803,6 +809,18 @@ export function PlayerSurface({
                 ) : null}
               </div>
             </details>
+            {/* R28-B — THE COMMENTS SECTION (the operator's #3, per the
+                watch anatomy: description → comments — the corpus row
+                grammar on WebFlix's own honest local per-user transport;
+                the anonymous composer gate mirrors the corpus's logged-out
+                truth: clicking never mounts the editor, the sign-in path
+                shows instead). */}
+            <CommentsSection
+              itemId={view.itemId}
+              title={view.title}
+              signedIn={session?.signedIn === true}
+              {...(session?.profileName !== undefined ? { profileName: session.profileName } : {})}
+            />
             {/* R21-E — the player's capability surfaces: the switch row (the
                 active realization understandable + the alternates), the
                 session-scoped feedback controls, and the engineering truth

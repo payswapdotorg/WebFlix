@@ -16,6 +16,8 @@ import { EmptyState } from "@/components/ui/StateViews";
 import { getWebRuntimeHost } from "@/host/web-host";
 import { canonicalIdFor } from "@/host/web-host";
 import { loadPlayerEnrichments, loadPlayerViewShell } from "@/host/view-models";
+// R28-B — the page-level session truth (the comments composer's gate).
+import { readRequestSessionView } from "@/host/request-session-view";
 
 export const dynamic = "force-dynamic";
 
@@ -113,7 +115,11 @@ export default async function PlayerPage({
 
   return (
     <AppShell mode={host.mode} session={host.session.state}>
-      <PlayerSurface view={view} enrichments={enrichments} />
+      <PlayerSurface
+        view={view}
+        enrichments={enrichments}
+        session={await readRequestSessionView(host.config)}
+      />
     </AppShell>
   );
 }
