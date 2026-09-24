@@ -12,16 +12,17 @@
 #                run from /home/z/webflix — the instrument lives on C's lane)
 #
 # Usage:
-#   bun evidence/r28-recon/verify-round.sh <sha> <tag> [evidence-hook.sh]
-#     <sha>             B's lane head to verify (fetched from wfx/r28/web)
-#     <tag>             report tag -> verifications/<tag>.{report,corpus}.json
-#     [evidence-hook]   optional bash file sourced while the server is up
-#                       (env: BASE, TAG) — screenshots & feature-specific evals
+#   bash evidence/r28-recon/verify-round.sh <sha> <tag> [boot-mode]
+#     <sha>          B's lane head to verify (fetched from wfx/r28/web)
+#     <tag>          report tag -> verifications/<tag>.{report,corpus,capture}.json + PNGs
+#     [boot-mode]    fixtures (default; C's baseline config, apples-to-apples)
+#                    service   (WFX_API_BASE -> production API; the operator-
+#                    representative boot B uses — real providers, autoplay possible)
 #
 set -u
-SHA="${1:?usage: verify-round.sh <sha> <tag> [evidence-hook]}"
-TAG="${2:?usage: verify-round.sh <sha> <tag> [evidence-hook]}"
-HOOK="${3:-}"
+SHA="${1:?usage: verify-round.sh <sha> <tag> [boot-mode]}"
+TAG="${2:?usage: verify-round.sh <sha> <tag> [boot-mode]}"
+MODE="${3:-fixtures}"
 REPO=/home/z/webflix
 WT=/home/z/webflix-b
 PORT=3101
@@ -41,8 +42,13 @@ git worktree add "$WT" "$SHA" >/dev/null 2>&1 || { echo "FAIL: worktree add $SHA
 # 2. install (bun cache makes this seconds)
 ( cd "$WT" && bun install --frozen-lockfile >/dev/null 2>&1 ) || { echo "FAIL: bun install"; exit 1; }
 
-# 3. boot the subject (fixtures dev boot, same as baseline)
-( cd "$WT/apps/web" && WFX_DEV_FIXTURES=1 NODE_OPTIONS=--max-old-space-size=1536 \
+# 3. boot the subject
+if [ "$MODE" = "service" ]; then
+  BOOTENV=(WFX_API_BASE=https://webflix-api.vercel.app)
+else
+  BOOTENV=(WFX_DEV_FIXTURES=1)
+fi
+( cd "$WT/apps/web" && env "${BOOTENV[@]}" NODE_OPTIONS=--max-old-space-size=1536 \
     ./node_modules/.bin/next dev -p $PORT > /home/z/.r28c/b-dev.log 2>&1 \
     & echo $! > /home/z/.r28c/b-server.pid )
 BOOTED=""
@@ -51,7 +57,7 @@ for i in $(seq 1 90); do
   sleep 1
 done
 [ -n "$BOOTED" ] || { echo "FAIL: server did not boot (see /home/z/.r28c/b-dev.log)"; kill $(cat /home/z/.r28c/b-server.pid) 2>/dev/null; exit 1; }
-echo "SUBJECT BOOTED: $SHA @ $BASE (${i}s)"
+echo "SUBJECT BOOTED: $SHA @ $BASE (${i}s, mode=$MODE)"
 
 export AGENT_BROWSER_SESSION="r28c-verify"
 

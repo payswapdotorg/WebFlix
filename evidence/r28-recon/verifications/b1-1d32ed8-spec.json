@@ -1,0 +1,74 @@
+{
+  "tag": "b1-1d32ed8",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T02:26:13.037Z",
+  "checks": {
+    "card": {
+      "href": "/player?id=wfxitm_15HG8T8578B3F0DFXZAZ5F99JK&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short"
+    },
+    "playerIframe": {
+      "autoplayParam": true,
+      "iframes": [
+        {
+          "box": "724x407",
+          "src": "https://www.youtube-nocookie.com/embed/3uyGhtARP4M?enablejsapi=1&autoplay=1&mute=1"
+        }
+      ],
+      "muteParam": true,
+      "playControls": [
+        "Play (k)",
+        "Mute (m)",
+        "Fullscreen (f)",
+        "Theater view (t)"
+      ],
+      "unmuteAffordances": [
+        "Sound off — tap to unmute",
+        "Mute (m)"
+      ]
+    },
+    "playerBelow": {
+      "actionRow": [
+        "save 1 hour rainy day in airport ✈️ | cozy lofi for relax, study & sleep #lofirainy #1hourlofi to your watchlist",
+        "save to a playlist"
+      ],
+      "comments": 0,
+      "descriptionPresent": false
+    },
+    "chips": {
+      "active": {
+        "bg": "rgb(241, 241, 241)",
+        "color": "rgb(15, 15, 15)",
+        "h": 32
+      },
+      "count": 2,
+      "found": true,
+      "inactive": {
+        "bg": "rgb(39, 39, 39)",
+        "color": "rgb(241, 241, 241)"
+      },
+      "labels": [
+        "All",
+        "short"
+      ]
+    },
+    "durationPill": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "box": "49x43",
+      "color": "rgb(241, 241, 241)",
+      "font": "14px/400",
+      "found": true,
+      "pad": "0px",
+      "radius": "0px",
+      "text": "video10h 0m"
+    },
+    "cardTitle": {
+      "font": "Roboto, Arial, Helvetica, sans-serif",
+      "found": true,
+      "lineClamp": "2",
+      "size": "16px",
+      "text": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lo",
+      "titleH": 44,
+      "weight": "500"
+    }
+  }
+}
