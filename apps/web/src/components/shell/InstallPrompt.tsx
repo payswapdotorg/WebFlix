@@ -29,6 +29,7 @@
 
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 
+import { Icon } from "./Icon";
 import {
   attachInstallListeners,
   detectIOSUserAgent,
@@ -63,12 +64,12 @@ const INITIAL_STATE: InstallUiState = {
   dismissed: false,
   installed: false,
 };
-
 /** How long the `appinstalled` confirmation stays visible before hiding. */
 const INSTALLED_CONFIRM_MS = 8000;
 
 export function InstallPrompt(): JSX.Element {
   const [state, setState] = useState<InstallUiState>(INITIAL_STATE);
+  const [expanded, setExpanded] = useState(false);
   const promptEventRef = useRef<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
@@ -147,10 +148,51 @@ export function InstallPrompt(): JSX.Element {
   }, []);
 
   return (
-    <div className="wfx-pwa-region" aria-live="polite" data-wfx-install>
-      {phase === "offer" ? <InstallOfferCard onInstall={onInstall} onDismiss={onDismiss} /> : null}
-      {phase === "instructions" ? <IosInstructionsCard onDismiss={onDismiss} /> : null}
-      {phase === "installed" ? <InstalledCard /> : null}
+    <div className="wfx-pwa-region wfx-install" aria-live="polite" data-wfx-install>
+      {/* R28-B — the quiet rail entry (the N28 fix: the in-page floating
+          install card is chrome YouTube never shows; the REAL deferred
+          prompt stays one click away, anchored to the rail's own grammar).
+          The entry renders only when a REAL offer exists (phase ≠ idle). */}
+      {phase !== "idle" ? (
+        <div className="wfx-install__row">
+          <button
+            className="wfx-install__entry"
+            type="button"
+            onClick={() => {
+              // The quiet entry expands the real offer (the rail's own
+              // disclosure grammar — the card's Install button fires the
+              // REAL deferred prompt; iOS renders its instruction sheet).
+              setExpanded((current) => !current);
+            }}
+            aria-expanded={expanded || phase === "instructions"}
+            data-wfx-install-entry
+          >
+            <Icon name="plus" size={22} />
+            <span>{phase === "installed" ? "WebFlix installed" : "Install app"}</span>
+          </button>
+          {phase !== "installed" ? (
+            <button
+              className="wfx-install__dismiss"
+              type="button"
+              onClick={onDismiss}
+              aria-label="Not now — stop offering the install"
+              title="Not now"
+              data-wfx-install-dismiss
+            >
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" style={{ display: "block" }}>
+                <path d="M5 5l14 14M19 5 5 19" />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+      {expanded || phase === "instructions" || phase === "installed" ? (
+        <div className="wfx-install__sheet">
+          {phase === "offer" ? <InstallOfferCard onInstall={onInstall} onDismiss={onDismiss} /> : null}
+          {phase === "instructions" ? <IosInstructionsCard onDismiss={onDismiss} /> : null}
+          {phase === "installed" ? <InstalledCard /> : null}
+        </div>
+      ) : null}
     </div>
   );
 }

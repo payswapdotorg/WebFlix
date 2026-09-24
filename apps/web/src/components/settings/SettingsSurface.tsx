@@ -47,7 +47,7 @@ import {
 } from "@wfx/client-runtime";
 import type { WebPlatformBundle } from "@/platform/capabilities";
 import type { WebSessionState } from "@/host/session";
-import type { PersonalizeView } from "@/host/discoverability";
+import type { FeedModeView, PersonalizeView } from "@/host/discoverability";
 import type { ByofPanelView } from "@/host/byof/byof-view";
 import { describeWebBackgroundWork } from "@/platform/background-work";
 import { Icon } from "@/components/shell/Icon";
@@ -58,6 +58,7 @@ import { LocalInferenceProbe } from "@/components/settings/LocalInferenceProbe";
 import { SourceActions } from "@/components/settings/SourceActions";
 import { SourceChooser } from "@/components/settings/SourceChooser";
 import { SessionControls } from "@/components/settings/SessionControls";
+import { FeedModeControl } from "@/components/discovery/FeedModeControl";
 
 /** The auth-state chip vocabulary (the honest per-state truth). */
 const AUTH_STATE_LABELS: Readonly<Record<string, string>> = {
@@ -240,6 +241,7 @@ export function SettingsSurface({
   sources,
   byof,
   personalize,
+  feedMode,
   modelProviders,
   modelPolicies,
 }: {
@@ -257,6 +259,9 @@ export function SettingsSurface({
   readonly byof?: ByofPanelView;
   /** The R21-D Personalize view (the general section's recommendation management). */
   readonly personalize?: PersonalizeView;
+  /** R28-B — the feed-mode view (the general section's "Your feed" config,
+   * moved from the home surface by the corpus home restructure). */
+  readonly feedMode?: FeedModeView;
   /** The provider registry model (R21-C: the model section's data). */
   readonly modelProviders?: ModelProvidersModel;
   /** Every task's policy model (R21-C: the model section's data). */
@@ -502,6 +507,23 @@ export function SettingsSurface({
 
       {section === undefined || section === "general" ? (
         <>
+          {/* R28-B — "YOUR FEED": the feed-mode config's honest home (moved
+              off the home surface by the corpus home restructure — the home
+              page is chips + rows now, exactly YouTube's anatomy). */}
+          {feedMode !== undefined ? (
+            <section
+              className="wfx-detail__section"
+              aria-label="Your feed"
+              data-wfx-settings-feedmode
+            >
+              <h2>Your feed</h2>
+              <p className="wfx-row__reason" data-wfx-feedmode-note>
+                What your feed shows — set it here; the home page keeps its chips and rows
+                (the corpus home anatomy).
+              </p>
+              <FeedModeControl view={feedMode} />
+            </section>
+          ) : null}
           <section
             className="wfx-detail__section"
             aria-label="Profile and identity"

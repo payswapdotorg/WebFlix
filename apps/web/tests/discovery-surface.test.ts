@@ -407,7 +407,7 @@ describe("R21-D the personalize route", () => {
 // ---------------------------------------------------------------------------
 
 describe("R21-D the discovery surfaces", () => {
-  it("Home renders the orientation zone: feed modes, Personalize, source strip CTAs", async () => {
+  it("R28-B restructure: Home renders the chip bar + rows immediately (the orientation zone moved to Settings ▸ General)", async () => {
     const host = await bootHost();
     const [view, discovery] = await Promise.all([
       (async () => loadHomeView(host))(),
@@ -420,25 +420,19 @@ describe("R21-D the discovery surfaces", () => {
         children: createElement(HomeSurface, { view, discovery }),
       }),
     );
-    // The feed-mode control: all four frozen modes with the frozen labels.
-    for (const mode of ["foryou", "following", "byof", "hybrid"] as const) {
-      expect(markup).toContain(`data-wfx-feed-mode-option="${mode}"`);
-    }
-    expect(markup).toContain(FEED_MODE_LABELS.byof);
-    // The pristine truth: byof/following/hybrid render unavailable (never hidden).
-    expect(markup).toContain('data-wfx-feed-mode-available="false"');
-    // The Personalize control + its attention modes.
-    expect(markup).toContain("data-wfx-personalize-control");
-    expect(markup).toContain('data-wfx-attention-mode="mindful"');
-    expect(markup).toContain('data-wfx-attention-mode="balanced"');
-    expect(markup).toContain('data-wfx-attention-mode="immersive"');
-    expect(markup).toContain('data-wfx-attention-mode="custom"');
-    // The source strip's CTAs point into the EXISTING IA.
-    expect(markup).toContain('data-wfx-source-connect-cta');
-    expect(markup).toContain('data-wfx-byof-cta');
-    expect(markup).toContain("Connect a source");
-    expect(markup).toContain("Bring your feed");
-    // The session menu's sign-in path.
+    // R28-B (the inherited restructure, verified here): the home's FIRST
+    // content under the topbar is the chip bar; the feed rows follow
+    // immediately — the hero and the orientation zone (feed modes,
+    // Personalize, source strip CTAs) live in Settings ▸ General now.
+    expect(markup).toContain("data-wfx-chipbar");
+    expect(markup).toContain('data-wfx-feed-filter="all"');
+    expect(markup).toContain("data-wfx-row=");
+    // The restructure's own law: the orientation-zone controls are NOT on
+    // the home anymore (the Settings ▸ General test below owns them).
+    expect(markup).not.toContain('data-wfx-feed-mode-option="foryou"');
+    expect(markup).not.toContain("data-wfx-personalize-control");
+    expect(markup).not.toContain("data-wfx-source-connect-cta");
+    // The session menu's sign-in path stays (the shell's own).
     expect(markup).toContain("data-wfx-session-signin");
   });
 

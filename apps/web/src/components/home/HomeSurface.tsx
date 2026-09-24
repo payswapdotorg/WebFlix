@@ -1,21 +1,18 @@
 /**
- * @wfx/app-web — the home surface (R07; R27-W2 the YouTube home grammar).
+ * @wfx/app-web — the home surface (R07; R27-W2 the YouTube home grammar;
+ * R28-B the home restructure).
  *
- * The home face over the RUNTIME's state — now in the corpus anatomy
- * (app-shell.md): THE CHIP BAR (sticky under the topbar, `All`
- * inverted-active, the REAL category chips that filter the actual feed),
- * then the RESPONSIVE GRID (4 ≥1300 / 3 ≥1000 / 2 ≥600 / 1 <600, 16px
- * gaps) — the grid IS the page. Each typed section renders its cards in
- * the grid with its honest status verbatim: an ERROR section renders as
- * the error state with the failure detail, never as a fake empty row
- * (the honesty law). The SHORTS SHELF (a row of 9:16 cards) renders
- * between the content rows — the REAL shorts content.
- *
- * THE HERO (the frozen J01/J02/J17 journey contract) renders as the
- * FIRST CARD of the first grid — the same card anatomy as its neighbors
- * (16:9 real artwork, radius 12, title, meta) with the featured item's
- * own play affordance. YouTube's home has no hero: the structural
- * presence is the journey contract's, recorded in DIVERGENCES.
+ * THE R28-B RESTRUCTURE (the operator's #5: "YouTube home: chip bar +
+ * card grid IMMEDIATELY — no hero, no config section"): the HERO and the
+ * "What your feed shows" orientation zone LEFT the home surface. Home is
+ * now THE CHIP BAR (sticky under the topbar) then the CONTENT ROWS
+ * directly — Continue watching / For you / Trending / the Shorts shelf —
+ * exactly the corpus home-anatomy (docs/parity-lab/r28/web-notes/
+ * home-anatomy.md). The feed-mode and Personalize CONFIG surfaces moved to
+ * Settings → General ("Your feed"); the first-run orientation stays
+ * available there. Each typed section renders its cards with its honest
+ * status verbatim: an ERROR section renders as the error state, never a
+ * fake empty row (the honesty law).
  *
  * Server component: pure presentational projection of the `HomeView` the
  * view pipeline produced (the composition tests render the same tree).
@@ -32,14 +29,14 @@ import type {
 } from "@/host/view-models";
 import { artworkViewOfContent } from "@/host/view-models";
 import type { DiscoveryBundle } from "@/host/discoverability";
-import { DiscoveryHeader } from "@/components/discovery/DiscoveryHeader";
 import { ChipBar, type ChipCategory } from "@/components/home/ChipBar";
-import { ItemCard, cardPlayerHref, type CardActionContextInput } from "@/components/cards/ItemCard";
-import { ArtworkImage } from "@/components/cards/ArtworkImage";
-import { itemDetailHref } from "@/app/routing";
-import { Icon } from "@/components/shell/Icon";
+import { ItemCard, type CardActionContextInput } from "@/components/cards/ItemCard";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
-import { formatDuration, percentWatched, placeholderArt, placeholderMonogram } from "@/components/ui/format";
+// R28-B (resumption fix) — the 1d32ed8 commit's href-builder extraction
+// left these two references unimported (the wiped session's last commit
+// shipped mid-refactor); restored verbatim from the extraction's home.
+import { itemDetailHref } from "@/app/href";
+import { placeholderMonogram } from "@/components/ui/format";
 
 /** One typed section-status renderer (error sections are errors, verbatim). */
 export function SectionStatus({ status, title }: { readonly status: SectionStatusView; readonly title: string }): JSX.Element | null {
@@ -148,153 +145,6 @@ function ContinueRow({
 }
 
 /**
- * THE HERO — the featured card (the first grid cell's anatomy): the
- * newest resumable continue entry, else the first browse card. The same
- * card grammar as its neighbors (16:9 REAL artwork, radius 12, title,
- * meta) + the featured item's own play affordance (the frozen
- * J01/J02/J17 data-wfx-hero contract rides it).
- */
-function Hero({ view }: { readonly view: HomeView }): JSX.Element | null {
-  const resumeEntry = view.continueWatching.entries.find((entry) => entry.status !== "completed") ?? null;
-  const startCard = view.rows[0]?.cards[0] ?? view.rows[1]?.cards[0] ?? null;
-  if (resumeEntry !== null && resumeEntry.joined !== null) {
-    const pct = percentWatched(resumeEntry.completionRatio);
-    const resumeArtwork =
-      resumeEntry.joined.artwork !== undefined
-        ? artworkViewOfContent(resumeEntry.joined.artwork, resumeEntry.title)
-        : null;
-    return (
-      <section
-        className="wfx-hero"
-        style={{ background: placeholderArt(resumeEntry.itemId) }}
-        data-wfx-hero="resume"
-        aria-label={`Continue watching: ${resumeEntry.title}`}
-      >
-        {/* R26-W2 — the hero's REAL SOURCE ARTWORK (the media-product
-            grammar: the artwork is the anchor); the deterministic gradient
-            stays beneath as the typed fallback. */}
-        <span className="wfx-hero__thumb">
-          {resumeArtwork !== null ? (
-            <ArtworkImage
-              artwork={resumeArtwork}
-              className="wfx-hero__img"
-              alt={`${resumeEntry.title} — artwork served by ${resumeArtwork.connectorId}`}
-              eager
-            />
-          ) : (
-            <span className="wfx-card__art" aria-hidden="true">
-              <span>{placeholderMonogram(resumeEntry.title)}</span>
-            </span>
-          )}
-          <span className="wfx-hero__scrim" aria-hidden="true" />
-        </span>
-        <h1 className="wfx-hero__title" data-wfx-hero-title>
-          {resumeEntry.title}
-        </h1>
-        <p className="wfx-hero__meta">
-          {resumeEntry.positionMs > 0 ? (
-            <span data-wfx-hero-resume>Resume at {formatDuration(resumeEntry.positionMs)}</span>
-          ) : null}
-          {pct !== null ? <span>{pct}</span> : null}
-        </p>
-        <div className="wfx-hero__actions">
-          <a
-            className="wfx-btn wfx-btn--primary"
-            href={cardPlayerHref(
-              {
-                itemId: resumeEntry.itemId,
-                title: resumeEntry.title,
-                canonicalType: resumeEntry.joined.canonicalType,
-                ...(resumeEntry.joined.durationMs !== undefined
-                  ? { durationMs: resumeEntry.joined.durationMs }
-                  : {}),
-                connectorId: resumeEntry.joined.connectorId,
-                externalRef: resumeEntry.joined.externalRef,
-              },
-              resumeEntry.positionMs,
-            )}
-            data-wfx-hero-play
-          >
-            <Icon name="play" size={18} />
-            Resume
-          </a>
-          <a
-            className="wfx-btn"
-            href={itemDetailHref({
-              itemId: resumeEntry.itemId,
-              connectorId: resumeEntry.joined.connectorId,
-              externalRef: resumeEntry.joined.externalRef,
-              title: resumeEntry.title,
-              canonicalType: resumeEntry.joined.canonicalType,
-            })}
-          >
-            Details
-          </a>
-        </div>
-      </section>
-    );
-  }
-  if (startCard === null) return null;
-  return (
-    <section
-      className="wfx-hero"
-      style={{ background: placeholderArt(startCard.itemId) }}
-      data-wfx-hero="start"
-      aria-label={`Featured: ${startCard.title}`}
-    >
-      {/* R26-W2 — the start hero's REAL SOURCE ARTWORK (same law as the
-          resume hero: the source's own thumbnail anchors the featured item;
-          the deterministic gradient stays beneath as the fallback). */}
-      <span className="wfx-hero__thumb">
-        {startCard.artwork !== undefined ? (
-          <ArtworkImage
-            artwork={startCard.artwork}
-            className="wfx-hero__img"
-            alt={`${startCard.title} — artwork served by ${startCard.artwork.connectorId}`}
-            eager
-          />
-        ) : (
-          <span className="wfx-card__art" aria-hidden="true">
-            <span>{placeholderMonogram(startCard.title)}</span>
-          </span>
-        )}
-        <span className="wfx-hero__scrim" aria-hidden="true" />
-      </span>
-      <h1 className="wfx-hero__title" data-wfx-hero-title>
-        {startCard.title}
-      </h1>
-      <p className="wfx-hero__meta">
-        <span className="wfx-badge wfx-badge--type">{startCard.canonicalType}</span>
-        {startCard.durationMs !== undefined ? <span>{formatDuration(startCard.durationMs)}</span> : null}
-      </p>
-      <div className="wfx-hero__actions">
-        <a
-          className="wfx-btn wfx-btn--primary"
-          href={cardPlayerHref(startCard)}
-          data-wfx-hero-play
-        >
-          <Icon name="play" size={18} />
-          Play
-        </a>
-        <a
-          className="wfx-btn"
-          href={itemDetailHref({
-            itemId: startCard.itemId,
-            connectorId: startCard.connectorId,
-            externalRef: startCard.externalRef,
-            title: startCard.title,
-            canonicalType: startCard.canonicalType,
-            ...(startCard.durationMs !== undefined ? { durationMs: startCard.durationMs } : {}),
-          })}
-        >
-          Details
-        </a>
-      </div>
-    </section>
-  );
-}
-
-/**
  * The imported-feed section (R21-D): the records the CURRENT feed mode
  * honors — source-native order, never re-ranked (the frozen BYOF truth
  * law), with the freshness sentence and the Library management link.
@@ -373,11 +223,12 @@ export function HomeSurface({
   }
   return (
     <div data-wfx-surface="home" data-wfx-home data-wfx-feed-mode={mode} data-wfx-feed-root data-wfx-feed-filter="all">
-      {discovery !== undefined ? <DiscoveryHeader bundle={discovery} /> : null}
-      {/* THE CHIP BAR (the corpus anatomy — filters the real feed). */}
+      {/* THE CHIP BAR (the corpus anatomy — filters the real feed; the
+          R28-B restructure: it is the FIRST thing under the topbar, the
+          grid follows immediately — no hero, no orientation zone). */}
       <ChipBar categories={categories} />
-      {/* The featured card (the hero contract) + the first grid section. */}
-      <Hero view={view} />
+      {/* The content rows — Continue watching first (the corpus feed's own
+          shelf), then the feed rows, then the Shorts shelf. */}
       <ContinueRow entries={view.continueWatching.entries} status={view.continueWatching.status} />
       {importedSection !== null ? <ImportedFeedSection section={importedSection} /> : null}
       {showDiscoveryRows

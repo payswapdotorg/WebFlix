@@ -1,16 +1,17 @@
 "use client";
 
 /**
- * @wfx/app-web — the theme seam's toggle (R27-W2).
+ * @wfx/app-web — the theme seam's toggle (R27-W2; the R28-B default).
  *
  * The honest dark/light control: YouTube's own appearance setting, in
  * WebFlix's grammar. The toggle flips `data-theme` on the document root
  * (the only seam globals.css reads — `html[data-theme="light"]` overrides
  * the dark-default tokens) and persists the choice to localStorage
  * (`wfx-theme`), where the layout's before-paint script picks it up on
- * the next load (no flash). Default stays DARK (the corpus law: YouTube's
- * dark is the product default). 40px target, visible focus ring, the
- * current theme's own icon + label.
+ * the next load (no flash). R28-B — with no persisted choice the default
+ * follows the OS preference (`prefers-color-scheme`; the operator's
+ * binding ruling — see layout.tsx's seam). 40px target, visible focus
+ * ring, the current theme's own icon + label.
  */
 
 import { useCallback, useEffect, useState, type JSX } from "react";

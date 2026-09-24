@@ -53,74 +53,21 @@
  * settings cluster discloses the truth).
  */
 
-import { useEffect, useRef, type JSX } from "react";
+import { useEffect, useRef, useSyncExternalStore, type JSX } from "react";
 
-import { bindActiveEmbedSession } from "@/components/player/embed-session-client";
-
-/** The provider's own privacy-enhanced embed hosts (the cookie-free surface). */
-const YOUTUBE_PRIVACY_EMBED_HOST = "www.youtube-nocookie.com";
-
-/** The YouTube embed hosts the privacy host substitution covers. */
-const YOUTUBE_EMBED_HOSTS: ReadonlySet<string> = new Set([
-  "www.youtube.com",
-  "youtube.com",
-  "m.youtube.com",
-]);
-
-/** The providers whose documented embed control API the stage binds. */
-function providerFamilyOf(url: string): "youtube" | "unknown" {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase();
-    const isYouTubeHost =
-      YOUTUBE_EMBED_HOSTS.has(host) || host === YOUTUBE_PRIVACY_EMBED_HOST;
-    if (isYouTubeHost && parsed.pathname.startsWith("/embed/")) return "youtube";
-  } catch {
-    // A non-parsable URL never reaches this stage (the surface validates).
-  }
-  return "unknown";
-}
-
-/**
- * The sandbox tokens of the CONTROL-BOUND embed: the provider's player
- * needs its own origin (`allow-same-origin`) for its documented embed
- * control channel to answer (the empirical iframe-security restriction
- * above); the viewer's provider identity stays isolated through the
- * provider's privacy-enhanced embed host (a separate origin + cookie
- * jar), so the provider page never sees the viewer's `youtube.com`
- * session. The no-control embed keeps the opaque-origin tokens VERBATIM.
- */
-const CONTROL_BOUND_SANDBOX =
-  "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation";
-
-/** The opaque-origin tokens (the strictest posture — the no-control embed's). */
-const OPAQUE_ORIGIN_SANDBOX =
-  "allow-scripts allow-forms allow-popups allow-presentation";
-
-/**
- * The presentation src: the provider's embed URL with the provider's own
- * embed-API parameter where the family documents one, served from the
- * provider's own privacy-enhanced embed host where the control channel
- * binds (the provider's published cookie-free surface for the SAME embed
- * — the video id, the path, and every provider parameter stay verbatim;
- * the additions are the provider's own documented embed mechanisms:
- * the privacy host and the published control switch).
- */
-function presentationSrcOf(url: string): string {
-  if (providerFamilyOf(url) !== "youtube") return url;
-  try {
-    const parsed = new URL(url);
-    if (YOUTUBE_EMBED_HOSTS.has(parsed.hostname.toLowerCase())) {
-      parsed.hostname = YOUTUBE_PRIVACY_EMBED_HOST;
-    }
-    if (!parsed.searchParams.has("enablejsapi")) {
-      parsed.searchParams.set("enablejsapi", "1");
-    }
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-}
+import {
+  bindActiveEmbedSession,
+  getActiveEmbedControl,
+  getActiveEmbedSessionController,
+  idleEmbedControlSnapshot,
+  subscribeActiveEmbedControl,
+} from "@/components/player/embed-session-client";
+import {
+  CONTROL_BOUND_SANDBOX,
+  OPAQUE_ORIGIN_SANDBOX,
+  presentationSrcOf,
+  providerFamilyOf,
+} from "@/components/player/embed-presentation";
 
 /** The embed stage (the contained iframe + the provider control binding). */
 export function EmbedStage({
@@ -147,6 +94,12 @@ export function EmbedStage({
   const provider = providerFamilyOf(url);
   const src = presentationSrcOf(url);
   const controlBound = provider === "youtube";
+  // R28-B — the provider-reported mute truth drives the unmute affordance.
+  const embedControl = useSyncExternalStore(
+    subscribeActiveEmbedControl,
+    getActiveEmbedControl,
+    idleEmbedControlSnapshot,
+  );
 
   // Bind the provider's embed control contract for this stage's life.
   useEffect(() => {
@@ -180,6 +133,22 @@ export function EmbedStage({
         allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
         data-wfx-player-frame
       />
+      {controlBound && embedControl.muted === true ? (
+        <button
+          type="button"
+          className="wfx-player__unmute"
+          data-wfx-player-unmute
+          onClick={() => {
+            getActiveEmbedSessionController()?.setMuted(false);
+          }}
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+            <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4Z" />
+            <path d="m16 9.5 5 5m0-5-5 5" />
+          </svg>
+          Sound off — tap to unmute
+        </button>
+      ) : null}
       <p className="wfx-player__trace" data-wfx-embed-note>
         {attestation === "official"
           ? controlBound

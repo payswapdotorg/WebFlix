@@ -204,6 +204,8 @@ export function ItemDetailSurface({ view }: { readonly view: DetailView }): JSX.
           canonicalHref={itemHref}
           title={view.title}
           sourceId={view.connectorId}
+          connectorId={view.connectorId}
+          externalRef={view.externalRef}
         />
         <AddToQueueControl
           target={{

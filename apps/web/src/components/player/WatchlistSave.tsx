@@ -36,8 +36,8 @@ export interface WatchlistSaveProps {
   readonly externalRef: string;
   /** The initial saved state (the runtime's own watchlist truth at render). */
   readonly initiallySaved: boolean;
-  /** The compact variant (cards) vs the standard variant (item/player). */
-  readonly variant?: "standard" | "compact";
+  /** The compact variant (cards) vs the standard variant (item/player) vs the kebab menu row (R28-B). */
+  readonly variant?: "standard" | "compact" | "menu";
   /** Offer the save-to-playlist choice (the item hub's fuller control). */
   readonly offerPlaylist?: boolean;
 }
@@ -104,12 +104,14 @@ export function WatchlistSave(props: WatchlistSaveProps): JSX.Element {
   );
 
   const compact = props.variant === "compact";
+  // R28-B — the kebab menu row (the corpus card menu's "Save to playlist").
+  const menu = props.variant === "menu";
 
   return (
-    <div className="wfx-watchlist" data-wfx-watchlist-save>
+    <div className={menu ? "wfx-watchlist wfx-watchlist--menu" : "wfx-watchlist"} data-wfx-watchlist-save>
       <button
         type="button"
-        className={compact ? "wfx-card__actionbtn" : "wfx-btn wfx-btn--sm"}
+        className={menu ? "wfx-kebab__item" : compact ? "wfx-card__actionbtn" : "wfx-btn wfx-btn--sm"}
         onClick={() => {
           void write(saved ? "remove" : "save");
         }}
@@ -118,8 +120,8 @@ export function WatchlistSave(props: WatchlistSaveProps): JSX.Element {
         data-wfx-watchlist-toggle
         data-wfx-watchlist-saved={saved ? "true" : "false"}
       >
-        <Icon name="save" size={compact ? 16 : 18} />
-        {!compact ? <span>{saved ? "Saved to Watchlist" : "Save to Watchlist"}</span> : null}
+        <Icon name="save" size={menu ? 20 : compact ? 16 : 18} />
+        {!compact ? <span>{menu ? (saved ? "Saved to playlist" : "Save to playlist") : saved ? "Saved to Watchlist" : "Save to Watchlist"}</span> : null}
       </button>
       {props.offerPlaylist === true && !compact ? (
         <button

@@ -31,7 +31,7 @@ import { AppShell } from "@/components/shell/AppShell";
 import { SettingsSurface } from "@/components/settings/SettingsSurface";
 import { getWebRequestHost } from "@/host/request-session";
 import { byofHostBinding, loadByofPanelView } from "@/host/byof/byof-host";
-import { loadPersonalizeView } from "@/host/discoverability";
+import { loadFeedModeView, loadPersonalizeView } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
 import type { ModelTask } from "@wfx/domain";
 import type {
@@ -100,6 +100,10 @@ export default async function SettingsPage({
   // R21-D — the general section's recommendation & intent management view
   // (the Personalize control's detailed-management home).
   const personalize = section === undefined || section === "general" ? loadPersonalizeView(host) : undefined;
+  // R28-B — the feed-mode CONFIG moved from the home surface to Settings →
+  // General ("Your feed"): the home page is now chips + rows immediately
+  // (the corpus home anatomy); the mode control keeps its honest home here.
+  const feedMode = section === undefined || section === "general" ? await loadFeedModeView(host) : undefined;
   return (
     <AppShell mode={host.mode} active="settings" session={host.session.state}>
       <SettingsSurface
@@ -110,6 +114,7 @@ export default async function SettingsPage({
         {...(sources !== undefined ? { sources } : {})}
         {...(byof !== undefined ? { byof } : {})}
         {...(personalize !== undefined ? { personalize } : {})}
+        {...(feedMode !== undefined ? { feedMode } : {})}
         {...(modelProviders !== undefined ? { modelProviders } : {})}
         {...(modelPolicies !== undefined ? { modelPolicies } : {})}
       />
