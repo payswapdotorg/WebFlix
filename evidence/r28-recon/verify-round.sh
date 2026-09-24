@@ -67,9 +67,11 @@ if [ -n "$HOOK" ] && [ -f "$HOOK" ]; then
   ( cd "$REPO" && BASE="$BASE" TAG="$TAG" source "$HOOK" 2>&1 | tail -20 )
 fi
 
-# 6. teardown
+# 6. teardown (next dev spawns a next-server child — kill the tree, then the port)
 kill $(cat /home/z/.r28c/b-server.pid) 2>/dev/null
-sleep 1
+pkill -f "next dev -p $PORT" 2>/dev/null
+pkill -f "next-server.*$WT" 2>/dev/null
+sleep 2
 curl -s -o /dev/null "$BASE" 2>/dev/null && echo "WARN: port $PORT still serving" || echo "TEARDOWN OK"
 echo "ROUND COMPLETE: tag=$TAG sha=$SHA"
 echo "reports: evidence/r28-recon/verifications/${TAG}.{report,corpus}.json"
