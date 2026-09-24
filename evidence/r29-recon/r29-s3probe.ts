@@ -114,9 +114,7 @@ if (gearOpened) {
 
   // the Keyboard shortcuts subpage (the real key sheet)
   await evalJS(`document.querySelector('[data-r29c-gear]')?.click(); 'ok'`);
-  await sleep(500);
-  await evalJS(`document.querySelector('[data-r29c-gear]')?.click(); 'ok'`);
-  await sleep(600);
+  await sleep(700);
   await evalJS(`document.querySelector('[data-wfx-gear-item="shortcuts"]')?.setAttribute('data-r29c-sc', '1'); 'ok'`);
   await ab("click", "[data-r29c-sc='1']");
   await sleep(600);
