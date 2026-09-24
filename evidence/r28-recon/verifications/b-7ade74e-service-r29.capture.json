@@ -1,0 +1,121 @@
+{
+  "tag": "b-7ade74e-service-r29",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T18:22:46.335Z",
+  "shots": [
+    "home",
+    "hover-250ms",
+    "hover-1.7s",
+    "click1",
+    "comments",
+    "share"
+  ],
+  "checks": {
+    "home": {
+      "bg": "rgb(255, 255, 255)",
+      "heroW": null,
+      "htmlClass": "",
+      "path": "/",
+      "themeAttr": "light"
+    },
+    "fonts": {
+      "h1family": "Roboto, Arial, Helvetica, sans-serif",
+      "loaded": [
+        "Roboto:100 900:loaded",
+        "Roboto:100 900:unloaded",
+        "__nextjs-Geist:400 600:unloaded",
+        "__nextjs-Geist Mono:400 600:unloaded",
+        "__nextjs-Geist:400 600:unloaded",
+        "__nextjs-Geist Mono:400 600:unloaded"
+      ],
+      "robotoFacesInSet": [
+        "Roboto:100 900",
+        "Roboto:100 900"
+      ]
+    },
+    "hover": {
+      "target": {
+        "found": true,
+        "label": "Thunderstorm with Heavy rain sounds for ",
+        "x": 384,
+        "y": 396
+      },
+      "at250ms": {
+        "hoverElClass": "wfx-hoverpreview wfx-hoverpreview--open",
+        "previews": [
+          {
+            "box": "312x186",
+            "children": 0,
+            "cls": "wfx-hoverpreview wfx-hoverpreview--open"
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview"
+          },
+          {
+            "box": "288x288",
+            "children": 2,
+            "cls": "wfx-cardpreview"
+          }
+        ],
+        "videos": 0
+      },
+      "at1_7s": {
+        "playing": false,
+        "previews": [
+          {
+            "children": 6,
+            "display": "block",
+            "opacity": "1"
+          },
+          {
+            "children": 0,
+            "display": "block",
+            "opacity": "1"
+          },
+          {
+            "children": 0,
+            "display": "block",
+            "opacity": "1"
+          }
+        ],
+        "videos": 0
+      }
+    },
+    "clickTrace": {
+      "card": {
+        "href": "/player?id=wfxitm_40C9GE49EH1SES0Q914GQFFYHC&connector=wfx-experience-service&ref=Kl2v9ydanrI&title=Thunderstorm+with+Heavy+rain+sounds+for+Sleep%2C+Study+and+Relaxation+-+The+Hideout+Ambience+%7C+3+Hours&type=video&duration=10811000",
+        "label": "Thunderstorm with Heavy rain sounds for "
+      },
+      "steps": [
+        {
+          "n": 1,
+          "after": "click card",
+          "h1": "",
+          "hasIframe": true,
+          "hasVideo": false,
+          "nav": "navigate",
+          "path": "/",
+          "playing": false
+        }
+      ]
+    },
+    "comments": {
+      "commentEls": 0,
+      "composer": false,
+      "headerText": null,
+      "path": "/",
+      "threads": 0
+    },
+    "share": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "box": "220x40",
+      "found": true,
+      "lines": [],
+      "radius": "0px",
+      "shortLink": false,
+      "startAt": false
+    }
+  }
+}

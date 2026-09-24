@@ -1,0 +1,472 @@
+{
+  "tag": "b-7ade74e-fixtures-s1",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T18:09:31.625Z",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000"
+    },
+    "actionRow": {
+      "dislikeBtn": {
+        "reaction": null
+      },
+      "divider": true,
+      "downloadControl": null,
+      "found": true,
+      "freshLikeCount": "1",
+      "kebab": {
+        "open": false
+      },
+      "likeBtn": {
+        "box": "62x40",
+        "pressed": "true",
+        "reaction": "like"
+      },
+      "preExistingStore": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"like\"}",
+      "rowBox": "345x40",
+      "savePill": {
+        "label": "Save Neon Rain to your Watchlist"
+      },
+      "sharePill": {
+        "label": "Share Neon Rain"
+      },
+      "splitPill": {
+        "box": "111x40",
+        "height": 40,
+        "radius": "20px"
+      }
+    },
+    "reactionsLike": {
+      "countText": null,
+      "pressed": "false",
+      "reaction": "none",
+      "store": "{}"
+    },
+    "reactionsLikeOff": {
+      "countText": "1",
+      "reaction": "like",
+      "store": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"like\"}"
+    },
+    "reactionsDislike": {
+      "anyCountInRow": [],
+      "dislikePressed": "true",
+      "dislikeReaction": null,
+      "likeCountText": null,
+      "likeReaction": "dislike",
+      "store": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"dislike\"}"
+    },
+    "reactionsMutualExclusion": {
+      "dislikeReaction": null,
+      "likeCountText": "1",
+      "likeReaction": "like",
+      "store": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"like\"}"
+    },
+    "reactionsCleanup": {
+      "store": "{}"
+    },
+    "kebabOpen": {
+      "menuVisible": true,
+      "open": true,
+      "rows": [
+        "Add to queue",
+        "Save Neon Rain to your Watchlist",
+        "Mark as watched",
+        "Stop and record skip",
+        "Details"
+      ]
+    },
+    "kebabQueueAdd": {
+      "added": "true",
+      "label": "Added to queue"
+    },
+    "queueGetTruth": "{\"ok\":true,\"entries\":[{\"itemId\":\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\",\"connectorId\":\"fake-source\",\"externalRef\":\"fake:short-1\",\"title\":\"Neon Rain\",\"canonicalType\":\"short\"}],\"autoplay\":true}",
+    "channelRow": {
+      "avatar": "40x40 r50%",
+      "found": true,
+      "metaLine": "Playing via embed · plays inside WebFlix (the provider's con",
+      "name": "Fake Source (TEST FIXTURE — never produc",
+      "nameFont": "16px/500",
+      "subCountText": null,
+      "subscribe": {
+        "bg": "rgb(255, 0, 51)",
+        "box": "95x36",
+        "color": "rgb(255, 255, 255)",
+        "label": "Subscribe to Fake Source (TEST FIXTURE —",
+        "pressed": "false",
+        "radius": "18px",
+        "state": "idle"
+      }
+    },
+    "sourcesModel": "[{\"connectorId\":\"fake-source\",\"displayName\":\"Fake Source (TEST FIXTURE — never production)\"}]",
+    "subscribeClick": {
+      "label": "Unsubscribe from Fake Source (TEST FIXTURE —",
+      "pressed": "true",
+      "state": "subscribed",
+      "status": "Subscribed — saved to your Subscriptions list in Library."
+    },
+    "librarySubscriptions": {
+      "entryTitles": null,
+      "playlistCount": 0,
+      "subsFound": false,
+      "subsListTitle": null
+    },
+    "subscribeDurable": {
+      "label": "Subscribe to Fake Source (TEST FIXTURE — nev",
+      "stateAfterReload": "idle"
+    },
+    "subscribeCleanup": {
+      "state": "idle"
+    },
+    "description": {
+      "clamp": "2",
+      "collapsedH": 68,
+      "found": true,
+      "isDetails": false,
+      "open": "false",
+      "textFont": "14px/400",
+      "toggleText": "...more",
+      "toggleType": "BUTTON"
+    },
+    "descriptionExpanded": {
+      "anyDialogOpened": false,
+      "bodyVisible": true,
+      "expandedH": 112,
+      "open": "true",
+      "toggleText": "Show less"
+    },
+    "descriptionCollapsed": {
+      "collapsedH": 68,
+      "open": "false"
+    },
+    "relatedColumn": {
+      "autoplayBeforeList": true,
+      "autoplayRow": true,
+      "chips": [
+        "All",
+        "From fake-source",
+        "Related"
+      ],
+      "firstThree": [
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_2SMP6BM5NH468WGNSFRY4MTCSY&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 192
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_563VXP0RACF37ANN8A623TZVBF&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 290.5
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_10RTSTZD8XDVRXP3Q03NCZF615&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 389
+        }
+      ],
+      "found": true,
+      "head": true,
+      "knob": true,
+      "listRowGap": "4px",
+      "rowCount": 7,
+      "rowPitch": 4,
+      "switchChecked": "true",
+      "switchClass": "wfx-switch wfx-switch--on",
+      "switchRole": "switch"
+    },
+    "autoplayToggle": {
+      "before": "true",
+      "after": "false",
+      "queueBefore": true,
+      "queueAfter": false,
+      "reverted": "true"
+    },
+    "dwellPreviewWiring": {
+      "hasTrigger": true,
+      "hoverX": 1112,
+      "hoverY": 239,
+      "previewable": "false"
+    },
+    "dwellPreviewResult": {
+      "iframes": [
+        "wfx-hoverpreview__frame",
+        ""
+      ],
+      "layerClass": "wfx-hoverpreview wfx-hoverpreview--open",
+      "layerFound": true
+    },
+    "watchRouteGeometry": {
+      "layoutCols": "996px 412px",
+      "layoutGap": "16px",
+      "playerPadding": "16px 0px 48px 16px",
+      "playerX": 1016,
+      "railBox": null,
+      "railDisplay": "none",
+      "secondaryBox": "412x1074 @(1028,72)",
+      "secondaryRightEdgeDelta": 0,
+      "shellGuide": "hidden",
+      "stageBox": "192x119",
+      "viewportW": 1440
+    },
+    "hiddenGuideDrawer": {
+      "guideState": "drawer",
+      "railBox": "240x844",
+      "railDisplay": "flex",
+      "railX": 0
+    },
+    "hiddenGuideDrawerClosed": {
+      "guideState": null,
+      "railDisplay": "none"
+    },
+    "geometry1600": {
+      "playerPadding": "24px 24px 48px",
+      "playerX": 24,
+      "viewportW": 1600
+    },
+    "homeRailRegression": {
+      "railDisplay": "flex",
+      "railW": 240,
+      "shellGuide": "default"
+    }
+  },
+  "summary": {
+    "actionRow": {
+      "dislikeBtn": {
+        "reaction": null
+      },
+      "divider": true,
+      "downloadControl": null,
+      "found": true,
+      "freshLikeCount": "1",
+      "kebab": {
+        "open": false
+      },
+      "likeBtn": {
+        "box": "62x40",
+        "pressed": "true",
+        "reaction": "like"
+      },
+      "preExistingStore": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"like\"}",
+      "rowBox": "345x40",
+      "savePill": {
+        "label": "Save Neon Rain to your Watchlist"
+      },
+      "sharePill": {
+        "label": "Share Neon Rain"
+      },
+      "splitPill": {
+        "box": "111x40",
+        "height": 40,
+        "radius": "20px"
+      }
+    },
+    "reactionsHonesty": {
+      "like": {
+        "countText": null,
+        "pressed": "false",
+        "reaction": "none",
+        "store": "{}"
+      },
+      "likeOff": {
+        "countText": "1",
+        "reaction": "like",
+        "store": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"like\"}"
+      },
+      "dislike": {
+        "anyCountInRow": [],
+        "dislikePressed": "true",
+        "dislikeReaction": null,
+        "likeCountText": null,
+        "likeReaction": "dislike",
+        "store": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"dislike\"}"
+      },
+      "mutualExclusion": {
+        "dislikeReaction": null,
+        "likeCountText": "1",
+        "likeReaction": "like",
+        "store": "{\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\":\"like\"}"
+      }
+    },
+    "kebab": {
+      "menuVisible": true,
+      "open": true,
+      "rows": [
+        "Add to queue",
+        "Save Neon Rain to your Watchlist",
+        "Mark as watched",
+        "Stop and record skip",
+        "Details"
+      ]
+    },
+    "queueAdd": {
+      "added": "true",
+      "label": "Added to queue"
+    },
+    "queueGetTruth": "{\"ok\":true,\"entries\":[{\"itemId\":\"wfxitm_0CR20TSE5WM8VG4HCNQD41YGX5\",\"connectorId\":\"fake-source\",\"externalRef\":\"fake:short-1\",\"title\":\"Neon Rain\",\"canonicalType\":\"short\"}],\"autoplay\":true}",
+    "channelRow": {
+      "avatar": "40x40 r50%",
+      "found": true,
+      "metaLine": "Playing via embed · plays inside WebFlix (the provider's con",
+      "name": "Fake Source (TEST FIXTURE — never produc",
+      "nameFont": "16px/500",
+      "subCountText": null,
+      "subscribe": {
+        "bg": "rgb(255, 0, 51)",
+        "box": "95x36",
+        "color": "rgb(255, 255, 255)",
+        "label": "Subscribe to Fake Source (TEST FIXTURE —",
+        "pressed": "false",
+        "radius": "18px",
+        "state": "idle"
+      }
+    },
+    "sourcesModel": "[{\"connectorId\":\"fake-source\",\"displayName\":\"Fake Source (TEST FIXTURE — never production)\"}]",
+    "subscribe": {
+      "click": {
+        "label": "Unsubscribe from Fake Source (TEST FIXTURE —",
+        "pressed": "true",
+        "state": "subscribed",
+        "status": "Subscribed — saved to your Subscriptions list in Library."
+      },
+      "library": {
+        "entryTitles": null,
+        "playlistCount": 0,
+        "subsFound": false,
+        "subsListTitle": null
+      },
+      "durable": {
+        "label": "Subscribe to Fake Source (TEST FIXTURE — nev",
+        "stateAfterReload": "idle"
+      }
+    },
+    "description": {
+      "collapsed": {
+        "clamp": "2",
+        "collapsedH": 68,
+        "found": true,
+        "isDetails": false,
+        "open": "false",
+        "textFont": "14px/400",
+        "toggleText": "...more",
+        "toggleType": "BUTTON"
+      },
+      "expanded": {
+        "anyDialogOpened": false,
+        "bodyVisible": true,
+        "expandedH": 112,
+        "open": "true",
+        "toggleText": "Show less"
+      },
+      "reCollapsed": {
+        "collapsedH": 68,
+        "open": "false"
+      }
+    },
+    "relatedColumn": {
+      "autoplayBeforeList": true,
+      "autoplayRow": true,
+      "chips": [
+        "All",
+        "From fake-source",
+        "Related"
+      ],
+      "firstThree": [
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_2SMP6BM5NH468WGNSFRY4MTCSY&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 192
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_563VXP0RACF37ANN8A623TZVBF&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 290.5
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_10RTSTZD8XDVRXP3Q03NCZF615&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 389
+        }
+      ],
+      "found": true,
+      "head": true,
+      "knob": true,
+      "listRowGap": "4px",
+      "rowCount": 7,
+      "rowPitch": 4,
+      "switchChecked": "true",
+      "switchClass": "wfx-switch wfx-switch--on",
+      "switchRole": "switch"
+    },
+    "autoplayToggle": {
+      "before": "true",
+      "after": "false",
+      "queueBefore": true,
+      "queueAfter": false,
+      "reverted": "true"
+    },
+    "dwellPreview": {
+      "wiring": {
+        "hasTrigger": true,
+        "hoverX": 1112,
+        "hoverY": 239,
+        "previewable": "false"
+      },
+      "result": {
+        "iframes": [
+          "wfx-hoverpreview__frame",
+          ""
+        ],
+        "layerClass": "wfx-hoverpreview wfx-hoverpreview--open",
+        "layerFound": true
+      }
+    },
+    "geometry": {
+      "watch": {
+        "layoutCols": "996px 412px",
+        "layoutGap": "16px",
+        "playerPadding": "16px 0px 48px 16px",
+        "playerX": 1016,
+        "railBox": null,
+        "railDisplay": "none",
+        "secondaryBox": "412x1074 @(1028,72)",
+        "secondaryRightEdgeDelta": 0,
+        "shellGuide": "hidden",
+        "stageBox": "192x119",
+        "viewportW": 1440
+      },
+      "w1600": {
+        "playerPadding": "24px 24px 48px",
+        "playerX": 24,
+        "viewportW": 1600
+      },
+      "drawer": {
+        "guideState": "drawer",
+        "railBox": "240x844",
+        "railDisplay": "flex",
+        "railX": 0
+      },
+      "home": {
+        "railDisplay": "flex",
+        "railW": 240,
+        "shellGuide": "default"
+      }
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "matrix": "/home/z/webflix/docs/parity-lab/r29/reconciliation/MATRIX.md",
+  "section1_rows": 22,
+  "class": {
+    "COS": 3,
+    "PAR": 18,
+    "HD": 1
+  },
+  "status": {
+    "OPEN": 15,
+    "VERIFIED": 7
+  },
+  "verified_rows": [
+    "D14/F3",
+    "N21",
+    "N9-a",
+    "N9-a-h",
+    "N9-b/D11",
+    "N9-c",
+    "N22"
+  ],
+  "open_rows": [
+    "D8/N4",
+    "N3",
+    "N23",
+    "N24",
+    "N12",
+    "N25-a",
+    "N25-b",
+    "N25-c",
+    "N19",
+    "N20",
+    "N13/D6",
+    "O6-res",
+    "N29",
+    "D3/N1",
+    "O6-meta"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the image provided:\n\n1) **Yes**, there is a Playlists section with a list titled 'Subscriptions'.\n2) The Subscriptions list contains the entry: **\"1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi\"**\n3) The Watchlist section is **showing entries** (it contains one item).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790274467,
+  "id": "202609250227431675734698cd4fa5",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609250227431675734698cd4fa5",
+  "usage": {
+    "completion_tokens": 89,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1725,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1814
+  }
+}

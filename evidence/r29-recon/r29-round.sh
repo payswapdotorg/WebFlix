@@ -58,6 +58,8 @@ export AGENT_BROWSER_SESSION="r29c-verify"
 # 4. run the instrument
 echo "--- r29-probe.ts (the second-order set) ---"
 ( cd "$REPO" && timeout 420 bun evidence/r29-recon/r29-probe.ts "$BASE" "$TAG" 2>&1 | tail -60 )
+echo "--- r29-s1probe.ts (B's stage-1 claims: watch second act + honesty gates) ---"
+( cd "$REPO" && timeout 420 bun evidence/r29-recon/r29-s1probe.ts "$BASE" "${TAG}-s1" 2>&1 | tail -80 )
 echo "--- verify.ts (R28 operator checks — regression floor) ---"
 ( cd "$REPO" && timeout 420 bun evidence/r28-recon/verify.ts "$BASE" "$TAG-r29" 2>&1 | tail -20 )
 echo "--- verify-corpus.ts (R28 corpus spec — regression floor) ---"
