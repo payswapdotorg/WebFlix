@@ -37,16 +37,19 @@
 import { Suspense, type JSX } from "react";
 
 import type { PlayerEnrichments, PlayerShellView } from "@/host/view-models";
-import { ActionButtons } from "@/components/player/ActionButtons";
+// R29-B — the watch page's SECOND ACT (the corpus watch-page-anatomy:
+// the channel row with the Subscribe pill, the action row with the
+// like/dislike split pill, and the inline "...more" description
+// expander — all honestly backed).
+import { ChannelRow } from "@/components/player/ChannelRow";
+import { WatchActions } from "@/components/player/WatchActions";
+import { DescriptionExpander } from "@/components/player/DescriptionExpander";
 import { PlayerChrome, type ChromeChapter, type ChromeTranscriptFeatures, type ChromeTranscriptSegment, fulfilledTranscriptFeatures, fulfilledTranslateFeatures } from "@/components/player/PlayerChrome";
 import { EmbedStage } from "@/components/player/EmbedStage";
 import { UpNextRail, type UpNextCard } from "@/components/player/UpNextRail";
-import { ShareControl } from "@/components/player/ShareControl";
-import { WatchlistSave } from "@/components/player/WatchlistSave";
 // R28-B — the comments section (the operator's #3 — the corpus anatomy
 // on WebFlix's own honest local per-user transport).
 import { CommentsSection } from "@/components/comments/CommentsSection";
-import { WatchStateReporter } from "@/components/player/WatchStateReporter";
 import { PlaybackDiagnostics } from "@/components/player/PlaybackDiagnostics";
 import { PlaybackTelemetryObserver } from "@/components/player/PlaybackTelemetryObserver";
 import { PlayerBootMarker } from "@/components/player/PlayerBootMarker";
@@ -61,7 +64,7 @@ import { FeedbackControls } from "@/components/discovery/FeedbackControls";
 import { Icon } from "@/components/shell/Icon";
 import { ErrorState } from "@/components/ui/StateViews";
 import { formatPosition } from "@/components/ui/format";
-import { itemDetailHref, playerHref } from "@/app/routing";
+import { playerHref } from "@/app/routing";
 
 /** The mode's user sentence (the R21-C label vocabulary — one source). */
 function modeSentenceOf(mode: PlayerShellView["surfaceMode"]): string {
@@ -107,7 +110,9 @@ function relatedCardsOf(related: PlayerEnrichments["related"]): readonly UpNextC
     // R26-W2 — the rail cards carry the REAL SOURCE ARTWORK (the same
     // typed fallback floor when the row carried none).
     ...(card.artwork !== undefined ? { artwork: card.artwork } : {}),
-    href: itemDetailHref({
+    // R29-B — ONE-CLICK PLAY (the R28 law): the rail row is the player
+    // autoplay target; the /item deep surface stays the kebab's Details.
+    href: playerHref({
       itemId: card.itemId,
       connectorId: card.connectorId,
       externalRef: card.externalRef,
@@ -217,6 +222,7 @@ async function UpNextSection({
       initialQueue={view.queue.entries}
       initialAutoplay={view.queue.autoplay}
       autoplayPolicySentence={autoplayPolicySentence}
+      attentionMode={view.attentionMode}
     />
   );
 }
@@ -328,10 +334,12 @@ function UpNextPanel({
   ) : (
     <UpNextRail
       currentItemId={view.itemId}
+      sourceId={view.connectorId}
       related={relatedCardsOf(enrichments.related)}
       initialQueue={view.queue.entries}
       initialAutoplay={view.queue.autoplay}
       autoplayPolicySentence={autoplayPolicySentence}
+      attentionMode={view.attentionMode}
     />
   );
 }
@@ -695,83 +703,61 @@ export function PlayerSurface({
             <h1 className="wfx-player__title" data-wfx-player-title>
               {view.title}
             </h1>
-            {/* R27-W2 - THE WATCH HEAD (the measured anatomy): the OWNER row
-                LEFT (40px avatar + the honest source identity + meta) and
-                the ACTIONS row RIGHT (40px pills - the R24-W2 action
-                vocabulary: provider like/save, the WebFlix watchlist save,
-                share, and the watch-state report). */}
+            {/* R29-B — THE WATCH HEAD, SECOND ACT (the corpus anatomy):
+                the CHANNEL ROW LEFT (36–40px avatar + the source's own
+                display name + the honest way-of-watching meta + the
+                SUBSCRIBE pill h≈36 r18 in the corpus red family — a REAL
+                follow capability through the library's Subscriptions
+                named list, never a dead button; the sub-count stays
+                honestly ABSENT — the source carries none) + the ACTION
+                ROW RIGHT (the like/dislike split pill, Share, Save, the
+                More-actions kebab — Download honestly absent: no such
+                capability, never a fabricated entry). */}
             <div className="wfx-watchhead">
-              <div className="wfx-owner">
-                <span className="wfx-owner__avatar" aria-hidden="true">
-                  {view.connectorId.length > 0 ? view.connectorId[0]!.toUpperCase() : "W"}
-                </span>
-                <span>
-                  <p className="wfx-owner__name">{view.connectorId.length > 0 ? view.connectorId : "WebFlix"}</p>
-                  <p className="wfx-owner__meta" data-wfx-player-mode-label>
-                    {view.torrent !== null ? (
-                      <>Authorized peer copy · {torrentSentenceOf(view)}</>
-                    ) : (
-                      <>Playing via {view.surfaceMode} · {modeSentenceOf(view.surfaceMode)}</>
-                    )}
-                  </p>
-                </span>
-              </div>
-              <div className="wfx-actions">
-                <ActionButtons
-                  like={
-                    view.realizationCapabilities.includes("like")
-                      ? {
-                          type: "like",
-                          connectorId: view.connectorId,
-                          externalRef: view.externalRef,
-                          itemId: view.itemId,
-                        }
-                      : null
-                  }
-                  save={
-                    view.realizationCapabilities.includes("save")
-                      ? {
-                          type: "save",
-                          connectorId: view.connectorId,
-                          externalRef: view.externalRef,
-                          itemId: view.itemId,
-                        }
-                      : null
-                  }
-                />
-                {/* R24-W2 - the WebFlix-native watchlist save (the durable
-                    canonical write, independent of provider capability) +
-                    the share control (the canonical link + the source
-                    link) + the honest watch-state report. */}
-                <WatchlistSave
-                  itemId={view.itemId}
-                  title={view.title}
-                  connectorId={view.connectorId}
-                  externalRef={view.externalRef}
-                  initiallySaved={view.watchlistSaved}
-                  offerPlaylist
-                />
-                <ShareControl
-                  canonicalHref={shareHref}
-                  title={view.title}
-                  sourceId={view.connectorId}
-                  connectorId={view.connectorId}
-                  externalRef={view.externalRef}
-                  {...(view.surfaceUrl !== null ? { sourceUrl: view.surfaceUrl } : {})}
-                />
-                <WatchStateReporter
-                  report={{ itemId: view.itemId, type: "complete", playbackSessionId: view.sessionId }}
-                  resumePositionMs={view.resumePositionMs}
-                />
-              </div>
+              <ChannelRow
+                connectorId={view.connectorId}
+                {...(view.sourceName !== null ? { sourceName: view.sourceName } : {})}
+                itemId={view.itemId}
+                title={view.title}
+                externalRef={view.externalRef}
+                initiallySubscribed={view.subscribed}
+                metaLine={
+                  view.torrent !== null
+                    ? `Authorized peer copy · ${torrentSentenceOf(view)}`
+                    : `Playing via ${view.surfaceMode} · ${modeSentenceOf(view.surfaceMode)}`
+                }
+              />
+              <WatchActions
+                itemId={view.itemId}
+                title={view.title}
+                connectorId={view.connectorId}
+                externalRef={view.externalRef}
+                canonicalType={view.canonicalType}
+                shareHref={shareHref}
+                {...(view.surfaceUrl !== null ? { sourceUrl: view.surfaceUrl } : {})}
+                initiallySaved={view.watchlistSaved}
+                providerLike={
+                  view.realizationCapabilities.includes("like")
+                    ? {
+                        connectorId: view.connectorId,
+                        externalRef: view.externalRef,
+                        itemId: view.itemId,
+                      }
+                    : null
+                }
+                report={{ itemId: view.itemId, playbackSessionId: view.sessionId }}
+                resumePositionMs={view.resumePositionMs}
+              />
             </div>
-            {/* R27-W2 - THE DESCRIPTION PANEL (the measured anatomy:
-                surface #272727, radius 12, 14/20, collapsed 2-line + the
-                ...more expander). The honest playback truths live here -
-                the description of THIS way of watching. */}
-            <details className="wfx-desc" data-wfx-player-description>
-              <summary className="wfx-desc__summary">
-                <p className="wfx-desc__collapsed">
+            {/* R29-B — THE DESCRIPTION INLINE EXPANDER (the corpus
+                `#description-inline-expander`: collapsed 1–2 lines with
+                the inline "...more" affordance; expanding is INLINE,
+                never a dialog; the panel keeps the R28 raised surface +
+                r12). The content is WebFlix's own playback-capability
+                truth — the honest description of THIS way of watching. */}
+            <DescriptionExpander
+              lead={
+                <>
                   {view.torrent !== null ? (
                     <>{torrentSentenceOf(view)} - {view.phase}.</>
                   ) : (
@@ -780,35 +766,33 @@ export function PlayerSurface({
                   {view.resumePositionMs > 0 ? (
                     <> Resumed at {formatPosition(view.resumePositionMs)}.</>
                   ) : null}
+                </>
+              }
+            >
+              <p className="wfx-player__trace" data-wfx-player-phase>
+                Playback phase: {view.phase} (the runtime reports evidence-backed phases only - no fake
+                progress).
+              </p>
+              {view.resumePositionMs > 0 ? (
+                <p className="wfx-player__trace" data-wfx-player-resume>
+                  Resumed at {formatPosition(view.resumePositionMs)}
                 </p>
-                <span className="wfx-desc__more">…more</span>
-              </summary>
-              <div className="wfx-desc__body">
-                <p className="wfx-player__trace" data-wfx-player-phase>
-                  Playback phase: {view.phase} (the runtime reports evidence-backed phases only - no fake
-                  progress).
-                </p>
-                {view.resumePositionMs > 0 ? (
-                  <p className="wfx-player__trace" data-wfx-player-resume>
-                    Resumed at {formatPosition(view.resumePositionMs)}
-                  </p>
+              ) : null}
+              <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
+                {view.progressScope.sentence}
+                {view.progressScope.offersSignInUpgrade ? (
+                  <>{" "}<a href="/settings?section=general" data-wfx-player-progress-signin>Sign in (optional)</a></>
                 ) : null}
-                <p className="wfx-player__trace" data-wfx-player-progress-scope={view.progressScope.scope}>
-                  {view.progressScope.sentence}
-                  {view.progressScope.offersSignInUpgrade ? (
-                    <>{" "}<a href="/settings?section=general" data-wfx-player-progress-signin>Sign in (optional)</a></>
-                  ) : null}
+              </p>
+              {view.providerAuthorization !== null ? (
+                <p className="wfx-player__trace" data-wfx-player-provider-auth={view.providerAuthorization.connectorId}>
+                  {view.providerAuthorization.sentence}{" "}
+                  <a href={view.providerAuthorization.reconnectHref} data-wfx-player-provider-reconnect>
+                    Reconnect {view.providerAuthorization.connectorId}
+                  </a>
                 </p>
-                {view.providerAuthorization !== null ? (
-                  <p className="wfx-player__trace" data-wfx-player-provider-auth={view.providerAuthorization.connectorId}>
-                    {view.providerAuthorization.sentence}{" "}
-                    <a href={view.providerAuthorization.reconnectHref} data-wfx-player-provider-reconnect>
-                      Reconnect {view.providerAuthorization.connectorId}
-                    </a>
-                  </p>
-                ) : null}
-              </div>
-            </details>
+              ) : null}
+            </DescriptionExpander>
             {/* R28-B — THE COMMENTS SECTION (the operator's #3, per the
                 watch anatomy: description → comments — the corpus row
                 grammar on WebFlix's own honest local per-user transport;

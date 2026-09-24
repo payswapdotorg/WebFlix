@@ -148,6 +148,7 @@ export function AppShell({
   active,
   session,
   mainClass,
+  guide = "default",
   children,
 }: {
   /** The boot mode (badge honesty). */
@@ -158,12 +159,20 @@ export function AppShell({
   readonly session: WebSessionState;
   /** Extra classes for the main region (e.g. the full-screen short feed). */
   readonly mainClass?: string;
+  /**
+   * R29-B — the route's guide law: "default" renders the standard rail
+   * (240px labeled ≥1280); "hidden" is the WATCH-page truth (the corpus
+   * watch anatomy: the rail stays CLOSED on the watch surface — the
+   * content spans the viewport; the hamburger opens the overlay drawer
+   * at any width, YouTube's own watch behavior).
+   */
+  readonly guide?: "default" | "hidden";
   readonly children: ReactNode;
 }): JSX.Element {
   const badge = modeBadge(mode);
   const activeHref = active !== undefined ? surfaceHref(active) : undefined;
   return (
-    <div className="wfx-shell" data-wfx-mode={mode}>
+    <div className="wfx-shell" data-wfx-mode={mode} data-wfx-shell-guide={guide}>
       <a className="wfx-skip-link" href="#wfx-main">
         Skip to content
       </a>

@@ -43,6 +43,7 @@ import { isTorrentRealizationDeclaration } from "@wfx/client-runtime";
 import type { TorrentRealizationDeclaration } from "@wfx/client-runtime";
 
 import { WebClock } from "@/platform/lifecycle";
+import { SUBSCRIPTIONS_LIST } from "@/components/player/subscription-list";
 
 import type { WebRuntimeHost } from "./web-host";
 import { progressScopeTruthOf, viewerKindOf } from "./anonymous-truth";
@@ -1045,6 +1046,19 @@ export interface PlayerShellView {
   readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
   /** R24-W2 — whether the canonical item is already in the watchlist (the runtime's truth). */
   readonly watchlistSaved: boolean;
+  /**
+   * R29-B — the channel row's honest source identity: the sources
+   * model's own displayName for this connector when one exists (the N29
+   * truth — a real field, never a fabricated channel), null otherwise
+   * (the connector id stays the honest fallback identity).
+   */
+  readonly sourceName: string | null;
+  /**
+   * R29-B — the Subscribe pill's initial truth: whether the item is
+   * filed under the Subscriptions named list (the library's own state
+   * at render — the same seam the pill writes through).
+   */
+  readonly subscribed: boolean;
 }
 
 /**
@@ -1188,6 +1202,25 @@ export async function loadPlayerViewShell(
   const watchlistSaved = host.runtime.libraryOps
     .entries()
     .some((entry) => entry.itemId === input.itemId);
+  // R29-B — the channel row's truths: the sources model's own displayName
+  // for this connector (the N29 resolution — a REAL field the model
+  // carries, never a fabricated channel; null when the model names none)
+  // + the Subscribe pill's initial state (the Subscriptions named list
+  // — the same seam the pill writes through; the frozen list name is the
+  // shared subscription-list constant).
+  let sourceName: string | null = null;
+  try {
+    const sources = await host.runtime.sources.refresh();
+    sourceName =
+      sources.sources.find((source) => source.connectorId === input.connectorId)?.displayName ??
+      null;
+  } catch {
+    // The sources read failed: the connector id stays the honest identity.
+    sourceName = null;
+  }
+  const subscribed = host.runtime.libraryOps
+    .entries()
+    .some((entry) => entry.itemId === input.itemId && entry.listName === SUBSCRIPTIONS_LIST);
   const providerAuthorizationOf_ = (failureKind: string): PlayerView["providerAuthorization"] => {
     if (failureKind !== "unauthorized") return null;
     return {
@@ -1275,6 +1308,8 @@ export async function loadPlayerViewShell(
         queue: sessionQueue().state(),
         attentionMode,
         watchlistSaved,
+        sourceName,
+        subscribed,
       };
     }
     const rung = peerCopy.rung;
@@ -1342,6 +1377,8 @@ export async function loadPlayerViewShell(
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
+      sourceName,
+      subscribed,
     };
   }
   // R21-E: the Where-to-watch switch — resolve the preferred mode's
@@ -1524,6 +1561,8 @@ export async function loadPlayerViewShell(
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
+      sourceName,
+      subscribed,
     };
   }
   if (media.kind === "no-controller") {
@@ -1556,6 +1595,8 @@ export async function loadPlayerViewShell(
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
+      sourceName,
+      subscribed,
     };
   }
   if (media.kind === "prepare-failed") {
@@ -1588,6 +1629,8 @@ export async function loadPlayerViewShell(
       queue: sessionQueue().state(),
       attentionMode,
       watchlistSaved,
+      sourceName,
+      subscribed,
     };
   }
   return {
@@ -1619,6 +1662,8 @@ export async function loadPlayerViewShell(
     queue: sessionQueue().state(),
     attentionMode,
     watchlistSaved,
+    sourceName,
+    subscribed,
   };
 }
 

@@ -114,7 +114,7 @@ export default async function PlayerPage({
   });
 
   return (
-    <AppShell mode={host.mode} session={host.session.state}>
+    <AppShell mode={host.mode} session={host.session.state} guide="hidden">
       <PlayerSurface
         view={view}
         enrichments={enrichments}

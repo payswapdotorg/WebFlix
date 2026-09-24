@@ -1645,10 +1645,27 @@ html[data-theme="light"] .wfx-btn--primary:hover {
  * full-bleed player ≤1000).
  * ------------------------------------------------------------------------- */
 
+/* R29-B — THE WATCH ROUTE'S GUIDE LAW (N21/D13): the rail stays CLOSED
+ * on the watch surface (the corpus watch anatomy: the content spans the
+ * viewport — the player sits at x=16 at 1440 with the guide closed, the
+ * corpus's own "guide-collapsed" measure); the hamburger opens the
+ * overlay drawer at any width (the GuideToggle island's watch
+ * behavior — the drawer rules above stay authoritative when open). */
+.wfx-shell[data-wfx-shell-guide="hidden"] .wfx-rail {
+  display: none;
+}
+
+html[data-wfx-guide="drawer"] .wfx-shell[data-wfx-shell-guide="hidden"] .wfx-rail {
+  display: flex;
+}
+
 .wfx-player {
   max-width: none;
   margin: 0;
-  padding: 24px 24px 48px;
+  /* R29-B (D14) — the corpus page margins: 16px @1440 (the measured
+     player x=16), 24px @≥1600; the narrow band keeps the full-bleed
+     player below. */
+  padding: 16px 16px 48px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -1660,9 +1677,20 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   }
 }
 
+/* The two-column band (≥1016): the corpus's exact watch geometry — the
+ * secondary column runs flush to the viewport's right edge (player
+ * x=16 w=996, secondary 412 @x=1028 at 1440: 16+996+16+412 = 1440 —
+ * the measured page margins apply to the player's side; the corpus
+ * itself measures the secondary ending at the viewport edge). */
+@media (min-width: 1016px) {
+  .wfx-player {
+    padding-right: 0;
+  }
+}
+
 @media (min-width: 1600px) {
   .wfx-player {
-    padding: 24px 32px 48px;
+    padding: 24px 24px 48px;
   }
 }
 
@@ -1777,15 +1805,18 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   margin: 12px 0 0;
 }
 
-/* The owner row LEFT: 40px avatar + source name + honest meta. */
-.wfx-owner {
+/* R29-B — THE CHANNEL ROW (the corpus anatomy): 40px circular avatar +
+ * the source's own name (bold 14–16px) + 12px secondary meta; the
+ * sub-count stays honestly ABSENT (the source carries none — never a
+ * fabricated number). */
+.wfx-channel {
   display: flex;
   align-items: center;
   gap: 12px;
   min-width: 0;
 }
 
-.wfx-owner__avatar {
+.wfx-channel__avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1799,18 +1830,83 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   flex: none;
 }
 
-.wfx-owner__name {
+.wfx-channel__id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.wfx-channel__name {
   margin: 0;
   font-size: 16px;
   font-weight: 500;
   line-height: 22px;
 }
 
-.wfx-owner__meta {
+.wfx-channel__meta {
   margin: 0;
   font-size: 12px;
   line-height: 18px;
   color: var(--wfx-text-dim);
+}
+
+.wfx-channel__note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-channel__note--error {
+  color: var(--wfx-accent);
+}
+
+/* The SUBSCRIBE pill (the corpus: h≈36 r18, red #f03-family on light /
+ * the #f1f1f1-on-dark variant) — wired to the REAL library write (the
+ * durable Subscriptions named list), never a dead button. */
+.wfx-subscribe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 18px;
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: none;
+  transition: opacity var(--wfx-transition), background var(--wfx-transition), color var(--wfx-transition);
+}
+
+html[data-theme="light"] .wfx-subscribe {
+  background: var(--wfx-accent);
+  color: #fff;
+}
+
+.wfx-subscribe:hover {
+  opacity: 0.9;
+}
+
+.wfx-subscribe:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.wfx-subscribe--on {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+  opacity: 1;
+}
+
+.wfx-subscribe[disabled] {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* The actions row RIGHT: 40px pills, radius 20, segmented like/dislike. */
@@ -1866,8 +1962,43 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   background: var(--wfx-border);
 }
 
+/* R29-B — the STANDALONE action pill (Share / Save): the same raised
+ * pill family as the segmented control (h40 r20, the raised surface,
+ * hover one step darker) — the corpus action row's own grammar. */
+.wfx-actions__pill {
+  height: 40px;
+  border-radius: 20px;
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-actions__pill:hover {
+  background: var(--wfx-surface-2);
+}
+
+.wfx-actions__pill:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+/* The row's honest typed notes (the sync/queue/save outcomes — verbatim,
+ * never a fabricated success). */
+.wfx-actions__note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-actions__note--synced {
+  color: var(--wfx-ok);
+}
+
+.wfx-actions__note--error {
+  color: var(--wfx-accent);
+}
+
 /* The description panel: surface #272727, radius 12, 14/20, collapsed
- * 2-line + expander (the measured anatomy). */
+ * 1–2 lines + the inline "...more" expander (the corpus
+ * `#description-inline-expander` — expands inline, never a dialog). */
 .wfx-desc {
   margin: 12px 0 0;
   padding: 12px;
@@ -1877,30 +2008,19 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   line-height: 20px;
 }
 
-.wfx-desc__summary {
-  display: block;
-  cursor: pointer;
-  list-style: none;
-}
-
-.wfx-desc__summary::-webkit-details-marker {
-  display: none;
-}
-
-.wfx-desc__collapsed {
+.wfx-desc__text {
   margin: 0;
+  color: var(--wfx-text);
+}
+
+.wfx-desc__text--clamped {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  color: var(--wfx-text);
 }
 
-.wfx-desc[open] .wfx-desc__collapsed {
-  display: block;
-}
-
-.wfx-desc__more {
+.wfx-desc__toggle {
   margin: 4px 0 0;
   padding: 0;
   border: none;
@@ -1910,6 +2030,15 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   font-weight: 500;
   color: var(--wfx-text);
   cursor: pointer;
+}
+
+.wfx-desc__toggle:hover {
+  color: var(--wfx-text-dim);
+}
+
+.wfx-desc__toggle:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
 }
 
 .wfx-desc__body {
@@ -4514,14 +4643,91 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   color: var(--wfx-cta-fg);
 }
 
-.wfx-upnext__card {
+/* R29-B — THE SECTION HEAD (the corpus grammar): "Up next" + the
+ * AUTOPLAY paper-switch at the head (the `tp-yt-paper-toggle-button`
+ * anatomy — the toggle derives from the attention policy, never a raw
+ * always-on switch). */
+.wfx-upnext__head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
-  padding: 0;
-  border-radius: 0;
+  min-height: 36px;
+}
+
+.wfx-upnext__autoplay {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--wfx-text);
+}
+
+.wfx-upnext__autoplaylabel {
+  font-size: 14px;
+  color: var(--wfx-text);
+}
+
+/* The paper switch: a 36×14 r7 track + a 20px knob (the Material
+ * toggle YouTube serves): off = the muted track + the gray knob;
+ * on = the red-family track (#f03 at 35%) + the #f03 knob. */
+.wfx-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex: none;
   border: none;
+  border-radius: 10px;
   background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.wfx-switch::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 3px;
+  height: 14px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.3);
+  transition: background var(--wfx-transition);
+}
+
+.wfx-switch__knob {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--wfx-text-faint);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  transition: transform var(--wfx-transition), background var(--wfx-transition);
+}
+
+.wfx-switch--on::before {
+  background: rgba(255, 0, 51, 0.35);
+}
+
+.wfx-switch--on .wfx-switch__knob {
+  transform: translateX(16px);
+  background: var(--wfx-accent);
+}
+
+.wfx-switch:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+html[data-theme="light"] .wfx-switch::before {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+html[data-theme="light"] .wfx-switch__knob {
+  background: var(--wfx-text-faint);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .wfx-upnext__link {
@@ -4568,25 +4774,26 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   overflow: hidden;
 }
 
-.wfx-upnext__autoplay {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--wfx-text);
-  min-height: 36px;
-}
-
-.wfx-upnext__autoplay input {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--wfx-accent);
-}
-
 .wfx-upnext__policy {
   margin: 0;
   font-size: 12px;
   color: var(--wfx-text-faint);
+}
+
+/* R29-B — the compact row's right column (title 14/500 2-line + the
+ * 12px dim meta) — the corpus `ytd-compact-video-renderer` body. */
+.wfx-upnext__rowbody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wfx-upnext__itemmeta {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
 }
 
 .wfx-upnext__empty {
@@ -4676,7 +4883,8 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  /* R29-B (N22) — the corpus row pitch: 4px between the compact rows. */
+  gap: 4px;
 }
 
 /* — The share control. */
@@ -4966,6 +5174,12 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   flex-wrap: wrap;
 }
 
+/* R29-B — the WATCH ACTION ROW form (the corpus "Save" pill's wrapper):
+ * inline, no wrap — the row manages its own flow. */
+.wfx-watchlist--row {
+  flex-wrap: nowrap;
+}
+
 .wfx-watchlist__playlistform {
   display: inline-flex;
   gap: 0.4rem;
@@ -5075,6 +5289,19 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 .wfx-kebab__item:focus-visible {
   background: var(--wfx-bg-hover);
   outline: none;
+}
+
+/* R29-B — the menu's honest typed notes (the watch-state report rows'
+ * outcomes — verbatim, never a fabricated success). */
+.wfx-kebab__note {
+  padding: 6px 16px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-kebab__note--error {
+  color: var(--wfx-accent);
 }
 
 .wfx-sharemenu__item {
