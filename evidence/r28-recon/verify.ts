@@ -26,6 +26,10 @@ const open = async (url: string) => { await ab("open", url); await ab("wait", "-
 
 const report: any = { tag: TAG, base: BASE, at: new Date().toISOString(), checks: {} };
 
+// Corpus fidelity: every corpus value is measured @1440×900 (R28-A sheets).
+// The harness calibrates its own viewport so runs are comparable across boots.
+await ab("set", "viewport", 1440, 900);
+
 // ── O5 fonts ──────────────────────────────────────────────────────────────
 await open(`${BASE}/`);
 report.checks.fonts = await evalJS(`(() => {

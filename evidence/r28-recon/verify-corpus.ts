@@ -23,6 +23,9 @@ const open = async (url: string) => { await ab("open", url); await ab("wait", "-
 
 const report: any = { tag: TAG, base: BASE, at: new Date().toISOString(), checks: {} };
 
+// Corpus fidelity: every corpus value is measured @1440×900 (R28-A sheets).
+await ab("set", "viewport", 1440, 900);
+
 // ── N14 chips: h32 r8 14/500, active inverted (corpus color-survey.md) ─────
 await open(`${BASE}/`);
 report.checks.chips = await evalJS(`(() => {
