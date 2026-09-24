@@ -97,16 +97,8 @@ export function ItemCard({
   // (search-card-grammar.json) — thumbnail 360×202 left, 16px gap, the
   // meta column right (title 18/400/26 2-line, channel, meta, badges).
   if (variant === "result") {
-    return (
-      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
-        {actions !== undefined ? (
-          <CardPreview
-            itemId={card.itemId}
-            title={card.title}
-            attentionMode={actions.attentionMode}
-            previewable={false}
-          />
-        ) : null}
+    const resultCard = (
+      <>
         <a
           className="wfx-result"
           href={playHref}
@@ -163,6 +155,26 @@ export function ItemCard({
             }}
           />
         ) : null}
+      </>
+    );
+    return (
+      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
+        {actions !== undefined ? (
+          <CardPreview
+            itemId={card.itemId}
+            title={card.title}
+            attentionMode={actions.attentionMode}
+            previewable={false}
+            connectorId={card.connectorId}
+            externalRef={card.externalRef}
+            playHref={playHref}
+            cardId={card.itemId}
+          >
+            {resultCard}
+          </CardPreview>
+        ) : (
+          resultCard
+        )}
       </span>
     );
   }
@@ -232,15 +244,12 @@ export function ItemCard({
   // R24-W2 — the card with its action context: the LINK stays the card
   // (one obvious primary action), the quiet action row renders BELOW it,
   // and the policy-gated preview mount wraps the link (hover/focus).
+  // R28-B — the hover preview trigger rides the mount (the corpus: home
+  // feed + search rows + channel grids preview; the SHORTS variant never
+  // does — a different engagement model, documented in A's sheet).
   if (actions !== undefined) {
-    return (
-      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
-        <CardPreview
-          itemId={card.itemId}
-          title={card.title}
-          attentionMode={actions.attentionMode}
-          previewable={false}
-        />
+    const composedCard = (
+      <>
         <a className="wfx-card" href={playHref} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
           {body}
         </a>
@@ -256,6 +265,26 @@ export function ItemCard({
             initiallySaved: actions.savedItemIds.includes(card.itemId),
           }}
         />
+      </>
+    );
+    return (
+      <span className="wfx-cardwrap" data-wfx-cardwrap={card.itemId}>
+        {variant !== "short" ? (
+          <CardPreview
+            itemId={card.itemId}
+            title={card.title}
+            attentionMode={actions.attentionMode}
+            previewable={false}
+            connectorId={card.connectorId}
+            externalRef={card.externalRef}
+            playHref={playHref}
+            cardId={card.itemId}
+          >
+            {composedCard}
+          </CardPreview>
+        ) : (
+          composedCard
+        )}
       </span>
     );
   }

@@ -62,85 +62,12 @@ import {
   idleEmbedControlSnapshot,
   subscribeActiveEmbedControl,
 } from "@/components/player/embed-session-client";
-
-/** The provider's own privacy-enhanced embed hosts (the cookie-free surface). */
-const YOUTUBE_PRIVACY_EMBED_HOST = "www.youtube-nocookie.com";
-
-/** The YouTube embed hosts the privacy host substitution covers. */
-const YOUTUBE_EMBED_HOSTS: ReadonlySet<string> = new Set([
-  "www.youtube.com",
-  "youtube.com",
-  "m.youtube.com",
-]);
-
-/** The providers whose documented embed control API the stage binds. */
-function providerFamilyOf(url: string): "youtube" | "unknown" {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase();
-    const isYouTubeHost =
-      YOUTUBE_EMBED_HOSTS.has(host) || host === YOUTUBE_PRIVACY_EMBED_HOST;
-    if (isYouTubeHost && parsed.pathname.startsWith("/embed/")) return "youtube";
-  } catch {
-    // A non-parsable URL never reaches this stage (the surface validates).
-  }
-  return "unknown";
-}
-
-/**
- * The sandbox tokens of the CONTROL-BOUND embed: the provider's player
- * needs its own origin (`allow-same-origin`) for its documented embed
- * control channel to answer (the empirical iframe-security restriction
- * above); the viewer's provider identity stays isolated through the
- * provider's privacy-enhanced embed host (a separate origin + cookie
- * jar), so the provider page never sees the viewer's `youtube.com`
- * session. The no-control embed keeps the opaque-origin tokens VERBATIM.
- */
-const CONTROL_BOUND_SANDBOX =
-  "allow-scripts allow-same-origin allow-forms allow-popups allow-presentation";
-
-/** The opaque-origin tokens (the strictest posture — the no-control embed's). */
-const OPAQUE_ORIGIN_SANDBOX =
-  "allow-scripts allow-forms allow-popups allow-presentation";
-
-/**
- * The presentation src: the provider's embed URL with the provider's own
- * embed-API parameter where the family documents one, served from the
- * provider's own privacy-enhanced embed host where the control channel
- * binds (the provider's published cookie-free surface for the SAME embed
- * — the video id, the path, and every provider parameter stay verbatim;
- * the additions are the provider's own documented embed mechanisms:
- * the privacy host and the published control switch).
- *
- * R28-B — ONE-CLICK PLAY: the YouTube family's src additionally carries
- * the provider's own documented `autoplay=1&mute=1` pair (muted autoplay
- * is the one autoplay every browser permits without a same-document user
- * gesture — the card click IS the gesture, but the navigation consumes
- * the activation, so unmuted autoplay would be blocked and the video
- * would sit paused: exactly the operator's "click 3 times" complaint).
- * The stage's UNMUTE AFFORDANCE (below) restores the sound with one click
- * through the provider's own control channel — the click-to-play path is
- * ONE click, and the sound is one more, honestly.
- */
-function presentationSrcOf(url: string): string {
-  if (providerFamilyOf(url) !== "youtube") return url;
-  try {
-    const parsed = new URL(url);
-    if (YOUTUBE_EMBED_HOSTS.has(parsed.hostname.toLowerCase())) {
-      parsed.hostname = YOUTUBE_PRIVACY_EMBED_HOST;
-    }
-    if (!parsed.searchParams.has("enablejsapi")) {
-      parsed.searchParams.set("enablejsapi", "1");
-    }
-    if (!parsed.searchParams.has("autoplay")) {
-      parsed.searchParams.set("autoplay", "1");
-      parsed.searchParams.set("mute", "1");
-    }
-    return parsed.toString();
-  } catch {
-    return url;
-  }
-}
+import {
+  CONTROL_BOUND_SANDBOX,
+  OPAQUE_ORIGIN_SANDBOX,
+  presentationSrcOf,
+  providerFamilyOf,
+} from "@/components/player/embed-presentation";
 
 /** The embed stage (the contained iframe + the provider control binding). */
 export function EmbedStage({

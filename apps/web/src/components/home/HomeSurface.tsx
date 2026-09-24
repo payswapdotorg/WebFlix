@@ -32,6 +32,11 @@ import type { DiscoveryBundle } from "@/host/discoverability";
 import { ChipBar, type ChipCategory } from "@/components/home/ChipBar";
 import { ItemCard, type CardActionContextInput } from "@/components/cards/ItemCard";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
+// R28-B (resumption fix) — the 1d32ed8 commit's href-builder extraction
+// left these two references unimported (the wiped session's last commit
+// shipped mid-refactor); restored verbatim from the extraction's home.
+import { itemDetailHref } from "@/app/href";
+import { placeholderMonogram } from "@/components/ui/format";
 
 /** One typed section-status renderer (error sections are errors, verbatim). */
 export function SectionStatus({ status, title }: { readonly status: SectionStatusView; readonly title: string }): JSX.Element | null {

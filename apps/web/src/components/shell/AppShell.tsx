@@ -50,6 +50,9 @@ import { PlayIntentRecorder } from "./PlayIntentRecorder";
 // R26-W2 — the artwork fallback controller (one island; every real
 // artwork image on any surface falls back through it on load failure).
 import { ArtworkFallback } from "@/components/cards/ArtworkFallback";
+// R28-B — the hover preview singleton (the page's ONE preview overlay —
+// the corpus `ytd-video-preview` grammar; the card triggers drive it).
+import { HoverPreviewLayer } from "@/components/cards/HoverPreviewLayer";
 
 /** One shell navigation icon per surface (item surfaces are not in the shell nav). */
 const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
@@ -168,6 +171,9 @@ export function AppShell({
           surface's real source artwork: a failed artwork URL falls back to
           the typed placeholder that always renders beneath it). */}
       <ArtworkFallback />
+      {/* R28-B — the hover preview singleton layer (renders nothing until
+          a card's dwell opens it; the element persists for reuse). */}
+      <HoverPreviewLayer />
       <header className="wfx-topbar">
         <div className="wfx-topbar__side wfx-topbar__side--left">
           <GuideToggle />
