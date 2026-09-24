@@ -1,0 +1,4 @@
+✗ Evaluation error: SyntaxError: Failed to execute 'querySelector' on 'Document': 'ytd-watch-metadata button[aria-label*=more actions i], #actions button[aria-label*=More i]' is not a valid selector.
+    at q (<anonymous>:5:37)
+    at <anonymous>:32:17
+    at <anonymous>:93:3
