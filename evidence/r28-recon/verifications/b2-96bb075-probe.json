@@ -1,0 +1,369 @@
+{
+  "tag": "b2-96bb075",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T07:25:55.865Z",
+  "checks": {
+    "hoverSingletonBefore": {
+      "count": 1,
+      "states": [
+        "idle"
+      ]
+    },
+    "hoverTarget": {
+      "cardBefore": {
+        "rect": [
+          240,
+          270,
+          288,
+          242
+        ],
+        "transform": "none"
+      },
+      "found": true,
+      "href": "/player?id=wfxitm_12047VYNZ81MAC4JW807JE9XDV&connector=wfx-experience-service&ref=mPZkdNFkNps&title=Rain+Sound+On+Window+with+Thunder+Sounds%E3%85%A3Heavy+Rain+for+Sleep%2C+Study+and+Relaxation%2C+Meditation&type=video&duration=28814000",
+      "thumb": {
+        "h": 162,
+        "w": 288,
+        "x": 240,
+        "y": 270
+      },
+      "x": 384,
+      "y": 351
+    },
+    "hoverTimeline": [
+      {
+        "t": 50,
+        "box": [
+          -9999,
+          -9999,
+          0,
+          0
+        ],
+        "frameSrc": null,
+        "opacity": "0",
+        "open": false,
+        "present": true,
+        "state": "idle"
+      },
+      {
+        "t": 100,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "0.408334",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 150,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 200,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 250,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 300,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 350,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 400,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 450,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 500,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 550,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 600,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 650,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      },
+      {
+        "t": 700,
+        "box": [
+          228,
+          258,
+          312,
+          186
+        ],
+        "frameSrc": null,
+        "opacity": "1",
+        "open": true,
+        "present": true,
+        "state": "resolving"
+      }
+    ],
+    "hoverLongDwell": {
+      "box": [
+        312,
+        186
+      ],
+      "open": true,
+      "present": true,
+      "state": "playing"
+    },
+    "cardAfter": {
+      "rect": [
+        240,
+        270,
+        288,
+        242
+      ],
+      "transform": "none"
+    },
+    "hoverUnhover": [
+      {
+        "afterMs": 100,
+        "display": "block",
+        "frameCount": 1,
+        "opacity": "0.0752206",
+        "open": false,
+        "present": true,
+        "state": "playing",
+        "visibility": "visible"
+      },
+      {
+        "afterMs": 250,
+        "display": "block",
+        "frameCount": 0,
+        "opacity": "0",
+        "open": false,
+        "present": true,
+        "state": "playing",
+        "visibility": "visible"
+      },
+      {
+        "afterMs": 450,
+        "display": "block",
+        "frameCount": 0,
+        "opacity": "0",
+        "open": false,
+        "present": true,
+        "state": "playing",
+        "visibility": "visible"
+      },
+      {
+        "afterMs": 800,
+        "display": "block",
+        "frameCount": 0,
+        "opacity": "0",
+        "open": false,
+        "present": true,
+        "state": "playing",
+        "visibility": "visible"
+      }
+    ],
+    "kebab": {
+      "count": 0,
+      "found": false
+    },
+    "commentsAnon": {
+      "composerRow": "Add a comment...",
+      "headerFont": "14px/400",
+      "headerText": "0 Comments",
+      "region": true,
+      "regionCls": "wfx-comments",
+      "signedInComposer": false,
+      "sortLabels": [
+        "Top",
+        "Newest"
+      ]
+    },
+    "commentsAnonGate": {
+      "editorMounted": false,
+      "items": 2,
+      "signInSection": true
+    },
+    "commentsSeeded": {
+      "authorFont": null,
+      "authorText": null,
+      "avatarBox": null,
+      "avatarRadius": null,
+      "bodyFont": null,
+      "bodyText": null,
+      "headerFont": "14px/400",
+      "headerText": "3 Comments",
+      "pills": [],
+      "replyExpander": "1 reply",
+      "showMore": true,
+      "threadCount": 2
+    },
+    "commentsSorted": {
+      "order": [
+        "?",
+        "?"
+      ]
+    },
+    "shareDialogDeep": {
+      "box": "470x337",
+      "found": true,
+      "linkFieldFont": "14px/400",
+      "linkFieldValue": "https://youtu.be/3uyGhtARP4M",
+      "startAtPresent": true,
+      "tileCount": 9,
+      "tileRow": [
+        "Embed",
+        "Messages",
+        "WhatsApp",
+        "Facebook",
+        "X",
+        "Email",
+        "Reddit",
+        "Pinterest",
+        "LinkedIn"
+      ]
+    },
+    "shareCopyToast": {
+      "bodyMatch": null,
+      "texts": [
+        "Install app",
+        "This browser did not allow the clipboard"
+      ],
+      "toastCount": 2
+    },
+    "pwaPrompt": {
+      "boxes": [],
+      "count": 0
+    },
+    "themeAfterToggle": {
+      "bodyBg": "rgb(15, 15, 15)",
+      "dataTheme": "dark",
+      "storedChoice": "dark"
+    }
+  }
+}

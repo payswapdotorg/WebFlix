@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) Yes, the layout follows the YouTube structure (top bar, left rail, chip filter bar, grid of video cards, no hero banner).\n2) Yes, the background is a light/near-white field consistent with YouTube's light default.\n3) Yes, the cards show real photographic thumbnails.\n4) Yes, there is a persistent \"Install app\" floating prompt in the left rail that YouTube does not show in this manner on desktop.\n5) Yes, there is non-YouTube chrome: the branding says \"WebFlix\" instead of \"YouTube,\" includes a \"live service\" badge, and uses \"wfx-experience-service\" as the channel name for all videos.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790235205,
+  "id": "202609241533210cdae8b95ec14509",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609241533210cdae8b95ec14509",
+  "usage": {
+    "completion_tokens": 140,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1789,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1929
+  }
+}
