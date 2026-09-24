@@ -60,12 +60,8 @@ echo "--- verify.ts (operator complaints) ---"
 ( cd "$REPO" && timeout 420 bun evidence/r28-recon/verify.ts "$BASE" "$TAG" 2>&1 | tail -30 )
 echo "--- verify-corpus.ts (corpus spec) ---"
 ( cd "$REPO" && timeout 420 bun evidence/r28-recon/verify-corpus.ts "$BASE" "$TAG" 2>&1 | tail -60 )
-
-# 5. optional evidence hook (screenshots / feature evals) — server still up
-if [ -n "$HOOK" ] && [ -f "$HOOK" ]; then
-  echo "--- evidence hook: $HOOK ---"
-  ( cd "$REPO" && BASE="$BASE" TAG="$TAG" source "$HOOK" 2>&1 | tail -20 )
-fi
+echo "--- capture.ts (PNG evidence, real clicks) ---"
+( cd "$REPO" && timeout 420 bun evidence/r28-recon/capture.ts "$BASE" "$TAG" 2>&1 | tail -80 )
 
 # 6. teardown (next dev spawns a next-server child — kill the tree, then the port)
 kill $(cat /home/z/.r28c/b-server.pid) 2>/dev/null
