@@ -119,6 +119,46 @@ report.checks.masthead = await evalJS(`(() => {
   };
 })()`);
 
+// mic (D3/N1): the honesty gate — a mic that ships must carry a REAL speech
+// transport. Pre-instrument getUserMedia + WebSpeech + a network tap, click,
+// then read the instrument. A decorative mic (no transport) = RED.
+report.checks.micTransport = { present: false };
+const micPresent = await evalJS(`(() => {
+  const mic = [...document.querySelectorAll('header button, header [role=button], header a, [aria-label*=mic i]')].find(e => /mic|voice|microphone|search with your voice/i.test(e.getAttribute('aria-label') || e.textContent || ''));
+  if (!mic) return false;
+  mic.setAttribute('data-r29c-mic', '1');
+  return true;
+})()`);
+if (micPresent) {
+  await evalJS(`(() => {
+    window.__r29Mic = { getUserMediaCalls: [], speechApiUsed: false, mediaRecorder: false };
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const orig = navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);
+      navigator.mediaDevices.getUserMedia = (c) => { window.__r29Mic.getUserMediaCalls.push(JSON.stringify(c)); return orig(c); };
+    }
+    window.__r29Mic.speechApiUsed = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    window.__r29Mic.mediaRecorder = !!window.MediaRecorder;
+    return 'instrumented';
+  })()`);
+  await ab("click", "[data-r29c-mic='1']");
+  await sleep(1500);
+  report.checks.micTransport = await evalJS(`(() => {
+    const overlay = [...document.querySelectorAll('[role=dialog], [class*=voice], [class*=mic], [class*=overlay]')].filter(e => e.getBoundingClientRect().width > 80).map(e => ({ cls: e.className.toString().slice(0, 40), text: (e.textContent || '').slice(0, 60) })).slice(0, 4);
+    const instrument = window.__r29Mic || {};
+    return { present: true,
+      overlay, instrument,
+      searchBoxFocused: !!document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA'),
+      permissionDenied: /permission|denied|allow.*microphone|microphone.*block/i.test(document.body.innerText.slice(0, 4000)) };
+  })()`);
+  await shot("mic-after-click");
+  // try a second observation window (a listening state may take a moment)
+  await sleep(1200);
+  report.checks.micTransport.lateState = await evalJS(`(() => ({
+    instrument: window.__r29Mic || null,
+    overlayCount: [...document.querySelectorAll('[role=dialog], [class*=voice], [class*=mic]')].filter(e => e.getBoundingClientRect().width > 80).length,
+  }))()`);
+}
+
 // gear menu open + row census (honesty: every row a real surface or honestly absent)
 const gearOpen = await evalJS(`(() => {
   const g = [...document.querySelectorAll('header button, header [role=button], header a')].find(e => /settings|gear|preferences/i.test(e.getAttribute('aria-label') || e.textContent || ''));
@@ -399,6 +439,19 @@ if (report.checks.miniplayer?.control) {
     commandToast: (document.body.innerText.match(/(picture-in-picture|miniplayer|refused)[^\\n]{0,50}/i) || [null])[0],
   }))()`);
   await shot("watch-miniplayer");
+  // persistence law (corpus: "persistent across navigation") — navigate home
+  // and check whether a floating player survives (only meaningful if the
+  // in-app floating player exists)
+  if (report.checks.miniplayer.after?.floatingMini) {
+    await open(`${BASE}/`);
+    await sleep(1200);
+    report.checks.miniplayer.persistence = await evalJS(`(() => ({
+      path: location.pathname,
+      floatingMiniSurvives: !!document.querySelector('[data-wfx-miniplayer], [class*=miniplayer][class*=floating], [class*=miniplayer][class*=open]'),
+      floatingBox: (() => { const f = document.querySelector('[class*=miniplayer]'); if (!f) return null; const b = f.getBoundingClientRect(); return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) }; })(),
+    }))()`);
+    await shot("miniplayer-persistence");
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
