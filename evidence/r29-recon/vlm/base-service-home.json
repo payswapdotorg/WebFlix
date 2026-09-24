@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the image provided, here are the answers to your questions:\n\n1.  **Yes**, the overall background is a light/near-white field.\n2.  The video cards show **real photographic thumbnails** (images of rain, lightning, anime characters, etc.).\n3.  **Yes**, there is a row/section of vertical (portrait) thumbnail cards labeled \"**Shorts**\".\n4.  **Yes**, the cards show a channel-name line under the title; it reads \"**From wfx-experience-service**\" for most cards.\n5.  **No**, there is no visible microphone/voice-search button in the top bar (only a magnifying glass icon).\n6.  **Yes**, some thumbnails show a small dark time-duration badge in their bottom-right corner. The text looks like \"**10h 0m**\", \"**48m 6s**\", or \"**Video**\" rather than a standard \"12:34\" format.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790243275,
+  "id": "20260924174750179c601bccae4a63",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260924174750179c601bccae4a63",
+  "usage": {
+    "completion_tokens": 198,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1829,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2027
+  }
+}
