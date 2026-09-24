@@ -198,6 +198,15 @@ export interface PlayerChromeProps {
    * only when queued — never a dead button).
    */
   readonly nextHref?: string | null;
+  /**
+   * R29-B (N25) — THE COMPACT MINIPLAYER FORM: the dock's 400×225
+   * chrome — the theater + next controls stay absent (the mini's own
+   * control set), the miniplayer control becomes EXPAND (back to the
+   * full player surface), and the live position writes to the dock's
+   * sessionStorage entry (the same-origin persistence seam — the honest
+   * cross-navigation continuation).
+   */
+  readonly compact?: boolean;
 }
 
 /** The familiar speed steps (the settings cluster's vocabulary). */
@@ -785,31 +794,100 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
     }
   }, []);
 
-  /** The miniplayer truth (Document PiP where the browser exposes it). */
-  const pipAvailable = typeof document !== "undefined" && "documentPictureInPicture" in document;
+  /**
+   * R29-B (N25) — THE IN-APP MINIPLAYER (the corpus grammar: "i" or the
+   * miniplayer control docks the playback as a bottom-right floating
+   * player, persistent across navigation). The pre-R29 Document-PiP
+   * stand-in (the platform's own always-on-top window) is retired in
+   * favor of the corpus's IN-APP dock — no platform window, no separate
+   * document; the SAME /player route in its compact form.
+   *
+   * THE DOCK FLOW (the full player surface): store the dock state (the
+   * player href + the title + the LIVE position) in sessionStorage —
+   * the dock island on every page renders the compact stage from it,
+   * and the same-origin compact player advances the stored position as
+   * it plays — then navigate to the browse surface (the honest
+   * "minimize": the item keeps playing in the corner; YouTube's own
+   * behavior, the MPA's own mechanism — the iframe re-mounts per page,
+   * resuming from the real position, never claimed otherwise).
+   */
   const toggleMiniplayer = useCallback((): void => {
-    const pipWindow = (document as Document & { documentPictureInPicture?: { window: Window | null } })
-      .documentPictureInPicture?.window;
-    if (pipWindow !== undefined && pipWindow !== null) {
-      pipWindow.close();
+    if (props.compact === true) {
+      // EXPAND: the compact form's own control — back to the full
+      // player surface at the live position (the dock clears; the
+      // parent window is the same-origin dock host).
+      const url = new URL(window.location.href);
+      url.searchParams.delete("miniplayer");
+      if (visiblePositionMs > 0) url.searchParams.set("resume", String(Math.round(visiblePositionMs)));
+      try {
+        sessionStorage.removeItem("wfx-miniplayer");
+      } catch {
+        // The persistence seam is unavailable — the navigation still lands.
+      }
+      const dockHost = window.parent;
+      if (dockHost !== null && dockHost !== window) {
+        dockHost.location.assign(url.pathname + url.search);
+      } else {
+        window.location.assign(url.pathname + url.search);
+      }
       return;
     }
-    const api = (document as Document & {
-      documentPictureInPicture?: { requestWindow: (options: { width: number; height: number }) => Promise<Window> };
-    }).documentPictureInPicture;
-    if (api === undefined) {
-      setCommand({ ok: false, detail: "this browser does not expose picture-in-picture" });
+    const url = new URL(window.location.href);
+    url.searchParams.delete("miniplayer");
+    url.searchParams.delete("resume");
+    if (visiblePositionMs > 0) url.searchParams.set("resume", String(Math.round(visiblePositionMs)));
+    const title =
+      document.querySelector<HTMLElement>("[data-wfx-player-title]")?.textContent ?? "Playback";
+    try {
+      sessionStorage.setItem(
+        "wfx-miniplayer",
+        JSON.stringify({
+          href: url.pathname + url.search,
+          title,
+          positionMs: Math.round(visiblePositionMs),
+        }),
+      );
+    } catch {
+      // The persistence seam is unavailable — the dock cannot survive
+      // navigation without it; the honest refusal (never a fake dock).
+      setCommand({ ok: false, detail: "this browser context cannot keep a miniplayer" });
       return;
     }
-    void api
-      .requestWindow({ width: 480, height: 270 })
-      .then(() => {
-        setCommand({ ok: true, detail: null });
-      })
-      .catch(() => {
-        setCommand({ ok: false, detail: "the platform refused the picture-in-picture window" });
-      });
-  }, []);
+    window.location.assign("/");
+  }, [props.compact, visiblePositionMs]);
+
+  /**
+   * R29-B (N25) — THE COMPACT FORM'S POSITION PERSISTENCE: the dock's
+   * compact player advances the stored dock position every ~3s (the
+   * same-origin sessionStorage seam — the dock island and the compact
+   * page share the tab's storage), so each navigation resumes from the
+   * REAL position. Evidence-only: the position written is the same
+   * visiblePositionMs the chrome renders.
+   */
+  useEffect(() => {
+    if (props.compact !== true) return;
+    const interval = setInterval(() => {
+      try {
+        const raw = sessionStorage.getItem("wfx-miniplayer");
+        if (raw === null) return;
+        const parsed = JSON.parse(raw) as { href?: unknown; title?: unknown; positionMs?: unknown };
+        if (typeof parsed.href !== "string" || typeof parsed.title !== "string") return;
+        sessionStorage.setItem(
+          "wfx-miniplayer",
+          JSON.stringify({
+            href: parsed.href,
+            title: parsed.title,
+            positionMs: Math.round(visiblePositionMs),
+          }),
+        );
+      } catch {
+        // Best-effort persistence — the playback itself is unaffected.
+      }
+    }, 3000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [props.compact, visiblePositionMs]);
 
   /**
    * Set the session rate: applied to the WebFlix-owned stage's media, or
@@ -890,8 +968,16 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
         case "t": {
           // R27-W2 — T is THEATER (the corpus keyboard grammar: "t
           // theater"); the shortcut sheet lives in the settings menu's
-          // second level + the ? key.
-          toggleTheater();
+          // second level + the ? key. R29-B: the compact miniplayer form
+          // carries no theater state (the mini's own control set).
+          if (props.compact !== true) toggleTheater();
+          break;
+        }
+        case "i": {
+          // R29-B (N25) — I is THE IN-APP MINIPLAYER (the corpus keyboard
+          // grammar: "i miniplayer" — the dock on the full surface, the
+          // expand action in the compact form).
+          toggleMiniplayer();
           break;
         }
         case "?": {
@@ -1031,7 +1117,10 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           {/* R27-W2 — THE NEXT CONTROL (the corpus: next when queued —
               the session queue head's real player href; never a dead
               button). */}
-          {props.nextHref !== undefined && props.nextHref !== null && props.nextHref.length > 0 ? (
+          {props.compact !== true &&
+          props.nextHref !== undefined &&
+          props.nextHref !== null &&
+          props.nextHref.length > 0 ? (
             <a
               className="wfx-chrome__btn"
               href={props.nextHref}
@@ -1190,6 +1279,10 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                       <dd>Back or forward 5 seconds</dd>
                     </div>
                     <div>
+                      <dt>↑ / ↓</dt>
+                      <dd>Volume up or down</dd>
+                    </div>
+                    <div>
                       <dt>0–9</dt>
                       <dd>Jump to 0%–90%</dd>
                     </div>
@@ -1204,6 +1297,10 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                     <div>
                       <dt>T</dt>
                       <dd>Theater view</dd>
+                    </div>
+                    <div>
+                      <dt>I</dt>
+                      <dd>Miniplayer</dd>
                     </div>
                     <div>
                       <dt>C</dt>
@@ -1271,6 +1368,10 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                         <dd>Back or forward 5 seconds</dd>
                       </div>
                       <div>
+                        <dt>↑ / ↓</dt>
+                        <dd>Volume up or down</dd>
+                      </div>
+                      <div>
                         <dt>0–9</dt>
                         <dd>Jump to 0%–90%</dd>
                       </div>
@@ -1285,6 +1386,10 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
                       <div>
                         <dt>T</dt>
                         <dd>Theater view</dd>
+                      </div>
+                      <div>
+                        <dt>I</dt>
+                        <dd>Miniplayer</dd>
                       </div>
                       <div>
                         <dt>C</dt>
@@ -1310,28 +1415,37 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
             <Icon name={fullscreenOn ? "fullscreenExit" : "fullscreen"} size={22} />
           </button>
           {/* R27-W2 — THE THEATER CONTROL (the t key's own button — the
-              corpus bar's right cluster). */}
-          <button
-            type="button"
-            className="wfx-chrome__btn"
-            onClick={toggleTheater}
-            aria-label={theaterOn ? "Exit theater view (t)" : "Theater view (t)"}
-            aria-pressed={theaterOn}
-            data-wfx-chrome-theater
-          >
-            <Icon name="theater" size={22} />
-          </button>
-          {props.webflixOwnsStage || pipAvailable ? (
+              corpus bar's right cluster). R29-B (N25): absent in the
+              compact miniplayer form (the mini's own control set); the
+              t key follows the same law. */}
+          {props.compact !== true ? (
             <button
               type="button"
               className="wfx-chrome__btn"
-              onClick={toggleMiniplayer}
-              aria-label="Miniplayer (picture-in-picture)"
-              data-wfx-chrome-miniplayer
+              onClick={toggleTheater}
+              aria-label={theaterOn ? "Exit theater view (t)" : "Theater view (t)"}
+              aria-pressed={theaterOn}
+              data-wfx-chrome-theater
             >
-              <Icon name="miniplayer" size={22} />
+              <Icon name="theater" size={22} />
             </button>
           ) : null}
+          {/* R29-B (N25) — THE MINIPLAYER CONTROL (the i key's own
+              button — the corpus bar's right cluster): docks the
+              playback into the persistent in-app dock (the full
+              surface) or expands back to the full player (the compact
+              form). No platform API needed — the in-app dock is
+              WebFlix's own surface. */}
+          <button
+            type="button"
+            className="wfx-chrome__btn"
+            onClick={toggleMiniplayer}
+            aria-label={props.compact === true ? "Expand (i)" : "Miniplayer (i)"}
+            data-wfx-chrome-miniplayer
+            data-wfx-miniplayer-action={props.compact === true ? "expand" : "dock"}
+          >
+            <Icon name={props.compact === true ? "fullscreen" : "miniplayer"} size={22} />
+          </button>
         </div>
       </div>
 

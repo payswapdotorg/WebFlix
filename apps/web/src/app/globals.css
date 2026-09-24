@@ -402,6 +402,262 @@ body {
   color: var(--wfx-text-faint);
 }
 
+/* ---------------------------------------------------------------------------
+ * R29-B (N12) — THE SIGN-IN PILL: the corpus masthead CTA anatomy
+ * (40px height, radius 20px, #065fd4, 14px/500, border 1px
+ * rgba(0,0,0,0.2), the person mark + "Sign in") wired to the REAL
+ * identity path (Settings▸General — the session truth + the honest
+ * sign-in/profile controls; never a fabricated account surface).
+ * ------------------------------------------------------------------------- */
+.wfx-signin {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px 0 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  background: #065fd4;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  text-decoration: none;
+  cursor: pointer;
+  flex: none;
+  transition: filter var(--wfx-transition);
+}
+
+.wfx-signin:hover {
+  filter: brightness(1.1);
+}
+
+.wfx-signin:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------------
+ * R29-B (N24) — THE SETTINGS GEAR MENU: the corpus multi-page popup
+ * (the paper-menu family: the raised surface, r12, the corpus dialog
+ * shadow). Rows are 40px 14px/400 with the hover raise; the subpages
+ * (Appearance / Keyboard shortcuts) carry the back chevron head.
+ * ------------------------------------------------------------------------- */
+.wfx-gear {
+  position: relative;
+}
+
+.wfx-gear__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 300px;
+  max-width: min(92vw, 360px);
+  padding: 8px 0;
+  background: var(--wfx-menu);
+  border: 1px solid var(--wfx-border);
+  border-radius: 12px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 24px 12px;
+  z-index: 90;
+}
+
+.wfx-gear__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.wfx-gear__row:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-gear__row--active {
+  font-weight: 500;
+}
+
+.wfx-gear__row--active svg {
+  color: var(--wfx-text);
+}
+
+.wfx-gear__chevron {
+  color: var(--wfx-text-dim);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.wfx-gear__subhead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 8px 4px;
+  border-bottom: 1px solid var(--wfx-border);
+  margin: 0 8px 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.wfx-gear__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.wfx-gear__back:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-gear__absence {
+  margin: 8px 16px 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-gear__keys {
+  margin: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wfx-gear__keys div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wfx-gear__keys dt {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--wfx-text);
+  white-space: nowrap;
+}
+
+.wfx-gear__keys dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--wfx-text-dim);
+  text-align: right;
+}
+
+/* ---------------------------------------------------------------------------
+ * R29-B (N25) — THE MINIPLAYER DOCK: the persistent bottom-right
+ * floating player (the corpus "i miniplayer" grammar). 400×225 stage
+ * (16:9) + the 36px title row; the corpus dialog shadow family; the
+ * safe-area inset respected on notched devices.
+ * ------------------------------------------------------------------------- */
+.wfx-dock {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  z-index: 120;
+  border-radius: 12px;
+  background: var(--wfx-menu);
+  border: 1px solid var(--wfx-border);
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 24px 12px;
+  overflow: hidden;
+}
+
+.wfx-dock__head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 4px 0 12px;
+}
+
+.wfx-dock__title {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--wfx-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.wfx-dock__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+  flex: none;
+  text-decoration: none;
+}
+
+.wfx-dock__action:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-dock__stage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: none;
+  background: #000;
+}
+
+/* ---------------------------------------------------------------------------
+ * R29-B (N25) — THE COMPACT MINIPLAYER DOCUMENT: the /player route's
+ * `&miniplayer=1` form — the stage + chrome ONLY, filling the dock
+ * iframe's 400×225 (the same Stage + PlayerChrome, the compact truth:
+ * no padding, no layout grid, no watch anatomy).
+ * ------------------------------------------------------------------------- */
+.wfx-minidoc {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #000;
+}
+
+.wfx-minidoc .wfx-player,
+.wfx-player--compact {
+  padding: 0;
+  margin: 0;
+  max-width: none;
+  width: 100%;
+  height: 100%;
+}
+
+.wfx-player--compact .wfx-player__stagewrap {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
 .wfx-mode-badge {
   display: inline-flex;
   align-items: center;
@@ -4240,10 +4496,24 @@ html[data-theme="light"] .wfx-subscribe {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* R29-B (N25) — THE THEATER RE-ANCHOR: the corpus measure is 1296px
+     @1440 (the full CONTENT width — watch-page-anatomy.md's
+     "996→1296 (theater)→full"), NOT the 100vw bleed the pre-R29 CSS
+     carried. The width caps at 1296 and centers IN THE VIEWPORT (72px
+     gutters at 1440 — the page container's own 16px-left/0-right
+     asymmetry is cancelled by the explicit correction; the ≥1600 band
+     corrects for its 24px padding). */
   .wfx-player--theater .wfx-player__stagewrap {
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
+    width: min(1296px, calc(100vw - 144px));
+    margin-left: calc((100vw - min(1296px, calc(100vw - 144px))) / 2 - 16px);
+    margin-right: auto;
     border-radius: 0;
+  }
+}
+
+@media (min-width: 1600px) {
+  .wfx-player--theater .wfx-player__stagewrap {
+    margin-left: calc((100vw - min(1296px, calc(100vw - 144px))) / 2 - 24px);
   }
 }
 

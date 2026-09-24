@@ -23,7 +23,7 @@
 
 import { describe, expect, it } from "bun:test";
 
-import { metadata, viewport } from "../src/app/layout";
+import RootLayout, { metadata, viewport } from "../src/app/layout";
 
 const manifestFile = Bun.file(new URL("../public/manifest.webmanifest", import.meta.url));
 const manifest = (await manifestFile.json()) as {
@@ -131,6 +131,31 @@ function iconLinks(key: "icon" | "apple"): Array<{ url: string; type?: string; s
   return entries as Array<{ url: string; type?: string; sizes?: string }>;
 }
 
+/** Walk a React element tree (depth-first) and return the first match. */
+function findElement(
+  node: unknown,
+  matches: (element: { type: unknown; props: Record<string, unknown> }) => boolean,
+): { type: unknown; props: Record<string, unknown> } | undefined {
+  if (node === null || node === undefined || typeof node !== "object") return undefined;
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findElement(child, matches);
+      if (found !== undefined) return found;
+    }
+    return undefined;
+  }
+  const element = node as { type?: unknown; props?: Record<string, unknown> };
+  if (typeof element.type !== "undefined" && element.props !== undefined) {
+    if (matches(element as { type: unknown; props: Record<string, unknown> })) return element as {
+      type: unknown;
+      props: Record<string, unknown>;
+    };
+    const found = findElement(element.props.children, matches);
+    if (found !== undefined) return found;
+  }
+  return undefined;
+}
+
 describe("WFX-057 root layout wiring (the real metadata Next builds with)", () => {
   it("links the manifest and the favicon", () => {
     expect(metadata.manifest).toBe("/manifest.webmanifest");
@@ -155,11 +180,34 @@ describe("WFX-057 root layout wiring (the real metadata Next builds with)", () =
   });
 
   it("sets the theme-color meta to the manifest value (no drift between the two)", async () => {
-    const themeColor = typeof viewport.themeColor === "string" ? viewport.themeColor : undefined;
-    expect(themeColor).toBe(manifest.theme_color);
+    // R29-B — the meta theme-color is the SEAM's own element (no longer
+    // the viewport export's single dark pin): it follows the BOOT theme
+    // (light boots #ffffff, dark boots #0f0f0f — the corpus core pair).
+    // The no-drift law survives in the DARK pair: the seam's dark branch
+    // (and the element's pre-paint default) must equal the manifest's
+    // theme_color exactly — the installed-app chrome never contradicts
+    // the dark boot.
+    const layout = RootLayout({ children: null });
+    const meta = findElement(layout, (element) => {
+      const props = element.props as { name?: string } | undefined;
+      return element.type === "meta" && props?.name === "theme-color";
+    });
+    expect(meta).toBeDefined();
+    const metaProps = (meta as unknown as { props: { content: string } }).props;
+    expect(metaProps.content).toBe(manifest.theme_color);
+    const seam = findElement(layout, (element) => {
+      const props = element.props as { id?: string } | undefined;
+      return typeof element.type !== "string" && props?.id === "wfx-theme-seam";
+    });
+    expect(seam).toBeDefined();
+    const seamScript = (seam as unknown as { props: { children: string } }).props.children;
+    // The dark branch keeps the manifest pair (no drift); the light
+    // branch is the corpus light core.
+    expect(seamScript).toContain(`"${manifest.theme_color}"`);
+    expect(seamScript).toContain('"#ffffff"');
   });
 
-  it("keeps the responsive viewport defaults while adding themeColor (no mobile regression)", () => {
+  it("keeps the responsive viewport defaults (no mobile regression)", () => {
     expect(viewport.width).toBe("device-width");
     expect(viewport.initialScale).toBe(1);
   });

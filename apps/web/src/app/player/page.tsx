@@ -81,6 +81,12 @@ export default async function PlayerPage({
   // is ignored, never guessed.
   const rawRealization = firstParam(params.realization);
   const preferredRealization = rawRealization === "torrent" ? ("torrent" as const) : undefined;
+  // R29-B (N25) — THE COMPACT MINIPLAYER FORM: `&miniplayer=1` renders
+  // the stage + chrome WITHOUT the app shell / watch anatomy — the
+  // persistent dock's own 400×225 document. A top-level navigation to
+  // this URL still works honestly (a bare compact player page); the
+  // dock is the intended embedder.
+  const miniplayer = firstParam(params.miniplayer) === "1";
   // R24-E — THE STREAMED PLAYER SHELL (the startup architecture law):
   // the page awaits ONLY the shell (the media path — the preferred-mode
   // resolve, the playback session resolution + surface preparation, the
@@ -112,6 +118,19 @@ export default async function PlayerPage({
     ...(preferredMode !== undefined ? { preferredMode } : {}),
     ...(preferredRealization !== undefined ? { preferredRealization } : {}),
   });
+
+  if (miniplayer) {
+    return (
+      <div className="wfx-minidoc" data-wfx-minidoc>
+        <PlayerSurface
+          view={view}
+          enrichments={enrichments}
+          session={await readRequestSessionView(host.config)}
+          compact
+        />
+      </div>
+    );
+  }
 
   return (
     <AppShell mode={host.mode} session={host.session.state} guide="hidden">

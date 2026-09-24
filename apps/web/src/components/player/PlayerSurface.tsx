@@ -521,11 +521,20 @@ export function PlayerSurface({
   view,
   enrichments,
   session,
+  compact = false,
 }: {
   readonly view: PlayerShellView;
   readonly enrichments: EnrichmentInput;
   /** R28-B — the session's sign-in truth (the comments composer's gate). */
   readonly session?: { readonly signedIn: boolean; readonly profileName?: string };
+  /**
+   * R29-B (N25) — THE COMPACT MINIPLAYER FORM: the same stage + chrome
+   * WITHOUT the watch anatomy (no second act, no comments, no up-next
+   * rail) — the /player route's `&miniplayer=1` variant the persistent
+   * dock renders at 400×225. Never a second player implementation: the
+   * SAME Stage + PlayerChrome, the compact truth.
+   */
+  readonly compact?: boolean;
 }): JSX.Element {
   const webflixOwnsStage =
     view.torrent !== null && view.torrent.rungKind === "satisfies-browser-rung";
@@ -638,6 +647,43 @@ export function PlayerSurface({
         {/* R24-E — the honest startup-failure trace records too (the
             boot marker reads the failed phase; the observer flushes). */}
         <PlaybackTelemetryObserver />
+        <PlayerBootMarker itemId={view.itemId} realization={realizationLabelOf(view)} />
+      </div>
+    );
+  }
+  // R29-B (N25) — THE COMPACT MINIPLAYER FORM: the same stage + chrome
+  // in the dock's 400×225 truth (no watch anatomy, no second act, no
+  // comments, no up-next rail — the SAME Stage + PlayerChrome with the
+  // compact flag's own control set).
+  if (compact) {
+    return (
+      <div
+        className="wfx-player wfx-player--compact"
+        data-wfx-surface="player"
+        data-wfx-player-state={view.phase}
+        data-wfx-compact="true"
+      >
+        <div className="wfx-player__stagewrap" data-wfx-player-stagewrap>
+          <Stage view={view} />
+          <PlaybackTelemetryObserver />
+          <PlayerChrome
+            sessionId={view.sessionId}
+            initialPhase={view.phase}
+            initialPositionMs={view.resumePositionMs}
+            initialBufferedMs={0}
+            durationMs={view.durationMs}
+            transcriptFeatures={transcriptFeatures}
+            translateFeatures={translateFeatures}
+            webflixOwnsStage={webflixOwnsStage}
+            surfaceMode={view.surfaceMode}
+            qualityTruth={qualityTruth}
+            autoplaySentence={autoplaySentence}
+            sessionIntent={view.sessionIntent}
+            embedControl={view.surfaceMode === "embed" && view.failure === null}
+            nextHref={null}
+            compact
+          />
+        </div>
         <PlayerBootMarker itemId={view.itemId} realization={realizationLabelOf(view)} />
       </div>
     );

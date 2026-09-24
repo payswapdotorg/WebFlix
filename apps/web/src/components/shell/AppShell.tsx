@@ -9,9 +9,15 @@
  *   WORDMARK (honest identity: our name, YouTube's placement/typography),
  *   the centered search pill (the SearchBox island), and the honest right
  *   cluster: create (＋) → the REAL BYOF entry (Settings → Sources), the
- *   theme toggle (the R27 seam), and the session avatar menu (the honest
+ *   SETTINGS GEAR (R29-B N24: the corpus multi-page menu — Your data /
+ *   Appearance / Keyboard shortcuts / Settings, honestly wired), the
+ *   corpus SIGN-IN PILL (R29-B N12: 40h r20 #065fd4 14/500 → the honest
+ *   identity path), and the session avatar menu (the honest
  *   account/settings entry). NO bell (no notification transport — the
  *   DIVERGENCES law), NO mic (no voice-search transport).
+ * - THE MINIPLAYER DOCK (R29-B N25): the persistent bottom-right
+ *   floating player — mounted at the shell level so it survives every
+ *   surface (renders nothing until a playback is docked).
  * - LEFT RAIL: the corpus groups — primary (Home · Shorts · Watch ·
  *   Library), divider, the "You" group (History · Offline · Settings —
  *   WebFlix's REAL surfaces; every unmapped YouTube destination is
@@ -25,7 +31,7 @@
  * about the session id's durability. Nothing pretends to be a profile.
  *
  * Server component: no client JS, no hooks — the session menu is a
- * `details`/`summary` disclosure; the GuideToggle + ThemeToggle +
+ * `details`/`summary` disclosure; the GuideToggle + SettingsGear +
  * SearchBox are the small client islands. Accessibility laws: semantic
  * landmarks (header/nav/main/footer), a skip link, `aria-current="page"`
  * on the active nav entry, >=44px targets, visible focus rings
@@ -41,9 +47,14 @@ import { Icon, type IconName } from "./Icon";
 import { SearchBox } from "./SearchBox";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdatePrompt } from "./UpdatePrompt";
-// R27-W2 — the guide (hamburger) + theme islands (the corpus masthead).
+// R27-W2 — the guide (hamburger) island (the corpus masthead).
 import { GuideToggle } from "./GuideToggle";
-import { ThemeToggle } from "./ThemeToggle";
+// R29-B (N24) — the SETTINGS GEAR island (the corpus multi-page menu:
+// Your data / Appearance (the theme path — N15) / Keyboard shortcuts /
+// Settings — replacing the abbreviated theme toggle button).
+import { SettingsGear } from "./SettingsGear";
+// R29-B (N25) — the persistent miniplayer dock island.
+import { MiniplayerDock } from "./MiniplayerDock";
 // R24-E — the play-intent recorder (the document-level listener that
 // records the user's real play/switch clicks for the startup traces).
 import { PlayIntentRecorder } from "./PlayIntentRecorder";
@@ -215,8 +226,25 @@ export function AppShell({
           >
             <Icon name="plus" size={22} />
           </a>
-          {/* R27-W2 — the theme seam's toggle (dark default). */}
-          <ThemeToggle />
+          {/* R29-B (N24) — THE SETTINGS GEAR: the corpus multi-page menu
+              (Your data / Appearance › Dark-Light rows / Keyboard
+              shortcuts › the real key sheet / Settings) — the theme's
+              own corpus path lives inside (N15). */}
+          <SettingsGear />
+          {/* R29-B (N12) — THE SIGN-IN PILL (the corpus anatomy: 40px
+              height, r20, #065fd4, 14px/500, border 1px rgba(0,0,0,0.2),
+              the person mark + "Sign in") wired to the REAL identity
+              path (Settings▸General — where the session truth + the
+              sign-in/profile controls live). */}
+          <a
+            className="wfx-signin"
+            href="/settings?section=general"
+            data-wfx-signin
+            title="Sign in — bring your history, watchlist, and profiles across devices"
+          >
+            <Icon name="person" size={22} />
+            <span>Sign in</span>
+          </a>
           <details className="wfx-avatar-menu">
             <summary className="wfx-avatar-menu__summary" aria-label="Session menu">
               <span className="wfx-avatar-menu__chip" aria-hidden="true">
@@ -320,6 +348,9 @@ export function AppShell({
           <UpdatePrompt enabled />
         </>
       ) : null}
+      {/* R29-B (N25) — the miniplayer dock (renders nothing until a
+          playback is docked; persists across every surface). */}
+      <MiniplayerDock />
     </div>
   );
 }
