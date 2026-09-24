@@ -1,0 +1,178 @@
+{
+  "tag": "wave2-dryrun3",
+  "base": "http://localhost:3102",
+  "at": "2026-09-24T07:07:17.194Z",
+  "checks": {
+    "themeDefault": {
+      "appBg": "rgba(0, 0, 0, 0)",
+      "bodyBg": "rgb(15, 15, 15)",
+      "colorScheme": "dark",
+      "htmlAttrs": [
+        "lang=en",
+        "data-theme=dark"
+      ],
+      "htmlBg": "rgba(0, 0, 0, 0)",
+      "htmlClass": null,
+      "lightField": false,
+      "metaTheme": "#0f0f0f",
+      "themeToggle": [
+        "Switch to light theme",
+        "Harbor Lights (series)",
+        "Add Harbor Lights to the queue",
+        "Save Harbor Lights to your Wat",
+        "Share Harbor Lights"
+      ]
+    },
+    "hover": {
+      "target": {
+        "cardBox": "288x238",
+        "found": true,
+        "thumbBox": "288x162",
+        "x": 384,
+        "y": 449
+      },
+      "at250ms": {
+        "gifs": 0,
+        "mediaCount": 0,
+        "previews": [
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          },
+          {
+            "box": "288x0",
+            "children": 0,
+            "cls": "wfx-cardpreview",
+            "opacity": "1",
+            "visible": true
+          }
+        ],
+        "videoDetail": [],
+        "videos": 0
+      },
+      "at1_7s": {
+        "previews": 11,
+        "videos": 0
+      },
+      "afterUnhover": {
+        "faded": 0,
+        "previewEls": 11,
+        "videos": 0
+      }
+    },
+    "comments": {
+      "authorFont": null,
+      "avatarBox": null,
+      "avatarRadius": null,
+      "bodyFont": null,
+      "composer": false,
+      "composerPlaceholder": null,
+      "headerFont": null,
+      "headerText": null,
+      "likePills": [],
+      "region": false,
+      "regionCls": null,
+      "sortMenu": [],
+      "threadCount": 0
+    },
+    "shareEntry": {
+      "count": 1,
+      "labels": [
+        "Share Neon Rain"
+      ],
+      "playerPage": true
+    },
+    "shareDialog": {
+      "box": "280x136",
+      "cls": "wfx-share__panel",
+      "copyPill": {
+        "box": "264x40",
+        "radius": "8px"
+      },
+      "embedFirst": false,
+      "found": true,
+      "hasToast": false,
+      "header": "",
+      "linkRaw": null,
+      "linkValue": "",
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0.4) 0px 4px 32px 0px",
+      "socialTargets": [
+        "x"
+      ],
+      "startAt": false,
+      "tileCount": 0,
+      "tiles": []
+    },
+    "copyToast": {
+      "snackbar": true,
+      "toastText": null
+    }
+  }
+}
