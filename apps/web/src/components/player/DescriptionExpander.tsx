@@ -30,8 +30,15 @@ export function DescriptionExpander(props: DescriptionExpanderProps): JSX.Elemen
   return (
     <div className="wfx-desc" data-wfx-player-description data-wfx-desc-open={open ? "true" : "false"}>
       <p className={open ? "wfx-desc__text" : "wfx-desc__text wfx-desc__text--clamped"}>{props.lead}</p>
-      {open && props.children !== undefined && props.children !== null ? (
-        <div className="wfx-desc__body">{props.children}</div>
+      {/* The corpus `#description-inline-expander` keeps BOTH states in the
+          DOM (the collapsed snippet + the expanded body, hidden until
+          opened) — the expansion is INLINE, never a dialog, and the
+          honest playback truths stay server-rendered for every reader
+          (screen readers, no-JS, the SSR contract). */}
+      {hasMore ? (
+        <div className="wfx-desc__body" hidden={!open}>
+          {props.children}
+        </div>
       ) : null}
       {hasMore ? (
         <button
