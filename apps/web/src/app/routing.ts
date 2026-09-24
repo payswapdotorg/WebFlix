@@ -45,17 +45,19 @@ import type {
 import { isEntertainmentItemId } from "@wfx/domain";
 
 import { canonicalIdFor } from "@/host/web-host";
+import {
+  SURFACE_ROUTES,
+  itemDetailHref,
+  playerHref,
+  type ItemRouteTarget,
+} from "@/app/href";
 
-/** The route path of every product surface (the completeness law). */
-export const SURFACE_ROUTES: Readonly<Record<SurfaceId, string>> = {
-  home: "/",
-  watch: "/watch",
-  shorts: "/shorts",
-  search: "/search",
-  item: "/item",
-  library: "/library",
-  settings: "/settings",
-};
+// R28-B — the PURE href builders now live in `@/app/href` (importable from
+// client components; this adapter module pulls the web-host seam and its
+// node:fs dev bridge, which client chunking contexts refuse). The routing
+// adapter re-exports them unchanged for its existing importers.
+export { SURFACE_ROUTES, itemDetailHref, playerHref };
+export type { ItemRouteTarget };
 
 /** The reverse lookup: route path → surface id. */
 const ROUTE_SURFACES: Readonly<Record<string, SurfaceId>> = {
@@ -71,20 +73,6 @@ const ROUTE_SURFACES: Readonly<Record<string, SurfaceId>> = {
 // ---------------------------------------------------------------------------
 // State → URL
 // ---------------------------------------------------------------------------
-
-/**
- * The adapter data an item link carries alongside the canonical id: the
- * source identity the detail/player surfaces need (a `CardView` satisfies
- * this structurally).
- */
-export interface ItemRouteTarget {
-  readonly itemId: string;
-  readonly connectorId: string;
-  readonly externalRef: string;
-  readonly title: string;
-  readonly canonicalType: string;
-  readonly durationMs?: number;
-}
 
 /**
  * The base href of one SURFACE (the un-parameterized route). The shell's
@@ -128,35 +116,6 @@ export function navigationStateToHref(state: NavigationState): string {
         ? SURFACE_ROUTES.settings
         : `${SURFACE_ROUTES.settings}?section=${state.section}`;
   }
-}
-
-/** The detail-page href for one item target (state + adapter source data). */
-export function itemDetailHref(target: ItemRouteTarget): string {
-  const params = new URLSearchParams({
-    id: target.itemId,
-    connector: target.connectorId,
-    ref: target.externalRef,
-    title: target.title,
-    type: target.canonicalType,
-  });
-  if (target.durationMs !== undefined) params.set("duration", String(target.durationMs));
-  return `${SURFACE_ROUTES.item}?${params.toString()}`;
-}
-
-/** The player-page href for one item target (optionally with resume). */
-export function playerHref(target: ItemRouteTarget, resumePositionMs?: number): string {
-  const params = new URLSearchParams({
-    id: target.itemId,
-    connector: target.connectorId,
-    ref: target.externalRef,
-    title: target.title,
-    type: target.canonicalType,
-  });
-  if (target.durationMs !== undefined) params.set("duration", String(target.durationMs));
-  if (resumePositionMs !== undefined && resumePositionMs > 0) {
-    params.set("resume", String(resumePositionMs));
-  }
-  return `/player?${params.toString()}`;
 }
 
 // ---------------------------------------------------------------------------

@@ -46,7 +46,8 @@ export type IconName =
   | "verified"
   | "sun"
   | "moon"
-  | "keyboard";
+  | "keyboard"
+  | "info";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   home: (
@@ -209,6 +210,13 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   ),
   arrowLeft: <path d="M20 12H4m0 0 6-6m-6 6 6 6" />,
   arrowRight: <path d="M4 12h16m0 0-6-6m6 6-6 6" />,
+  info: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11v5.5" />
+      <path d="M12 7.5h.01" />
+    </>
+  ),
 };
 
 /** One decorative 24px icon (stroke, currentColor). */

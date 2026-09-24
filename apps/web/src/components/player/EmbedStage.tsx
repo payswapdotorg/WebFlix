@@ -53,9 +53,15 @@
  * settings cluster discloses the truth).
  */
 
-import { useEffect, useRef, type JSX } from "react";
+import { useEffect, useRef, useSyncExternalStore, type JSX } from "react";
 
-import { bindActiveEmbedSession } from "@/components/player/embed-session-client";
+import {
+  bindActiveEmbedSession,
+  getActiveEmbedControl,
+  getActiveEmbedSessionController,
+  idleEmbedControlSnapshot,
+  subscribeActiveEmbedControl,
+} from "@/components/player/embed-session-client";
 
 /** The provider's own privacy-enhanced embed hosts (the cookie-free surface). */
 const YOUTUBE_PRIVACY_EMBED_HOST = "www.youtube-nocookie.com";
@@ -105,6 +111,16 @@ const OPAQUE_ORIGIN_SANDBOX =
  * — the video id, the path, and every provider parameter stay verbatim;
  * the additions are the provider's own documented embed mechanisms:
  * the privacy host and the published control switch).
+ *
+ * R28-B — ONE-CLICK PLAY: the YouTube family's src additionally carries
+ * the provider's own documented `autoplay=1&mute=1` pair (muted autoplay
+ * is the one autoplay every browser permits without a same-document user
+ * gesture — the card click IS the gesture, but the navigation consumes
+ * the activation, so unmuted autoplay would be blocked and the video
+ * would sit paused: exactly the operator's "click 3 times" complaint).
+ * The stage's UNMUTE AFFORDANCE (below) restores the sound with one click
+ * through the provider's own control channel — the click-to-play path is
+ * ONE click, and the sound is one more, honestly.
  */
 function presentationSrcOf(url: string): string {
   if (providerFamilyOf(url) !== "youtube") return url;
@@ -115,6 +131,10 @@ function presentationSrcOf(url: string): string {
     }
     if (!parsed.searchParams.has("enablejsapi")) {
       parsed.searchParams.set("enablejsapi", "1");
+    }
+    if (!parsed.searchParams.has("autoplay")) {
+      parsed.searchParams.set("autoplay", "1");
+      parsed.searchParams.set("mute", "1");
     }
     return parsed.toString();
   } catch {
@@ -147,6 +167,12 @@ export function EmbedStage({
   const provider = providerFamilyOf(url);
   const src = presentationSrcOf(url);
   const controlBound = provider === "youtube";
+  // R28-B — the provider-reported mute truth drives the unmute affordance.
+  const embedControl = useSyncExternalStore(
+    subscribeActiveEmbedControl,
+    getActiveEmbedControl,
+    idleEmbedControlSnapshot,
+  );
 
   // Bind the provider's embed control contract for this stage's life.
   useEffect(() => {
@@ -180,6 +206,22 @@ export function EmbedStage({
         allow="fullscreen; autoplay; encrypted-media; picture-in-picture"
         data-wfx-player-frame
       />
+      {controlBound && embedControl.muted === true ? (
+        <button
+          type="button"
+          className="wfx-player__unmute"
+          data-wfx-player-unmute
+          onClick={() => {
+            getActiveEmbedSessionController()?.setMuted(false);
+          }}
+        >
+          <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" style={{ display: "block" }}>
+            <path d="M4 9.5v5h3.5L12 19V5L7.5 9.5H4Z" />
+            <path d="m16 9.5 5 5m0-5-5 5" />
+          </svg>
+          Sound off — tap to unmute
+        </button>
+      ) : null}
       <p className="wfx-player__trace" data-wfx-embed-note>
         {attestation === "official"
           ? controlBound

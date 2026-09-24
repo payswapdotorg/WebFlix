@@ -1,12 +1,19 @@
 /**
- * @wfx/app-web — the universal content card (R07).
+ * @wfx/app-web — the universal content card (R07; R28-B one-click play).
  *
  * The card grammar over the RUNTIME's canonical-joined search hits: the
  * title, the canonical type badge, the duration, and the placeholder art.
  * The card deliberately carries NO capability or availability claim — the
- * search hit truthfully does not know either; capability truth renders on
- * the DETAIL surface, where the source's real metadata answers (the UI
- * honesty law: never a claim the source did not make).
+ * search hit truthfully does not know either; the player surface answers
+ * with the real capability truth (the UI honesty law: never a claim the
+ * source did not make).
+ *
+ * R28-B — ONE-CLICK PLAY (the operator's #1 functional complaint: "you
+ * have to click 3 times before a video plays"). The card's PRIMARY action
+ * is now the PLAYER href (card click → playback starts — the click is the
+ * user gesture; the embed autoplays muted with an unmute affordance). The
+ * /item detail surface survives as the DEEP surface — the card's quiet
+ * action row carries a Details link, never the primary path.
  *
  * Server component: pure presentational projection of a `CardView`.
  */
@@ -14,7 +21,7 @@
 import type { JSX } from "react";
 
 import type { CardView } from "@/host/view-models";
-import { itemDetailHref, playerHref } from "@/app/routing";
+import { playerHref } from "@/app/routing";
 import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 import { ArtworkImage } from "@/components/cards/ArtworkImage";
 import { CardActions } from "@/components/cards/CardActions";
@@ -72,14 +79,17 @@ export function ItemCard({
   /** R24-W2 — the cards' action context (queue/save/share + the preview policy). */
   readonly actions?: CardActionContextInput;
 }): JSX.Element {
-  const href = itemDetailHref({
-    itemId: card.itemId,
-    connectorId: card.connectorId,
-    externalRef: card.externalRef,
-    title: card.title,
-    canonicalType: card.canonicalType,
-    ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
-  });
+  const playHref = playerHref(
+    {
+      itemId: card.itemId,
+      connectorId: card.connectorId,
+      externalRef: card.externalRef,
+      title: card.title,
+      canonicalType: card.canonicalType,
+      ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
+    },
+    resume !== undefined && resume.resumePositionMs > 0 ? resume.resumePositionMs : undefined,
+  );
   const label = `${card.title} (${card.canonicalType}${
     card.durationMs !== undefined ? `, ${formatDuration(card.durationMs)}` : ""
   })`;
@@ -99,7 +109,7 @@ export function ItemCard({
         ) : null}
         <a
           className="wfx-result"
-          href={href}
+          href={playHref}
           data-wfx-card={card.itemId}
           aria-label={label}
           data-wfx-card-type={card.canonicalType}
@@ -125,9 +135,7 @@ export function ItemCard({
             <p className="wfx-result__metainfo">
               {availability !== undefined ? (
                 <span data-wfx-card-availability>{availability}</span>
-              ) : (
-                <span data-wfx-card-capability>Playback options on details</span>
-              )}
+              ) : null}
             </p>
             <p className="wfx-result__channel">
               {linked && card.connectorId.length > 0 ? (
@@ -150,7 +158,7 @@ export function ItemCard({
               title: card.title,
               canonicalType: card.canonicalType,
               ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
-              href,
+              href: playHref,
               initiallySaved: actions.savedItemIds.includes(card.itemId),
             }}
           />
@@ -197,12 +205,8 @@ export function ItemCard({
           )}
         </p>
         <p className="wfx-card__meta">
-          {linked ? (
-            availability !== undefined ? (
-              <span data-wfx-card-availability>{availability}</span>
-            ) : (
-              <span data-wfx-card-capability>Playback options on details</span>
-            )
+          {linked && availability !== undefined ? (
+            <span data-wfx-card-availability>{availability}</span>
           ) : null}
           {resume !== undefined && resume.resumePositionMs > 0 ? (
             <span data-wfx-resume-position>Resume at {formatDuration(resume.resumePositionMs)}</span>
@@ -237,7 +241,7 @@ export function ItemCard({
           attentionMode={actions.attentionMode}
           previewable={false}
         />
-        <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
+        <a className="wfx-card" href={playHref} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
           {body}
         </a>
         <CardActions
@@ -248,7 +252,7 @@ export function ItemCard({
             title: card.title,
             canonicalType: card.canonicalType,
             ...(card.durationMs !== undefined ? { durationMs: card.durationMs } : {}),
-            href,
+            href: playHref,
             initiallySaved: actions.savedItemIds.includes(card.itemId),
           }}
         />
@@ -256,7 +260,7 @@ export function ItemCard({
     );
   }
   return (
-    <a className="wfx-card" href={href} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
+    <a className="wfx-card" href={playHref} data-wfx-card={card.itemId} aria-label={label} {...filterAttrs}>
       {body}
     </a>
   );

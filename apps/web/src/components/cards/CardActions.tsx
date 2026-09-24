@@ -15,6 +15,7 @@
 
 import { useCallback, useState, type JSX } from "react";
 
+import { itemDetailHref } from "@/app/href";
 import { Icon } from "@/components/shell/Icon";
 import { WatchlistSave } from "@/components/player/WatchlistSave";
 import { ShareControl } from "@/components/player/ShareControl";
@@ -93,10 +94,24 @@ export function AddToQueueControl({ target }: { readonly target: CardActionTarge
   );
 }
 
-/** The card action row: queue + watchlist save + share (the quiet row). */
+/** The card action row: details + queue + watchlist save + share (the quiet row). */
 export function CardActions({ target }: { readonly target: CardActionTarget }): JSX.Element {
+  // R28-B — the /item detail surface as the DEEP path (the card's primary
+  // action is the player now; Details is the quiet row's honest link).
+  const detailHref = itemDetailHref({
+    itemId: target.itemId,
+    connectorId: target.connectorId,
+    externalRef: target.externalRef,
+    title: target.title,
+    canonicalType: target.canonicalType,
+    ...(target.durationMs !== undefined ? { durationMs: target.durationMs } : {}),
+  });
   return (
     <div className="wfx-card__actions" data-wfx-card-actions>
+      <a className="wfx-card__actionbtn wfx-card__actionlink" href={detailHref} data-wfx-card-details>
+        <Icon name="info" size={16} />
+        <span className="wfx-card__actionlabel">Details</span>
+      </a>
       <AddToQueueControl target={target} />
       <WatchlistSave
         itemId={target.itemId}

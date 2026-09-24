@@ -20,6 +20,34 @@
  * WebFlix accessibility law, superseding YouTube where they conflict.
  */
 
+/*
+ * R28-B — THE SELF-HOSTED ROBOTO LOAD (the operator's fonts complaint:
+ * the stack declared Roboto but ZERO webfonts were loaded — everything
+ * rendered in the OS fallback). The two woff2 files below are Roboto's
+ * own latin subsets (variable weight axis 100–900, straight from
+ * fonts.gstatic.com's current v51 responses), self-hosted from
+ * /public/fonts with font-display: swap. 400/500/700 — the measured
+ * loaded-face ladder on live youtube.com (see
+ * docs/parity-lab/r28/web-notes/fonts.md). YouTube Sans itself is
+ * proprietary and stays unshipped (recorded in DIVERGENCES).
+ */
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/roboto-latin-var.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Roboto";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/roboto-latin-ext-var.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
   /* Palette — the R27 corpus sheet, dark default (YouTube's own). */
   --wfx-bg: #0f0f0f;
@@ -1649,6 +1677,41 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   height: 100%;
   border: 0;
   display: block;
+}
+
+/* R28-B — THE UNMUTE AFFORDANCE (one-click play's honest sound path): the
+ * provider embed autoplays muted (the one autoplay browsers permit after
+ * the navigation consumed the click's activation); this pill restores the
+ * sound through the provider's own control channel. Rendered only while
+ * the provider REPORTS muted=true (evidence-gated, never assumed). */
+.wfx-player__unmute {
+  position: absolute;
+  left: 12px;
+  bottom: 64px;
+  z-index: 15;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wfx-player__unmute:hover,
+.wfx-player__unmute:focus-visible {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.wfx-player__unmute:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
 }
 
 .wfx-player__handoff {
@@ -4677,6 +4740,16 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 
 .wfx-card__actionlabel {
   font-weight: 600;
+}
+
+/* R28-B — the card's quiet DETAILS link (the /item deep surface's entry:
+ * the card's primary action is the player now — one-click play). */
+a.wfx-card__actionlink {
+  text-decoration: none;
+}
+
+a.wfx-card__actionlink:visited {
+  color: var(--wfx-text-dim);
 }
 
 .wfx-card__actionstatus {
