@@ -334,7 +334,10 @@ describe("R24-W2 — the WebFlix-native watchlist save (independent of provider 
     expect(playerMarkup).toContain("data-wfx-watchlist-save");
     expect(playerMarkup).toContain("data-wfx-watchlist-toggle");
     expect(playerMarkup).toContain("data-wfx-share");
-    expect(playerMarkup).toContain("data-wfx-share-copy");
+    // R28-B — the unified share panel (share-dialog.md): the panel and its
+    // Copy control mount ON OPEN (the paper-dialog model — the trigger is
+    // the SSR surface; the panel is the interaction's consequence).
+    expect(playerMarkup).toContain("data-wfx-share-toggle");
 
     const detail = await loadDetailView(host, {
       connectorId: DIARY.connectorId,

@@ -63,13 +63,18 @@ export default function RootLayout({ children }: { children: ReactNode }): JSX.E
         {/*
          * R27-W2 — the theme seam's before-paint script: the persisted
          * choice (localStorage `wfx-theme`, "dark" | "light") is applied to
-         * `data-theme` BEFORE the first paint (no flash); the server render
-         * stays dark (the default product theme — the corpus law). The
-         * `suppressHydrationWarning` on <html> covers the one-attribute
-         * client-side divergence this honest seam produces.
+         * `data-theme` BEFORE the first paint (no flash); R28-B — with NO
+         * persisted choice the default follows the OPERATING SYSTEM's
+         * preference (`prefers-color-scheme: light` boots light; dark or
+         * no-signal keeps the dark default — the operator's binding
+         * ruling; recorded as an honest divergence from youtube.com's
+         * always-light logged-out boot). The server render stays dark (the
+         * conservative default); the `suppressHydrationWarning` on <html>
+         * covers the one-attribute client-side divergence this honest seam
+         * produces.
          */}
         <Script id="wfx-theme-seam" strategy="beforeInteractive">
-          {`try{var t=localStorage.getItem("wfx-theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;}}catch(e){}`}
+          {`try{var t=localStorage.getItem("wfx-theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;}else if(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches){document.documentElement.dataset.theme="light";}}catch(e){}`}
         </Script>
       </head>
       <body>
