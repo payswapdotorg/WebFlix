@@ -68,6 +68,10 @@ echo "--- verify-corpus.ts (corpus spec) ---"
 ( cd "$REPO" && timeout 420 bun evidence/r28-recon/verify-corpus.ts "$BASE" "$TAG" 2>&1 | tail -60 )
 echo "--- capture.ts (PNG evidence, real clicks) ---"
 ( cd "$REPO" && timeout 420 bun evidence/r28-recon/capture.ts "$BASE" "$TAG" 2>&1 | tail -80 )
+echo "--- wave1-spec.ts (iframe autoplay, chips, badge grammar) ---"
+( cd "$REPO" && timeout 420 bun evidence/r28-recon/wave1-spec.ts "$BASE" "$TAG" 2>&1 | tail -40 )
+echo "--- wave2-spec.ts (hover, theme default, comments, share modal) ---"
+( cd "$REPO" && timeout 420 bun evidence/r28-recon/wave2-spec.ts "$BASE" "$TAG" 2>&1 | tail -40 )
 
 # 6. teardown (next dev spawns a next-server child — kill the tree, then the port)
 kill $(cat /home/z/.r28c/b-server.pid) 2>/dev/null
