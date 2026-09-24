@@ -822,7 +822,30 @@ html[data-wfx-guide="drawer"] .wfx-rail__divider {
 }
 
 html[data-wfx-guide="drawer"] .wfx-rail__heading,
-html[data-wfx-guide="drawer"] .wfx-rail__footnote {
+html[data-wfx-guide="drawer"] /* R29-B (N13) — THE RAIL SIGN-IN PROMO (the corpus open-guide grammar:
+ * the sentence + the pill, honestly wired to the identity path). */
+.wfx-rail__promo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 12px 12px;
+}
+
+.wfx-rail__promo p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-signin--rail {
+  align-self: flex-start;
+  height: 36px;
+  padding: 0 12px;
+  font-size: 14px;
+}
+
+.wfx-rail__footnote {
   display: block;
 }
 
@@ -944,10 +967,12 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
     justify-content: flex-start;
     gap: 24px;
     width: auto;
-    height: 48px;
+    height: 40px;
+    min-height: 40px;
     padding: 0 12px;
     font-size: 14px;
     font-weight: 400;
+    line-height: 20px;
     border-radius: 10px;
   }
 }
@@ -971,14 +996,19 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   }
 
   .wfx-rail .wfx-navlink {
+    /* R29-B (N13) — the corpus rail item anatomy: 40h r10 14/400/20
+       (the base 44px touch floor yields to the corpus measure in the
+       labeled rail forms; the icon-rail and bottom-nav bands keep it). */
     flex-direction: row;
     justify-content: flex-start;
     gap: 24px;
     width: auto;
-    height: 48px;
+    height: 40px;
+    min-height: 40px;
     padding: 0 12px;
     font-size: 14px;
     font-weight: 400;
+    line-height: 20px;
     border-radius: 10px;
   }
 
@@ -1067,10 +1097,20 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   gap: 16px;
 }
 
+/* R29-B (N20) — the corpus shorts shelf: the 208×387 lockup card (the
+ * 208×311 vertical thumb + the title below) at ~4px gutters, 5–6
+ * columns in the 1152 content width. */
 .wfx-row__scroller--shorts {
   display: grid;
+  /* R29-B (N20) — the base scroller's EXPLICIT template columns (the
+     1/2/4-col responsive grid) must not leak into the horizontal shelf:
+     every column here is the implicit 208px lockup track (the pre-R29
+     build's first four cards silently landed in zero-width explicit
+     tracks — the long-standing shelf bug this re-anchor fixes). */
+  grid-template-columns: none;
   grid-auto-flow: column;
-  grid-auto-columns: 160px;
+  grid-auto-columns: 208px;
+  grid-template-rows: auto;
   gap: 4px;
   overflow-x: auto;
   padding-bottom: 8px;
@@ -1096,6 +1136,28 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
 @media (min-width: 1300px) {
   .wfx-row__scroller {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* R29-B (N20) — THE SHORTS SHELF'S OWN TRACK LAW (after every base
+ * breakpoint, the same specificity, the later rule wins): the horizontal
+ * shelf never inherits the responsive grid's explicit columns — every
+ * track is the implicit 208px lockup. */
+@media (min-width: 600px) {
+  .wfx-row__scroller--shorts {
+    grid-template-columns: none;
+  }
+}
+
+@media (min-width: 1000px) {
+  .wfx-row__scroller--shorts {
+    grid-template-columns: none;
+  }
+}
+
+@media (min-width: 1300px) {
+  .wfx-row__scroller--shorts {
+    grid-template-columns: none;
   }
 }
 
@@ -1203,7 +1265,9 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
 }
 
 .wfx-card__thumb--vertical {
-  aspect-ratio: 9 / 16;
+  /* R29-B (N20) — the corpus lockup thumb: 208×311 (the measured
+     9:16-ish vertical — the ratio is w/h: 208/311). */
+  aspect-ratio: 208 / 311;
 }
 
 /* Deterministic placeholder art (no provider branding, no fake covers). */
@@ -1242,15 +1306,15 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
   opacity: 0.9;
 }
 
-/* The badges overlay (bottom-right of the thumbnail, YouTube placement). */
+/* R29-B (N19) — THE CORNER BADGE (the corpus): bottom-right of the
+ * thumbnail at the 8px inset, the duration badge alone (the type label
+ * left the visible stack — the corpus card carries none). */
 .wfx-card__badges {
   position: absolute;
-  right: 4px;
-  bottom: 4px;
+  right: 8px;
+  bottom: 8px;
   display: flex;
-  flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
 }
 
 .wfx-badge {
@@ -1276,6 +1340,11 @@ html[data-wfx-guide="drawer"] .wfx-rail__footnote {
 }
 
 .wfx-badge--duration {
+  /* R29-B (N19) — the corpus badge anatomy: 12/500 #fff on
+     rgba(0,0,0,0.6), r4, pad 1px 4px ("0:45" / "2:50:41"). */
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 1px 4px;
   color: #fff;
 }
 

@@ -93,12 +93,14 @@ const RAIL_PRIMARY: readonly RailEntry[] = [
 /**
  * The "You" group (the corpus's You/library section, mapped to WebFlix's
  * REAL surfaces: History + Offline live in the Library routes; Settings
- * is the account/settings entry). YouTube destinations WebFlix
- * truthfully lacks (Subscriptions, Playlists, Your videos, Explore,
- * Premium…) are honestly ABSENT — recorded in DIVERGENCES.
+ * is the account/settings entry). R29-B (D8/N4) — THE HISTORY DEDUPE:
+ * the group carries ONE History entry (the explicit link with its
+ * Library?section=history href below); the duplicate top-level entry is
+ * GONE. YouTube destinations WebFlix truthfully lacks (Subscriptions,
+ * Playlists, Your videos, Explore, Premium…) are honestly ABSENT —
+ * recorded in DIVERGENCES.
  */
 const RAIL_YOU: readonly RailEntry[] = [
-  { surface: "library", label: "History" },
   { surface: "settings", label: "Settings" },
 ];
 
@@ -299,6 +301,22 @@ export function AppShell({
                 <span>Offline</span>
               </a>
               <RailLinks entries={RAIL_YOU} activeHref={activeHref} />
+            </div>
+            <div className="wfx-rail__divider" />
+            {/* R29-B (N13) — THE RAIL SIGN-IN PROMO (the corpus open-guide
+                grammar: "Sign in to like videos, comment, and subscribe."
+                + the pill) — wired to the REAL identity path, exactly the
+                corpus's logged-out rail truth; never a dead promo. */}
+            <div className="wfx-rail__promo" data-wfx-rail-signin>
+              <p>Sign in to like videos, comment, and subscribe.</p>
+              <a
+                className="wfx-signin wfx-signin--rail"
+                href="/settings?section=general"
+                data-wfx-rail-signin-link
+              >
+                <Icon name="person" size={20} />
+                <span>Sign in</span>
+              </a>
             </div>
             <div className="wfx-rail__divider" />
             {/* R28-B — the install affordance lives in the rail now (the
