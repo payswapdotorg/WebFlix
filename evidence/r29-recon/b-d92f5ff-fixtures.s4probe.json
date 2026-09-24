@@ -1,0 +1,150 @@
+{
+  "tag": "b-d92f5ff-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:14:17.106Z",
+  "checks": {
+    "rail": {
+      "explore": false,
+      "footer": false,
+      "historyCount": 1,
+      "historyHref": "http://localhost:3101/library?section=history",
+      "itemAnatomy": {
+        "font": "14px/500/20px",
+        "h": 40,
+        "radius": "10px"
+      },
+      "items": [
+        "Home",
+        "Shorts",
+        "Watch",
+        "Library",
+        "History",
+        "Offline",
+        "Settings"
+      ],
+      "locationChip": false,
+      "moreFromYT": false,
+      "promo": {
+        "pillBg": "rgb(6, 95, 212)",
+        "pillBox": "97x36",
+        "pillHref": "/settings?section=general",
+        "pillRadius": "20px",
+        "text": "Sign in to like videos, comment, and subscribe."
+      },
+      "railW": 240
+    },
+    "railActive": {
+      "font": "14px/500",
+      "found": true,
+      "label": "Home"
+    },
+    "railInactive": {
+      "font": "14px/400/20px",
+      "found": true,
+      "h": 40,
+      "label": "Shorts",
+      "radius": "10px"
+    },
+    "railDrawer": {
+      "drawerRailW": 240,
+      "itemAnatomy": {
+        "font": "14px/400/20px",
+        "h": 40,
+        "radius": "10px"
+      },
+      "promoInDrawer": true
+    },
+    "badge": {
+      "ariaKeepsType": [
+        "Neon Rain (short, 0:45)",
+        "Rain Check (short, 0:30)"
+      ],
+      "badgeCount": 10,
+      "found": true,
+      "sample": [
+        {
+          "bg": "rgba(0, 0, 0, 0.6)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "m:ss|h:mm:ss",
+          "inset": {
+            "bottom": 8,
+            "right": 8
+          },
+          "pad": "1px 4px",
+          "radius": "4px",
+          "text": "0:45"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0.6)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "m:ss|h:mm:ss",
+          "inset": {
+            "bottom": 8,
+            "right": 8
+          },
+          "pad": "1px 4px",
+          "radius": "4px",
+          "text": "0:30"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0.6)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "m:ss|h:mm:ss",
+          "inset": {
+            "bottom": 8,
+            "right": 8
+          },
+          "pad": "1px 4px",
+          "radius": "4px",
+          "text": "40:00"
+        }
+      ],
+      "typeBadges": []
+    },
+    "badgeSearchRow": {
+      "bg": "rgba(0, 0, 0, 0.6)",
+      "font": "12px/500",
+      "found": true,
+      "inset": {
+        "bottom": 8,
+        "right": 8
+      },
+      "query": "neon",
+      "text": "0:45",
+      "thumbBox": "500x281"
+    },
+    "shortsShelf": {
+      "autoColumns": "208px",
+      "badgeInShelf": false,
+      "cardCount": 3,
+      "cardWidths": [
+        208,
+        208,
+        208
+      ],
+      "channelRow": false,
+      "columns": 6,
+      "computedTrackWidths": [
+        "208px"
+      ],
+      "firstTitle": "Neon Rain",
+      "flow": "column",
+      "found": true,
+      "gap": "4px",
+      "gutters": [
+        4,
+        4
+      ],
+      "thumbs": [
+        "208x311",
+        "208x311",
+        "208x311"
+      ],
+      "titleBelow": true,
+      "zeroWidthCards": 0
+    }
+  }
+}

@@ -1,0 +1,476 @@
+{
+  "tag": "b-d92f5ff-service-s1",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:25:06.395Z",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short"
+    },
+    "actionRow": {
+      "dislikeBtn": {
+        "reaction": null
+      },
+      "divider": true,
+      "downloadControl": null,
+      "found": true,
+      "freshLikeCount": "1",
+      "kebab": {
+        "open": false
+      },
+      "likeBtn": {
+        "box": "62x40",
+        "pressed": "true",
+        "reaction": "like"
+      },
+      "preExistingStore": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"like\"}",
+      "rowBox": "345x40",
+      "savePill": {
+        "label": "Save 1 HOUR Rainy Day in Airport ✈️ | Co"
+      },
+      "sharePill": {
+        "label": "Share 1 HOUR Rainy Day in Airport ✈️ | C"
+      },
+      "splitPill": {
+        "box": "111x40",
+        "height": 40,
+        "radius": "20px"
+      }
+    },
+    "reactionsLike": {
+      "countText": null,
+      "pressed": "false",
+      "reaction": "none",
+      "store": "{}"
+    },
+    "reactionsLikeOff": {
+      "countText": "1",
+      "reaction": "like",
+      "store": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"like\"}"
+    },
+    "reactionsDislike": {
+      "anyCountInRow": [],
+      "dislikePressed": "true",
+      "dislikeReaction": null,
+      "likeCountText": null,
+      "likeReaction": "dislike",
+      "store": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"dislike\"}"
+    },
+    "reactionsMutualExclusion": {
+      "dislikeReaction": null,
+      "likeCountText": "1",
+      "likeReaction": "like",
+      "store": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"like\"}"
+    },
+    "reactionsCleanup": {
+      "store": "{}"
+    },
+    "kebabOpen": {
+      "menuVisible": true,
+      "open": true,
+      "rows": [
+        "Add to queue",
+        "Save 1 HOUR Rainy Day in Airport ✈️ ",
+        "Mark as watched",
+        "Stop and record skip",
+        "Details"
+      ]
+    },
+    "kebabQueueAdd": {
+      "added": "true",
+      "label": "Added to queue"
+    },
+    "queueGetTruth": "{\"ok\":true,\"entries\":[{\"itemId\":\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\",\"connectorId\":\"wfx-experience-service\",\"externalRef\":\"3uyGhtARP4M\",\"title\":\"1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi\",\"canonicalType\":\"short\"}],\"autoplay\":true}",
+    "channelRow": {
+      "avatar": "40x40 r50%",
+      "found": true,
+      "metaLine": "Playing via embed · plays inside WebFlix (the provider's con",
+      "name": "wfx-experience-service",
+      "nameFont": "16px/500",
+      "subCountText": null,
+      "subscribe": {
+        "bg": "rgb(255, 0, 51)",
+        "box": "95x36",
+        "color": "rgb(255, 255, 255)",
+        "label": "Subscribe to wfx-experience-service",
+        "pressed": "false",
+        "radius": "18px",
+        "state": "idle"
+      }
+    },
+    "sourcesModel": "[]",
+    "subscribeClick": {
+      "label": "Unsubscribe from wfx-experience-service",
+      "pressed": "true",
+      "state": "subscribed",
+      "status": "Subscribed — saved to your Subscriptions list in Library."
+    },
+    "librarySubscriptions": {
+      "entryTitles": [
+        "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study "
+      ],
+      "playlistCount": 1,
+      "subsFound": true,
+      "subsListTitle": "Subscriptions"
+    },
+    "subscribeDurable": {
+      "label": "Subscribe to wfx-experience-service",
+      "stateAfterReload": "idle"
+    },
+    "subscribeCleanup": {
+      "state": "idle"
+    },
+    "description": {
+      "clamp": "2",
+      "collapsedH": 68,
+      "found": true,
+      "isDetails": false,
+      "open": "false",
+      "textFont": "14px/400",
+      "toggleText": "...more",
+      "toggleType": "BUTTON"
+    },
+    "descriptionExpanded": {
+      "anyDialogOpened": false,
+      "bodyVisible": true,
+      "expandedH": 112,
+      "open": "true",
+      "toggleText": "Show less"
+    },
+    "descriptionCollapsed": {
+      "collapsedH": 68,
+      "open": "false"
+    },
+    "relatedColumn": {
+      "autoplayBeforeList": true,
+      "autoplayRow": true,
+      "chips": [
+        "All",
+        "From wfx-experience-",
+        "Related"
+      ],
+      "firstThree": [
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 188
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_1X9JAB24FVQTXK46K246J9FGA1&connector=wfx-experience-service&ref=5SRgdyUsuAg&title=1%2C000+Years+Of+English+Monarchy+In+4+Hours&type=video&duration=16146000",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 286.5
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_6V2ZAKAQKFYJ43GWHAJBKRP6X7&connector=wfx-experience-service&ref=oYZqn5zPzK4&title=3+Countries+With+Incredible+Natural+Beauty+%F0%9F%8C%8D+%23Travel+%23Nature+%23Shorts&type=short",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 385
+        }
+      ],
+      "found": true,
+      "head": true,
+      "knob": true,
+      "listRowGap": "4px",
+      "rowCount": 57,
+      "rowPitch": 4,
+      "switchChecked": "true",
+      "switchClass": "wfx-switch wfx-switch--on",
+      "switchRole": "switch"
+    },
+    "autoplayToggle": {
+      "before": "true",
+      "after": "false",
+      "queueBefore": true,
+      "queueAfter": false,
+      "reverted": "true"
+    },
+    "dwellPreviewWiring": {
+      "hasTrigger": true,
+      "hoverX": 1112,
+      "hoverY": 235,
+      "previewable": "false"
+    },
+    "dwellPreviewResult": {
+      "iframes": [
+        "wfx-hoverpreview__frame",
+        ""
+      ],
+      "layerClass": "wfx-hoverpreview wfx-hoverpreview--open",
+      "layerFound": true
+    },
+    "watchRouteGeometry": {
+      "layoutCols": "996px 412px",
+      "layoutGap": "16px",
+      "playerPadding": "12px 0px 48px 16px",
+      "playerX": 1016,
+      "railBox": null,
+      "railDisplay": "none",
+      "secondaryBox": "412x6039 @(1028,68)",
+      "secondaryRightEdgeDelta": 0,
+      "shellGuide": "hidden",
+      "stageBox": "192x119",
+      "viewportW": 1440
+    },
+    "hiddenGuideDrawer": {
+      "guideState": "drawer",
+      "railBox": "240x844",
+      "railDisplay": "flex",
+      "railX": 0
+    },
+    "hiddenGuideDrawerClosed": {
+      "guideState": null,
+      "railDisplay": "none"
+    },
+    "geometry1600": {
+      "playerPadding": "24px 24px 48px",
+      "playerX": 24,
+      "viewportW": 1600
+    },
+    "homeRailRegression": {
+      "railDisplay": "flex",
+      "railW": 240,
+      "shellGuide": "default"
+    }
+  },
+  "summary": {
+    "actionRow": {
+      "dislikeBtn": {
+        "reaction": null
+      },
+      "divider": true,
+      "downloadControl": null,
+      "found": true,
+      "freshLikeCount": "1",
+      "kebab": {
+        "open": false
+      },
+      "likeBtn": {
+        "box": "62x40",
+        "pressed": "true",
+        "reaction": "like"
+      },
+      "preExistingStore": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"like\"}",
+      "rowBox": "345x40",
+      "savePill": {
+        "label": "Save 1 HOUR Rainy Day in Airport ✈️ | Co"
+      },
+      "sharePill": {
+        "label": "Share 1 HOUR Rainy Day in Airport ✈️ | C"
+      },
+      "splitPill": {
+        "box": "111x40",
+        "height": 40,
+        "radius": "20px"
+      }
+    },
+    "reactionsHonesty": {
+      "like": {
+        "countText": null,
+        "pressed": "false",
+        "reaction": "none",
+        "store": "{}"
+      },
+      "likeOff": {
+        "countText": "1",
+        "reaction": "like",
+        "store": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"like\"}"
+      },
+      "dislike": {
+        "anyCountInRow": [],
+        "dislikePressed": "true",
+        "dislikeReaction": null,
+        "likeCountText": null,
+        "likeReaction": "dislike",
+        "store": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"dislike\"}"
+      },
+      "mutualExclusion": {
+        "dislikeReaction": null,
+        "likeCountText": "1",
+        "likeReaction": "like",
+        "store": "{\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\":\"like\"}"
+      }
+    },
+    "kebab": {
+      "menuVisible": true,
+      "open": true,
+      "rows": [
+        "Add to queue",
+        "Save 1 HOUR Rainy Day in Airport ✈️ ",
+        "Mark as watched",
+        "Stop and record skip",
+        "Details"
+      ]
+    },
+    "queueAdd": {
+      "added": "true",
+      "label": "Added to queue"
+    },
+    "queueGetTruth": "{\"ok\":true,\"entries\":[{\"itemId\":\"wfxitm_5XYH24S8DXTZHB98SCJM3VXA0P\",\"connectorId\":\"wfx-experience-service\",\"externalRef\":\"3uyGhtARP4M\",\"title\":\"1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi\",\"canonicalType\":\"short\"}],\"autoplay\":true}",
+    "channelRow": {
+      "avatar": "40x40 r50%",
+      "found": true,
+      "metaLine": "Playing via embed · plays inside WebFlix (the provider's con",
+      "name": "wfx-experience-service",
+      "nameFont": "16px/500",
+      "subCountText": null,
+      "subscribe": {
+        "bg": "rgb(255, 0, 51)",
+        "box": "95x36",
+        "color": "rgb(255, 255, 255)",
+        "label": "Subscribe to wfx-experience-service",
+        "pressed": "false",
+        "radius": "18px",
+        "state": "idle"
+      }
+    },
+    "sourcesModel": "[]",
+    "subscribe": {
+      "click": {
+        "label": "Unsubscribe from wfx-experience-service",
+        "pressed": "true",
+        "state": "subscribed",
+        "status": "Subscribed — saved to your Subscriptions list in Library."
+      },
+      "library": {
+        "entryTitles": [
+          "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study "
+        ],
+        "playlistCount": 1,
+        "subsFound": true,
+        "subsListTitle": "Subscriptions"
+      },
+      "durable": {
+        "label": "Subscribe to wfx-experience-service",
+        "stateAfterReload": "idle"
+      }
+    },
+    "description": {
+      "collapsed": {
+        "clamp": "2",
+        "collapsedH": 68,
+        "found": true,
+        "isDetails": false,
+        "open": "false",
+        "textFont": "14px/400",
+        "toggleText": "...more",
+        "toggleType": "BUTTON"
+      },
+      "expanded": {
+        "anyDialogOpened": false,
+        "bodyVisible": true,
+        "expandedH": 112,
+        "open": "true",
+        "toggleText": "Show less"
+      },
+      "reCollapsed": {
+        "collapsedH": 68,
+        "open": "false"
+      }
+    },
+    "relatedColumn": {
+      "autoplayBeforeList": true,
+      "autoplayRow": true,
+      "chips": [
+        "All",
+        "From wfx-experience-",
+        "Related"
+      ],
+      "firstThree": [
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 188
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_1X9JAB24FVQTXK46K246J9FGA1&connector=wfx-experience-service&ref=5SRgdyUsuAg&title=1%2C000+Years+Of+English+Monarchy+In+4+Hours&type=video&duration=16146000",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 286.5
+        },
+        {
+          "h": 94.5,
+          "href": "/player?id=wfxitm_6V2ZAKAQKFYJ43GWHAJBKRP6X7&connector=wfx-experience-service&ref=oYZqn5zPzK4&title=3+Countries+With+Incredible+Natural+Beauty+%F0%9F%8C%8D+%23Travel+%23Nature+%23Shorts&type=short",
+          "thumbBox": "168x95",
+          "titleClamp": "2",
+          "titleFont": "14px/500",
+          "top": 385
+        }
+      ],
+      "found": true,
+      "head": true,
+      "knob": true,
+      "listRowGap": "4px",
+      "rowCount": 57,
+      "rowPitch": 4,
+      "switchChecked": "true",
+      "switchClass": "wfx-switch wfx-switch--on",
+      "switchRole": "switch"
+    },
+    "autoplayToggle": {
+      "before": "true",
+      "after": "false",
+      "queueBefore": true,
+      "queueAfter": false,
+      "reverted": "true"
+    },
+    "dwellPreview": {
+      "wiring": {
+        "hasTrigger": true,
+        "hoverX": 1112,
+        "hoverY": 235,
+        "previewable": "false"
+      },
+      "result": {
+        "iframes": [
+          "wfx-hoverpreview__frame",
+          ""
+        ],
+        "layerClass": "wfx-hoverpreview wfx-hoverpreview--open",
+        "layerFound": true
+      }
+    },
+    "geometry": {
+      "watch": {
+        "layoutCols": "996px 412px",
+        "layoutGap": "16px",
+        "playerPadding": "12px 0px 48px 16px",
+        "playerX": 1016,
+        "railBox": null,
+        "railDisplay": "none",
+        "secondaryBox": "412x6039 @(1028,68)",
+        "secondaryRightEdgeDelta": 0,
+        "shellGuide": "hidden",
+        "stageBox": "192x119",
+        "viewportW": 1440
+      },
+      "w1600": {
+        "playerPadding": "24px 24px 48px",
+        "playerX": 24,
+        "viewportW": 1600
+      },
+      "drawer": {
+        "guideState": "drawer",
+        "railBox": "240x844",
+        "railDisplay": "flex",
+        "railX": 0
+      },
+      "home": {
+        "railDisplay": "flex",
+        "railW": 240,
+        "shellGuide": "default"
+      }
+    }
+  }
+}

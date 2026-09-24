@@ -86,20 +86,88 @@ await shot("s5-tokens-light");
 
 await evalJS(`localStorage.removeItem('wfx-theme'); 'set'`);
 
-// the byte-exact verdict table
-report.checks.tokenVerdicts = NINE.map(t => ({
-  name: t.cssName,
-  dark: { computed: report.checks.tokensDark?.tokens?.[t.cssName] ?? null,
-    contract: t.dark,
-    byteExact: norm(report.checks.tokensDark?.tokens?.[t.cssName] ?? "") === norm(t.dark) },
-  light: { computed: report.checks.tokensLight?.tokens?.[t.cssName] ?? null,
-    contract: t.light,
-    byteExact: norm(report.checks.tokensLight?.tokens?.[t.cssName] ?? "") === norm(t.light) },
-}));
-
-// ── the literals replaced by canonical names (the subject's own CSS) ──────
+// ── the subject's stylesheet (read once — used by both checks below) ────
 let css = "";
 try { css = await Bun.file(`${WT}/apps/web/src/app/globals.css`).text(); } catch {}
+
+// ── the byte-exact verdict table (TWO levels) ─────────────────────────────
+// (a) SOURCE level: the subject's globals.css declares each token with the
+//     contract's own literal (whitespace-normalized string equality);
+// (b) COMPUTED level: getComputedStyle resolves custom property colors to
+//     computed forms ('rgba(0,0,0,0.8)' -> '#000c'), so byte-exactness is
+//     proven through the BROWSER'S OWN normalization: a probe element
+//     carrying the contract literal must resolve to the identical string.
+const cssSource = css || "";
+const declOf = (name: string, block: string): string | null => {
+  const m = cssSource.match(new RegExp(`${name}:\\s*([^;\\n]+)`, "g"));
+  if (!m) return null;
+  const inBlock = m.map(s => s.replace(new RegExp(`^${name}:\\s*`), "").trim())
+    .filter((_, i) => (block === "dark" ? i === 0 : i === 1));
+  return inBlock[0] ?? null;
+};
+report.checks.tokenVerdicts = NINE.map(t => ({
+  name: t.cssName,
+  source: {
+    dark: { declared: declOf(t.cssName, "dark"), contract: t.dark,
+      byteExact: norm(declOf(t.cssName, "dark") ?? "") === norm(t.dark) },
+    light: { declared: declOf(t.cssName, "light"), contract: t.light,
+      byteExact: norm(declOf(t.cssName, "light") ?? "") === norm(t.light) },
+  },
+  computed: {
+    dark: { resolved: report.checks.tokensDark?.tokens?.[t.cssName] ?? null,
+      contractResolved: null, byteExact: null },
+    light: { resolved: report.checks.tokensLight?.tokens?.[t.cssName] ?? null,
+      contractResolved: null, byteExact: null },
+  },
+}));
+
+// (b) the computed-level differential — per theme, in the LIVE browser:
+//     the browser serializes custom-property values ('#000c') differently
+//     from substituted real properties ('rgba(0, 0, 0, 0.8)'), so byte-
+//     exactness is proven IN ONE CONTEXT: a probe element carrying
+//     background: var(--token) must compute IDENTICALLY to a twin element
+//     carrying background: <the contract literal> (the browser's own
+//     canonical form — equality is byte-exact by construction).
+const runDifferential = async (theme: "dark" | "light") => {
+  await evalJS(`localStorage.setItem('wfx-theme', '${theme}'); 'set'`);
+  await open(`${BASE}/`);
+  await sleep(1300);
+  const pairs = NINE.map(t => [t.cssName, theme === "dark" ? t.dark : t.light]);
+  const normalized = await evalJS(`(() => {
+    const out = {};
+    for (const [n, l] of ${JSON.stringify(pairs)}) {
+      const a = document.createElement('div');
+      const b = document.createElement('div');
+      a.style.display = 'none'; b.style.display = 'none';
+      a.style.background = 'var(' + n + ')';
+      b.style.background = l;
+      document.body.appendChild(a); document.body.appendChild(b);
+      const ca = getComputedStyle(a).backgroundColor;
+      const cb = getComputedStyle(b).backgroundColor;
+      out[n] = { tokenComputed: ca, literalComputed: cb, equal: ca === cb && ca !== '' };
+      a.remove(); b.remove();
+    }
+    return out;
+  })()`);
+  const live = await readTokens();
+  return { normalized, liveTokens: live.tokens, dataTheme: live.dataTheme };
+};
+report.checks.computedDifferential = {
+  dark: await runDifferential("dark"),
+  light: await runDifferential("light"),
+};
+for (const v of report.checks.tokenVerdicts) {
+  for (const theme of ["dark", "light"] as const) {
+    const diff = report.checks.computedDifferential[theme];
+    const pair = diff.normalized?.[v.name] ?? {};
+    v.computed[theme] = { resolved: diff.liveTokens?.[v.name] ?? null,
+      tokenComputed: pair.tokenComputed ?? null, literalComputed: pair.literalComputed ?? null,
+      byteExact: pair.equal === true };
+  }
+}
+await evalJS(`localStorage.removeItem('wfx-theme'); 'set'`);
+
+// ── the literals replaced by canonical names (the subject's own CSS) ──────
 if (css) {
   const count = (needle: string) => css.split(needle).length - 1;
   report.checks.ruleUsage = {
