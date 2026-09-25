@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "VERDICT: DIVERGENT\nThe production clone utilizes a dark theme and a centered \"Sign in\" player layout, whereas the corpus reference uses a light theme with a left-aligned video player and a distinct right-hand sidebar for related content.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790309208,
+  "id": "20260925120618730e9bf890994727",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260925120618730e9bf890994727",
+  "usage": {
+    "completion_tokens": 51,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3479,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 3530
+  }
+}

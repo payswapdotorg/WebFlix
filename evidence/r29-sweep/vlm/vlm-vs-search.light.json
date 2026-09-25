@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "VERDICT: DIVERGENT\nThe production clone's search results page lacks the horizontal filter chips (e.g., \"All\", \"Shorts\", \"Videos\") and the \"Sponsored\" label/external link icon present in the YouTube corpus reference.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790309135,
+  "id": "2026092512053218a32ea5b9ae42a8",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092512053218a32ea5b9ae42a8",
+  "usage": {
+    "completion_tokens": 54,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3463,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 3517
+  }
+}

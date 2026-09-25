@@ -1,0 +1,87 @@
+{
+  "tag": "prod-webflix-steel",
+  "base": "https://webflix-steel.vercel.app",
+  "at": "2026-09-25T03:44:12.275Z",
+  "checks": {
+    "liveness": {
+      "status": 200,
+      "finalUrl": "https://webflix-steel.vercel.app/",
+      "bytes": 731818,
+      "server": "Vercel",
+      "xVercelId": "hkg1::iad1::tnc2h-1790307852301-00792654f1dd"
+    },
+    "servedCss": {
+      "href": "/_next/static/immutable/chunks/3wd59hi6fq0df.css",
+      "url": "https://webflix-steel.vercel.app/_next/static/immutable/chunks/3wd59hi6fq0df.css",
+      "status": 200,
+      "bytes": 93189,
+      "cacheControl": "public,max-age=31536000,immutable",
+      "etag": "W/\"_next/static/immutable/chunks/3wd59hi6fq0df.css\""
+    },
+    "pillBgRuling": {
+      "declarations": [
+        "#0009",
+        "#0009"
+      ],
+      "isHex0009": true,
+      "is000cAnywhere": false
+    },
+    "canonicalTokens": {
+      "declarations": {
+        "--wfx-border-hairline": [
+          "#ffffff14",
+          "#eee"
+        ],
+        "--wfx-pill-bg": [
+          "#0009",
+          "#0009"
+        ],
+        "--wfx-pill-fg": [
+          "#fff",
+          "#fff"
+        ],
+        "--wfx-scrollbar-thumb": [
+          "#ababab",
+          "#c2c2c2"
+        ],
+        "--wfx-toast-bg": [
+          "#f1f1f1",
+          "#0f0f0f"
+        ],
+        "--wfx-toast-fg": [
+          "#0f0f0f",
+          "#f1f1f1"
+        ],
+        "--wfx-chrome-scrim": [
+          "#000000bd",
+          "#000000bd"
+        ],
+        "--wfx-chrome-fg": [
+          "#fff",
+          "#fff"
+        ],
+        "--wfx-stage-black": [
+          "#000",
+          "#000"
+        ]
+      },
+      "allNineDeclared": true
+    },
+    "shortsGeometry": {
+      "rule": ".wfx-row__scroller--shorts{scrollbar-width:none;grid-template-rows:auto;grid-template-columns:none;grid-auto-columns:208px;grid-auto-flow:column;gap:4px;padding-bottom:8px;display:grid;overflow-x:auto}",
+      "autoColumns208": true,
+      "flowColumn": true,
+      "gap4": true
+    },
+    "residual000cContexts": [
+      "z-index:15;color:#fff;min-height:36px;font:inherit;cursor:pointer;background:#000c;border:1px solid #fff3;border-radius:99",
+      "background:#000c"
+    ],
+    "themeSeam": {
+      "hasThemedMeta": true,
+      "metaTag": "<meta name=\"theme-color\" content=\"#0f0f0f\" data-wfx-theme-color=\"true\"/>",
+      "seamScriptInline": true,
+      "metaBeforeBody": true
+    }
+  }
+}
