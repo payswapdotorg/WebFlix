@@ -27,10 +27,17 @@ export interface WatchReportInput {
 export function WatchStateReporter({
   report,
   resumePositionMs,
+  variant = "bar",
 }: {
   readonly report: WatchReportInput;
   /** The session's resume position (offered as the reported position). */
   readonly resumePositionMs: number;
+  /**
+   * R29-B — the kebab menu rows (the watch action row's "More actions"
+   * disclosure carries the reports: the same real controls, the menu's
+   * own grammar; the corpus action row keeps its clean pill set).
+   */
+  readonly variant?: "bar" | "menu";
 }): JSX.Element {
   const [status, setStatus] = useState<"idle" | "pending" | "done" | "failed">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -72,6 +79,46 @@ export function WatchStateReporter({
     },
     [report.itemId, report.playbackSessionId, resumePositionMs],
   );
+
+  if (variant === "menu") {
+    return (
+      <div className="wfx-kebab__menuwrap" data-wfx-watch-report>
+        <button
+          type="button"
+          className="wfx-kebab__item"
+          onClick={() => {
+            void fire("complete");
+          }}
+          disabled={status === "pending" || status === "done"}
+          data-wfx-report="complete"
+        >
+          <Icon name="check" size={20} />
+          {status === "done" ? "Watched — recorded" : "Mark as watched"}
+        </button>
+        <button
+          type="button"
+          className="wfx-kebab__item"
+          onClick={() => {
+            void fire("skip");
+          }}
+          disabled={status === "pending" || status === "done"}
+          data-wfx-report="skip"
+        >
+          <Icon name="skip" size={20} />
+          Stop and record skip
+        </button>
+        {message !== null ? (
+          <span
+            className={`wfx-kebab__note${status === "failed" ? " wfx-kebab__note--error" : ""}`}
+            role="status"
+            data-wfx-report-status
+          >
+            {message}
+          </span>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="wfx-actionbar" data-wfx-watch-report>

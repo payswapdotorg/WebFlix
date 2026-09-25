@@ -1,25 +1,29 @@
 "use client";
 
 /**
- * @wfx/app-web — the Up-next rail + the session queue (R24-W2, the
- * R24-C rows: up-next / queue / save-queue / autoplay).
+ * @wfx/app-web — THE UP-NEXT RAIL, THE CORPUS SECONDARY COLUMN (R24-W2 →
+ * R29-B N22 — the measured `ytd-compact-video-renderer` grammar).
  *
- * THE FAMILIAR ADJACENT-CONTENT GRAMMAR, HONESTLY BACKED: the rail
- * beside the player answers "what plays next?" the way a mature video
- * product does — the QUEUE HEAD when a session queue exists (the
- * session-scoped store through /api/queue: ordering only, never a
- * hidden profile write), else the RELATED projection (the same
- * trending-pool cards the item hub renders). The autoplay toggle on
- * the Up-next card DERIVES from the attention policy's vocabulary
- * (never a raw always-on switch), and the queue panel's save action
- * writes each entry through the runtime's own library save with a list
- * name (the save-queue pairing: one canonical write path, the Library's
- * playlists section renders the lists).
+ * THE CORPUS ANATOMY (watch-page-anatomy.md): the section head "Up next"
+ * with the AUTOPLAY paper-switch (`tp-yt-paper-toggle-button` — A/B
+ * position states) at the head; the compact rows below — thumb 168×94
+ * left, title (14px/500, 2-line clamp) + channel + meta right, 4px gaps
+ * between rows; hover a row → the preview singleton (the same dwell-
+ * gated system the cards use). One click on a row → the player (the
+ * R28 one-click law).
  *
- * Honesty laws: every mutation renders the store's typed result
- * verbatim (a refused action names its reason); the queue is
- * session-scoped (anonymous viewers queue freely — no login wall); the
- * autoplay sentence names the policy truth (the Personalize seam).
+ * HONESTLY BACKED (the R24-W2 laws, unchanged): the QUEUE HEAD leads
+ * when a session queue exists (the session-scoped store through
+ * /api/queue: ordering only, never a hidden profile write), else the
+ * RELATED projection (the trending pool minus this item). The autoplay
+ * toggle DERIVES from the attention policy's vocabulary (never a raw
+ * always-on switch — the policy sentence names the truth). The related
+ * chips (All · From source · Related) are a REAL filter over the
+ * projection; the queue panel's save action writes each entry through
+ * the runtime's own library save with a list name (the Library's
+ * playlists section renders the lists). Every mutation renders the
+ * store's typed result verbatim; the queue is session-scoped (anonymous
+ * viewers queue freely — no login wall).
  */
 
 import { useCallback, useState, type JSX } from "react";
@@ -27,6 +31,10 @@ import { useCallback, useState, type JSX } from "react";
 import { Icon } from "@/components/shell/Icon";
 import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 import { ArtworkImage } from "@/components/cards/ArtworkImage";
+import { CardPreview } from "@/components/cards/CardPreview";
+// The PURE href builder (client-safe — `@/app/routing` pulls the web-host
+// seam's node:fs dev bridge, which client chunking contexts refuse).
+import { playerHref } from "@/app/href";
 import type { ArtworkView } from "@/host/view-models";
 
 /** One rail card (the same card grammar as discovery — serialized server-side). */
@@ -37,7 +45,7 @@ export interface UpNextCard {
   readonly title: string;
   readonly canonicalType: string;
   readonly durationMs?: number;
-  /** The card's link (the item hub href — the same navigation every card uses). */
+  /** The card's link (the one-click play href — the player autoplay target). */
   readonly href: string;
   /** R26-W2 — the card's REAL SOURCE ARTWORK when the content row carried one. */
   readonly artwork?: ArtworkView;
@@ -54,6 +62,8 @@ export interface UpNextRailProps {
   /** The session queue's initial entries (the store's honest state). */
   readonly initialQueue: readonly {
     readonly itemId: string;
+    readonly connectorId: string;
+    readonly externalRef: string;
     readonly title: string;
     readonly canonicalType: string;
     readonly durationMs?: number;
@@ -62,6 +72,8 @@ export interface UpNextRailProps {
   readonly initialAutoplay: boolean;
   /** The attention-policy sentence that governs autoplay (the derivation truth). */
   readonly autoplayPolicySentence: string;
+  /** R29-B — the session's attention mode (the preview dwell policy). */
+  readonly attentionMode: "mindful" | "balanced" | "immersive" | "custom";
 }
 
 /** The typed queue mutation outcome the panel renders verbatim. */
@@ -71,9 +83,57 @@ interface QueueOutcome {
 }
 
 /**
- * The Up-next rail: the next thing to watch (queue-first, related
- * otherwise) + the session queue panel + the autoplay toggle + the
- * save-queue action.
+ * One compact row (the corpus renderer): 168×94 thumb left + the title
+ * (14/500, 2-line clamp) + channel + meta right — wrapped in the
+ * dwell-gated preview trigger (the same singleton the cards drive).
+ */
+function CompactRow({
+  card,
+  attentionMode,
+  badge,
+}: {
+  readonly card: UpNextCard;
+  readonly attentionMode: UpNextRailProps["attentionMode"];
+  /** The honest provenance badge (the queue head's own). */
+  readonly badge?: string;
+}): JSX.Element {
+  return (
+    <CardPreview
+      itemId={card.itemId}
+      title={card.title}
+      attentionMode={attentionMode}
+      previewable={false}
+      connectorId={card.connectorId}
+      externalRef={card.externalRef}
+      playHref={card.href}
+      cardId={card.itemId}
+    >
+      <a className="wfx-upnext__link" href={card.href} aria-label={`Play next: ${card.title}`}>
+        <span className="wfx-card__thumb wfx-card__thumb--rail" style={{ background: placeholderArt(card.itemId) }}>
+          <span className="wfx-card__art" aria-hidden="true">
+            <span>{placeholderMonogram(card.title)}</span>
+          </span>
+          {card.artwork !== undefined ? <ArtworkImage artwork={card.artwork} className="wfx-card__img" /> : null}
+          {card.durationMs !== undefined ? (
+            <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
+          ) : null}
+        </span>
+        <span className="wfx-upnext__rowbody">
+          <strong className="wfx-upnext__itemtitle">{card.title}</strong>
+          <span className="wfx-upnext__itemmeta">
+            {card.connectorId.length > 0 ? `From ${card.connectorId}` : card.canonicalType}
+          </span>
+          {badge !== undefined ? <span className="wfx-capchip">{badge}</span> : null}
+        </span>
+      </a>
+    </CardPreview>
+  );
+}
+
+/**
+ * The Up-next rail: the corpus section head (Autoplay paper-switch) +
+ * the compact rows (queue-first, related otherwise) + the related chips
+ * (a real filter) + the session queue panel + the save-queue action.
  */
 export function UpNextRail(props: UpNextRailProps): JSX.Element {
   const [queue, setQueue] = useState(props.initialQueue);
@@ -81,7 +141,7 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
   const [outcome, setOutcome] = useState<QueueOutcome | null>(null);
   const [savedList, setSavedList] = useState<string | null>(null);
   // R27-W2 — the related chips' real filter state ("all" | "from-source"
-  // | "related" — the corpus chips row above the compact cards).
+  // | "related" — a REAL filter over the projection, never decorative).
   const [relatedFilter, setRelatedFilter] = useState<"all" | "from-source" | "related">("all");
   const relatedCards =
     relatedFilter === "all"
@@ -126,67 +186,113 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
     }
   }, []);
 
-  /** The up-next card: the queue head, else the first related card. */
-  const upNext: UpNextCard | null =
-    queue.length > 0
+  /** The queue head as a real card (the one-click play target — full identity). */
+  const queueHead: UpNextCard | null =
+    queue.length > 0 && queue[0] !== undefined
       ? {
-          itemId: queue[0]!.itemId,
-          connectorId: "",
-          externalRef: "",
-          title: queue[0]!.title,
-          canonicalType: queue[0]!.canonicalType,
-          ...(queue[0]!.durationMs !== undefined ? { durationMs: queue[0]!.durationMs } : {}),
-          href: "#queue-head",
+          itemId: queue[0].itemId,
+          connectorId: queue[0].connectorId,
+          externalRef: queue[0].externalRef,
+          title: queue[0].title,
+          canonicalType: queue[0].canonicalType,
+          ...(queue[0].durationMs !== undefined ? { durationMs: queue[0].durationMs } : {}),
+          href: playerHref({
+            itemId: queue[0].itemId,
+            connectorId: queue[0].connectorId,
+            externalRef: queue[0].externalRef,
+            title: queue[0].title,
+            canonicalType: queue[0].canonicalType,
+            ...(queue[0].durationMs !== undefined ? { durationMs: queue[0].durationMs } : {}),
+          }),
         }
-      : props.related[0] ?? null;
+      : null;
+  const hasRows = queueHead !== null || relatedCards.length > 0;
 
   return (
     <aside className="wfx-upnext" aria-label="Up next and queue" data-wfx-up-next>
-      <h2 className="wfx-upnext__title">Up next</h2>
-
-      {/* THE UP-NEXT CARD (queue-first, related otherwise) */}
-      {upNext !== null ? (
-        <div className="wfx-upnext__card" data-wfx-up-next-card>
-          <a
-            className="wfx-upnext__link"
-            href={upNext.href}
-            aria-label={`Play next: ${upNext.title}`}
-            data-wfx-up-next-link
+      {/* THE SECTION HEAD (the corpus grammar): "Up next" + the AUTOPLAY
+          paper-switch — the toggle derives from the attention policy
+          (never a raw always-on switch; the sentence names the truth). */}
+      <div className="wfx-upnext__head">
+        <h2 className="wfx-upnext__title">Up next</h2>
+        <span className="wfx-upnext__autoplay" data-wfx-autoplay-row>
+          <span className="wfx-upnext__autoplaylabel">Autoplay</span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={autoplay}
+            aria-label="Autoplay"
+            className={`wfx-switch${autoplay ? " wfx-switch--on" : ""}`}
+            onClick={() => {
+              void mutate({ action: "autoplay", enabled: !autoplay });
+            }}
+            data-wfx-autoplay-toggle
           >
-            <span className="wfx-card__thumb wfx-card__thumb--rail" style={{ background: placeholderArt(upNext.itemId) }}>
-              <span className="wfx-card__art" aria-hidden="true">
-                <span>{placeholderMonogram(upNext.title)}</span>
-              </span>
-              {upNext.artwork !== undefined ? (
-                <ArtworkImage artwork={upNext.artwork} className="wfx-card__img" />
+            <span className="wfx-switch__knob" aria-hidden="true" />
+          </button>
+        </span>
+      </div>
+      <p className="wfx-upnext__policy" data-wfx-autoplay-policy>
+        {props.autoplayPolicySentence}
+      </p>
+
+      {/* THE COMPACT ROWS (the corpus renderer list): the queue head
+          first (its own provenance badge), the related projection after
+          — 4px gaps, hover → the preview singleton, click → the player. */}
+      {hasRows ? (
+        <>
+          {props.related.length > 0 ? (
+            <div className="wfx-upnext__chips" role="group" aria-label="Filter related">
+              <button
+                type="button"
+                className={`wfx-upnext__chip${relatedFilter === "all" ? " wfx-upnext__chip--active" : ""}`}
+                onClick={() => {
+                  setRelatedFilter("all");
+                }}
+                aria-pressed={relatedFilter === "all"}
+                data-wfx-related-chip="all"
+              >
+                All
+              </button>
+              {props.sourceId !== undefined && props.sourceId.length > 0 ? (
+                <button
+                  type="button"
+                  className={`wfx-upnext__chip${relatedFilter === "from-source" ? " wfx-upnext__chip--active" : ""}`}
+                  onClick={() => {
+                    setRelatedFilter("from-source");
+                  }}
+                  aria-pressed={relatedFilter === "from-source"}
+                  data-wfx-related-chip="from-source"
+                >
+                  From {props.sourceId}
+                </button>
               ) : null}
-              {upNext.durationMs !== undefined ? (
-                <span className="wfx-badge wfx-badge--duration">{formatDuration(upNext.durationMs)}</span>
-              ) : null}
-            </span>
-            <span>
-              <strong className="wfx-upnext__itemtitle">{upNext.title}</strong>
-              <span className="wfx-capchip">
-                {queue.length > 0 ? "From your queue" : "Related on your sources"}
-              </span>
-            </span>
-          </a>
-          {/* THE AUTOPLAY TOGGLE (attention-policy-derived — never raw) */}
-          <label className="wfx-upnext__autoplay">
-            <input
-              type="checkbox"
-              checked={autoplay}
-              onChange={(event) => {
-                void mutate({ action: "autoplay", enabled: event.target.checked });
-              }}
-              data-wfx-autoplay-toggle
-            />
-            <span>Autoplay</span>
-          </label>
-          <p className="wfx-upnext__policy" data-wfx-autoplay-policy>
-            {props.autoplayPolicySentence}
-          </p>
-        </div>
+              <button
+                type="button"
+                className={`wfx-upnext__chip${relatedFilter === "related" ? " wfx-upnext__chip--active" : ""}`}
+                onClick={() => {
+                  setRelatedFilter("related");
+                }}
+                aria-pressed={relatedFilter === "related"}
+                data-wfx-related-chip="related"
+              >
+                Related
+              </button>
+            </div>
+          ) : null}
+          <ul className="wfx-upnext__relatedlist" data-wfx-up-next-related>
+            {queueHead !== null ? (
+              <li data-wfx-up-next-card>
+                <CompactRow card={queueHead} attentionMode={props.attentionMode} badge="From your queue" />
+              </li>
+            ) : null}
+            {relatedCards.map((card) => (
+              <li key={card.itemId}>
+                <CompactRow card={card} attentionMode={props.attentionMode} />
+              </li>
+            ))}
+          </ul>
+        </>
       ) : (
         <p className="wfx-upnext__empty">Nothing queued and nothing related yet — keep watching.</p>
       )}
@@ -283,80 +389,6 @@ export function UpNextRail(props: UpNextRailProps): JSX.Element {
           </p>
         ) : null}
       </div>
-
-      {/* THE RELATED RAIL (the adjacent-content projection — the same
-          cards) with the corpus CHIPS ROW (All · From <source> · Related
-          — a REAL filter over the projection, never decorative). */}
-      {props.related.length > 0 ? (
-        <div className="wfx-upnext__related" data-wfx-up-next-related>
-          <h3 className="wfx-upnext__queuetitle">More to explore</h3>
-          <div className="wfx-upnext__chips" role="group" aria-label="Filter related">
-            <button
-              type="button"
-              className={`wfx-upnext__chip${relatedFilter === "all" ? " wfx-upnext__chip--active" : ""}`}
-              onClick={() => {
-                setRelatedFilter("all");
-              }}
-              aria-pressed={relatedFilter === "all"}
-              data-wfx-related-chip="all"
-            >
-              All
-            </button>
-            {props.sourceId !== undefined && props.sourceId.length > 0 ? (
-              <button
-                type="button"
-                className={`wfx-upnext__chip${relatedFilter === "from-source" ? " wfx-upnext__chip--active" : ""}`}
-                onClick={() => {
-                  setRelatedFilter("from-source");
-                }}
-                aria-pressed={relatedFilter === "from-source"}
-                data-wfx-related-chip="from-source"
-              >
-                From {props.sourceId}
-              </button>
-            ) : null}
-            <button
-              type="button"
-              className={`wfx-upnext__chip${relatedFilter === "related" ? " wfx-upnext__chip--active" : ""}`}
-              onClick={() => {
-                setRelatedFilter("related");
-              }}
-              aria-pressed={relatedFilter === "related"}
-              data-wfx-related-chip="related"
-            >
-              Related
-            </button>
-          </div>
-          <ul className="wfx-upnext__relatedlist">
-            {relatedCards.slice(0, 6).map((card) => (
-              <li key={card.itemId}>
-                <a className="wfx-upnext__link" href={card.href} aria-label={card.title}>
-                  <span
-                    className="wfx-card__thumb wfx-card__thumb--rail"
-                    style={{ background: placeholderArt(card.itemId) }}
-                  >
-                    <span className="wfx-card__art" aria-hidden="true">
-                      <span>{placeholderMonogram(card.title)}</span>
-                    </span>
-                    {card.artwork !== undefined ? (
-                      <ArtworkImage artwork={card.artwork} className="wfx-card__img" />
-                    ) : null}
-                    {card.durationMs !== undefined ? (
-                      <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
-                    ) : null}
-                  </span>
-                  <span>
-                    <strong className="wfx-upnext__itemtitle">{card.title}</strong>
-                    <span className="wfx-upnext__itemmeta">
-                      {card.connectorId.length > 0 ? `From ${card.connectorId}` : card.canonicalType}
-                    </span>
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
     </aside>
   );
 }

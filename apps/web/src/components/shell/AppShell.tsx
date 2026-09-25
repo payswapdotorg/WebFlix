@@ -9,9 +9,15 @@
  *   WORDMARK (honest identity: our name, YouTube's placement/typography),
  *   the centered search pill (the SearchBox island), and the honest right
  *   cluster: create (＋) → the REAL BYOF entry (Settings → Sources), the
- *   theme toggle (the R27 seam), and the session avatar menu (the honest
+ *   SETTINGS GEAR (R29-B N24: the corpus multi-page menu — Your data /
+ *   Appearance / Keyboard shortcuts / Settings, honestly wired), the
+ *   corpus SIGN-IN PILL (R29-B N12: 40h r20 #065fd4 14/500 → the honest
+ *   identity path), and the session avatar menu (the honest
  *   account/settings entry). NO bell (no notification transport — the
  *   DIVERGENCES law), NO mic (no voice-search transport).
+ * - THE MINIPLAYER DOCK (R29-B N25): the persistent bottom-right
+ *   floating player — mounted at the shell level so it survives every
+ *   surface (renders nothing until a playback is docked).
  * - LEFT RAIL: the corpus groups — primary (Home · Shorts · Watch ·
  *   Library), divider, the "You" group (History · Offline · Settings —
  *   WebFlix's REAL surfaces; every unmapped YouTube destination is
@@ -25,7 +31,7 @@
  * about the session id's durability. Nothing pretends to be a profile.
  *
  * Server component: no client JS, no hooks — the session menu is a
- * `details`/`summary` disclosure; the GuideToggle + ThemeToggle +
+ * `details`/`summary` disclosure; the GuideToggle + SettingsGear +
  * SearchBox are the small client islands. Accessibility laws: semantic
  * landmarks (header/nav/main/footer), a skip link, `aria-current="page"`
  * on the active nav entry, >=44px targets, visible focus rings
@@ -41,9 +47,14 @@ import { Icon, type IconName } from "./Icon";
 import { SearchBox } from "./SearchBox";
 import { InstallPrompt } from "./InstallPrompt";
 import { UpdatePrompt } from "./UpdatePrompt";
-// R27-W2 — the guide (hamburger) + theme islands (the corpus masthead).
+// R27-W2 — the guide (hamburger) island (the corpus masthead).
 import { GuideToggle } from "./GuideToggle";
-import { ThemeToggle } from "./ThemeToggle";
+// R29-B (N24) — the SETTINGS GEAR island (the corpus multi-page menu:
+// Your data / Appearance (the theme path — N15) / Keyboard shortcuts /
+// Settings — replacing the abbreviated theme toggle button).
+import { SettingsGear } from "./SettingsGear";
+// R29-B (N25) — the persistent miniplayer dock island.
+import { MiniplayerDock } from "./MiniplayerDock";
 // R24-E — the play-intent recorder (the document-level listener that
 // records the user's real play/switch clicks for the startup traces).
 import { PlayIntentRecorder } from "./PlayIntentRecorder";
@@ -82,12 +93,14 @@ const RAIL_PRIMARY: readonly RailEntry[] = [
 /**
  * The "You" group (the corpus's You/library section, mapped to WebFlix's
  * REAL surfaces: History + Offline live in the Library routes; Settings
- * is the account/settings entry). YouTube destinations WebFlix
- * truthfully lacks (Subscriptions, Playlists, Your videos, Explore,
- * Premium…) are honestly ABSENT — recorded in DIVERGENCES.
+ * is the account/settings entry). R29-B (D8/N4) — THE HISTORY DEDUPE:
+ * the group carries ONE History entry (the explicit link with its
+ * Library?section=history href below); the duplicate top-level entry is
+ * GONE. YouTube destinations WebFlix truthfully lacks (Subscriptions,
+ * Playlists, Your videos, Explore, Premium…) are honestly ABSENT —
+ * recorded in DIVERGENCES.
  */
 const RAIL_YOU: readonly RailEntry[] = [
-  { surface: "library", label: "History" },
   { surface: "settings", label: "Settings" },
 ];
 
@@ -148,6 +161,7 @@ export function AppShell({
   active,
   session,
   mainClass,
+  guide = "default",
   children,
 }: {
   /** The boot mode (badge honesty). */
@@ -158,12 +172,20 @@ export function AppShell({
   readonly session: WebSessionState;
   /** Extra classes for the main region (e.g. the full-screen short feed). */
   readonly mainClass?: string;
+  /**
+   * R29-B — the route's guide law: "default" renders the standard rail
+   * (240px labeled ≥1280); "hidden" is the WATCH-page truth (the corpus
+   * watch anatomy: the rail stays CLOSED on the watch surface — the
+   * content spans the viewport; the hamburger opens the overlay drawer
+   * at any width, YouTube's own watch behavior).
+   */
+  readonly guide?: "default" | "hidden";
   readonly children: ReactNode;
 }): JSX.Element {
   const badge = modeBadge(mode);
   const activeHref = active !== undefined ? surfaceHref(active) : undefined;
   return (
-    <div className="wfx-shell" data-wfx-mode={mode}>
+    <div className="wfx-shell" data-wfx-mode={mode} data-wfx-shell-guide={guide}>
       <a className="wfx-skip-link" href="#wfx-main">
         Skip to content
       </a>
@@ -206,8 +228,25 @@ export function AppShell({
           >
             <Icon name="plus" size={22} />
           </a>
-          {/* R27-W2 — the theme seam's toggle (dark default). */}
-          <ThemeToggle />
+          {/* R29-B (N24) — THE SETTINGS GEAR: the corpus multi-page menu
+              (Your data / Appearance › Dark-Light rows / Keyboard
+              shortcuts › the real key sheet / Settings) — the theme's
+              own corpus path lives inside (N15). */}
+          <SettingsGear />
+          {/* R29-B (N12) — THE SIGN-IN PILL (the corpus anatomy: 40px
+              height, r20, #065fd4, 14px/500, border 1px rgba(0,0,0,0.2),
+              the person mark + "Sign in") wired to the REAL identity
+              path (Settings▸General — where the session truth + the
+              sign-in/profile controls live). */}
+          <a
+            className="wfx-signin"
+            href="/settings?section=general"
+            data-wfx-signin
+            title="Sign in — bring your history, watchlist, and profiles across devices"
+          >
+            <Icon name="person" size={22} />
+            <span>Sign in</span>
+          </a>
           <details className="wfx-avatar-menu">
             <summary className="wfx-avatar-menu__summary" aria-label="Session menu">
               <span className="wfx-avatar-menu__chip" aria-hidden="true">
@@ -264,6 +303,22 @@ export function AppShell({
               <RailLinks entries={RAIL_YOU} activeHref={activeHref} />
             </div>
             <div className="wfx-rail__divider" />
+            {/* R29-B (N13) — THE RAIL SIGN-IN PROMO (the corpus open-guide
+                grammar: "Sign in to like videos, comment, and subscribe."
+                + the pill) — wired to the REAL identity path, exactly the
+                corpus's logged-out rail truth; never a dead promo. */}
+            <div className="wfx-rail__promo" data-wfx-rail-signin>
+              <p>Sign in to like videos, comment, and subscribe.</p>
+              <a
+                className="wfx-signin wfx-signin--rail"
+                href="/settings?section=general"
+                data-wfx-rail-signin-link
+              >
+                <Icon name="person" size={20} />
+                <span>Sign in</span>
+              </a>
+            </div>
+            <div className="wfx-rail__divider" />
             {/* R28-B — the install affordance lives in the rail now (the
                 N28 fix: no in-page floating install chrome; the REAL
                 deferred prompt stays one disclosure away, quiet-first).
@@ -311,6 +366,9 @@ export function AppShell({
           <UpdatePrompt enabled />
         </>
       ) : null}
+      {/* R29-B (N25) — the miniplayer dock (renders nothing until a
+          playback is docked; persists across every surface). */}
+      <MiniplayerDock />
     </div>
   );
 }

@@ -19,10 +19,12 @@
  *   (iOS accepts a single square PNG for Add to Home Screen).
  * - `appleWebApp` → the iOS standalone wiring (`apple-mobile-web-app-capable`
  *   / `-status-bar-style` / `-title` meta tags Next generates from it).
- * - `viewport.themeColor` → the meta theme-color (Next 16 metadata
- *   convention — themeColor lives on the `viewport` export). `#0b0a10` is
- *   `--wfx-bg`, the solid equivalent of the shell topbar's
- *   `rgba(11, 10, 16, 0.92)` over the page background.
+ * - `viewport` → the responsive viewport (Next 16 metadata convention);
+ *   R29-B — the meta theme-color no longer pins a single dark value:
+ *   the seam's own `<meta data-wfx-theme-color>` follows the BOOT theme
+ *   (light boots #ffffff, dark boots #0f0f0f — the corpus core pair)
+ *   and the Appearance rows keep it in sync live (the O6 residual's
+ *   close: the meta tag no longer contradicts the rendered field).
  * - the tiny before-interactive script stashes `beforeinstallprompt` the
  *   moment Chrome/Edge fire it (it can fire before hydration), so the
  *   `InstallPrompt` island can offer the REAL deferred prompt instead of
@@ -53,13 +55,24 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0f0f0f",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }): JSX.Element {
   return (
     <html lang="en" data-theme="dark" suppressHydrationWarning>
       <head>
+        {/**
+         * R29-B — THE THEME-COLOR META (the O6 residual's close): the
+         * corpus core pair #ffffff (light) / #0f0f0f (dark) — the seam
+         * script below sets it BEFORE the first paint from the SAME
+         * decision that sets `data-theme` (a persisted choice, else the
+         * OS preference), so the browser chrome color never contradicts
+         * the rendered field. The element precedes the script in the
+         * head, so it exists when the script runs;
+         * `suppressHydrationWarning` covers the one-attribute divergence
+         * the honest seam produces.
+         */}
+        <meta name="theme-color" content="#0f0f0f" data-wfx-theme-color suppressHydrationWarning />
         {/*
          * R27-W2 — the theme seam's before-paint script: the persisted
          * choice (localStorage `wfx-theme`, "dark" | "light") is applied to
@@ -74,7 +87,7 @@ export default function RootLayout({ children }: { children: ReactNode }): JSX.E
          * produces.
          */}
         <Script id="wfx-theme-seam" strategy="beforeInteractive">
-          {`try{var t=localStorage.getItem("wfx-theme");if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;}else if(window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches){document.documentElement.dataset.theme="light";}}catch(e){}`}
+          {`try{var t=localStorage.getItem("wfx-theme");if(t!=="light"&&t!=="dark"&&window.matchMedia&&window.matchMedia("(prefers-color-scheme: light)").matches){t="light";}if(t==="light"||t==="dark"){document.documentElement.dataset.theme=t;var m=document.querySelector("meta[data-wfx-theme-color]");if(m){m.setAttribute("content",t==="light"?"#ffffff":"#0f0f0f");}}}catch(e){}`}
         </Script>
       </head>
       <body>
