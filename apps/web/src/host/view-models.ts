@@ -35,6 +35,7 @@ import type { PlaybackRealization, PlaybackSession, SourceItem, UserAction } fro
 import { buildExternalReturnContext, isOfficialEmbed } from "@wfx/experience";
 import { canUsePlaybackMode } from "@wfx/client-runtime";
 import { contentArtworkOf } from "@wfx/domain";
+import type { LibraryEntry } from "@wfx/domain";
 import type {
   ContentArtwork,
   ContentArtworkResolution,
@@ -1248,11 +1249,55 @@ export async function loadPlayerViewShell(
   };
   // R24-W2 — the attention mode (the autoplay/preview policy derivation;
   // the runtime's own policy read — the same seam the Personalize control
-  // renders, never a second policy) + the watchlist membership truth.
+  // renders, never a second policy).
   const attentionMode = host.runtime.intents.policy().attentionMode;
-  const watchlistSaved = host.runtime.libraryOps
-    .entries()
-    .some((entry) => entry.itemId === input.itemId);
+  // R30 — THE RELOAD-DURABILITY READ: the watch surface's library truths
+  // (the Save pill's watchlist membership + the Subscribe pill's
+  // Subscriptions membership) hydrate from the STORED library truth — the
+  // same server read the Library page's read model performs
+  // (`readProfileLibrary`), joined by the item's SOURCE identity (the
+  // durable key the stored rows carry — `connectorId` + `externalRef` —
+  // never the per-process canonical mint, which cannot cross a fresh
+  // load's runtime). This closes the R29 sweep's divergence #1: the write
+  // path was real and durable server-side, but a fresh watch-page load
+  // rendered the Subscribe pill idle because the read consulted only the
+  // client runtime's per-load map. The pill's state is ALWAYS the stored
+  // truth — never fabricated, never optimistic-only.
+  //
+  // The honest degradation mirrors the read model's own law (a failing
+  // server read keeps the LOCAL session state rendering): on a typed
+  // failure the local fold answers — the same truth the pre-R30 shell
+  // rendered, never a fabricated claim.
+  let storedLibrary: readonly LibraryEntry[] | null = null;
+  try {
+    const storedRead = await host.serverPort.readProfileLibrary();
+    if (storedRead.ok) storedLibrary = storedRead.value;
+  } catch {
+    storedLibrary = null; // the typed/local fallback below answers
+  }
+  const localWatchlist = host.runtime.libraryOps.entries();
+  /** The stored row's list (the engine's own save writes `metadata.list`; "Saved" when absent). */
+  const storedRowList = (entry: LibraryEntry): string => {
+    const list = (entry.metadata as Record<string, unknown> | undefined)?.list;
+    return typeof list === "string" && list.length > 0 ? list : "Saved";
+  };
+  const savedInStored = (listName: string): boolean =>
+    storedLibrary?.some(
+      (entry) =>
+        entry.connectorId === input.connectorId &&
+        entry.externalRef === input.externalRef &&
+        storedRowList(entry) === listName,
+    ) === true;
+  const savedInLocal = (listName: string): boolean =>
+    localWatchlist.some((entry) => entry.itemId === input.itemId && entry.listName === listName);
+  const savedAnywhereStored = (): boolean =>
+    storedLibrary?.some(
+      (entry) => entry.connectorId === input.connectorId && entry.externalRef === input.externalRef,
+    ) === true;
+  const savedAnywhereLocal = (): boolean =>
+    localWatchlist.some((entry) => entry.itemId === input.itemId);
+  const watchlistSaved =
+    storedLibrary !== null ? savedAnywhereStored() : savedAnywhereLocal();
   // R29-B — the channel row's truths: the sources model's own displayName
   // for this connector (the N29 resolution — a REAL field the model
   // carries, never a fabricated channel; null when the model names none)
@@ -1269,9 +1314,8 @@ export async function loadPlayerViewShell(
     // The sources read failed: the connector id stays the honest identity.
     sourceName = null;
   }
-  const subscribed = host.runtime.libraryOps
-    .entries()
-    .some((entry) => entry.itemId === input.itemId && entry.listName === SUBSCRIPTIONS_LIST);
+  const subscribed =
+    storedLibrary !== null ? savedInStored(SUBSCRIPTIONS_LIST) : savedInLocal(SUBSCRIPTIONS_LIST);
   const providerAuthorizationOf_ = (failureKind: string): PlayerView["providerAuthorization"] => {
     if (failureKind !== "unauthorized") return null;
     return {

@@ -30,13 +30,16 @@ import { resetAcquisitionFixturesForTests } from "./acquisition-fixtures";
 import { resetSourceAuthFixturesForTests } from "./source-auth-fixtures";
 import { resetSessionQueueForTests } from "./queue";
 import { resetPlaybackBridgeForTests } from "./playback-bridge";
+import { resetLibraryFixtureState } from "./library-fixtures";
 
 /**
  * Reset the web host's PROCESS-LIFETIME state to pristine: the runtime
  * boot promise (the next `getWebRuntimeHost` boots fresh), the canonical
  * join, the item join, the R14 acquisition fixture feed, the R17
- * source-auth fixture state, and the R24-W2 session queue. TEST-ONLY —
- * see the module doc.
+ * source-auth fixture state, the R24-W2 session queue, and the R30
+ * persona's file-backed service-side library (the reload-durability
+ * fixture state — a stale persona library would leak across tests).
+ * TEST-ONLY — see the module doc.
  */
 export function resetWebHostProcessState(): void {
   resetWebRuntimeHostForTests();
@@ -45,4 +48,5 @@ export function resetWebHostProcessState(): void {
   resetSourceAuthFixturesForTests();
   resetSessionQueueForTests();
   resetPlaybackBridgeForTests();
+  resetLibraryFixtureState();
 }
