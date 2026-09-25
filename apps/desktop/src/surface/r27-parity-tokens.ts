@@ -182,15 +182,15 @@ export const R27_PARITY_TOKENS = {
     provenance: ["documented"],
     sheet: "design-tokens.md: Typography/Geometry — subscribe-style primary channel action",
   },
-  /** Duration-pill surface (`rgba(0,0,0,0.8)` in both themes). */
+  /** Duration-pill surface (`rgba(0,0,0,0.6)` in both themes — the R28 corpus A@298fa55 supersedes R27's 0.8). */
   "pill-surface": {
     cssName: "--wfx-pill-bg",
-    dark: "rgba(0,0,0,0.8)",
-    light: "rgba(0,0,0,0.8)",
+    dark: "rgba(0,0,0,0.6)",
+    light: "rgba(0,0,0,0.6)",
     provenance: ["rendered"],
     sheet: "design-tokens.md: Typography — duration pill",
   },
-  /** Duration-pill ink (`#fff` on `rgba(0,0,0,0.8)`). */
+  /** Duration-pill ink (`#fff` on `rgba(0,0,0,0.6)`). */
   "pill-ink": {
     cssName: "--wfx-pill-fg",
     dark: "#ffffff",

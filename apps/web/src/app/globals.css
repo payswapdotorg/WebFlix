@@ -79,7 +79,7 @@
    * vocabulary's own names — the contract's corpus values verbatim; the
    * literals they replace are gone from the rules that used them). */
   --wfx-border-hairline: hsla(0,100%,100%,.08);
-  --wfx-pill-bg: rgba(0, 0, 0, 0.8);
+  --wfx-pill-bg: rgba(0, 0, 0, 0.6);
   --wfx-pill-fg: #ffffff;
   --wfx-scrollbar-thumb: hsl(0, 0%, 67%);
   --wfx-toast-bg: #f1f1f1;
@@ -125,7 +125,7 @@ html[data-theme="light"] {
   --wfx-skeleton: hsl(0, 0%, 89%);
   /* R29-B (D16) — the nine surface-scoped tokens' light pair. */
   --wfx-border-hairline: hsl(0, 0%, 93.3%);
-  --wfx-pill-bg: rgba(0, 0, 0, 0.8);
+  --wfx-pill-bg: rgba(0, 0, 0, 0.6);
   --wfx-pill-fg: #ffffff;
   --wfx-scrollbar-thumb: hsl(0, 0%, 76%);
   --wfx-toast-bg: #0f0f0f;

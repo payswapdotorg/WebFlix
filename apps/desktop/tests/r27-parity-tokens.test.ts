@@ -52,7 +52,8 @@ const SHEET_EXPECTATIONS: Record<string, { dark: string; light: string }> = {
   "brand-red": { dark: "#f03", light: "#f03" },
   "cta-surface": { dark: "#f1f1f1", light: "#0f0f0f" },
   "cta-ink": { dark: "#0f0f0f", light: "#ffffff" },
-  "pill-surface": { dark: "rgba(0,0,0,0.8)", light: "rgba(0,0,0,0.8)" },
+  // R29 lead ruling: the R28 corpus (A@298fa55) supersedes R27 — 0.8 -> 0.6.
+  "pill-surface": { dark: "rgba(0,0,0,0.6)", light: "rgba(0,0,0,0.6)" },
   "pill-ink": { dark: "#ffffff", light: "#ffffff" },
   "skeleton": { dark: "hsl(0, 0%, 16%)", light: "hsl(0, 0%, 89%)" },
   "scrollbar-thumb": { dark: "hsl(0, 0%, 67%)", light: "hsl(0, 0%, 76%)" },
