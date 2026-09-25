@@ -1,0 +1,132 @@
+{
+  "tag": "b-bcd8120-fixtures-r29",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T22:38:24.459Z",
+  "shots": [
+    "home",
+    "hover-250ms",
+    "hover-1.7s",
+    "click1",
+    "click2",
+    "comments",
+    "share"
+  ],
+  "checks": {
+    "home": {
+      "bg": "rgb(255, 255, 255)",
+      "heroW": null,
+      "htmlClass": "",
+      "path": "/",
+      "themeAttr": "light"
+    },
+    "fonts": {
+      "h1family": "Roboto, Arial, Helvetica, sans-serif",
+      "loaded": [
+        "Roboto:100 900:loaded",
+        "Roboto:100 900:unloaded",
+        "__nextjs-Geist:400 600:unloaded",
+        "__nextjs-Geist Mono:400 600:unloaded",
+        "__nextjs-Geist:400 600:unloaded",
+        "__nextjs-Geist Mono:400 600:unloaded"
+      ],
+      "robotoFacesInSet": [
+        "Roboto:100 900",
+        "Roboto:100 900"
+      ]
+    },
+    "hover": {
+      "target": {
+        "found": true,
+        "label": "Neon Rain (short, 45s)",
+        "x": 389,
+        "y": 435
+      },
+      "at250ms": {
+        "hoverElClass": "wfx-card__art",
+        "previews": [
+          {
+            "box": "0x0",
+            "children": 0,
+            "cls": "wfx-hoverpreview wfx-hoverpreview--idle"
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview"
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview"
+          }
+        ],
+        "videos": 0
+      },
+      "at1_7s": {
+        "playing": false,
+        "previews": [
+          {
+            "children": 0,
+            "display": "block",
+            "opacity": "0"
+          },
+          {
+            "children": 2,
+            "display": "flex",
+            "opacity": "1"
+          },
+          {
+            "children": 2,
+            "display": "flex",
+            "opacity": "1"
+          }
+        ],
+        "videos": 0
+      }
+    },
+    "clickTrace": {
+      "card": {
+        "href": "/player?id=wfxitm_26DR6Z1BSZW5AFG5DB3YT6HZ2P&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+        "label": "Neon Rain (short, 45s)"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "after": "click card",
+          "h1": "Neon Rain",
+          "hasIframe": true,
+          "hasVideo": false,
+          "nav": "navigate",
+          "path": "/player?id=wfxitm_26DR6Z1BSZW5AFG5DB3YT6HZ2P&connector=fake-source&ref=fake%3Ashort-1&t",
+          "playing": false
+        },
+        {
+          "n": 2,
+          "after": "click Play",
+          "hasVideo": false,
+          "path": "/player?id=wfxitm_26DR6Z1BSZW5AFG5DB3YT6HZ2P&connector=fake-source&ref=fake%3Ashort-1&t",
+          "playBtnStill": true,
+          "playing": false
+        }
+      ]
+    },
+    "comments": {
+      "commentEls": 14,
+      "composer": false,
+      "headerText": "0 Comments",
+      "path": "/player",
+      "threads": 13
+    },
+    "share": {
+      "bg": "rgb(242, 242, 242)",
+      "box": "86x40",
+      "found": true,
+      "lines": [
+        "Share"
+      ],
+      "radius": "20px",
+      "shortLink": false,
+      "startAt": false
+    }
+  }
+}

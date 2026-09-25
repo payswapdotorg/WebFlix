@@ -1,0 +1,246 @@
+{
+  "tag": "b-bcd8120-service",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T22:42:14.935Z",
+  "checks": {
+    "query": {
+      "query": "the",
+      "rows": 17
+    },
+    "rowAnatomy": {
+      "avatar": "24x24",
+      "avatarRadius": "50%",
+      "avatarText": "W",
+      "channelFont": "12px/400",
+      "found": true,
+      "grid": {
+        "cols": "none",
+        "display": "flex",
+        "gap": "6.4px",
+        "gridBox": 1152,
+        "maxWidth": "none"
+      },
+      "meta": {
+        "color": "rgb(15, 15, 15)",
+        "font": "14px/400/20px"
+      },
+      "metaLine": {
+        "color": "rgb(96, 96, 96)",
+        "font": "12px/400/18px"
+      },
+      "row": "1152x281",
+      "rowCount": 17,
+      "thumb": "500x281",
+      "thumbOverflow": "hidden",
+      "thumbRadius": "12px",
+      "title": {
+        "clamp": "2",
+        "display": "flow-root",
+        "font": "18px/400/26px",
+        "overflow": "hidden"
+      }
+    },
+    "chips": {
+      "chips": [
+        {
+          "active": true,
+          "href": "/search?q=the",
+          "text": "All"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&type=video",
+          "text": "Videos"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&type=short",
+          "text": "Shorts"
+        }
+      ],
+      "unbackedChips": []
+    },
+    "filtersButton": {
+      "box": "87x36",
+      "expanded": "false",
+      "found": true
+    },
+    "filtersDialog": {
+      "absenceNamesGroups": [
+        "UPLOAD DATE"
+      ],
+      "absenceNote": "Only filters with a real truth behind them appear here — this host’s sources carry no upload dates, feature flags, or popularity signals to filter by.",
+      "bg": "rgb(255, 255, 255)",
+      "box": "696x308",
+      "checkboxCount": 0,
+      "closeButton": "40x40",
+      "found": true,
+      "groupHeadings": [
+        "TYPE",
+        "DURATION"
+      ],
+      "groups": [
+        "type",
+        "duration"
+      ],
+      "options": [
+        {
+          "active": false,
+          "href": "/search?q=the",
+          "text": "All",
+          "wfx": "type-all"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&type=video",
+          "text": "Videos",
+          "wfx": "type-video"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&type=short",
+          "text": "Shorts",
+          "wfx": "type-short"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the",
+          "text": "Any length",
+          "wfx": "duration-any"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&duration=under-3",
+          "text": "Under 3 minutes",
+          "wfx": "duration-under-3"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&duration=3-20",
+          "text": "3 – 20 minutes",
+          "wfx": "duration-3-20"
+        },
+        {
+          "active": false,
+          "href": "/search?q=the&duration=over-20",
+          "text": "Over 20 minutes",
+          "wfx": "duration-over-20"
+        }
+      ],
+      "radius": "12px",
+      "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 24px 12px",
+      "title": "Search filters"
+    },
+    "dialogCloses": true,
+    "urlState": {
+      "all": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": false,
+        "rows": 17,
+        "subtitle": "17 results for “the”"
+      },
+      "typeVideo": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": true,
+        "rows": 7,
+        "subtitle": "7 results for “the” (filtered)"
+      },
+      "typeShort": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": true,
+        "rows": 10,
+        "subtitle": "10 results for “the” (filtered)"
+      },
+      "typeBogus": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": false,
+        "rows": 17,
+        "subtitle": "17 results for “the”"
+      },
+      "durUnder3": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": true,
+        "rows": 1,
+        "subtitle": "1 result for “the” (filtered)"
+      },
+      "dur3to20": {
+        "chips": [],
+        "emptyFiltered": true,
+        "emptyText": "Nothing matches this filter",
+        "filtered": false,
+        "rows": 0,
+        "subtitle": "Results for “the”"
+      },
+      "durOver20": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": true,
+        "rows": 6,
+        "subtitle": "6 results for “the” (filtered)"
+      },
+      "durBogus": {
+        "chips": [
+          "All",
+          "Videos",
+          "Shorts"
+        ],
+        "emptyFiltered": false,
+        "emptyText": null,
+        "filtered": false,
+        "rows": 17,
+        "subtitle": "17 results for “the”"
+      }
+    },
+    "noMatchesState": {
+      "bodyHead": "Search\n\nResults for “zzzznotathing”\n\nFilters\n\nNo title matches\n\nNothing in your sources matches “zzzznotathing” by name — WebFlix does not fabricate results. Ma",
+      "nothingMatches": false,
+      "rows": 0
+    },
+    "wiring": {
+      "target": {
+        "text": "All",
+        "wfx": "type-all"
+      },
+      "after": {
+        "filtered": false,
+        "rows": 17,
+        "url": "?q=the"
+      }
+    }
+  }
+}

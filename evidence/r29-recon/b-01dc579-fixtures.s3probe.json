@@ -1,0 +1,540 @@
+{
+  "tag": "b-01dc579-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T22:46:45.410Z",
+  "checks": {
+    "signinPill": {
+      "bg": "rgb(6, 95, 212)",
+      "border": "1px solid rgba(0, 0, 0, 0.2)",
+      "box": "101x40",
+      "color": "rgb(255, 255, 255)",
+      "font": "14px/500",
+      "found": true,
+      "href": "/settings?section=general",
+      "personMark": true,
+      "radius": "20px",
+      "text": "Sign in"
+    },
+    "retiredThemeToggle": {
+      "gearButton": true,
+      "oldToggle": false,
+      "oldToggleLabel": false
+    },
+    "gear": {
+      "opened": false,
+      "root": {
+        "absenceNote": "Display language, Restricted Mode, Location, Help, and Send feedback stay absent — this host carries no language packs, content restrictions, location signal, help surface, or feedback transport to wire them to.",
+        "absentNames": [
+          "Display language",
+          "Restricted Mode",
+          "Location",
+          "Help",
+          "Send feedback"
+        ],
+        "box": "300x270",
+        "found": true,
+        "radius": "12px",
+        "rows": [
+          {
+            "href": "/settings?section=general",
+            "key": "your-data",
+            "text": "Your data"
+          },
+          {
+            "href": null,
+            "key": "appearance",
+            "text": "Appearance›"
+          },
+          {
+            "href": null,
+            "key": "shortcuts",
+            "text": "Keyboard shortcuts›"
+          },
+          {
+            "href": "/settings",
+            "key": "settings",
+            "text": "Settings"
+          }
+        ],
+        "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 24px 12px"
+      },
+      "appearance": {
+        "dataThemeBefore": "light",
+        "metaBefore": "#ffffff",
+        "rows": [
+          {
+            "checked": "false",
+            "text": "Dark theme",
+            "theme": "dark"
+          },
+          {
+            "checked": "true",
+            "text": "Light theme",
+            "theme": "light"
+          }
+        ]
+      },
+      "appearanceAfterLight": {
+        "bodyBg": "rgb(255, 255, 255)",
+        "dataTheme": "light",
+        "meta": "#ffffff",
+        "stored": "light"
+      },
+      "appearanceAfterDark": {
+        "dataTheme": "dark",
+        "meta": "#0f0f0f",
+        "stored": "dark"
+      },
+      "shortcuts": {
+        "found": false
+      }
+    },
+    "metaBoot": {
+      "lightBranch": {
+        "bodyBg": "rgb(255, 255, 255)",
+        "dataTheme": "light",
+        "meta": "#ffffff",
+        "themedMeta": true
+      },
+      "darkBranch": {
+        "bodyBg": "rgb(15, 15, 15)",
+        "dataTheme": "dark",
+        "meta": "#0f0f0f"
+      },
+      "servedHtml": {
+        "hasThemedMeta": true,
+        "metaContent": "<meta name=\"theme-color\" content=\"#0f0f0f\" data-wfx-theme-color=\"true\"/>",
+        "seamScriptInline": true,
+        "metaBeforeBody": true
+      }
+    },
+    "playerUrls": {
+      "watchUrl": "http://localhost:3101/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+      "otherUrl": "http://localhost:3101/player?id=wfxitm_72WE3P74WEAW91TSB5RGH2W41M&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000"
+    },
+    "theater": {
+      "before": {
+        "box": "996x560 @(16,68)",
+        "gutters": {
+          "left": 16,
+          "right": 428
+        },
+        "layoutCols": "996px 412px",
+        "theaterClass": false,
+        "viewport": "1440x900"
+      },
+      "after": {
+        "box": "1296x729 @(72,68)",
+        "gutters": {
+          "left": 72,
+          "right": 72
+        },
+        "layoutCols": "1424px",
+        "theaterClass": true,
+        "viewport": "1440x900"
+      },
+      "reverted": {
+        "box": "996x560 @(16,68)",
+        "gutters": {
+          "left": 16,
+          "right": 428
+        },
+        "layoutCols": "996px 412px",
+        "theaterClass": false,
+        "viewport": "1440x900"
+      }
+    },
+    "keyboard": {
+      "pre": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "keydowns": [],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_m": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "keydowns": [
+          "m"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_ArrowUp": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "keydowns": [
+          "ArrowUp"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_ArrowDown": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "keydowns": [
+          "ArrowDown"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_f": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": true,
+        "keydowns": [
+          "f"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_?": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "keydowns": [
+          "?"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": true,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_k": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 18,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"play\",\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\",\"externalRef\":\"fak",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "k"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_Space": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 15,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"play\",\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\",\"externalRef\":\"fak",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          " "
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_SPACE": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 10,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"play\",\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\",\"externalRef\":\"fak",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          " "
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_j": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 12,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"seek\",\"positionMs\":0,\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\",\"ex",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "j"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_l": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 16,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"seek\",\"positionMs\":10000,\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "l"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_ArrowLeft": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 12,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"seek\",\"positionMs\":5000,\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\",",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "ArrowLeft"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_ArrowRight": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 11,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"seek\",\"positionMs\":10000,\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "ArrowRight"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "press_5": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 11,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"seek\",\"positionMs\":22500,\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "5"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "post": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 11,
+            "body": "{\"sessionId\":\"wfxpses_6DQ6WC5PYW98PBD1Z6AQMD8ZW2\",\"command\":\"seek\",\"positionMs\":22500,\"intent\":{\"itemId\":\"wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "keydowns": [
+          "5"
+        ],
+        "muteLabel": null,
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": null
+      },
+      "sheetRows": {
+        "hasI": true,
+        "hasUpDown": true,
+        "open": true,
+        "rows": [
+          "Space / K",
+          "J / L",
+          "← / →",
+          "↑ / ↓",
+          "0–9",
+          "M",
+          "F",
+          "T",
+          "I",
+          "C",
+          "?"
+        ]
+      }
+    },
+    "miniplayer": {
+      "dockFrom": "http://localhost:3101/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000&resume=5000",
+      "afterDockPress": {
+        "compactInSrc": true,
+        "dockBox": "400x262",
+        "dockPos": {
+          "bottom": 16,
+          "right": 16
+        },
+        "dockPresent": true,
+        "headH": 36,
+        "mainPlayerOnPage": false,
+        "path": "/",
+        "stageBox": "398x224",
+        "stageSrc": "/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000&resume=5000&miniplayer=1",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000&resume=5000\",\"title\":\"N",
+        "stored": {
+          "href": "/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000&resume=5000",
+          "positionMs": 5000,
+          "title": "Neon Rain"
+        },
+        "title": "Neon Rain"
+      },
+      "persistHome": {
+        "dockPresent": true,
+        "path": "/",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000&resume=5000\",\"title\":\"N"
+      },
+      "persistSearch": {
+        "dockPresent": true,
+        "path": "/search",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000&resume=5000\",\"title\":\"N"
+      },
+      "positionSeam": {
+        "storedBefore": 5000,
+        "override": 777,
+        "readAfter3s": 5000,
+        "seamWrote": true
+      },
+      "afterExpand": {
+        "dockPresent": false,
+        "mainPlayer": true,
+        "path": "/player",
+        "search": "?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref="
+      },
+      "suppressionSameItem": {
+        "dockPresent": false,
+        "mainPlayer": true,
+        "path": "/player",
+        "search": "?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref=fake%3Ashort-1&t",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_1NKW39S6CDADFTZPV9ZZS4BWWC&connector=fake-source&ref="
+      },
+      "replaceDifferentItem": {
+        "dockPresent": false,
+        "mainPlayer": true,
+        "path": "/player",
+        "search": "?id=wfxitm_72WE3P74WEAW91TSB5RGH2W41M&connector=fake-source&ref=fake%3Ashort-3&t",
+        "storageRaw": null
+      },
+      "afterReplaceBrowse": {
+        "dockPresent": false,
+        "storageRaw": null
+      },
+      "afterClose": {
+        "dockPresent": false,
+        "storageRaw": null
+      },
+      "compactDoc": {
+        "chrome": true,
+        "miniControl": "Expand (i)",
+        "minidoc": true,
+        "shell": false,
+        "theaterControl": false,
+        "title": "WebFlix"
+      }
+    }
+  }
+}

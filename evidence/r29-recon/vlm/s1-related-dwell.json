@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the image provided, here are the answers to your questions:\n\n1.  **Yes**, there is a floating video preview player overlaying the related-video rows. It appears as a dark pop-up box containing a \"Sign in to confirm you're not a bot\" message and a small video thumbnail.\n2.  **Yes**, the preview shows a video player frame (or at least a preview container) that is larger than the standard row thumbnails in the list below it.\n3.  **Yes**, the 'Up next' header is clearly visible at the top of the right column, along with the Autoplay toggle switch on its right.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790274463,
+  "id": "202609250227397984676ac7c948c8",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609250227397984676ac7c948c8",
+  "usage": {
+    "completion_tokens": 132,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1751,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1883
+  }
+}

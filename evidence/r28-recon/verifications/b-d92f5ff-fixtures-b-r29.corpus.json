@@ -1,0 +1,113 @@
+{
+  "tag": "b-d92f5ff-fixtures-b-r29",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:22:52.093Z",
+  "checks": {
+    "chips": {
+      "count": 4,
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "found": true,
+      "h": 32,
+      "pad": "0px 12px",
+      "radius": "8px"
+    },
+    "cards": {
+      "badgePresent": true,
+      "badgeText": "0:45",
+      "card": "288x266",
+      "count": 64,
+      "found": true,
+      "thumb": "288x162",
+      "thumbAspect": 1.78,
+      "thumbRadius": "12px"
+    },
+    "typography": {
+      "cardOrHeadingTitle": {
+        "font": "Roboto, Arial, Helvetica, sans-serif",
+        "size": "16px",
+        "weight": "500"
+      },
+      "metaLine": {
+        "font": "Roboto, Arial, Helvetica, sans-serif",
+        "size": "12px",
+        "weight": "400"
+      }
+    },
+    "watchPage": {
+      "actionRow": [
+        "subscribe to fake source (test fixture — never production)",
+        "like this video",
+        "dislike this video",
+        "share neon rain",
+        "save neon rain to your watchlist",
+        "save neon rain to your watchlist"
+      ],
+      "descMore": false,
+      "descriptionPresent": false,
+      "keyLabels": [
+        "Play (k)",
+        "Fullscreen (f)",
+        "Theater view (t)",
+        "Miniplayer (i)"
+      ],
+      "layoutCols": "996px 412px",
+      "layoutGap": "16px",
+      "playerPadding": "12px 0px 48px 16px",
+      "stageBox": "996x560"
+    },
+    "related": {
+      "autoplayToggle": true,
+      "autoplayType": "BUTTON.switch",
+      "firstThumb": "168x95",
+      "rows": 7
+    },
+    "commentsAnatomy": {
+      "actionPills": 0,
+      "bodyFont": "14px/20px",
+      "composerPlaceholder": "wfx-comments__composer",
+      "headerCount": "0 Comments",
+      "sortControl": "Top commentsTopNewest",
+      "threadAvatar": "24x24",
+      "threads": 13
+    },
+    "shareDialog": {
+      "bg": "rgb(255, 255, 255)",
+      "box": "470x337",
+      "controls": [
+        "Embed",
+        "Messages",
+        "WhatsApp",
+        "Facebook",
+        "X",
+        "Email",
+        "Reddit",
+        "Pinterest",
+        "LinkedIn",
+        "Copy"
+      ],
+      "found": true,
+      "hasShortLink": false,
+      "hasStartAt": true,
+      "radius": "12px",
+      "socialTargets": [
+        "Embed",
+        "Messages",
+        "WhatsApp",
+        "Facebook",
+        "X",
+        "Email",
+        "Reddit",
+        "Pinterest",
+        "LinkedIn"
+      ],
+      "text": "Share\nEmbed\nMessages\nWhatsApp\nFacebook\nX\nEmail\nReddit\nPinterest\nLinkedIn\nShare link\nCopy\nStart at 0:00"
+    },
+    "shortsShell": {
+      "actionRailButtons": 0,
+      "audioToggle": false,
+      "railLabels": [],
+      "stageBox": null
+    }
+  }
+}

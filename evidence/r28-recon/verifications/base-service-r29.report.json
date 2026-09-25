@@ -1,0 +1,390 @@
+{
+  "tag": "base-service-r29",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T09:45:49.835Z",
+  "checks": {
+    "fonts": {
+      "declared": "Roboto, Arial, Helvetica, sans-serif",
+      "geistOnly": false,
+      "loadedFonts": [
+        "Roboto",
+        "Roboto",
+        "__nextjs-Geist",
+        "__nextjs-Geist Mono",
+        "__nextjs-Geist",
+        "__nextjs-Geist Mono"
+      ],
+      "robotoLoaded": true
+    },
+    "background": {
+      "bodyBg": "rgb(255, 255, 255)",
+      "tokenCorrect": false
+    },
+    "clickTrace": {
+      "firstCard": {
+        "href": "/player?id=wfxitm_6B5TS1CGHH5SMBGD1APXBFB50B&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+        "label": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi (short)"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "after": "click card",
+          "hasIframe": true,
+          "hasPlayControl": true,
+          "hasVideo": false,
+          "title": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study ",
+          "url": "/player"
+        }
+      ],
+      "userActionsToPlayAttempt": 1
+    },
+    "hoverPreview": {
+      "gifs": 0,
+      "previewScaffolding": [
+        {
+          "children": 0,
+          "cls": "wfx-hoverpreview wfx-hoverpreview--idle"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        },
+        {
+          "children": 2,
+          "cls": "wfx-cardpreview"
+        }
+      ],
+      "videos": 0,
+      "dwellMs": 1700
+    },
+    "comments": {
+      "bodyHasCommentsWord": 6,
+      "commentEls": 14,
+      "composer": true,
+      "headings": [
+        "0 comments"
+      ]
+    },
+    "share": {
+      "controlTags": [
+        "BUTTON:Share 1 HOUR Rainy Day in Airp"
+      ],
+      "onPlayerPage": true,
+      "shareControlCount": 1,
+      "openedSurface": {
+        "buttons": 0,
+        "hasEmbed": false,
+        "hasStartAt": false,
+        "linkIsRawParamPath": false,
+        "socialTargets": [],
+        "text": "Share"
+      }
+    },
+    "chrome": {
+      "feedConfigText": false,
+      "gradientThumbs": 100,
+      "hasBell": false,
+      "hasMic": true,
+      "hero": null,
+      "railHistoryCount": 2,
+      "realImgThumbs": 100,
+      "topbarH": 56
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1) The video card thumbnails look like plain colored/gradient placeholder art.\n2) Yes, the left sidebar is showing a duplicate 'History' entry (two History rows).\n3) The top bar's right side is showing an avatar/badge that says 'Signed out'.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790243321,
+  "id": "20260924174839b8a9f35fb1914408",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260924174839b8a9f35fb1914408",
+  "usage": {
+    "completion_tokens": 56,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1761,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1817
+  }
+}
