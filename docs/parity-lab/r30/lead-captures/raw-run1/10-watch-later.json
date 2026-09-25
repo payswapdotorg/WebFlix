@@ -1,0 +1,7 @@
+{
+ "surface": "10-watch-later",
+ "desc": "watch later playlist page",
+ "capturedAt": "2026-09-25T09:40:40Z",
+ "error": "TimeoutError: Runtime.evaluate: Connection timed out",
+ "screenshotError": "Page.captureScreenshot: {'code': -32603, 'message': 'Internal error'}"
+}

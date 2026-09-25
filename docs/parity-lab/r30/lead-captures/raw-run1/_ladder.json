@@ -1,0 +1,18 @@
+{
+ "startedFor": "(167) YouTube",
+ "finishedAt": "2026-09-25T09:40:56Z",
+ "results": {
+  "01-masthead": "ok",
+  "02-bell-panel": "ok",
+  "03-account-menu": "ok",
+  "04-appearance": "ok",
+  "05-home-progress": "ok",
+  "06-rail": "ok",
+  "07-subs-feed": "ok",
+  "08-history": "ok",
+  "09-playlists": "ok",
+  "10-watch-later": "failed",
+  "11-liked": "ok",
+  "12-shorts": "ok"
+ }
+}

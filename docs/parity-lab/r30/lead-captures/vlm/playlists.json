@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot of the YouTube Playlists page (`/feed/playlists`), here is the detailed description:\n\n### 1. Grid Cards (Titles, Counts, and Links)\nThere are **8 fully visible playlist cards** arranged in a 4x2 grid, plus the tops of 2 more cards in a third row.\n\n*   **Card 1:**\n    *   **Title:** 'Watch later'\n    *   **Count:** '99 videos'\n    *   **Metadata/Link:** 'Private' · 'Playlist' · 'View full playlist'\n\n*   **Card 2:**\n    *   **Title:** 'Saved Shorts'\n    *   **Count:** '1 video'\n    *   **Metadata/Link:** 'Private' · 'Playlist' · 'View full playlist'\n\n*   **Card 3:**\n    *   **Title:** 'Liked videos'\n    *   **Count:** '71 videos'\n    *   **Metadata/Link:** 'Private' · 'Playlist' · 'View full playlist'\n\n*   **Card 4:**\n    *   **Title:** 'My house'\n    *   **Count:** '6 videos'\n    *   **Metadata/Link:** 'Private' · 'Playlist' · 'View full playlist'\n\n*   **Card 5:**\n    *   **Title:** 'hits'\n    *   **Count:** '4 videos'\n    *   **Metadata/Link:** 'Public' · 'Playlist' · 'View full playlist'\n\n*   **Card 6:**\n    *   **Title:** 'Udacity'\n    *   **Count:** '3 videos'\n    *   **Metadata/Link:** 'Public' · 'Playlist' · 'View full playlist'\n\n*   **Card 7:**\n    *   **Title:** 'CS294-112 Fa18'\n    *   **Count:** '25 videos'\n    *   **Metadata/Link:** 'EECS Archival Course Capture 1' · 'Playlist' · 'View full playlist'\n\n*   **Card 8:**\n    *   **Title:** 'MIT 18.065 Matrix Methods in Data Analysis, Signal Processing, and ...' (truncated)\n    *   **Count:** '36 lessons'\n    *   **Metadata/Link:** 'MIT OpenCourseWare' · 'Course' · 'View full course'\n\n### 2. Thumbnail Treatment\nAll visible thumbnails use the **single image treatment** (a solid color placeholder in this wireframe/screenshot). They do not use the \"stacked images\" (collage) style typically seen on channel pages; instead, they feature a single rectangular block with the video/lesson count overlaid in a dark pill-shaped badge in the bottom-right corner.\n\n### 3. Card Geometry\n*   **Thumbnail Aspect Ratio:** The thumbnails are in a **16:9 landscape aspect ratio**.\n*   **Title Placement:** The title is placed **below the thumbnail**, left-aligned. It uses a bold, larger font.\n*   **Layout:** Below the title, there are two lines of smaller grey text: the first line contains the visibility/status (e.g., Private/Public) and the type (Playlist/Course); the second line contains the 'View full...' link.\n\n### 4. Controls ('New Playlist' Button & Sort)\n*   **'New Playlist' Button:** There is **no visible 'New playlist' button** in the main content area or header shown in the screenshot.\n*   **Sort/Filter Controls:** Below the main 'Playlists' heading, there is a horizontal row of **filter chips/tabs** used for sorting or categorizing:\n    *   'Recently added' (currently selected/active)\n    *   'Playlists'\n    *   'Music'\n    *   'Courses'\n    *   'Owned'\n    *   'Saved'",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329924,
+  "id": "202609251751478e33127371944350",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609251751478e33127371944350",
+  "usage": {
+    "completion_tokens": 803,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1566,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2369
+  }
+}

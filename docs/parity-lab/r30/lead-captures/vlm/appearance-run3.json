@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "No, the Appearance/theme picker submenu is **not open**.\n\nWhat is on screen is the main YouTube homepage, which includes:\n*   The top header with the YouTube logo (labeled \"Premium\"), a search bar, and buttons for \"Create\" and notifications.\n*   A horizontal navigation bar with categories like \"All\", \"Music\", \"Podcasts\", \"Mixes\", \"AI\", etc.\n*   The left sidebar with icons for \"Home\", \"Shorts\", \"Subscriptions\", and \"You\".\n*   The main content area displaying a grid of video thumbnails and titles (e.g., videos by Mika Benjamin, Druski, TechLead, Marques Brownlee, etc.).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790330031,
+  "id": "20260925175346961ee50f79cd4601",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260925175346961ee50f79cd4601",
+  "usage": {
+    "completion_tokens": 144,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1526,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1670
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the provided screenshot of the YouTube Watch history page, here is the detailed description:\n\n**1. Right-side Control Rail**\nThe control rail is located on the right side of the main content area. From top to bottom, the controls are:\n*   **Search watch history:** A text input field with an underline.\n*   **Clear all watch history:** A text button/link.\n*   **Pause watch history:** A text button/link.\n*   **Manage all history:** A text button/link.\n*   **Comments:** A text button/link.\n*   **Posts:** A text button/link.\n*   **Live chat:** A text button/link.\n\n**2. Type Chips Row**\nDirectly beneath the \"Watch history\" heading, there is a horizontal row of filter chips. The visible labels are: **\"All\"**, **\"Videos\"**, **\"Shorts\"**, **\"Podcasts\"**, and **\"Music\"**. (Note: The \"All\" chip appears selected with a dark background).\n\n**3. History List Rows Layout**\nEach row in the history list follows a consistent layout:\n*   **Left:** A thumbnail placeholder (represented by a red progress bar in this specific view) with a video duration timestamp (e.g., \"1:01:13\") overlaid on the bottom right corner of the thumbnail area.\n*   **Right (Text Content):**\n    *   **Top line:** The video title (e.g., \"Alexandr Wang: Building Scale AI...\").\n    *   **Bottom line:** The channel name on the left (e.g., \"Y Combinator\") and the view count on the right (e.g., \"375K\").\n\n**4. Rendered Rows and Thumbnails**\n*   **Rows Rendered:** There are **4** fully or partially visible rows in the list.\n*   **Thumbnails:** The actual image thumbnails are **not showing**. Instead, the thumbnail area displays a horizontal **red progress bar** indicating how much of the video has been watched.\n\n**5. Date Group Headings**\nThere is one visible date group heading above the list items labeled **\"Yesterday\"**.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329895,
+  "id": "202609251751267c9c4ac28c3e4bb6",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609251751267c9c4ac28c3e4bb6",
+  "usage": {
+    "completion_tokens": 443,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1577,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2020
+  }
+}

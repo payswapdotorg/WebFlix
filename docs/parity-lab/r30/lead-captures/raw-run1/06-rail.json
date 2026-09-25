@@ -1,0 +1,555 @@
+{
+ "surface": "06-rail",
+ "desc": "subscriptions rail + avatars",
+ "capturedAt": "2026-09-25T09:39:15Z",
+ "truth": {
+  "title": "YouTube",
+  "sections": [
+   {
+    "heading": "",
+    "entries": [
+     {
+      "text": "Home",
+      "geom": {
+       "x": 12,
+       "y": 68,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Shorts",
+      "geom": {
+       "x": 12,
+       "y": 108,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     }
+    ]
+   },
+   {
+    "heading": "",
+    "entries": [
+     {
+      "text": "Subscriptions",
+      "geom": {
+       "x": 12,
+       "y": 173,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Les Vidéos de Riles",
+      "geom": {
+       "x": 12,
+       "y": 213,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 221,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/ytc/AIdro_m1xZ7qs53oTlDBfL3miOSpXB-dKrIM_03OCLOib9saXds=s88-c-k-c0x00ffffff-no-rj"
+      },
+      "active": false
+     },
+     {
+      "text": "Marques Brownlee",
+      "geom": {
+       "x": 12,
+       "y": 253,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 261,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/qu4TmIaYUlS41-dJ9gZ7DUR3nilvmB5_11i6OKSdvNnBNiyOusZP1bMN6ICnuxtjFBb6ioKgRQ=s88-c-k-c0x00ffffff-no-"
+      },
+      "active": false
+     },
+     {
+      "text": "LastWeekTonight",
+      "geom": {
+       "x": 12,
+       "y": 293,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 301,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/QaQBhlazp19dgOWR8qsqBUmfR1HgDoonchOyWoZAlW68nT6ezDQ75nPdwKT1fjR74uYSvlgX=s88-c-k-c0x00ffffff-no-rj"
+      },
+      "active": false
+     },
+     {
+      "text": "Hasan Minhaj",
+      "geom": {
+       "x": 12,
+       "y": 333,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 341,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/ytc/AIdro_nKqoZ48YNFUsi8MvCfiPELs8zXfCCpz1oJ4PiTO1Aol-4=s88-c-k-c0x00ffffff-no-rj"
+      },
+      "active": false
+     },
+     {
+      "text": "Jimmy Kimmel Live",
+      "geom": {
+       "x": 12,
+       "y": 373,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 381,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/ytc/AIdro_lhbMFP_RRAtTgX-58mKKhuVG_P-qESOBnMDiPE0vhJgEMm=s88-c-k-c0x00ffffff-no-rj"
+      },
+      "active": false
+     },
+     {
+      "text": "Bloomberg Originals",
+      "geom": {
+       "x": 12,
+       "y": 413,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 421,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/8sL0eqOeU4a1wZBVxn5NOFsug17I2XM0dmCdT7eouq12qE-I-JLCzrzub9Z4SdF0IEt5AzEY=s88-c-k-c0x00ffffff-no-rj"
+      },
+      "active": false
+     },
+     {
+      "text": "Mastar",
+      "geom": {
+       "x": 12,
+       "y": 453,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 24,
+       "y": 461,
+       "w": 24,
+       "h": 24,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": "https://yt3.ggpht.com/y6W7NTrhLhAsaod6y6Av76iTkBjZsRHjJoi-8NBpEir5fpdo5S-LvrXG-wM1VAg_76i7bJV-ng=s88-c-k-c0x00ffffff-no-"
+      },
+      "active": false
+     },
+     {
+      "text": "Show more",
+      "geom": {
+       "x": 12,
+       "y": 493,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Show less",
+      "geom": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     }
+    ]
+   },
+   {
+    "heading": "",
+    "entries": [
+     {
+      "text": "You",
+      "geom": {
+       "x": 12,
+       "y": 558,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Your channel",
+      "geom": {
+       "x": 12,
+       "y": 598,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "History",
+      "geom": {
+       "x": 12,
+       "y": 638,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Playlists",
+      "geom": {
+       "x": 12,
+       "y": 678,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Watch later",
+      "geom": {
+       "x": 12,
+       "y": 718,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Liked videos",
+      "geom": {
+       "x": 12,
+       "y": 758,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Your videos",
+      "geom": {
+       "x": 12,
+       "y": 798,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Downloads",
+      "geom": {
+       "x": 12,
+       "y": 838,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Show more",
+      "geom": {
+       "x": 12,
+       "y": 878,
+       "w": 204,
+       "h": 40
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     },
+     {
+      "text": "Show less",
+      "geom": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0
+      },
+      "avatar": {
+       "x": 0,
+       "y": 0,
+       "w": 0,
+       "h": 0,
+       "text": "",
+       "cls": "style-scope yt-img-shadow",
+       "font": "16px 400 Roboto",
+       "color": "rgb(15, 15, 15)",
+       "bg": "rgba(0, 0, 0, 0)",
+       "radius": "0px",
+       "display": "block",
+       "src": ""
+      },
+      "active": false
+     }
+    ]
+   }
+  ],
+  "drawer": null
+ },
+ "screenshotBytes": 185735
+}

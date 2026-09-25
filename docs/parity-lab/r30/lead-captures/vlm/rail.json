@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the provided screenshot of the YouTube home page, here is the detailed description:\n\n**1) Guide Rail Sections (Left Sidebar - Expanded State):**\nThe guide rail is visible on the far left. It contains the following sections and items in order:\n*   **Top Navigation:**\n    *   **Home:** Icon of a house.\n    *   **Shorts:** Icon resembling a play button within a rounded rectangle.\n    *   **Subscriptions:** Icon of stacked rectangles with a play symbol.\n    *   **You:** A section header with a user profile icon. (Note: The specific sub-items like \"History\" or \"Your Videos\" are not visible in this view, only the main \"You\" entry).\n*   **Bottom Section:**\n    *   The bottom of the guide rail appears to be cut off or empty in this specific crop, showing no further text labels or footer links (like Settings or Help) are clearly legible.\n\n**2) Masthead State (Top Bar):**\n*   **Avatar:** Yes, a user avatar (appearing to be a green/teal patterned image) is visible in the top right corner.\n*   **Bell/Notifications:** Yes, a notification bell icon is visible to the left of the avatar. It has a red badge with the number \"1\" on it, indicating one unread notification.\n*   **Other Elements:** The YouTube Premium logo is on the left, a search bar is centered, and a \"+ Create\" button is present.\n\n**3) Home Feed (Video Cards):**\n*   **Thumbnails:** Yes, all video cards render with large, clear thumbnails.\n*   **Watched-Progress Bars:** **No**, there are no red progress bars visible at the bottom of any of the thumbnails. This indicates that none of these specific videos have been started by the user yet.\n\n**4) Shorts Shelf Row:**\n*   **No**, there is **no Shorts shelf row** visible in the main content area. The feed displays standard video cards in a grid layout (2 rows of 3 cards visible). While \"Shorts\" is an option in the left guide rail, the main feed content consists entirely of long-form videos and playlists.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329974,
+  "id": "20260925175245197810ae792d4b0e",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260925175245197810ae792d4b0e",
+  "usage": {
+    "completion_tokens": 456,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1579,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2035
+  }
+}

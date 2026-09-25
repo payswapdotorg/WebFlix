@@ -1,0 +1,70 @@
+{
+ "surface": "08-history",
+ "desc": "history page",
+ "capturedAt": "2026-09-25T09:45:34Z",
+ "truth": {
+  "title": "Watch history - YouTube",
+  "rows": [
+   {
+    "title": "Alexandr Wang: Building Scale AI, Transforming Work With Agents & Competing With China",
+    "channel": null,
+    "meta": "Y Combinator 375K",
+    "thumb": null,
+    "progress": null
+   },
+   {
+    "title": "From Idea to $650M Exit: Lessons in Building AI Startups",
+    "channel": null,
+    "meta": "Y Combinator 370K",
+    "thumb": null,
+    "progress": null
+   },
+   {
+    "title": "30-Minute Masterclass on Product Thinking | Instagram Co-Founder & Anthropic CPO, Mike Krieger",
+    "channel": null,
+    "meta": "EO 196K",
+    "thumb": null,
+    "progress": null
+   },
+   {
+    "title": "You will be executing immediately in 20 minutes | Blitzscaling Director's Cut",
+    "channel": null,
+    "meta": "EO 897K",
+    "thumb": null,
+    "progress": null
+   },
+   {
+    "title": "Luca Ferrari, Bending Spoons CEO: The $40K Start, Buying Product-Market Fit & Beating Private Equity",
+    "channel": null,
+    "meta": "All-In Podcast 123K",
+    "thumb": null,
+    "progress": null
+   },
+   {
+    "title": "The $1,000/hour Solo AI business (Full Course)",
+    "channel": null,
+    "meta": "Greg Isenberg 132K",
+    "thumb": null,
+    "progress": null
+   },
+   {
+    "title": "Marketing Engineer: The $1M Job with AI Agents",
+    "channel": null,
+    "meta": "Greg Isenberg 161K",
+    "thumb": null,
+    "progress": null
+   }
+  ],
+  "railButtons": [
+   "Search",
+   "Clear all watch history",
+   "Pause watch history",
+   "All",
+   "Videos",
+   "Shorts",
+   "Podcasts",
+   "Music"
+  ]
+ },
+ "screenshotBytes": 62666
+}

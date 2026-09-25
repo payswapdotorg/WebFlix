@@ -1,0 +1,198 @@
+{
+ "surface": "10-watch-later",
+ "desc": "watch later playlist page",
+ "capturedAt": "2026-09-25T09:45:42Z",
+ "truth": {
+  "page": "watch-later",
+  "title": "",
+  "count": "99",
+  "headerGeom": {
+   "x": 96,
+   "y": 80,
+   "w": 360,
+   "h": 732,
+   "text": "Play all\n\n  \n\n\n        \n      \n\n      \n        \n  Watch later\n\n\n\n        \n  \n    \n  \n\n\n  \n  \n\n \n\n  \n\n\n  \n     \n     \n  \n\n\n\n        \n          \n            \n    ",
+   "cls": "style-scope ytd-browse",
+   "font": "10px 400 Roboto",
+   "color": "rgb(255, 255, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "display": "flex"
+  },
+  "rows": [
+   {
+    "title": "Shay - Thibaut Courtois",
+    "index": "1",
+    "thumb": {
+     "x": 496,
+     "y": 208,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "Super Mario Odyssey - Nintendo Switch Presentation 2017 Trailer",
+    "index": "2",
+    "thumb": {
+     "x": 496,
+     "y": 337,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "Tekno - Pana (Official Music Video)",
+    "index": "3",
+    "thumb": {
+     "x": 496,
+     "y": 466,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "Using Firestore as a backend to your Flutter app",
+    "index": "4",
+    "thumb": {
+     "x": 496,
+     "y": 595,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "Controlling Data Access Using Firebase Auth Custom Claims (Firecasts)",
+    "index": "5",
+    "thumb": {
+     "x": 496,
+     "y": 724,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "ÉMOTION avec l'interprétation de Blewu par Angélique Kidjo -  Centenaire de l'Armistice de",
+    "index": "6",
+    "thumb": {
+     "x": 496,
+     "y": 853,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "SALIF | World of Dance Paris Qualifier 2018 | FrontRow",
+    "index": "7",
+    "thumb": {
+     "x": 496,
+     "y": 982,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "He’s All Mine! Ft. Connor Murphy",
+    "index": "8",
+    "thumb": {
+     "x": 496,
+     "y": 1111,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "Life@Google台灣硬體工程師篇 (中文版)",
+    "index": "9",
+    "thumb": {
+     "x": 496,
+     "y": 1240,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   },
+   {
+    "title": "SA president Cyril Ramaphosa to seek urgent review of Public Protector's report",
+    "index": "10",
+    "thumb": {
+     "x": 496,
+     "y": 1369,
+     "w": 200,
+     "h": 113,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(15, 15, 15)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    }
+   }
+  ],
+  "docTitle": "Watch later - YouTube",
+  "url": "https://www.youtube.com/playlist?list=WL"
+ },
+ "screenshotBytes": 58592
+}

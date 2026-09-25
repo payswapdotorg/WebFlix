@@ -1,0 +1,20 @@
+{
+ "surface": "12-shorts",
+ "desc": "shorts action rail + counts",
+ "capturedAt": "2026-09-25T09:40:56Z",
+ "truth": {
+  "title": "- YouTube",
+  "actionButtons": [],
+  "counts": [],
+  "channel": null,
+  "subscribeBtn": null,
+  "video": {
+   "src": null,
+   "readyState": 0,
+   "paused": true
+  },
+  "playCTA": null,
+  "reelGeom": null
+ },
+ "screenshotBytes": 13646
+}

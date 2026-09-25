@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot of the YouTube 'Liked videos' playlist page, here is the detailed description:\n\n**1) Header: Title, Count Text, and Buttons**\n*   **Title:** \"Liked videos\"\n*   **Playlist Owner/Name:** \"Spartacus\"\n*   **Count & Stats:** \"71 videos\", followed by \"No views\" and \"Last updated on Sep 13, 2026\".\n*   **Buttons:** Two large, rounded buttons are located below the text: a white \"**Play all**\" button on the left and a dark blue \"**Shuffle**\" button on the right.\n\n**2) The Rows: Anatomy and Count (First 4 Titles)**\nThe playlist displays video rows in a list format. Each row contains:\n*   A horizontal progress bar (indicating watch status).\n*   A timestamp badge (e.g., 29:48) on the right side of the progress bar.\n*   The **Video Title** in bold.\n*   The **Channel Name** below the title.\n*   **View count** and **time since upload** (e.g., \"31K 2w ago\") at the bottom of the text block.\n\nThere are **4 fully visible rows** in the screenshot. Their titles are:\n1.  \"Wave, Orange Money, carte : une seule API pour tout (et l'IA écrit le code)\"\n2.  \"New Deepseek, human genome map, Navier Stokes, GPT finance, Suno v6, YuE2: AI NEWS\"\n3.  'Nene Royal Slays \"Zombie\" 🧟 | AGT'\n4.  \"Who Broke Bro's Heart 💔🥺😭🔥\"\n\n**3) Hidden/Removed Entries Notice**\nThere is a prominent grey banner at the very top of the video list area that states: \"**6 unavailable videos are hidden**\".\n\n**4) Sort Controls**\nAbove the video list and below the unavailability notice, there is a filter/chip control group with three options:\n*   **All** (currently selected, highlighted with a black background)\n*   **Videos**\n*   **Shorts**",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329950,
+  "id": "20260925175215229db13132524644",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260925175215229db13132524644",
+  "usage": {
+    "completion_tokens": 449,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1532,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1981
+  }
+}

@@ -1,0 +1,14 @@
+{
+ "surface": "08-history",
+ "desc": "history page",
+ "capturedAt": "2026-09-25T09:39:31Z",
+ "truth": {
+  "title": "Watch history - YouTube",
+  "rows": [],
+  "railButtons": [
+   "Clear all watch history",
+   "Pause watch history"
+  ]
+ },
+ "screenshotBytes": 82842
+}

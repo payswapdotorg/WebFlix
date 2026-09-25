@@ -1,0 +1,25 @@
+{
+ "surface": "07-subs-feed",
+ "desc": "subscriptions feed row grammar",
+ "capturedAt": "2026-09-25T09:39:22Z",
+ "truth": {
+  "note": "subscriptions feed",
+  "title": "Subscriptions - YouTube",
+  "url": "https://www.youtube.com/feed/subscriptions",
+  "cards": [],
+  "grid": {
+   "x": 240,
+   "y": 56,
+   "w": 1184,
+   "h": 24,
+   "text": "",
+   "cls": "style-scope ytd-two-column-browse-results-renderer",
+   "font": "10px 400 Roboto",
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "display": "flex"
+  }
+ },
+ "screenshotBytes": 67025
+}

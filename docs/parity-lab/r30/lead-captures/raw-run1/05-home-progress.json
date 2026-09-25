@@ -1,0 +1,33 @@
+{
+ "surface": "05-home-progress",
+ "desc": "home watched-progress (gate-vulnerable #3)",
+ "capturedAt": "2026-09-25T09:39:14Z",
+ "truth": {
+  "title": "YouTube",
+  "cards": [
+   {
+    "title": "Druski Gets BRUTALLY HONEST About The DARK Side Of Becoming Successful",
+    "hasProgress": false,
+    "progressWidth": null,
+    "thumb": null,
+    "meta": null
+   },
+   {
+    "title": "Mix - Quavo & Takeoff - HOTEL LOBBY | A COLORS SHOW",
+    "hasProgress": false,
+    "progressWidth": null,
+    "thumb": null,
+    "meta": null
+   },
+   {
+    "title": "🚨 Le marché obligataire panique, Bitcoin non",
+    "hasProgress": false,
+    "progressWidth": null,
+    "thumb": null,
+    "meta": null
+   }
+  ],
+  "withProgressCount": 0
+ },
+ "screenshotBytes": 86011
+}

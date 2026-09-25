@@ -1,0 +1,7 @@
+{
+ "surface": "11-liked",
+ "desc": "liked videos playlist page",
+ "capturedAt": "2026-09-25T09:47:35Z",
+ "error": "TimeoutError: Runtime.evaluate: Connection timed out",
+ "screenshotError": "Page.captureScreenshot: {'code': -32603, 'message': 'Internal error'}"
+}

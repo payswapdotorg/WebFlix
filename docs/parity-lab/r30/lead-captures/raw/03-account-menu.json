@@ -1,0 +1,10 @@
+{
+ "surface": "03-account-menu",
+ "desc": "avatar account menu (gate-vulnerable #2)",
+ "capturedAt": "2026-09-25T09:46:30Z",
+ "truth": {
+  "menus": [],
+  "title": "(1) YouTube"
+ },
+ "screenshotBytes": 221618
+}
