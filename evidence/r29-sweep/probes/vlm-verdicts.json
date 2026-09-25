@@ -1,0 +1,41 @@
+{
+ "tag": "prod-webflix-steel",
+ "base": "https://webflix-steel.vercel.app",
+ "at": "2026-09-25T04:07:32.349256+00:00",
+ "model": "glm-5v-turbo",
+ "prompt": "Side-by-side parity comparison (corpus left / production right); compare layout/visual grammar only, not video content. Verdict: ACCEPTABLE|DIVERGENT + one-line note.",
+ "verdicts": {
+  "vs-home.light": {
+   "verdict": "VERDICT: DIVERGENT",
+   "note": "The most significant visual difference is the main content area state: the reference displays an empty-state \"Try searching to get started\" prompt, whereas the production clone renders a populated \"For you\" video grid with category filters, fundamentally altering the layout's core composition and information density."
+  },
+  "vs-home-loggedin.light": {
+   "verdict": "VERDICT: DIVERGENT",
+   "note": "The most significant visual difference is the content layout structure: the reference uses a mixed feed with horizontal list rows and varied card sizes, while the production clone strictly enforces a uniform 4-column grid of identical video cards."
+  },
+  "vs-search.light": {
+   "verdict": "VERDICT: DIVERGENT",
+   "note": "The production clone's search results page lacks the horizontal filter chips (e.g., \"All\", \"Shorts\", \"Videos\") and the \"Sponsored\" label/external link icon present in the YouTube corpus reference."
+  },
+  "vs-search.dark": {
+   "verdict": "VERDICT: DIVERGENT",
+   "note": "The production clone lacks the top horizontal filter chips (e.g., \"Shorts\", \"Videos\", \"Live\") and the large sponsored banner card present in the YouTube reference, resulting in a simplified content geometry."
+  },
+  "vs-player.light": {
+   "verdict": "VERDICT: ACCEPTABLE",
+   "note": "The production clone successfully mirrors the core layout grammar (masthead, split-pane player/related, action row) with the only notable visual divergence being the inclusion of the YouTube logo within the player placeholder area."
+  },
+  "vs-player.dark": {
+   "verdict": "VERDICT: DIVERGENT",
+   "note": "The production clone utilizes a dark theme and a centered \"Sign in\" player layout, whereas the corpus reference uses a light theme with a left-aligned video player and a distinct right-hand sidebar for related content."
+  }
+ },
+ "annotations": {
+  "vs-home.light": "The corpus capture (yt-home-1440.png) is a SIGNED-OUT empty-state home ('Try searching to get started' \u2014 no card grid); production renders its real 'For you' feed. Corpus artifact, not a production regression; the shell grammar (masthead/rail/chips) is the comparable surface. The R28 sweep's VLM run had called its equivalent ACCEPTABLE \u2014 recorded here as-run for THIS sweep.",
+  "vs-home-loggedin.light": "Supplementary composite (the R28 lead's logged-in home corpus, height-fit). The corpus's subscriptions feed uses mixed rows/varied card sizes; WebFlix's real feed is a uniform 4-column grid \u2014 the honest feed-shape divergence (content shape, not shell grammar).",
+  "vs-search.light": "The VLM note claims the chips are missing \u2014 INSTRUMENT CORRECTION: the chips ARE present (DOM probe: All/Videos/Shorts as real link-chips + the Filters button; close-up crop verified). The REAL divergence is the honest chip COUNT (3 really-present types vs the corpus's ~10) + the corpus's sponsored row \u2014 N23's verified honest-divergence class.",
+  "vs-search.dark": "Same class as vs-search.light (chips present per DOM; honest 3-chip set vs corpus density + sponsored banner).",
+  "vs-player.light": "ACCEPTABLE \u2014 the watch layout grammar (996x560 stage + 412 secondary + action row + masthead) mirrors the corpus; the note's 'logo in the player area' is the provider's honest placeholder (the stream never loads in this environment \u2014 never a fabricated playing state).",
+  "vs-player.dark": "DIVERGENT by construction: no DARK watch corpus exists (yt-watch-1440.png is light), so the composite compares the light corpus against the production DARK pane \u2014 the theme difference IS the note's substance; the dark pane's layout grammar still measures byte-exact (stagewrap 996x560 @(16,68), secondary 412 @x1028 \u2014 probes/masthead-keyboard.json + probes/watch.json)."
+ }
+}

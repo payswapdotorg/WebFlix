@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "VERDICT: DIVERGENT\nThe production clone lacks the top horizontal filter chips (e.g., \"Shorts\", \"Videos\", \"Live\") and the large sponsored banner card present in the YouTube reference, resulting in a simplified content geometry.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790309139,
+  "id": "20260925120535799a7c9129df483d",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260925120535799a7c9129df483d",
+  "usage": {
+    "completion_tokens": 52,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3463,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 3515
+  }
+}

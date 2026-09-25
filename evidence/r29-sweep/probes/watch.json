@@ -1,0 +1,228 @@
+{
+ "tag": "prod-webflix-steel",
+ "base": "https://webflix-steel.vercel.app",
+ "at": "2026-09-25T03:47:35.121Z",
+ "checks": {
+  "entry": {
+   "watchHref": "/player?id=wfxitm_0YWTDCQAT7T7FVCWR9EG2PESAG&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short"
+  },
+  "actionRow": {
+   "dislikeBtn": {
+    "reaction": null
+   },
+   "divider": true,
+   "downloadControl": null,
+   "found": true,
+   "freshLikeCount": null,
+   "kebab": {
+    "open": false
+   },
+   "likeBtn": {
+    "box": "48x40",
+    "pressed": "false",
+    "reaction": "none"
+   },
+   "preExistingStore": null,
+   "rowBox": "331x40",
+   "savePill": {
+    "label": "Save 1 HOUR Rainy Day in Airport \u2708\ufe0f | Co"
+   },
+   "sharePill": {
+    "label": "Share 1 HOUR Rainy Day in Airport \u2708\ufe0f | C"
+   },
+   "splitPill": {
+    "box": "97x40",
+    "height": 40,
+    "radius": "20px"
+   }
+  },
+  "reactionsLike": {
+   "countText": "1",
+   "pressed": "true",
+   "reaction": "like",
+   "store": "{\"wfxitm_0YWTDCQAT7T7FVCWR9EG2PESAG\":\"like\"}"
+  },
+  "reactionsLikeOff": {
+   "countText": null,
+   "reaction": "none",
+   "store": "{}"
+  },
+  "reactionsDislike": {
+   "anyCountInRow": [],
+   "dislikePressed": "true",
+   "dislikeReaction": null,
+   "likeCountText": null,
+   "likeReaction": "dislike",
+   "store": "{\"wfxitm_0YWTDCQAT7T7FVCWR9EG2PESAG\":\"dislike\"}"
+  },
+  "reactionsMutualExclusion": {
+   "dislikeReaction": null,
+   "likeCountText": "1",
+   "likeReaction": "like",
+   "store": "{\"wfxitm_0YWTDCQAT7T7FVCWR9EG2PESAG\":\"like\"}"
+  },
+  "reactionsCleanup": {
+   "store": "{}"
+  },
+  "kebabOpen": {
+   "menuVisible": true,
+   "open": true,
+   "rows": [
+    "Add to queue",
+    "Save 1 HOUR Rainy Day in Airport \u2708\ufe0f ",
+    "Mark as watched",
+    "Stop and record skip",
+    "Details"
+   ]
+  },
+  "kebabQueueAdd": {
+   "added": "true",
+   "label": "Added to queue"
+  },
+  "queueGetTruth": "{\"ok\":true,\"entries\":[{\"itemId\":\"wfxitm_0YWTDCQAT7T7FVCWR9EG2PESAG\",\"connectorId\":\"wfx-experience-service\",\"externalRef\":\"3uyGhtARP4M\",\"title\":\"1 HOUR Rainy Day in Airport \u2708\ufe0f | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi\",\"canonicalType\":\"short\"}],\"autoplay\":true}",
+  "channelRow": {
+   "avatar": "40x40 r50%",
+   "found": true,
+   "metaLine": "Playing via embed \u00b7 plays inside WebFlix (the provider's con",
+   "name": "wfx-experience-service",
+   "nameFont": "16px/500",
+   "subCountText": null,
+   "subscribe": {
+    "bg": "rgb(255, 0, 51)",
+    "box": "95x36",
+    "color": "rgb(255, 255, 255)",
+    "label": "Subscribe to wfx-experience-service",
+    "pressed": "false",
+    "radius": "18px",
+    "state": "idle"
+   }
+  },
+  "subscribeClick": {
+   "label": "Unsubscribe from wfx-experience-service",
+   "pressed": "true",
+   "state": "subscribed",
+   "status": "Subscribed \u2014 saved to your Subscriptions list in Library."
+  },
+  "librarySubscriptions": {
+   "entryTitles": [
+    "1 HOUR Rainy Day in Airport \u2708\ufe0f | Cozy Lofi for Relax, Study "
+   ],
+   "playlistCount": 1,
+   "subsFound": true,
+   "subsListTitle": "Subscriptions"
+  },
+  "subscribeDurable": {
+   "label": "Subscribe to wfx-experience-service",
+   "stateAfterReload": "idle"
+  },
+  "subscribeCleanup": {
+   "state": "idle"
+  },
+  "description": {
+   "clamp": "2",
+   "collapsedH": 68,
+   "found": true,
+   "isDetails": false,
+   "open": "false",
+   "textFont": "14px/400",
+   "toggleText": "...more",
+   "toggleType": "BUTTON"
+  },
+  "descriptionExpanded": {
+   "anyDialogOpened": false,
+   "bodyVisible": true,
+   "expandedH": 112,
+   "open": "true",
+   "toggleText": "Show less"
+  },
+  "descriptionCollapsed": {
+   "collapsedH": 68,
+   "open": "false"
+  },
+  "relatedColumn": {
+   "autoplayBeforeList": true,
+   "autoplayRow": true,
+   "chips": [
+    "All",
+    "From wfx-experience-",
+    "Related"
+   ],
+   "firstThree": [
+    {
+     "h": 94.5,
+     "href": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+     "thumbBox": "168x95",
+     "titleClamp": "2",
+     "titleFont": "14px/500",
+     "top": 188
+    },
+    {
+     "h": 94.5,
+     "href": "/player?id=wfxitm_4DB22M4VQQNSZ3WAMAC5SRAT8T&connector=wfx-experience-service&ref=5SRgdyUsuAg&title=1%2C000+Years+Of+English+Monarchy+In+4+Hours&type=video&duration=16146000",
+     "thumbBox": "168x95",
+     "titleClamp": "2",
+     "titleFont": "14px/500",
+     "top": 286.5
+    },
+    {
+     "h": 94.5,
+     "href": "/player?id=wfxitm_2BYHV5FF6YH2RM67MZPKXPW96N&connector=wfx-experience-service&ref=oYZqn5zPzK4&title=3+Countries+With+Incredible+Natural+Beauty+%F0%9F%8C%8D+%23Travel+%23Nature+%23Shorts&type=short",
+     "thumbBox": "168x95",
+     "titleClamp": "2",
+     "titleFont": "14px/500",
+     "top": 385
+    }
+   ],
+   "found": true,
+   "head": true,
+   "knob": true,
+   "listRowGap": "4px",
+   "rowCount": 57,
+   "rowPitch": 4,
+   "switchChecked": "true",
+   "switchClass": "wfx-switch wfx-switch--on",
+   "switchRole": "switch"
+  },
+  "autoplayToggle": {
+   "before": "true",
+   "after": "false",
+   "queueBefore": true,
+   "queueAfter": false,
+   "reverted": "true"
+  },
+  "watchRouteGeometry": {
+   "layoutCols": "996px 412px",
+   "layoutGap": "16px",
+   "playerPadding": "12px 0px 48px 16px",
+   "playerX": 16,
+   "railBox": null,
+   "railDisplay": "none",
+   "secondaryBox": "412x6039 @(1028,68)",
+   "secondaryRightEdgeDelta": 0,
+   "shellGuide": "hidden",
+   "stageBox": "996x560",
+   "stagewrap": "996x560 @(16,68)",
+   "viewportW": 1440
+  },
+  "homeRailRegression": {
+   "railDisplay": "flex",
+   "railW": 240,
+   "shellGuide": "default"
+  },
+  "subscribeRoundTripCleanup": {
+   "note": "post-probe cleanup (the production session library left clean): the pill re-subscribed then unsubscribed in the same view \u2014 the full server-side round-trip",
+   "subscribeAgain": {
+    "state": "subscribed"
+   },
+   "unsubscribe": {
+    "state": "idle",
+    "status": "Unsubscribed \u2014 removed from your Subscriptions list."
+   },
+   "libraryAfterCleanup": {
+    "playlists": [],
+    "subsEntries": []
+   },
+   "divergenceNote": "subscribeDurable.stateAfterReload=idle matches C's own service-boot evidence at d92f5ff (divergence 7's class, now confirmed LIVE on a production boot too \u2014 see DIVERGENCES.md)"
+  }
+ }
+}

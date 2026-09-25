@@ -1,0 +1,547 @@
+{
+  "tag": "prod-webflix-steel",
+  "base": "https://webflix-steel.vercel.app",
+  "at": "2026-09-25T03:53:15.090Z",
+  "checks": {
+    "signinPill": {
+      "bg": "rgb(6, 95, 212)",
+      "border": "1px solid rgba(0, 0, 0, 0.2)",
+      "box": "101x40",
+      "color": "rgb(255, 255, 255)",
+      "font": "14px/500",
+      "found": true,
+      "href": "/settings?section=general",
+      "personMark": true,
+      "radius": "20px",
+      "text": "Sign in"
+    },
+    "retiredThemeToggle": {
+      "gearButton": true,
+      "oldToggle": false,
+      "oldToggleLabel": false
+    },
+    "gear": {
+      "opened": false,
+      "root": {
+        "absenceNote": "Display language, Restricted Mode, Location, Help, and Send feedback stay absent — this host carries no language packs, content restrictions, location signal, help surface, or feedback transport to wire them to.",
+        "absentNames": [
+          "Display language",
+          "Restricted Mode",
+          "Location",
+          "Help",
+          "Send feedback"
+        ],
+        "box": "300x270",
+        "found": true,
+        "radius": "12px",
+        "rows": [
+          {
+            "href": "/settings?section=general",
+            "key": "your-data",
+            "text": "Your data"
+          },
+          {
+            "href": null,
+            "key": "appearance",
+            "text": "Appearance›"
+          },
+          {
+            "href": null,
+            "key": "shortcuts",
+            "text": "Keyboard shortcuts›"
+          },
+          {
+            "href": "/settings",
+            "key": "settings",
+            "text": "Settings"
+          }
+        ],
+        "shadow": "rgba(0, 0, 0, 0.15) 0px 0px 24px 12px"
+      },
+      "appearance": {
+        "dataThemeBefore": "light",
+        "metaBefore": "#ffffff",
+        "rows": [
+          {
+            "checked": "false",
+            "text": "Dark theme",
+            "theme": "dark"
+          },
+          {
+            "checked": "true",
+            "text": "Light theme",
+            "theme": "light"
+          }
+        ]
+      },
+      "appearanceAfterLight": {
+        "bodyBg": "rgb(255, 255, 255)",
+        "dataTheme": "light",
+        "meta": "#ffffff",
+        "stored": "light"
+      },
+      "appearanceAfterDark": {
+        "bodyBg": "rgb(15, 15, 15)",
+        "dataTheme": "dark",
+        "meta": "#0f0f0f",
+        "stored": "dark"
+      },
+      "shortcuts": {
+        "found": true,
+        "hasI": true,
+        "hasUpDown": true,
+        "keys": [
+          "Space / K",
+          "J / L",
+          "← / →",
+          "↑ / ↓",
+          "0–9",
+          "M",
+          "F",
+          "T",
+          "I",
+          "C",
+          "?"
+        ]
+      }
+    },
+    "metaBoot": {
+      "lightBranch": {
+        "bodyBg": "rgb(255, 255, 255)",
+        "dataTheme": "light",
+        "meta": "#ffffff",
+        "themedMeta": true
+      },
+      "darkBranch": {
+        "bodyBg": "rgb(15, 15, 15)",
+        "dataTheme": "dark",
+        "meta": "#0f0f0f"
+      },
+      "servedHtml": {
+        "hasThemedMeta": true,
+        "metaContent": "<meta name=\"theme-color\" content=\"#0f0f0f\" data-wfx-theme-color=\"true\"/>",
+        "seamScriptInline": true,
+        "metaBeforeBody": true
+      }
+    },
+    "playerUrls": {
+      "watchUrl": "https://webflix-steel.vercel.app/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+      "otherUrl": "https://webflix-steel.vercel.app/player?id=wfxitm_7K77ZY0GFXP9D9HW1HNTNKQCPB&connector=wfx-experience-service&ref=HOmzTwFuR0A&title=Best+thunder+sound+for+sleep+%23thunder+%23rain+%23sleep&type=short"
+    },
+    "theater": {
+      "before": {
+        "box": "996x560 @(16,68)",
+        "gutters": {
+          "left": 16,
+          "right": 428
+        },
+        "layoutCols": "996px 412px",
+        "theaterClass": false,
+        "viewport": "1440x900"
+      },
+      "after": {
+        "box": "1296x729 @(72,68)",
+        "gutters": {
+          "left": 72,
+          "right": 72
+        },
+        "layoutCols": "1424px",
+        "theaterClass": true,
+        "viewport": "1440x900"
+      },
+      "reverted": {
+        "box": "996x560 @(16,68)",
+        "gutters": {
+          "left": 16,
+          "right": 428
+        },
+        "layoutCols": "996px 412px",
+        "theaterClass": false,
+        "viewport": "1440x900"
+      }
+    },
+    "keyboard": {
+      "pre": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "1"
+      },
+      "press_m": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "m"
+        ],
+        "muteLabel": "Unmute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0"
+      },
+      "press_ArrowUp": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "ArrowUp"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "1"
+      },
+      "press_ArrowDown": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "ArrowDown"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_f": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": true,
+        "fullscreenEl": "wfx-player__stagewrap",
+        "keydowns": [
+          "f"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_?": {
+        "captionsControl": false,
+        "fetches": [],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "?"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": true,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_k": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 317,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"play\",\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\",\"externalRef\":\"3uy",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "k"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_SPACE": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 241,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"play\",\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\",\"externalRef\":\"3uy",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          " "
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_j": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 264,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"seek\",\"positionMs\":0,\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\",\"ex",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "j"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_l": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 238,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"seek\",\"positionMs\":10000,\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "l"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_ArrowLeft": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 243,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"seek\",\"positionMs\":0,\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\",\"ex",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "ArrowLeft"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_ArrowRight": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 240,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"seek\",\"positionMs\":5000,\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\",",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "ArrowRight"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "press_5": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 232,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"seek\",\"positionMs\":17000,\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "5"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "post": {
+        "captionsControl": false,
+        "fetches": [
+          {
+            "atMs": 232,
+            "body": "{\"sessionId\":\"wfxpses_71D2J2CSN4X32A0HKDRY6R6P39\",\"command\":\"seek\",\"positionMs\":17000,\"intent\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\"",
+            "method": "POST",
+            "status": 200,
+            "url": "/api/playback"
+          }
+        ],
+        "fullscreen": false,
+        "fullscreenEl": null,
+        "keydowns": [
+          "5"
+        ],
+        "muteLabel": "Mute (m)",
+        "path": "/player",
+        "playLabel": "Play (k)",
+        "playing": "buffering",
+        "sheetOpen": false,
+        "theaterLabel": "Theater view (t)",
+        "volumeValue": "0.9"
+      },
+      "sheetRows": {
+        "hasI": true,
+        "hasUpDown": true,
+        "open": true,
+        "rows": [
+          "Space / K",
+          "J / L",
+          "← / →",
+          "↑ / ↓",
+          "0–9",
+          "M",
+          "F",
+          "T",
+          "I",
+          "C",
+          "?"
+        ]
+      }
+    },
+    "miniplayer": {
+      "dockFrom": "https://webflix-steel.vercel.app/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short&resume=5000",
+      "afterDockPress": {
+        "compactInSrc": true,
+        "dockBox": "400x262",
+        "dockPos": {
+          "bottom": 16,
+          "right": 16
+        },
+        "dockPresent": true,
+        "headH": 36,
+        "mainPlayerOnPage": false,
+        "path": "/",
+        "stageBox": "398x224",
+        "stageSrc": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short&miniplayer=1",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+",
+        "stored": {
+          "href": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+          "positionMs": 0,
+          "title": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi"
+        },
+        "title": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Rel"
+      },
+      "persistHome": {
+        "dockPresent": true,
+        "path": "/",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+"
+      },
+      "persistSearch": {
+        "dockPresent": true,
+        "path": "/search",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+"
+      },
+      "positionSeam": {
+        "storedBefore": 0,
+        "override": 777,
+        "readAfter3s": 0,
+        "seamWrote": true
+      },
+      "afterExpand": {
+        "dockPresent": false,
+        "mainPlayer": true,
+        "path": "/player",
+        "search": "?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-s"
+      },
+      "suppressionSameItem": {
+        "dockPresent": false,
+        "mainPlayer": true,
+        "path": "/player",
+        "search": "?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGh",
+        "storageRaw": "{\"href\":\"/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-s"
+      },
+      "replaceDifferentItem": {
+        "dockPresent": false,
+        "mainPlayer": true,
+        "path": "/player",
+        "search": "?id=wfxitm_7K77ZY0GFXP9D9HW1HNTNKQCPB&connector=wfx-experience-service&ref=HOmzT",
+        "storageRaw": null
+      },
+      "afterReplaceBrowse": {
+        "dockPresent": false,
+        "storageRaw": null
+      },
+      "afterClose": {
+        "dockPresent": false,
+        "storageRaw": null
+      },
+      "compactDoc": {
+        "chrome": true,
+        "miniControl": "Expand (i)",
+        "minidoc": true,
+        "shell": false,
+        "theaterControl": false,
+        "title": "WebFlix"
+      }
+    }
+  }
+}

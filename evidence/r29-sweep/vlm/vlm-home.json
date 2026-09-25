@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "VERDICT: DIVERGENT\nThe most significant visual difference is the main content area state: the reference displays an empty-state \"Try searching to get started\" prompt, whereas the production clone renders a populated \"For you\" video grid with category filters, fundamentally altering the layout's core composition and information density.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790309036,
+  "id": "2026092512034914594eca706940a0",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092512034914594eca706940a0",
+  "usage": {
+    "completion_tokens": 65,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3467,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 3532
+  }
+}
