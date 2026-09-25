@@ -55,8 +55,12 @@ export interface ShareControlProps {
   /** R28-B — the card's target fields (the lazy resolve for the share short link). */
   readonly connectorId?: string;
   readonly externalRef?: string;
-  /** The trigger's form: the player's action pill, or the card kebab's row. */
-  readonly variant?: "pill" | "menu";
+  /**
+   * The trigger's form: the player's legacy small pill, the card kebab's
+   * row, or the R29-B watch ACTION-ROW pill (the corpus "Share" pill: a
+   * raised 36px r18 pill beside the segmented like control).
+   */
+  readonly variant?: "pill" | "menu" | "row";
 }
 
 /** One share target tile (the corpus row — real intents, honest order). */
@@ -308,7 +312,9 @@ export function ShareControl(props: ShareControlProps): JSX.Element {
   const triggerClass =
     props.variant === "menu"
       ? "wfx-sharemenu__item"
-      : "wfx-btn wfx-btn--sm wfx-share__trigger";
+      : props.variant === "row"
+        ? "wfx-actions__btn wfx-actions__pill"
+        : "wfx-btn wfx-btn--sm wfx-share__trigger";
   const triggerLabel = `Share ${props.title}`;
 
   return (

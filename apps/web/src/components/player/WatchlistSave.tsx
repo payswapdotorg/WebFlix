@@ -36,8 +36,8 @@ export interface WatchlistSaveProps {
   readonly externalRef: string;
   /** The initial saved state (the runtime's own watchlist truth at render). */
   readonly initiallySaved: boolean;
-  /** The compact variant (cards) vs the standard variant (item/player) vs the kebab menu row (R28-B). */
-  readonly variant?: "standard" | "compact" | "menu";
+  /** The compact variant (cards) vs the standard variant (item/player) vs the kebab menu row (R28-B) vs the action-row pill (R29-B). */
+  readonly variant?: "standard" | "compact" | "menu" | "row";
   /** Offer the save-to-playlist choice (the item hub's fuller control). */
   readonly offerPlaylist?: boolean;
 }
@@ -106,6 +106,40 @@ export function WatchlistSave(props: WatchlistSaveProps): JSX.Element {
   const compact = props.variant === "compact";
   // R28-B — the kebab menu row (the corpus card menu's "Save to playlist").
   const menu = props.variant === "menu";
+  // R29-B — the WATCH ACTION ROW pill (the corpus "Save" pill: a raised
+  // 36px r18 pill beside the segmented like control — the same write, the
+  // row's own grammar; the typed outcome renders as the row's note).
+  const row = props.variant === "row";
+
+  if (row) {
+    return (
+      <span className="wfx-watchlist wfx-watchlist--row" data-wfx-watchlist-save data-wfx-watchlist-save-row>
+        <button
+          type="button"
+          className="wfx-actions__btn wfx-actions__pill"
+          onClick={() => {
+            void write(saved ? "remove" : "save");
+          }}
+          aria-pressed={saved}
+          aria-label={saved ? `Remove ${props.title} from your Watchlist` : `Save ${props.title} to your Watchlist`}
+          data-wfx-watchlist-toggle
+          data-wfx-watchlist-saved={saved ? "true" : "false"}
+        >
+          <Icon name={saved ? "check" : "save"} size={20} />
+          <span>{saved ? "Saved" : "Save"}</span>
+        </button>
+        {outcome !== null ? (
+          <span
+            className={`wfx-actions__note${outcome.ok ? " wfx-actions__note--synced" : " wfx-actions__note--error"}`}
+            role="status"
+            data-wfx-watchlist-status
+          >
+            {outcome.detail}
+          </span>
+        ) : null}
+      </span>
+    );
+  }
 
   return (
     <div className={menu ? "wfx-watchlist wfx-watchlist--menu" : "wfx-watchlist"} data-wfx-watchlist-save>

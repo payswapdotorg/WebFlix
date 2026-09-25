@@ -31,9 +31,15 @@ export function GuideToggle(): JSX.Element {
 
   // The viewport band decides which behavior the toggle performs: the
   // wide band flips labeled⇄icon rail; the narrower bands open the drawer.
+  // R29-B — on a HIDDEN-GUIDE shell (the watch surface) the toggle always
+  // opens the overlay drawer (the corpus watch behavior: the guide stays
+  // closed on watch; the hamburger is the drawer's way in at any width).
   const toggle = useCallback((): void => {
     const current = guideState();
-    const wide = window.matchMedia("(min-width: 1280px)").matches;
+    const hiddenGuideShell =
+      typeof document !== "undefined" &&
+      document.querySelector('.wfx-shell[data-wfx-shell-guide="hidden"]') !== null;
+    const wide = !hiddenGuideShell && window.matchMedia("(min-width: 1280px)").matches;
     let next: GuideState;
     if (wide) {
       next = current === "collapsed" ? "default" : "collapsed";
@@ -49,7 +55,8 @@ export function GuideToggle(): JSX.Element {
   }, []);
 
   // Close the drawer on Escape + on resize back into the wide band (the
-  // state must never strand a surface in the wrong shape).
+  // state must never strand a surface in the wrong shape; a HIDDEN-GUIDE
+  // shell keeps its drawer — the overlay is that shell's only rail form).
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape" && guideState() === "drawer") {
@@ -58,7 +65,10 @@ export function GuideToggle(): JSX.Element {
       }
     };
     const onResize = (): void => {
-      if (guideState() === "drawer" && window.matchMedia("(min-width: 1280px)").matches) {
+      if (guideState() !== "drawer") return;
+      const hiddenGuideShell =
+        document.querySelector('.wfx-shell[data-wfx-shell-guide="hidden"]') !== null;
+      if (!hiddenGuideShell && window.matchMedia("(min-width: 1280px)").matches) {
         delete document.documentElement.dataset.wfxGuide;
         setState("default");
       }

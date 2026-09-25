@@ -1,0 +1,263 @@
+{
+  "tag": "b-d92f5ff-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:14:37.558Z",
+  "checks": {
+    "contractCrossCheck": [
+      {
+        "key": "hairline",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-border-hairline",
+          "dark": "hsla(0,100%,100%,.08)",
+          "light": "hsl(0,0%,93.3%)"
+        }
+      },
+      {
+        "key": "pill-surface",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-pill-bg",
+          "dark": "rgba(0,0,0,0.8)",
+          "light": "rgba(0,0,0,0.8)"
+        }
+      },
+      {
+        "key": "pill-ink",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-pill-fg",
+          "dark": "#ffffff",
+          "light": "#ffffff"
+        }
+      },
+      {
+        "key": "scrollbar-thumb",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-scrollbar-thumb",
+          "dark": "hsl(0, 0%, 67%)",
+          "light": "hsl(0, 0%, 76%)"
+        }
+      },
+      {
+        "key": "toast-surface",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-toast-bg",
+          "dark": "#f1f1f1",
+          "light": "#0f0f0f"
+        }
+      },
+      {
+        "key": "toast-ink",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-toast-fg",
+          "dark": "#0f0f0f",
+          "light": "#f1f1f1"
+        }
+      },
+      {
+        "key": "chrome-scrim",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-chrome-scrim",
+          "dark": "rgba(0,0,0,0.74)",
+          "light": "rgba(0,0,0,0.74)"
+        }
+      },
+      {
+        "key": "chrome-ink",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-chrome-fg",
+          "dark": "#ffffff",
+          "light": "#ffffff"
+        }
+      },
+      {
+        "key": "stage-black",
+        "matchesExpectation": true,
+        "contractValues": {
+          "cssName": "--wfx-stage-black",
+          "dark": "#000000",
+          "light": "#000000"
+        }
+      }
+    ],
+    "tokensDark": {
+      "dataTheme": "dark",
+      "tokens": {
+        "--wfx-border-hairline": "#ffffff14",
+        "--wfx-chrome-fg": "#fff",
+        "--wfx-chrome-scrim": "#000000bd",
+        "--wfx-pill-bg": "#000c",
+        "--wfx-pill-fg": "#fff",
+        "--wfx-scrollbar-thumb": "#ababab",
+        "--wfx-stage-black": "#000",
+        "--wfx-toast-bg": "#f1f1f1",
+        "--wfx-toast-fg": "#0f0f0f"
+      }
+    },
+    "tokensLight": {
+      "dataTheme": "light",
+      "tokens": {
+        "--wfx-border-hairline": "#eee",
+        "--wfx-chrome-fg": "#fff",
+        "--wfx-chrome-scrim": "#000000bd",
+        "--wfx-pill-bg": "#000c",
+        "--wfx-pill-fg": "#fff",
+        "--wfx-scrollbar-thumb": "#c2c2c2",
+        "--wfx-stage-black": "#000",
+        "--wfx-toast-bg": "#0f0f0f",
+        "--wfx-toast-fg": "#f1f1f1"
+      }
+    },
+    "tokenVerdicts": [
+      {
+        "name": "--wfx-border-hairline",
+        "dark": {
+          "computed": "#ffffff14",
+          "contract": "hsla(0,100%,100%,.08)",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#eee",
+          "contract": "hsl(0,0%,93.3%)",
+          "byteExact": false
+        }
+      },
+      {
+        "name": "--wfx-pill-bg",
+        "dark": {
+          "computed": "#000c",
+          "contract": "rgba(0,0,0,0.8)",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#000c",
+          "contract": "rgba(0,0,0,0.8)",
+          "byteExact": false
+        }
+      },
+      {
+        "name": "--wfx-pill-fg",
+        "dark": {
+          "computed": "#fff",
+          "contract": "#ffffff",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#fff",
+          "contract": "#ffffff",
+          "byteExact": false
+        }
+      },
+      {
+        "name": "--wfx-scrollbar-thumb",
+        "dark": {
+          "computed": "#ababab",
+          "contract": "hsl(0, 0%, 67%)",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#c2c2c2",
+          "contract": "hsl(0, 0%, 76%)",
+          "byteExact": false
+        }
+      },
+      {
+        "name": "--wfx-toast-bg",
+        "dark": {
+          "computed": "#f1f1f1",
+          "contract": "#f1f1f1",
+          "byteExact": true
+        },
+        "light": {
+          "computed": "#0f0f0f",
+          "contract": "#0f0f0f",
+          "byteExact": true
+        }
+      },
+      {
+        "name": "--wfx-toast-fg",
+        "dark": {
+          "computed": "#0f0f0f",
+          "contract": "#0f0f0f",
+          "byteExact": true
+        },
+        "light": {
+          "computed": "#f1f1f1",
+          "contract": "#f1f1f1",
+          "byteExact": true
+        }
+      },
+      {
+        "name": "--wfx-chrome-scrim",
+        "dark": {
+          "computed": "#000000bd",
+          "contract": "rgba(0,0,0,0.74)",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#000000bd",
+          "contract": "rgba(0,0,0,0.74)",
+          "byteExact": false
+        }
+      },
+      {
+        "name": "--wfx-chrome-fg",
+        "dark": {
+          "computed": "#fff",
+          "contract": "#ffffff",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#fff",
+          "contract": "#ffffff",
+          "byteExact": false
+        }
+      },
+      {
+        "name": "--wfx-stage-black",
+        "dark": {
+          "computed": "#000",
+          "contract": "#000000",
+          "byteExact": false
+        },
+        "light": {
+          "computed": "#000",
+          "contract": "#000000",
+          "byteExact": false
+        }
+      }
+    ],
+    "ruleUsage": {
+      "scrollbarUsesVar": true,
+      "scrimUsesVar": true,
+      "chromeInkUsesVar": true,
+      "badgeBaseUsesVar": true,
+      "toastUsesVar": true,
+      "stageUsesVar": true,
+      "hairlineUsesVar": false,
+      "literalCounts": {
+        "scrim074": 2,
+        "scrollbar67": 1,
+        "scrollbar76": 1,
+        "pill08": 4,
+        "duration06": 9
+      }
+    },
+    "badgeAlpha": {
+      "bg": "rgba(0, 0, 0, 0.6)",
+      "color": "rgb(255, 255, 255)",
+      "font": "12px/500",
+      "found": true,
+      "isCorpus06": true,
+      "pad": "1px 4px",
+      "radius": "4px",
+      "text": "0:45"
+    }
+  }
+}

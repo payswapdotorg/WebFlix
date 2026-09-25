@@ -1,0 +1,30 @@
+{
+  "tag": "diff-b-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T18:18:15.218Z",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_4DDNSA6RR25AHRPBX6JRNBWQDK&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000"
+    },
+    "itemIdentity": {
+      "connectorId": "fake-source",
+      "externalRef": "fake:short-1",
+      "itemId": "wfxitm_4DDNSA6RR25AHRPBX6JRNBWQDK",
+      "title": "Neon Rain",
+      "type": "short"
+    },
+    "rawSubscribePost": "{\"status\":200,\"body\":{\"ok\":true,\"entry\":{\"itemId\":\"wfxitm_4M2KGR5TYQF05MBFFZ672T5X1S\",\"title\":\"Neon Rain\",\"listName\":\"Subscriptions\",\"sync\":\"synced\",\"savedAt\":\"2026-09-24T18:18:21.387Z\"}}}",
+    "rawWatchlistPost": "{\"status\":200,\"body\":{\"ok\":true,\"entry\":{\"itemId\":\"wfxitm_4M2KGR5TYQF05MBFFZ672T5X1S\",\"title\":\"Neon Rain\",\"listName\":\"Saved\",\"sync\":\"synced\",\"savedAt\":\"2026-09-24T18:18:21.435Z\"}}}",
+    "libraryAfterWrites": {
+      "playlists": [],
+      "watchlistText": "WatchlistNothing saved yetSave content from its details page — saves are keyed to the canonical item, so the same title from another source joins here.Browse content"
+    },
+    "reloadStates": {
+      "saveLabel": "Save Neon Rain to your Watchlist",
+      "savePressed": "false",
+      "subscribeLabel": "Subscribe to Fake Source (TEST FIXTURE — never pro",
+      "subscribeState": "idle"
+    },
+    "cleanup": "{\"status\":200,\"body\":{\"ok\":false,\"kind\":\"not-found\",\"detail\":\"item 'wfxitm_4DDNSA6RR25AHRPBX6JRNBWQDK' is not in the local watchlist\"}}"
+  }
+}

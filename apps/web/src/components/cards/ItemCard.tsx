@@ -22,7 +22,7 @@ import type { JSX } from "react";
 
 import type { CardView } from "@/host/view-models";
 import { playerHref } from "@/app/routing";
-import { formatDuration, placeholderArt, placeholderMonogram } from "@/components/ui/format";
+import { formatPosition, placeholderArt, placeholderMonogram } from "@/components/ui/format";
 import { ArtworkImage } from "@/components/cards/ArtworkImage";
 import { CardActions } from "@/components/cards/CardActions";
 import { CardPreview } from "@/components/cards/CardPreview";
@@ -91,7 +91,7 @@ export function ItemCard({
     resume !== undefined && resume.resumePositionMs > 0 ? resume.resumePositionMs : undefined,
   );
   const label = `${card.title} (${card.canonicalType}${
-    card.durationMs !== undefined ? `, ${formatDuration(card.durationMs)}` : ""
+    card.durationMs !== undefined ? `, ${formatPosition(card.durationMs)}` : ""
   })`;
   // R27-W2 — the SEARCH RESULT variant: the captured row grammar
   // (search-card-grammar.json) — thumbnail 360×202 left, 16px gap, the
@@ -116,7 +116,10 @@ export function ItemCard({
             ) : null}
             {card.durationMs !== undefined ? (
               <span className="wfx-card__badges">
-                <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
+                {/* R29-B (N19) — the corpus corner badge: 12/500 #fff on
+                    rgba(0,0,0,0.6), r4, pad 1px 4px, 8px inset, the
+                    m:ss / h:mm:ss format ("0:45" / "2:50:41"). */}
+                <span className="wfx-badge wfx-badge--duration">{formatPosition(card.durationMs)}</span>
               </span>
             ) : null}
           </span>
@@ -129,16 +132,23 @@ export function ItemCard({
                 <span data-wfx-card-availability>{availability}</span>
               ) : null}
             </p>
+            {/* R29-B (N3) — the corpus channel row: the 24×24 avatar (the
+                honest monogram — this host's sources carry no channel
+                photos) + the 12px/400 channel name. */}
             <p className="wfx-result__channel">
+              <span className="wfx-result__avatar" aria-hidden="true">
+                {card.connectorId.length > 0 ? card.connectorId[0]!.toUpperCase() : "W"}
+              </span>
               {linked && card.connectorId.length > 0 ? (
                 <span data-wfx-card-source>From {card.connectorId}</span>
               ) : (
                 <span>Source unknown in this session</span>
               )}
             </p>
-            <span className="wfx-result__badges">
-              <span className="wfx-badge wfx-badge--type">{card.canonicalType}</span>
-            </span>
+            {/* R29-B (N19) — the type badge is GONE from the visible row
+                (the corpus search row carries no type label; the type
+                stays in the aria-label + the filter seam + the detail
+                surface's own meta). */}
           </span>
         </a>
         {actions !== undefined ? (
@@ -195,35 +205,49 @@ export function ItemCard({
         {card.artwork !== undefined ? (
           <ArtworkImage artwork={card.artwork} className="wfx-card__img" />
         ) : null}
-        <span className="wfx-card__badges">
-          <span className="wfx-badge wfx-badge--type">{card.canonicalType}</span>
-          {card.durationMs !== undefined ? (
-            <span className="wfx-badge wfx-badge--duration">{formatDuration(card.durationMs)}</span>
-          ) : null}
-        </span>
+        {/* R29-B (N19) — THE CORPUS CORNER BADGE: the duration badge
+            alone, bottom-right at the 8px inset (12/500 #fff on
+            rgba(0,0,0,0.6), r4, pad 1px 4px, the m:ss / h:mm:ss
+            format). The visible TYPE badge is gone (the corpus card
+            carries no type label; the canonical type stays in the
+            aria-label + the chip-filter seam + the detail surface). The
+            SHORTS variant carries NO badge (the corpus shorts shelf —
+            never a duration on a short). */}
+        {variant !== "short" && card.durationMs !== undefined ? (
+          <span className="wfx-card__badges">
+            <span className="wfx-badge wfx-badge--duration">{formatPosition(card.durationMs)}</span>
+          </span>
+        ) : null}
         {resume !== undefined ? <Progress ratio={resume.completionRatio} /> : null}
       </span>
       <span className="wfx-card__body">
         <p className="wfx-card__title" data-wfx-card-title>
           {card.title}
         </p>
-        {/* R27-W2 — the channel row (the corpus: 14/400 secondary, hover
-            primary): the card's honest source identity. */}
-        <p className="wfx-card__channel">
-          {linked && card.connectorId.length > 0 ? (
-            <span data-wfx-card-source>From {card.connectorId}</span>
-          ) : (
-            <span>Source unknown in this session</span>
-          )}
-        </p>
-        <p className="wfx-card__meta">
-          {linked && availability !== undefined ? (
-            <span data-wfx-card-availability>{availability}</span>
-          ) : null}
-          {resume !== undefined && resume.resumePositionMs > 0 ? (
-            <span data-wfx-resume-position>Resume at {formatDuration(resume.resumePositionMs)}</span>
-          ) : null}
-        </p>
+        {/* R29-B (N20) — the SHORTS SHELF card grammar: the title below
+            the thumb, NOTHING else (the corpus lockup: no channel row,
+            no meta — the shelf's own engagement model). */}
+        {variant !== "short" ? (
+          <>
+            {/* R27-W2 — the channel row (the corpus: 14/400 secondary, hover
+                primary): the card's honest source identity. */}
+            <p className="wfx-card__channel">
+              {linked && card.connectorId.length > 0 ? (
+                <span data-wfx-card-source>From {card.connectorId}</span>
+              ) : (
+                <span>Source unknown in this session</span>
+              )}
+            </p>
+            <p className="wfx-card__meta">
+              {linked && availability !== undefined ? (
+                <span data-wfx-card-availability>{availability}</span>
+              ) : null}
+              {resume !== undefined && resume.resumePositionMs > 0 ? (
+                <span data-wfx-resume-position>Resume at {formatPosition(resume.resumePositionMs)}</span>
+              ) : null}
+            </p>
+          </>
+        ) : null}
       </span>
     </>
   );

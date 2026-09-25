@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the image provided, here are the answers to your questions:\n\n1.  **Subscribe button area:** Yes, the button now says **\"Subscribed\"** in white text on a red background, and it includes a **checkmark icon** to the left of the text.\n2.  **Status note:** Yes, there is a status note immediately to the right of the button that reads: **\"Subscribed — saved to your Subscriptions list in Library.\"**\n3.  **Like button count:** No, the thumbs-up (like) icon is visible, but there is **no count number** displayed next to it in this view.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790274449,
+  "id": "2026092502272625281106f4894c23",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092502272625281106f4894c23",
+  "usage": {
+    "completion_tokens": 134,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1740,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1874
+  }
+}

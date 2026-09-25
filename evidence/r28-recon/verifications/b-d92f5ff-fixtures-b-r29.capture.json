@@ -1,0 +1,121 @@
+{
+  "tag": "b-d92f5ff-fixtures-b-r29",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:23:00.712Z",
+  "shots": [
+    "home",
+    "hover-250ms",
+    "hover-1.7s",
+    "click1",
+    "comments",
+    "share"
+  ],
+  "checks": {
+    "home": {
+      "bg": "rgb(255, 255, 255)",
+      "heroW": null,
+      "htmlClass": "",
+      "path": "/",
+      "themeAttr": "light"
+    },
+    "fonts": {
+      "h1family": "Roboto, Arial, Helvetica, sans-serif",
+      "loaded": [
+        "Roboto:100 900:loaded",
+        "Roboto:100 900:unloaded",
+        "__nextjs-Geist:400 600:unloaded",
+        "__nextjs-Geist Mono:400 600:unloaded",
+        "__nextjs-Geist:400 600:unloaded",
+        "__nextjs-Geist Mono:400 600:unloaded"
+      ],
+      "robotoFacesInSet": [
+        "Roboto:100 900",
+        "Roboto:100 900"
+      ]
+    },
+    "hover": {
+      "target": {
+        "found": true,
+        "label": "Static Bloom (video, 10:00)",
+        "x": 384,
+        "y": 170
+      },
+      "at250ms": {
+        "hoverElClass": "wfx-hoverpreview wfx-hoverpreview--open ",
+        "previews": [
+          {
+            "box": "312x186",
+            "children": 1,
+            "cls": "wfx-hoverpreview wfx-hoverpreview--open "
+          },
+          {
+            "box": "288x44",
+            "children": 0,
+            "cls": "wfx-hoverpreview__gate"
+          },
+          {
+            "box": "288x266",
+            "children": 2,
+            "cls": "wfx-cardpreview"
+          }
+        ],
+        "videos": 0
+      },
+      "at1_7s": {
+        "playing": false,
+        "previews": [
+          {
+            "children": 1,
+            "display": "block",
+            "opacity": "1"
+          },
+          {
+            "children": 0,
+            "display": "block",
+            "opacity": "1"
+          },
+          {
+            "children": 2,
+            "display": "flex",
+            "opacity": "1"
+          }
+        ],
+        "videos": 0
+      }
+    },
+    "clickTrace": {
+      "card": {
+        "href": "/player?id=wfxitm_568MJ71R604Z384XNBAQY3D2RC&connector=fake-source&ref=fake%3Avideo-2&title=Static+Bloom&type=video&duration=600000",
+        "label": "Static Bloom (video, 10:00)"
+      },
+      "steps": [
+        {
+          "n": 1,
+          "after": "click card",
+          "h1": "",
+          "hasIframe": false,
+          "hasVideo": false,
+          "nav": "navigate",
+          "path": "/",
+          "playing": false
+        }
+      ]
+    },
+    "comments": {
+      "commentEls": 0,
+      "composer": false,
+      "headerText": null,
+      "path": "/",
+      "threads": 0
+    },
+    "share": {
+      "bg": "rgba(0, 0, 0, 0)",
+      "box": "220x40",
+      "found": true,
+      "lines": [],
+      "radius": "0px",
+      "shortLink": false,
+      "startAt": false
+    }
+  }
+}

@@ -54,7 +54,7 @@ const SHEET_COLORS: Record<string, { dark: string; light: string }> = {
   "brand-red": { dark: "#f03", light: "#f03" },
   "cta-surface": { dark: "#f1f1f1", light: "#0f0f0f" },
   "cta-ink": { dark: "#0f0f0f", light: "#ffffff" },
-  "pill-surface": { dark: "rgba(0,0,0,0.8)", light: "rgba(0,0,0,0.8)" },
+  "pill-surface": { dark: "rgba(0,0,0,0.6)", light: "rgba(0,0,0,0.6)" },
   "pill-ink": { dark: "#ffffff", light: "#ffffff" },
   "skeleton": { dark: "hsl(0, 0%, 16%)", light: "hsl(0, 0%, 89%)" },
   "scrollbar-thumb": { dark: "hsl(0, 0%, 67%)", light: "hsl(0, 0%, 76%)" },
@@ -232,7 +232,7 @@ describe("R27-W1 parity token contract — the corpus color sheet", () => {
     expect(parityTokenValue("text-secondary")).toBe("#aaaaaa");
     expect(parityTokenValue("raised-surface")).toBe("#272727");
     expect(parityTokenValue("hover-surface")).toBe("rgba(255,255,255,0.1)");
-    expect(parityTokenValue("pill-surface")).toBe("rgba(0,0,0,0.8)");
+    expect(parityTokenValue("pill-surface")).toBe("rgba(0,0,0,0.6)");
     expect(parityTokenValue("brand-red")).toBe("#f03");
     expect(parityTokenValue("link")).toBe("#3ea6ff");
     expect(parityTokenValue("app-bg", "light")).toBe("#ffffff");

@@ -1,0 +1,161 @@
+{
+  "tag": "main-ref-fixtures",
+  "base": "http://localhost:3101",
+  "at": "2026-09-24T23:34:58.887Z",
+  "checks": {
+    "rail": {
+      "explore": false,
+      "footer": false,
+      "historyCount": 2,
+      "historyHref": "http://localhost:3101/library?section=history",
+      "itemAnatomy": {
+        "font": "14px/500/20px",
+        "h": 48,
+        "radius": "10px"
+      },
+      "items": [
+        "Home",
+        "Shorts",
+        "Watch",
+        "Library",
+        "History",
+        "Offline",
+        "History",
+        "Settings"
+      ],
+      "locationChip": false,
+      "moreFromYT": false,
+      "promo": null,
+      "railW": 240
+    },
+    "railActive": {
+      "font": "14px/500",
+      "found": true,
+      "label": "Home"
+    },
+    "railInactive": {
+      "font": "14px/400/20px",
+      "found": true,
+      "h": 48,
+      "label": "Shorts",
+      "radius": "10px"
+    },
+    "railDrawer": {
+      "drawerRailW": 240,
+      "itemAnatomy": {
+        "font": "14px/400/20px",
+        "h": 48,
+        "radius": "10px"
+      },
+      "promoInDrawer": false
+    },
+    "badge": {
+      "ariaKeepsType": [
+        "Neon Rain (short, 45s)",
+        "Rain Check (short, 30s)"
+      ],
+      "badgeCount": 13,
+      "found": true,
+      "sample": [
+        {
+          "bg": "rgba(0, 0, 0, 0.8)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "OTHER",
+          "inset": {
+            "bottom": 4,
+            "right": 4
+          },
+          "pad": "3px 4px",
+          "radius": "4px",
+          "text": "45s"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0.8)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "OTHER",
+          "inset": {
+            "bottom": 4,
+            "right": 4
+          },
+          "pad": "3px 4px",
+          "radius": "4px",
+          "text": "30s"
+        },
+        {
+          "bg": "rgba(0, 0, 0, 0.8)",
+          "color": "rgb(255, 255, 255)",
+          "font": "12px/500",
+          "format": "OTHER",
+          "inset": {
+            "bottom": 4,
+            "right": 4
+          },
+          "pad": "3px 4px",
+          "radius": "4px",
+          "text": "40m 0s"
+        }
+      ],
+      "typeBadges": [
+        "short",
+        "short",
+        "video",
+        "movie",
+        "series",
+        "series",
+        "short",
+        "video",
+        "video",
+        "short",
+        "video",
+        "video",
+        "short",
+        "video",
+        "short"
+      ]
+    },
+    "badgeSearchRow": {
+      "bg": "rgba(0, 0, 0, 0.8)",
+      "font": "12px/500",
+      "found": true,
+      "inset": {
+        "bottom": 4,
+        "right": 4
+      },
+      "query": "neon",
+      "text": "45s",
+      "thumbBox": "360x202"
+    },
+    "shortsShelf": {
+      "autoColumns": "160px",
+      "badgeInShelf": true,
+      "cardCount": 3,
+      "cardWidths": [
+        297,
+        297,
+        297
+      ],
+      "channelRow": true,
+      "columns": 4,
+      "computedTrackWidths": [
+        "297px"
+      ],
+      "firstTitle": "Neon Rain",
+      "flow": "column",
+      "found": true,
+      "gap": "4px",
+      "gutters": [
+        4,
+        4
+      ],
+      "thumbs": [
+        "297x528",
+        "297x528",
+        "297x528"
+      ],
+      "titleBelow": true,
+      "zeroWidthCards": 0
+    }
+  }
+}

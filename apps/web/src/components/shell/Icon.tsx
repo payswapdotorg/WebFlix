@@ -46,6 +46,7 @@ export type IconName =
   | "verified"
   | "sun"
   | "moon"
+  | "person"
   | "keyboard"
   | "info"
   | "more"
@@ -194,6 +195,9 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
     </>
   ),
   plus: <path d="M12 5v14M5 12h14" />,
+  // R29-B — the corpus sign-in pill's own person mark (YouTube's
+  // logged-out masthead CTA anatomy, N12).
+  person: <path d="M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm0 10c3.9 0 7 2.2 7 4.9V21H5v-2.1c0-2.7 3.1-4.9 7-4.9Z" />,
   verified: (
     <>
       <path d="M12 2.8 14 4.6l2.6-.3 1 2.5 2.4 1.1-.4 2.6 1.4 2.2-1.8 1.9-.2 2.6-2.6.5-1.6 2.1-2.4-1-2.4 1-1.6-2.1-2.6-.5-.2-2.6L2.9 12.7l1.4-2.2-.4-2.6 2.4-1.1 1-2.5 2.6.3L12 2.8Z" />
