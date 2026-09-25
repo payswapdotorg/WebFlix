@@ -1,0 +1,66 @@
+{
+  "generatedAt": "2026-09-25T21:58:37.954Z",
+  "surfaces": [
+    {
+      "file": "01-masthead-signed-in.html",
+      "corpusSection": "CORPUS.md §1 (the logged-in end cluster) + §4 (the rail)",
+      "facts": [
+        "the bell button renders (data-wfx-bell-button, the 40x40 shell family)",
+        "NO badge paints (the honest zero — bellBadgeText(0) === null)",
+        "the account-menu avatar trigger renders (the squircle chip)",
+        "the sign-in pill + session menu are ABSENT (the logged-out variants)",
+        "the document title layer: documentTitleWithCount(0, 'WebFlix') === \"WebFlix\"",
+        "the badge cap layer: bellBadgeText(167) === \"9+\" (the captured window's pair)",
+        "the rail carries the Subscriptions section (data-wfx-rail-subscriptions) with the stored entry",
+        "the rail carries NO sign-in promo (the corpus logged-in taxonomy)"
+      ]
+    },
+    {
+      "file": "02-masthead-signed-out.html",
+      "corpusSection": "the R29-verified logged-out baseline (the seam law's control)",
+      "facts": [
+        "the sign-in pill (data-wfx-signin) + session menu (data-wfx-session-label) render",
+        "NO bell, NO account-menu trigger, NO rail subscriptions section"
+      ]
+    },
+    {
+      "file": "03-bell-panel.html",
+      "corpusSection": "CORPUS.md §2 (the notifications panel anatomy)",
+      "facts": [
+        "the 'Notifications' header + the gear + the collapse arrow render",
+        "the honest-empty row: 'No notifications yet — follow sources to get them' (the capability row's own vocabulary)",
+        "NO notification rows (no source — never fabricated)",
+        "data-wfx-bell-unread=\"0\" (the two layers' datum)"
+      ]
+    },
+    {
+      "file": "04-account-menu.html",
+      "corpusSection": "CORPUS.md §3 (the account menu, double-confirmed)",
+      "facts": [
+        "the header: the squircle avatar + 'Dev profile' + dev@webflix.local (the email — the real identity datum)",
+        "the real rows: Switch account · Sign out · Your data in WebFlix · Appearance: Device theme · Display language: English · Keyboard shortcuts · Settings",
+        "the absence note names: Google Account, YouTube Studio, Purchases and memberships, Restricted Mode, Location, Help, Send feedback, View your channel",
+        "no fabricated handle (the only @-text is the identity line's email)"
+      ]
+    },
+    {
+      "file": "05-rail-subscriptions.html",
+      "corpusSection": "CORPUS.md §4 (the subscriptions rail)",
+      "facts": [
+        "the flat list renders the stored Subscriptions entry (Deep Field Diary) with its JOINED player href",
+        "the 24x24 monogram avatar (wfx-railsub__avatar) — the corpus-measured avatar grammar",
+        "the 204x40 entry box (wfx-railsub__row) — the corpus guide-entry geometry"
+      ]
+    },
+    {
+      "file": "06-library-playlists-history.html",
+      "corpusSection": "CORPUS.md §6/§8/§9 (watched progress + the playlist family)",
+      "facts": [
+        "§8: the 'Watch later' header grammar — title · 'an anonymous session' (the session's own truth) · '2 videos' · 'Last updated on <date>' (the Subscriptions list renders as its own playlist section too — the one-write-path law)",
+        "§8: the Play all + Shuffle pills (data-wfx-playlist-playall/shuffle)",
+        "§9: the sort chips — All · Videos · Shorts (the mixed list's real types; the corpus chip row)",
+        "§6: the history row renders data-wfx-progress (the red bar in the thumb area) + 'Resume at'"
+      ]
+    }
+  ]
+}

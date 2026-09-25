@@ -11,6 +11,10 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { SearchSurface } from "@/components/search/SearchSurface";
 import { getWebRuntimeHost } from "@/host/web-host";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth).
+import { loadAccountChrome } from "@/host/account-chrome";
+
 import { loadSearchView, type SearchFilterSelection } from "@/host/view-models";
 import { syncNavigationToRoute } from "@/app/routing";
 
@@ -37,9 +41,9 @@ export default async function SearchPage({
   };
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/search", params);
-  const view = await loadSearchView(host, query, filters);
+  const [view, account] = await Promise.all([loadSearchView(host, query, filters), loadAccountChrome()]);
   return (
-    <AppShell mode={host.mode} active="search" session={host.session.state}>
+    <AppShell mode={host.mode} active="search" session={host.session.state} account={account}>
       <SearchSurface view={view} />
     </AppShell>
   );

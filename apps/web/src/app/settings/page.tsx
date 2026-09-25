@@ -30,6 +30,10 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { SettingsSurface } from "@/components/settings/SettingsSurface";
 import { getWebRequestHost } from "@/host/request-session";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth).
+import { loadAccountChrome } from "@/host/account-chrome";
+
 import { byofHostBinding, loadByofPanelView } from "@/host/byof/byof-host";
 import { loadFeedModeView, loadPersonalizeView } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -104,8 +108,12 @@ export default async function SettingsPage({
   // General ("Your feed"): the home page is now chips + rows immediately
   // (the corpus home anatomy); the mode control keeps its honest home here.
   const feedMode = section === undefined || section === "general" ? await loadFeedModeView(host) : undefined;
+  // R30-B — the account chrome view (the rail subscriptions always read
+  // the library surfaces' own singleton fold; this page's identity host
+  // is the session truth's source, not the rail's data source).
+  const account = await loadAccountChrome();
   return (
-    <AppShell mode={host.mode} active="settings" session={host.session.state}>
+    <AppShell mode={host.mode} active="settings" session={host.session.state} account={account}>
       <SettingsSurface
         capabilities={host.capabilities}
         session={host.session.state}

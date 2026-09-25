@@ -18,6 +18,10 @@ import { ShortsFeed } from "@/components/shorts/ShortsFeed";
 import { CompactDiscoveryControls } from "@/components/discovery/DiscoveryHeader";
 import { ErrorState } from "@/components/ui/StateViews";
 import { getWebRuntimeHost } from "@/host/web-host";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth).
+import { loadAccountChrome } from "@/host/account-chrome";
+
 import { loadShortsPayload } from "@/host/shorts";
 import { loadDiscoveryBundle } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -27,9 +31,13 @@ export const dynamic = "force-dynamic";
 export default async function ShortsPage() {
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/shorts", {});
-  const [payload, discovery] = await Promise.all([loadShortsPayload(host), loadDiscoveryBundle(host)]);
+  const [payload, discovery, account] = await Promise.all([
+    loadShortsPayload(host),
+    loadDiscoveryBundle(host),
+    loadAccountChrome(),
+  ]);
   return (
-    <AppShell mode={host.mode} active="shorts" session={host.session.state} mainClass="wfx-main--flush">
+    <AppShell mode={host.mode} active="shorts" session={host.session.state} account={account} mainClass="wfx-main--flush">
       {payload.loadError !== null ? (
         <div data-wfx-surface="shorts" data-wfx-shorts-state="error">
           <ErrorState
