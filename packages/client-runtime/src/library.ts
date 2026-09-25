@@ -128,6 +128,19 @@ export interface LibraryOperations {
   entries(): readonly WatchlistEntry[];
   /** Observe watchlist changes. */
   subscribe(listener: WatchlistListener): Unsubscribe;
+  /**
+   * R30 — THE RELOAD-DURABILITY HYDRATION: seed the local watchlist fold
+   * from the server's stored profile library (the same read the library
+   * read model merges), once per engine. Best-effort and typed-honest: a
+   * failing read leaves the local fold untouched (the same law the read
+   * model's error sections follow — never a fake empty, never a silent
+   * drop); a later call retries after a failure. The WRITE paths
+   * (`save`/`remove`) hydrate implicitly BEFORE consulting the fold, so an
+   * unsubscribe on a fresh load finds the stored item (the R29 sweep's
+   * divergence #1: "not in the local watchlist" — the per-load map was
+   * empty while the stored truth said subscribed).
+   */
+  hydrate(): Promise<void>;
 }
 
 // ---------------------------------------------------------------------------
@@ -176,6 +189,12 @@ export function receiptToLibrarySync(
 export class LibraryEngine {
   private readonly watchlist = new Map<string, WatchlistEntry>();
   private readonly listeners = new Set<WatchlistListener>();
+  /**
+   * R30 — the in-flight/completed server hydration (null before the first
+   * attempt and after a failed one — a transient outage never freezes the
+   * fold at empty; the next call retries).
+   */
+  private hydration: Promise<boolean> | null = null;
 
   constructor(
     private readonly server: ServerPort,
@@ -196,6 +215,7 @@ export class LibraryEngine {
           this.listeners.delete(listener);
         };
       },
+      hydrate: () => this.hydrate(),
     };
   }
 
@@ -209,6 +229,89 @@ export class LibraryEngine {
     this.notify();
   }
 
+  /**
+   * R30 — THE RELOAD-DURABILITY HYDRATION: seed the local watchlist fold
+   * from the server's stored profile library. The per-entry law is the
+   * read model's own server-merge (one law, two consumers — the `read()`
+   * merge and this fold-seeding):
+   * - a row carrying `metadata.canonicalItemId` is ADOPTED (R04: the
+   *   server-sourced id WINS; the registry reconciles by source key);
+   * - otherwise the row registers through the registry (idempotent by
+   *   source key — a key the runtime already knows keeps its id);
+   * - a row whose canonical id the fold already knows is SKIPPED
+   *   (local-first: the local entry's sync state is the local truth);
+   * - a failing read seeds nothing (the honest degradation — the local
+   *   fold survives the outage, exactly as the read model's error
+   *   sections keep the local session state rendering).
+   */
+  private adoptServerEntries(serverLibrary: readonly LibraryEntry[]): void {
+    let learned = false;
+    for (const entry of serverLibrary) {
+      if (typeof entry?.externalRef !== "string" || entry.externalRef.length === 0) continue;
+      const metadata = entry.metadata as Record<string, unknown> | undefined;
+      const canonicalItemId = metadata?.canonicalItemId;
+      let itemId: string;
+      if (typeof canonicalItemId === "string" && canonicalItemId.length > 0) {
+        this.registry.reconcileBySourceKey(
+          entry.connectorId,
+          entry.externalRef,
+          canonicalItemId,
+          entry.title ?? entry.externalRef,
+        );
+        itemId = canonicalItemId;
+      } else {
+        itemId = this.registry.register({
+          connectorId: entry.connectorId,
+          externalRef: entry.externalRef,
+          title: entry.title ?? entry.externalRef,
+        }).id;
+      }
+      if (this.watchlist.has(itemId)) continue; // local-first: local truth wins
+      const list = metadata?.list;
+      this.watchlist.set(itemId, {
+        itemId,
+        title: entry.title ?? entry.externalRef,
+        listName: typeof list === "string" && list.length > 0 ? list : DEFAULT_WATCHLIST_NAME,
+        sync: "synced" as const, // server-sourced: present at the source
+        // A server row without addedAt renders as discovered-now (the
+        // injected clock — never a fabricated historical instant).
+        savedAt: entry.addedAt ?? new Date(this.clock.now()).toISOString(),
+      });
+      learned = true;
+    }
+    if (learned) this.notify();
+  }
+
+  /** The one server read of the hydration (typed failure ⇒ false). */
+  private async hydrateOnce(): Promise<boolean> {
+    const result = await this.server.readProfileLibrary();
+    if (!result.ok) return false;
+    this.adoptServerEntries(result.value);
+    return true;
+  }
+
+  /**
+   * R30 — hydrate (or return the already-hydrating/hydrated attempt). A
+   * failed attempt clears the memo so the next call retries; a successful
+   * one is kept for the engine's lifetime (the write paths keep the fold
+   * current from there — the R30 caller law is hydrate → resolve → act).
+   */
+  async hydrate(): Promise<void> {
+    if (this.hydration === null) {
+      const attempt = this.hydrateOnce();
+      this.hydration = attempt;
+      void attempt.then(
+        (ok) => {
+          if (!ok && this.hydration === attempt) this.hydration = null;
+        },
+        () => {
+          if (this.hydration === attempt) this.hydration = null;
+        },
+      );
+    }
+    await this.hydration;
+  }
+
   /** Save one canonical item (law 1/2/4). */
   async save(input: { itemId: string; listName?: string }): Promise<LibraryWriteResult> {
     if (!isEntertainmentItemId(input?.itemId)) {
@@ -218,6 +321,11 @@ export class LibraryEngine {
         detail: `save.itemId: expected a canonical entertainment-item ID (wfxitm_ prefix + 26-char Crockford Base32 ULID body), got ${previewValue(input?.itemId)}`,
       };
     }
+    // R30 — the write paths operate on the HYDRATED truth: the stored
+    // profile library seeds the fold BEFORE the registry resolve (the
+    // server-sourced canonical ids are adopted first, so the caller's
+    // post-hydration id resolution and this fold agree).
+    await this.hydrate();
     const registered = this.registry.get(input.itemId);
     if (registered === undefined) {
       // Law 4: unknown items cannot be saved — nothing to write through.
@@ -279,6 +387,11 @@ export class LibraryEngine {
         detail: `remove.itemId: expected a canonical entertainment-item ID, got ${previewValue(itemId)}`,
       };
     }
+    // R30 — the write paths operate on the HYDRATED truth: a remove on a
+    // fresh load must find the STORED item (the R29 sweep's divergence #1:
+    // the per-load map was empty while the stored truth said subscribed —
+    // the remove answered not-found and the unsubscribe was a dead control).
+    await this.hydrate();
     const existing = this.watchlist.get(itemId);
     if (existing === undefined) {
       return {

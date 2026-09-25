@@ -56,6 +56,12 @@ export const MODEL_FIXTURE_STATE_FILE = join(
   "wfx-dev-model-fixtures.json",
 );
 
+/** The shared persona library state file (R30 — the reload-durability law). */
+export const LIBRARY_FIXTURE_STATE_FILE = join(
+  tmpdir(),
+  "wfx-dev-library-fixtures.json",
+);
+
 /** A running product handle. */
 export interface ProductHandle {
   /** The base URL journeys navigate (http://localhost:3101). */
@@ -120,6 +126,20 @@ export function resetModelFixtureState(): void {
   }
 }
 
+/**
+ * Reset the persona library fixture state (R30): the service-side library
+ * the Subscribe/watchlist writes record starts EMPTY (determinism — the
+ * honest fresh-session watchlist J11 asserts, and every journey's own
+ * writes drive the state from its pristine start, never a stale cursor).
+ */
+export function resetLibraryFixtureState(): void {
+  try {
+    rmSync(LIBRARY_FIXTURE_STATE_FILE, { force: true });
+  } catch {
+    // An absent file is already pristine (the honest empty state).
+  }
+}
+
 /** Whether anything is already listening on the port (a loud pre-flight). */
 async function portIsTaken(port: number): Promise<boolean> {
   try {
@@ -151,11 +171,14 @@ export async function bootWebFixturesProduct(
   }
 
   // Determinism: the scripted acquisition journeys start from step 0,
-  // the scripted source-auth lifecycle starts signed in (R17/J28), and
-  // the model-controls persona starts unbound (R22-F/J36).
+  // the scripted source-auth lifecycle starts signed in (R17/J28), the
+  // model-controls persona starts unbound (R22-F/J36), and the persona's
+  // service-side library starts empty (R30 — J11's honest fresh-session
+  // watchlist and every journey's own library writes start from pristine).
   resetAcquisitionFixtureState();
   resetSourceAuthFixtureState();
   resetModelFixtureState();
+  resetLibraryFixtureState();
 
   const server: BackgroundProc = startBackgroundProc(
     "bun",

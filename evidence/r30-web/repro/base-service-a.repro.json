@@ -1,0 +1,41 @@
+{
+  "tag": "base-service-a",
+  "base": "http://localhost:3101",
+  "at": "2026-09-25T04:47:37.491Z",
+  "phase": "subscribe-leave",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_0886X50QZKRZNKE6TBC4HR7SCV&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short"
+    },
+    "itemIdentity": {
+      "connectorId": "wfx-experience-service",
+      "externalRef": "3uyGhtARP4M",
+      "itemId": "wfxitm_0886X50QZKRZNKE6TBC4HR7SCV",
+      "title": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+      "type": "short"
+    },
+    "pillFresh": {
+      "pressed": "false",
+      "state": "idle"
+    },
+    "subscribeClick": {
+      "label": "Unsubscribe from wfx-experience-service",
+      "pressed": "true",
+      "state": "subscribed",
+      "status": "Subscribed — saved to your Subscriptions list in Library."
+    },
+    "librarySubscriptions": {
+      "entryTitles": [
+        "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study "
+      ],
+      "playlistCount": 1,
+      "subsFound": true,
+      "subsListTitle": "Subscriptions"
+    },
+    "subscribeDurable": {
+      "label": "Subscribe to wfx-experience-service",
+      "pressedAfterReload": "false",
+      "stateAfterReload": "idle"
+    }
+  }
+}

@@ -114,6 +114,17 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   const host = await getWebRuntimeHost();
+  // R30 — THE RELOAD-DURABILITY HYDRATION, caller side: the runtime's
+  // library fold hydrates from the STORED profile library BEFORE the
+  // dev-boot bridge resolves the posted id through this runtime's search.
+  // The ordering is the law (hydrate → resolve → act): a stored row that
+  // carries a server-sourced canonical id is ADOPTED by the registry
+  // first, so the bridge's search then resolves the item to the SAME
+  // post-adoption id the fold was seeded under — the remove finds it. In
+  // the single-bundle production boot this is one runtime; in the dev
+  // split-graph boot the bridge law already applied (the resolution is
+  // the same seam, never a second code path).
+  await host.runtime.libraryOps.hydrate();
   // R24-W2 — the dev-boot bridge: resolve the item through THIS
   // module's runtime before the canonical write (see the bridge note
   // at resolveItemIdForThisRuntime).

@@ -44,6 +44,7 @@ import {
   unbindFixtureByom,
   writeModelFixtureState,
 } from "@/host/model-fixtures";
+import { addFixtureLibraryEntry, readLibraryFixtureState, removeFixtureLibraryEntry } from "@/host/library-fixtures";
 import { isShortFormCandidate } from "@wfx/experience";
 import type {
   ByomBindingCommand,
@@ -260,7 +261,22 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
         };
       }
       try {
-        return { ok: true, value: await ports.connector.writeLibrary(ctx, command) };
+        const receipt = await ports.connector.writeLibrary(ctx, command);
+        // R30 — THE RELOAD-DURABILITY LAW, FIXTURES SIDE: a confirmed
+        // connector write is ALSO the persona's service-side library truth
+        // (the service's `POST /experience/library` lands in the catalog's
+        // durable store; the fixture double records the same write in the
+        // shared persona file — the state `readProfileLibrary` answers
+        // below). A refused write (failed/unsupported) records NOTHING —
+        // the typed refusal is the whole truth, never a fabricated row.
+        if (receipt.status === "confirmed") {
+          if (command.op === "add") {
+            addFixtureLibraryEntry(command);
+          } else {
+            removeFixtureLibraryEntry(command.externalRef);
+          }
+        }
+        return { ok: true, value: receipt };
       } catch (thrown) {
         return { ok: false, failure: networkFailure("writeLibrary", thrown) };
       }
@@ -279,19 +295,19 @@ export function createFixtureBackedServerPort(options: FixtureServerPortOptions)
 
     // — the R02 profile extension (ADD-ONLY): the fixture is a DOUBLE with
     // its OWN persona state (exactly like its fixture search/library data),
-    // not a transport to a real service — so the honest fixture answer for
-    // the profile reads is the fixture persona's own EMPTY state, and the
-    // intent/policy writes are accepted into the void the fixture owns.
-    // The local-first fold (the R07 surface story: saves land, watch events
-    // fold into history) renders unchanged; the production port keeps the
-    // 404→unavailable honesty law for the real endpoints (R04/R05 landing).
+    // not a transport to a real service. R30: the persona's PROFILE-SCOPED
+    // library is the REAL file-backed service-side state the library writes
+    // record (`library-fixtures.ts` — the cross-module-graph law; the
+    // pre-R30 hard-coded empty answer left the reload-durability split
+    // unreproducible-green on this boot: the stored truth never existed).
+    // The intent/policy reads keep the persona's own honest empty answers.
 
     async readHistory(): Promise<ServerResult<readonly ProfileHistoryEntry[]>> {
       return { ok: true, value: [] };
     },
 
     async readProfileLibrary(): Promise<ServerResult<readonly LibraryEntry[]>> {
-      return { ok: true, value: [] };
+      return { ok: true, value: [...readLibraryFixtureState().entries] };
     },
 
     async readIntents(): Promise<ServerResult<readonly IntentRecord[]>> {
