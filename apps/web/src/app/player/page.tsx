@@ -14,6 +14,10 @@ import { AppShell } from "@/components/shell/AppShell";
 import { PlayerSurface } from "@/components/player/PlayerSurface";
 import { EmptyState } from "@/components/ui/StateViews";
 import { getWebRuntimeHost } from "@/host/web-host";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth).
+import { loadAccountChrome } from "@/host/account-chrome";
+
 import { canonicalIdFor } from "@/host/web-host";
 import { loadPlayerEnrichments, loadPlayerViewShell } from "@/host/view-models";
 // R28-B — the page-level session truth (the comments composer's gate).
@@ -46,10 +50,13 @@ export default async function PlayerPage({
   const durationMs = numberParam(params.duration);
   const resumePositionMs = numberParam(params.resume);
   const idParam = firstParam(params.id);
+  // R30-B — the account chrome view (every branch's shell carries the
+  // corpus logged-in chrome; the request's sign-in truth).
+  const account = await loadAccountChrome();
 
   if (connectorId.length === 0 || externalRef.length === 0 || title.length === 0) {
     return (
-      <AppShell mode={host.mode} session={host.session.state}>
+      <AppShell mode={host.mode} session={host.session.state} account={account}>
         <div data-wfx-surface="player" data-wfx-player-state="missing-params">
           <h1 className="wfx-page-title">Playback</h1>
           <EmptyState
@@ -133,7 +140,7 @@ export default async function PlayerPage({
   }
 
   return (
-    <AppShell mode={host.mode} session={host.session.state} guide="hidden">
+    <AppShell mode={host.mode} session={host.session.state} account={account} guide="hidden">
       <PlayerSurface
         view={view}
         enrichments={enrichments}

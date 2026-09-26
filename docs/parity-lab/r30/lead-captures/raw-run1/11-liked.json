@@ -1,0 +1,26 @@
+{
+ "surface": "11-liked",
+ "desc": "liked videos playlist page",
+ "capturedAt": "2026-09-25T09:40:48Z",
+ "truth": {
+  "page": "liked-videos",
+  "title": "",
+  "count": "71",
+  "headerGeom": {
+   "x": 264,
+   "y": 80,
+   "w": 360,
+   "h": 732,
+   "text": "Play all\n\n  \n\n\n        \n      \n\n      \n        \n  Liked videos\n\n\n\n        \n  \n    \n  \n\n\n  \n  \n\n \n\n  \n\n\n  \n     \n     \n  \n\n\n\n        \n          \n            \n   ",
+   "cls": "style-scope ytd-browse",
+   "font": "10px 400 Roboto",
+   "color": "rgb(255, 255, 255)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "display": "flex"
+  },
+  "rows": [],
+  "docTitle": "Liked videos - YouTube"
+ },
+ "screenshotBytes": 93840
+}

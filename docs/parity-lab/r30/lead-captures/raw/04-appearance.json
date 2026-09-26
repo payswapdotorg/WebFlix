@@ -1,0 +1,9 @@
+{
+ "surface": "04-appearance",
+ "desc": "appearance submenu + theme picker",
+ "capturedAt": "2026-09-25T09:46:33Z",
+ "truth": {
+  "evalFailed": "eval exception: ReferenceError: r is not defined\n    at <anonymous>:5:34\n    at Array.map (<anonymous>)\n    at dump (<anonymous>:5:24)\n    at Array.map (<anonymous>)\n    at <anonymous>:9:39\n    at <an"
+ },
+ "screenshotBytes": 247306
+}

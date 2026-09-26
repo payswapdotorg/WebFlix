@@ -1,0 +1,10 @@
+{
+ "startedFor": "(1) Liked videos - YouTube",
+ "finishedAt": "2026-09-25T09:47:35Z",
+ "results": {
+  "02-bell-panel": "eval-failed-screenshot-only",
+  "03-account-menu": "ok",
+  "04-appearance": "ok",
+  "11-liked": "failed"
+ }
+}

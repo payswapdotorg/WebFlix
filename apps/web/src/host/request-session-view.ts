@@ -27,10 +27,39 @@ export interface RequestSessionView {
   readonly signedIn: boolean;
   /** The active profile's display name, present iff signed in. */
   readonly profileName?: string;
+  /**
+   * R30-B — the account-menu fields (present iff signed in): the corpus
+   * account menu's header + the Switch-account affordance need the
+   * account's own identity data (the email — WebFlix's real identity
+   * datum where the corpus carries a handle; the profiles + the active
+   * selection — the real switch write's inputs). The composer gate's
+   * use (signedIn + profileName) is unchanged — a pure widening.
+   */
+  readonly account?: {
+    /** The account's email (the real identity datum — never a fabricated handle). */
+    readonly email?: string;
+    /** The account's profiles (the Switch account row's data). */
+    readonly profiles: readonly { readonly id: string; readonly displayName: string }[];
+    /** The session's active profile id. */
+    readonly activeProfileId: string;
+  };
 }
 
 /** The honest signed-out view (never a fake profile). */
 const SIGNED_OUT: RequestSessionView = { signedIn: false };
+
+/** The account fields of one resolved session view (R30-B — the widening). */
+function accountOf(
+  user: { readonly email?: string },
+  profiles: readonly { readonly id: string; readonly displayName: string }[],
+  activeProfileId: string,
+): NonNullable<RequestSessionView["account"]> {
+  return {
+    profiles: profiles.map((profile) => ({ id: profile.id, displayName: profile.displayName })),
+    activeProfileId,
+    ...(user.email !== undefined && user.email.length > 0 ? { email: user.email } : {}),
+  };
+}
 
 /** Read the request's session truth (the page-level /api/auth/session logic). */
 export async function readRequestSessionView(config: HostConfig): Promise<RequestSessionView> {
@@ -45,12 +74,20 @@ export async function readRequestSessionView(config: HostConfig): Promise<Reques
     }
     const view = fixtureSessionView();
     const active = view.profiles.find((profile) => profile.id === view.activeProfileId);
-    return { signedIn: true, ...(active !== undefined ? { profileName: active.displayName } : {}) };
+    return {
+      signedIn: true,
+      ...(active !== undefined ? { profileName: active.displayName } : {}),
+      account: accountOf(view.user, view.profiles, view.activeProfileId),
+    };
   }
 
   // Service mode: the REAL continuity probe (the same transport the route uses).
   const result = await authReadSession({ apiBase: config.apiBase }, token);
   if (!result.ok) return SIGNED_OUT;
   const active = result.value.profiles.find((profile) => profile.id === result.value.activeProfileId);
-  return { signedIn: true, ...(active !== undefined ? { profileName: active.displayName } : {}) };
+  return {
+    signedIn: true,
+    ...(active !== undefined ? { profileName: active.displayName } : {}),
+    account: accountOf(result.value.user, result.value.profiles, result.value.activeProfileId),
+  };
 }

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot of the YouTube account menu, here is the precise description:\n\n**1) Header Area**\n*   **Channel Avatar:** Located at the top left of the dropdown (partially obscured by the edge, but implied by context).\n*   **Account Name:** \"Spartacus\" (displayed in bold).\n*   **Handle/Email:** \"@spartacus_payswap\".\n*   **Switching Row:** A blue text link labeled \"**View your channel**\" sits immediately below the handle.\n\n**2) Menu Rows List**\nThe visible row labels in order are:\n1.  Google Account\n2.  Switch account\n3.  Sign out\n*(Divider line)*\n4.  YouTube Studio\n5.  Purchases and memberships\n6.  Your data in YouTube\n7.  Appearance: Device theme\n8.  Display language: English\n9.  Restricted Mode: Off\n10. Location: Hong Kong\n11. Keyboard shortcuts\n*(Divider line)*\n12. Settings\n13. Help\n14. Send feedback\n\n**3) Position of Appearance Row**\nThe \"**Appearance: Device theme**\" row is located in the middle section of the menu. Specifically, it is the **7th item** in the list (or the 4th item below the first divider), situated between \"Your data in YouTube\" and \"Display language: English\".\n\n**4) Footer**\nThere is no distinct graphical footer (like a copyright notice or version number). The menu simply ends with the last two rows: \"**Help**\" and \"**Send feedback**\".\n\n**5) Approximate Panel Geometry**\n*   **Position:** The panel is anchored to the top-right corner of the viewport, dropping down from the user avatar icon.\n*   **Width:** The panel is relatively narrow, occupying approximately **15% to 20%** of the total viewport width.\n*   **Height:** It extends vertically to cover roughly **70% to 80%** of the viewport height, ending just above the bottom edge of the visible screen area.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329849,
+  "id": "20260925175040dea46bef82804e07",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260925175040dea46bef82804e07",
+  "usage": {
+    "completion_tokens": 424,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1575,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1999
+  }
+}

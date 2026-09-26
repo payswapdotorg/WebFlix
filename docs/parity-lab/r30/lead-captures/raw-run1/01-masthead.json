@@ -1,0 +1,65 @@
+{
+ "surface": "01-masthead",
+ "desc": "masthead account cluster + bell + badge",
+ "capturedAt": "2026-09-25T09:38:58Z",
+ "truth": {
+  "title": "(167) YouTube",
+  "url": "https://www.youtube.com/",
+  "signedIn": true,
+  "avatar": {
+   "x": 1354,
+   "y": 11,
+   "w": 54,
+   "h": 34,
+   "text": "",
+   "cls": "style-scope ytd-topbar-menu-button-renderer",
+   "font": "13.3333px 400 Arial",
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "display": "flex"
+  },
+  "bell": {
+   "x": 1306,
+   "y": 8,
+   "w": 40,
+   "h": 40,
+   "text": "9+",
+   "cls": "style-scope yt-icon-button",
+   "font": "13.3333px 400 Arial",
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "display": "inline-block"
+  },
+  "bellBadge": null,
+  "notifTitleCount": "167",
+  "mic": {
+   "x": 1010,
+   "y": 8,
+   "w": 40,
+   "h": 40,
+   "text": "",
+   "cls": "ytSpecButtonShapeNextHost ytSpecButtonShapeNextText ytSpecButtonShapeNextMono ytSpecButtonShapeNextS",
+   "font": "14px 500 Roboto",
+   "color": "rgb(15, 15, 15)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "50%",
+   "display": "flex"
+  },
+  "endCluster": {
+   "x": 1183,
+   "y": 8,
+   "w": 225,
+   "h": 40,
+   "text": "Create\n  9+\n\n\n  Notifications",
+   "cls": "style-scope ytd-masthead",
+   "font": "10px 400 Roboto",
+   "color": "rgb(0, 0, 0)",
+   "bg": "rgba(0, 0, 0, 0)",
+   "radius": "0px",
+   "display": "flex"
+  }
+ },
+ "screenshotBytes": 250396
+}

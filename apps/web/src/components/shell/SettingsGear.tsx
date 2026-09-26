@@ -36,6 +36,10 @@
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
+// R30-B — the shared real key sheet (the extraction: the gear's own rows
+// + rendering, verbatim — the account menu's Keyboard-shortcuts row and
+// the gear's subpage now open the ONE truth).
+import { ShortcutsSheetBody } from "@/components/shell/ShortcutsSheet";
 
 /** The theme vocabulary (the seam's own). */
 type Theme = "dark" | "light";
@@ -58,21 +62,6 @@ function currentTheme(): Theme {
   if (typeof document === "undefined") return "dark";
   return document.documentElement.dataset.theme === "light" ? "light" : "dark";
 }
-
-/** The shortcuts sheet's REAL key set (every row is a bound key on the player surface). */
-const SHORTCUTS: ReadonlyArray<{ readonly keys: string; readonly action: string }> = [
-  { keys: "Space / K", action: "Play or pause" },
-  { keys: "J / L", action: "Back or forward 10 seconds" },
-  { keys: "← / →", action: "Back or forward 5 seconds" },
-  { keys: "↑ / ↓", action: "Volume up or down" },
-  { keys: "0–9", action: "Jump to 0%–90%" },
-  { keys: "M", action: "Mute" },
-  { keys: "F", action: "Fullscreen" },
-  { keys: "T", action: "Theater view" },
-  { keys: "I", action: "Miniplayer" },
-  { keys: "C", action: "Captions" },
-  { keys: "?", action: "The player's shortcut sheet" },
-];
 
 /** The gear menu: the corpus multi-page popup (level 1 + the Appearance and Shortcuts subpages). */
 export function SettingsGear(): JSX.Element {
@@ -247,18 +236,7 @@ export function SettingsGear(): JSX.Element {
                 </button>
                 <span>Keyboard shortcuts</span>
               </div>
-              <dl className="wfx-gear__keys" data-wfx-gear-shortcuts>
-                {SHORTCUTS.map((entry) => (
-                  <div key={entry.keys}>
-                    <dt>{entry.keys}</dt>
-                    <dd>{entry.action}</dd>
-                  </div>
-                ))}
-              </dl>
-              <p className="wfx-gear__absence">
-                The keys are the player surface&apos;s transport — they are live wherever a player
-                stage is the active surface.
-              </p>
+              <ShortcutsSheetBody />
             </>
           ) : null}
         </div>

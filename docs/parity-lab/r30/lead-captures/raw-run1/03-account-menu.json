@@ -1,0 +1,9 @@
+{
+ "surface": "03-account-menu",
+ "desc": "avatar account menu (gate-vulnerable #2)",
+ "capturedAt": "2026-09-25T09:39:05Z",
+ "truth": {
+  "evalFailed": "eval exception: SyntaxError: missing ) after argument list"
+ },
+ "screenshotBytes": 231335
+}

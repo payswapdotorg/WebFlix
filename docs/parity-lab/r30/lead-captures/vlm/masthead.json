@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot provided, here is the precise description of the top-right account cluster:\n\n1.  **Button Order (from Search Bar rightward):**\n    *   **Microphone Icon:** Located inside the right edge of the search bar.\n    *   **Create Button:** A button with a \"+\" icon and the text \"Create\".\n    *   **Notifications Bell:** A bell icon.\n    *   **Avatar:** A user profile picture (appears to be a green/forest scene).\n\n2.  **The Bell:**\n    *   **Unread Count Badge:** Yes, it shows an unread count.\n    *   **Number/Label:** The badge is red and displays the number **\"9+\"**.\n\n3.  **The Avatar:**\n    *   **Shape:** It is **rounded** (a squircle or rounded square shape), not a perfect circle.\n    *   **Approximate Size:** It is relatively small, roughly similar in height to the \"Create\" button text and icons.\n\n4.  **Mic Button:**\n    *   **Presence:** Yes, a microphone button is present. It is located **inside** the search bar, on the far right side, to the left of the magnifying glass search icon.\n\n5.  **Notifications Count in Page Title:**\n    *   There is no notification count visible in the browser tab title area or the page header text in this specific view; the count is only displayed on the bell icon badge itself.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329982,
+  "id": "202609251752544d8bcaa52bb64865",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609251752544d8bcaa52bb64865",
+  "usage": {
+    "completion_tokens": 306,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1574,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1880
+  }
+}

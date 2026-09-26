@@ -81,3 +81,35 @@ export function percentWatched(ratio: number | null): string | null {
 export function encodeParam(value: string): string {
   return encodeURIComponent(value);
 }
+
+/**
+ * R30-B (CORPUS §8/§9) — the playlist header's "Last updated on" date:
+ * the corpus format ("Last updated on Sep 16, 2026") from the playlist's
+ * most recent save timestamp. Deterministic: the fixed month names (no
+ * locale drift — the module's own law); an unparseable timestamp answers
+ * null (the line renders only with a real date, never a fabricated one).
+ */
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
+
+/** Format one ISO timestamp as the corpus "MMM D, YYYY" (null when unparseable). */
+export function formatPlaylistDate(iso: string): string | null {
+  const time = Date.parse(iso);
+  if (Number.isNaN(time)) return null;
+  const date = new Date(time);
+  const month = MONTHS[date.getUTCMonth()];
+  if (month === undefined) return null;
+  return `${month} ${date.getUTCDate()}, ${date.getUTCFullYear()}`;
+}

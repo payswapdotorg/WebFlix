@@ -1,0 +1,133 @@
+{
+ "surface": "05-home-progress",
+ "desc": "home watched-progress (gate-vulnerable #3)",
+ "capturedAt": "2026-09-25T09:45:14Z",
+ "truth": {
+  "title": "YouTube",
+  "cards": [
+   {
+    "title": "Druski Gets BRUTALLY HONEST About The DARK Side Of Becoming Successful",
+    "hasProgress": false,
+    "progressWidth": null,
+    "progressH": null,
+    "thumb": {
+     "x": 264,
+     "y": 136,
+     "w": 368,
+     "h": 207,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(0, 0, 238)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    },
+    "meta": "Mediocre Tutorials and Reviews 70K 9h ago"
+   },
+   {
+    "title": "Druski Gets BRUTALLY HONEST About The DARK Side Of Becoming Successful",
+    "hasProgress": false,
+    "progressWidth": null,
+    "progressH": null,
+    "thumb": {
+     "x": 264,
+     "y": 136,
+     "w": 368,
+     "h": 207,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(0, 0, 238)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    },
+    "meta": "Mediocre Tutorials and Reviews 70K 9h ago"
+   },
+   {
+    "title": "Mix - Mika Benjamin - Ou Pati (Twoubadou)",
+    "hasProgress": false,
+    "progressWidth": null,
+    "progressH": null,
+    "thumb": {
+     "x": 648,
+     "y": 136,
+     "w": 368,
+     "h": 207,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(0, 0, 238)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    },
+    "meta": "MIZIK MIZIK, Mikaben, Arly Larivière, and more Playlist"
+   },
+   {
+    "title": "Mix - Mika Benjamin - Ou Pati (Twoubadou)",
+    "hasProgress": false,
+    "progressWidth": null,
+    "progressH": null,
+    "thumb": {
+     "x": 648,
+     "y": 136,
+     "w": 368,
+     "h": 207,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(0, 0, 238)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    },
+    "meta": "MIZIK MIZIK, Mikaben, Arly Larivière, and more Playlist"
+   },
+   {
+    "title": "How I define success...",
+    "hasProgress": false,
+    "progressWidth": null,
+    "progressH": null,
+    "thumb": {
+     "x": 1032,
+     "y": 136,
+     "w": 368,
+     "h": 207,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(0, 0, 238)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    },
+    "meta": "TechLead 2mo agoYouTube featuredMembers only"
+   },
+   {
+    "title": "How I define success...",
+    "hasProgress": false,
+    "progressWidth": null,
+    "progressH": null,
+    "thumb": {
+     "x": 1032,
+     "y": 136,
+     "w": 368,
+     "h": 207,
+     "text": "",
+     "cls": "ytCoreImageHost ytCoreImageFillParentHeight ytCoreImageFillParentWidth ytCoreImageContentModeScaleAs",
+     "font": "10px 400 Roboto",
+     "color": "rgb(0, 0, 238)",
+     "bg": "rgba(0, 0, 0, 0)",
+     "radius": "0px",
+     "display": "inline-block"
+    },
+    "meta": "TechLead 2mo agoYouTube featuredMembers only"
+   }
+  ],
+  "withProgressCount": 0,
+  "cardCount": 6
+ },
+ "screenshotBytes": 84562
+}

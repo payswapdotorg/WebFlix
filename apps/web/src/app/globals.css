@@ -586,6 +586,358 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+ * R30-B — THE ACCOUNT CHROME (the logged-in corpus family:
+ * docs/parity-lab/r30/lead-captures/CORPUS.md §1–§4). The bell button
+ * (40x40, the badge layers), the notifications panel (~360-400px
+ * top-right, the header + gear + collapse arrow), the account menu
+ * (the paper-menu family: ~15-20% viewport width, tall, the corpus
+ * 14-row grammar), and the rail subscriptions section (entries 204x40,
+ * avatars 24x24).
+ * ------------------------------------------------------------------------- */
+
+/* §1 — THE BELL BUTTON: the 40x40 icon-button shell (wfx-topbar__guide
+ * carries the shell); the badge layer rides top-right (the corpus
+ * [rendered] read: a red badge with the "9+" cap text; the geometry is
+ * not corpus-measured — the badge grammar's own family). The honest
+ * zero paints NO badge (bell-grammar.ts). */
+.wfx-bell {
+  position: relative;
+}
+
+.wfx-bell__button {
+  position: relative;
+}
+
+.wfx-bell__badge {
+  position: absolute;
+  top: 2px;
+  right: 0;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: var(--wfx-accent);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 14px;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+/* §2 — THE NOTIFICATIONS PANEL: ~360-400px wide (~25-30% of 1440),
+ * anchored top-right under the bell; the paper-menu family (the raised
+ * surface, r12, the corpus dialog shadow); the header (bold
+ * "Notifications" + the gear + the collapse arrow) and the body's
+ * honest-empty row. */
+.wfx-bellpanel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: min(400px, calc(100vw - 32px));
+  max-height: min(660px, 80vh);
+  overflow-y: auto;
+  padding: 8px 0;
+  background: var(--wfx-menu);
+  border: 1px solid var(--wfx-border);
+  border-radius: 12px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 24px 12px;
+  z-index: 90;
+}
+
+.wfx-bellpanel__head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 8px 16px;
+  border-bottom: 1px solid var(--wfx-border);
+  margin: 0 8px 8px;
+}
+
+.wfx-bellpanel__title {
+  margin: 0;
+  flex: 1;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--wfx-text);
+}
+
+.wfx-bellpanel__iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--wfx-text);
+  cursor: pointer;
+}
+
+.wfx-bellpanel__iconbtn:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-bellpanel__body {
+  padding: 0 16px 12px;
+}
+
+.wfx-bellpanel__empty {
+  margin: 8px 0 4px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+
+.wfx-bellpanel__note {
+  margin: 4px 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+/* §1 — THE AVATAR SQUIRCLE: the corpus [rendered] read ("a squircle or
+ * rounded square shape, not a perfect circle" — the radius itself is
+ * not corpus-measured; 12px on the 32px chip is the squircle grammar).
+ * The trigger keeps WebFlix's frozen >=44px touch floor (the corpus
+ * measured the YouTube button rect at 54x34 — the divergence ledger
+ * records the a11y keep). */
+.wfx-accountroot {
+  position: relative;
+}
+
+.wfx-account__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 4px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.wfx-account__trigger:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-account__triggeravatar,
+.wfx-account__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 12px;
+  background: var(--wfx-accent-soft);
+  border: 1px solid var(--wfx-accent-border);
+  color: var(--wfx-accent);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.wfx-account__panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  min-width: 280px;
+  max-width: min(320px, calc(100vw - 32px));
+  max-height: min(680px, 78vh);
+  overflow-y: auto;
+  padding: 4px;
+  background: var(--wfx-menu);
+  border: 1px solid var(--wfx-border);
+  border-radius: 12px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0 0 24px 12px;
+  z-index: 90;
+}
+
+/* §3 — THE ACCOUNT MENU: the corpus header (avatar + bold name + the
+ * identity line) + the row grammar (40px rows, 14/400/20 — the corpus
+ * menu-row family) with the state-row + divider + subpage variants. */
+.wfx-account__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+}
+
+.wfx-account__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--wfx-text);
+}
+
+.wfx-account__identity {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-account__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+button.wfx-account__row:hover,
+a.wfx-account__row:hover {
+  background: var(--wfx-bg-hover);
+}
+
+/* The state rows (Appearance / Display language): real state displays,
+ * not controls — the hover raise stays off (nothing is clickable). */
+.wfx-account__row--state {
+  cursor: default;
+}
+
+.wfx-account__row--state:hover {
+  background: transparent;
+}
+
+.wfx-account__row--active {
+  font-weight: 500;
+}
+
+.wfx-account__chevron {
+  color: var(--wfx-text-dim);
+}
+
+.wfx-account__divider {
+  height: 1px;
+  margin: 4px 8px;
+  background: var(--wfx-border);
+}
+
+.wfx-account__subhead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 8px 4px;
+  border-bottom: 1px solid var(--wfx-border);
+  margin: 0 8px 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.wfx-account__watching {
+  font-size: 12px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-account__absence {
+  margin: 8px 16px 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-account__outcome {
+  margin: 8px 16px 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-accent);
+}
+
+/* §4 — THE RAIL SUBSCRIPTIONS SECTION: the flat list with the 24x24
+ * monogram avatars (the corpus-measured channel-avatar grammar), the
+ * entries 204x40 (the corpus guide-entry box), the section heading in
+ * the rail's own heading family. */
+.wfx-railsub {
+  padding: 0 12px;
+}
+
+.wfx-railsub__empty {
+  margin: 4px 12px 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-railsub__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wfx-railsub__row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  width: 204px;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+  text-decoration: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+a.wfx-railsub__row:hover {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+}
+
+.wfx-railsub__row--unlinked {
+  color: var(--wfx-text-faint);
+  cursor: default;
+}
+
+.wfx-railsub__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--wfx-surface-2);
+  border: 1px solid var(--wfx-border-strong);
+  color: var(--wfx-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.wfx-railsub__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The subscription rows join the labeled rail forms (the >=1280
+ * labeled rail + the drawer): the 204x40 entry box stands; the narrow
+ * icon-rail/bottom-nav bands hide the section (a labeled-list surface —
+ * the same law the You-heading follows). */
+@media (max-width: 1279.5px) {
+  .wfx-rail__group .wfx-railsub,
+  .wfx-railsub {
+    display: none;
+  }
+
+  html[data-wfx-guide="drawer"] .wfx-railsub {
+    display: block;
+  }
+}
+
+/* ---------------------------------------------------------------------------
  * R29-B (N25) — THE MINIPLAYER DOCK: the persistent bottom-right
  * floating player (the corpus "i miniplayer" grammar). 400×225 stage
  * (16:9) + the 36px title row; the corpus dialog shadow family; the
@@ -826,7 +1178,9 @@ html[data-wfx-guide="drawer"] .wfx-rail .wfx-navlink {
   flex-direction: row;
   justify-content: flex-start;
   gap: 24px;
-  width: auto;
+  /* R30-B (CORPUS §4) — the corpus guide-entry box 204x40 (the drawer is
+     the labeled-row form; raw/06-rail.json's measured entry width). */
+  width: 204px;
   height: 48px;
   padding: 0 12px;
   font-size: 14px;
@@ -989,7 +1343,9 @@ html[data-wfx-guide="drawer"] /* R29-B (N13) — THE RAIL SIGN-IN PROMO (the cor
     flex-direction: row;
     justify-content: flex-start;
     gap: 24px;
-    width: auto;
+    /* R30-B (CORPUS §4) — the corpus guide-entry box 204x40 (the drawer is
+       the labeled-row form; raw/06-rail.json's measured entry width). */
+    width: 204px;
     height: 40px;
     min-height: 40px;
     padding: 0 12px;
@@ -1022,10 +1378,14 @@ html[data-wfx-guide="drawer"] /* R29-B (N13) — THE RAIL SIGN-IN PROMO (the cor
     /* R29-B (N13) — the corpus rail item anatomy: 40h r10 14/400/20
        (the base 44px touch floor yields to the corpus measure in the
        labeled rail forms; the icon-rail and bottom-nav bands keep it). */
+    /* R30-B (CORPUS §4) — the corpus guide-entry BOX: 204x40 per entry
+       (raw/06-rail.json geom — the measured entry width joins the
+       labeled rail + drawer forms; the 240px rail var stays the
+       parity-pinned shell). */
     flex-direction: row;
     justify-content: flex-start;
     gap: 24px;
-    width: auto;
+    width: 204px;
     height: 40px;
     min-height: 40px;
     padding: 0 12px;
@@ -6138,6 +6498,137 @@ html[data-theme="light"] .wfx-switch__knob {
 .wfx-playlist h3 {
   margin: 0 0 0.5rem;
   font-size: 0.95rem;
+}
+
+/* R30-B (CORPUS §8/§9) — THE PLAYLIST FAMILY GRAMMAR: the header's
+ * meta line (owner · "N videos" · "Last updated on …"), the
+ * Play-all/Shuffle pills (the white + dark pair), the sort chips
+ * (All · the real types — the corpus chip family), and the
+ * honest-unavailable notice (the grey banner). The sort-chip filter is
+ * the CSS seam (the section root's data-wfx-playlist-filter datum —
+ * the ChipBar's own pattern; the rows carry their type datum). */
+.wfx-playlist__head {
+  margin-bottom: 0.5rem;
+}
+
+.wfx-playlist__meta {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-playlist__unavailable {
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--wfx-radius-sm);
+  background: var(--wfx-surface-2);
+  font-size: 0.8rem;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-plcontrols {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 0.75rem;
+}
+
+.wfx-plcontrols__pills {
+  display: flex;
+  gap: 8px;
+}
+
+/* §8 — THE PILL PAIR: "Play all" (the white pill) + "Shuffle" (the
+ * dark pill) — the corpus's own two-tone pair, 36px pills, r18. */
+.wfx-plcontrols__playall,
+.wfx-plcontrols__shuffle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  cursor: pointer;
+  transition: filter var(--wfx-transition);
+}
+
+.wfx-plcontrols__playall {
+  background: #ffffff;
+  color: #0f0f0f;
+}
+
+.wfx-plcontrols__shuffle {
+  background: var(--wfx-surface-2);
+  color: var(--wfx-text);
+}
+
+.wfx-plcontrols__playall:hover,
+.wfx-plcontrols__shuffle:hover {
+  filter: brightness(0.95);
+}
+
+.wfx-plcontrols__playall[disabled],
+.wfx-plcontrols__shuffle[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* §9 — THE SORT CHIPS: the corpus chip family (32px, r8 — the parity
+ * pinned anatomy). */
+.wfx-plcontrols__chips {
+  display: flex;
+  gap: 8px;
+}
+
+.wfx-plchip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--wfx-border);
+  border-radius: 8px;
+  background: var(--wfx-surface-2);
+  color: var(--wfx-text-dim);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.wfx-plchip:hover {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+}
+
+.wfx-plchip--on {
+  background: var(--wfx-text);
+  border-color: var(--wfx-text);
+  color: var(--wfx-bg);
+  font-weight: 500;
+}
+
+.wfx-plcontrols__outcome {
+  margin: 0;
+  flex-basis: 100%;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-accent);
+}
+
+/* The sort-chip filter seam (the ChipBar's own CSS law): a filtered
+ * playlist section hides the rows whose type datum does not match; All
+ * resets. Error/empty states never hide (they carry no rows). */
+.wfx-playlist[data-wfx-playlist-filter="video"] .wfx-queue__item:not([data-wfx-playlist-type="video"]) {
+  display: none;
+}
+
+.wfx-playlist[data-wfx-playlist-filter="short"] .wfx-queue__item:not([data-wfx-playlist-type="short"]) {
+  display: none;
 }
 
 /* Screen-reader-only utility (the captioned select's label). */

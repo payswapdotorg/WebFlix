@@ -1,0 +1,35 @@
+{
+ "surface": "09-playlists",
+ "desc": "playlists grid (WL/LL cards)",
+ "capturedAt": "2026-09-25T09:39:38Z",
+ "truth": {
+  "title": "Playlists - YouTube",
+  "cards": [
+   {
+    "title": "Watch later",
+    "meta": null,
+    "thumb": null,
+    "stackHint": null
+   },
+   {
+    "title": "Saved Shorts",
+    "meta": null,
+    "thumb": null,
+    "stackHint": null
+   },
+   {
+    "title": "Liked videos",
+    "meta": null,
+    "thumb": null,
+    "stackHint": null
+   },
+   {
+    "title": "My house",
+    "meta": null,
+    "thumb": null,
+    "stackHint": null
+   }
+  ]
+ },
+ "screenshotBytes": 90867
+}

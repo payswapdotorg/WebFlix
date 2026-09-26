@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot provided, here is the precise anatomy of the YouTube Notifications panel:\n\n**1. Overall Panel Position and Size**\n*   **Position:** The panel is a dropdown overlay anchored to the notification bell icon in the top-right masthead (header). It floats above the main content area.\n*   **Size:** Relative to a 1440x900 viewport, the panel occupies roughly the rightmost 25-30% of the screen width (approx. 360-400px wide) and extends vertically from just below the header (approx. y=60) down to about 80% of the viewport height (approx. y=720).\n\n**2. Panel Header**\n*   **Title:** The top of the panel features the bold text **\"Notifications\"**.\n*   **Controls:** To the right of the title, there are two icons:\n    *   A **Settings gear icon** (for notification preferences).\n    *   A small **collapse/close arrow icon** pointing left.\n\n**3. Notification Rows Anatomy**\nEach row within the list follows a consistent horizontal layout containing:\n*   **Unread Indicator:** A small blue vertical dot on the far left edge (visible on unread items).\n*   **Thumbnail/Avatar:** A square image (approx. 40-50px) on the left showing either the channel's profile picture or the video's thumbnail.\n*   **Content Block (Center):**\n    *   **Source Name & Action:** Bold text indicating the channel name and action (e.g., \"uploaded:\").\n    *   **Title/Description:** Regular weight text detailing the video title or activity.\n    *   **Timestamp:** Grey text below the title indicating relative time (e.g., \"28 minutes ago\").\n*   **Menu Icon:** A vertical three-dot \"kebab\" menu icon on the far right for individual row options.\n\n**4. Visibility State Indicators**\n*   **Unread Dots:** A distinct solid blue circle appears to the left of unread notifications.\n*   **Section Dividers:** Horizontal lines separate logical groups.\n    *   **\"Important\"**: A label separating high-priority alerts at the top.\n    *   **\"More notifications\"**: A label separating older or less critical alerts below.\n\n**5. Footer/Options Row**\nThere is no traditional footer with buttons like \"See all.\" Instead, the list simply ends, or implies scrolling if the list is long (indicated by the count of 167). The bottom-most visible item is cut off by the edge of the panel.\n\n***\n\n**Exact Visible Text of the First 4 Rows:**\n\n1.  **Row 1 (Important):**\n    > Foot Mercato uploaded: Zidane met fin aux PRIVILÈGES, le choix FORT de Mourinho avec Vinicius | Revue de Presse\n    > *28 minutes ago*\n\n2.  **Row 2 (Important):**\n    > Wholesale Ted uploaded: I Automated My $11k/Day AI Side Hustle w/ Claude Code (here's how)\n    > *14 hours ago*\n\n3.  **Row 3 (Important):**\n    > Bloomberg Originals uploaded: Why Brazil Can't Hide From Its Debt\n    > *1 hour ago*\n\n4.  **Row 4 (More notifications):**\n    > FRANCE 24 uploaded: Religion : la jeunesse croyante à l'heure du numérique • FRANCE 24\n    > *26 minutes ago*",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329840,
+  "id": "2026092517503357231e1e391544a8",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "2026092517503357231e1e391544a8",
+  "usage": {
+    "completion_tokens": 713,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1586,
+    "prompt_tokens_details": {
+      "cached_tokens": 2
+    },
+    "total_tokens": 2299
+  }
+}

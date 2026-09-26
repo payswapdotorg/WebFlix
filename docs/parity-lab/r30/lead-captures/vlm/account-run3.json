@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Yes, the account avatar dropdown menu is **OPEN**.\n\n**Header:**\n*   **Name:** Spartacus\n*   **Handle:** @spartacus_payswap\n*   **Link:** View your channel\n\n**Visible Row Labels:**\n1.  Google Account\n2.  Switch account (with a right arrow)\n3.  Sign out\n4.  YouTube Studio\n5.  Purchases and memberships\n6.  Your data in YouTube\n7.  Appearance: Device theme (with a right arrow)\n8.  Display language: English (with a right arrow)\n9.  Restricted Mode: Off (with a right arrow)\n10. Location: Hong Kong (with a right arrow)\n11. Keyboard shortcuts\n12. Settings\n13. Help\n14. Send feedback",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790330026,
+  "id": "202609251753431653ca61cffd40c7",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609251753431653ca61cffd40c7",
+  "usage": {
+    "completion_tokens": 166,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1523,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1689
+  }
+}

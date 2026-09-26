@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the image provided, here is a precise description of what renders:\n\n1.  **Video Player Shell & CTA:** There is a **vertical video player shell** (a black rectangle with rounded corners) present in the center. Inside it, there is a **'Play' CTA button** (a dark grey rounded square with a white play triangle icon). The area inside the shell is otherwise a solid black/empty area.\n2.  **Action Rail:** **ABSENT.** There is no action rail on the right side (or anywhere else). There are no like/dislike, comment, share, or remix buttons, and therefore no counts to quote.\n3.  **Channel Info:** **ABSENT.** There is no channel name, avatar, or subscribe button visible.\n4.  **Title/Description:** **ABSENT.** There is no title or description text visible.\n5.  **Error/Consent Message:** **ABSENT.** There are no error messages or consent popups.\n\n**Summary of what IS present:**\n*   A top navigation bar containing a search input field and three circular placeholder icons on the right.\n*   A central vertical black container representing the video player.\n*   A 'Play' button icon centered within that black container.\n*   A small downward-pointing arrow icon at the very bottom right of the screen.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790329956,
+  "id": "202609251752303e21bb959b9d46d3",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609251752303e21bb959b9d46d3",
+  "usage": {
+    "completion_tokens": 282,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1575,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1857
+  }
+}

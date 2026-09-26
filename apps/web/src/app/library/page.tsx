@@ -18,6 +18,9 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { LibrarySurface } from "@/components/library/LibrarySurface";
 import { getWebRuntimeHost } from "@/host/web-host";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth).
+import { loadAccountChrome } from "@/host/account-chrome";
 import { loadByofFeedView, byofHostBinding } from "@/host/byof/byof-host";
 import { loadLibraryView } from "@/host/view-models";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -32,7 +35,7 @@ export default async function LibraryPage({
   const params = await searchParams;
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/library", params);
-  const view = await loadLibraryView(host);
+  const [view, account] = await Promise.all([loadLibraryView(host), loadAccountChrome()]);
   // R20-D/R20-H — the imported feeds region (the "feed appears" step). The
   // post-confirm landing hint rides as an adapter param, never a
   // navigation-section change. Service mode binds the HTTP transport
@@ -42,8 +45,13 @@ export default async function LibraryPage({
   const justImported =
     (Array.isArray(byofParam) ? (byofParam[0] ?? "") : (byofParam ?? "")) === "imported";
   return (
-    <AppShell mode={host.mode} active="library" session={host.session.state}>
-      <LibrarySurface view={view} byof={byof} {...(justImported ? { justImported } : {})} />
+    <AppShell mode={host.mode} active="library" session={host.session.state} account={account}>
+      <LibrarySurface
+        view={view}
+        byof={byof}
+        session={host.session.state}
+        {...(justImported ? { justImported } : {})}
+      />
     </AppShell>
   );
 }

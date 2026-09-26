@@ -12,6 +12,10 @@
 import { AppShell } from "@/components/shell/AppShell";
 import { HomeSurface } from "@/components/home/HomeSurface";
 import { getWebRuntimeHost } from "@/host/web-host";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth — the corpus logged-in
+// chrome's data).
+import { loadAccountChrome } from "@/host/account-chrome";
 import { loadHomeView } from "@/host/view-models";
 import { loadDiscoveryBundle } from "@/host/discoverability";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -21,9 +25,13 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const host = await getWebRuntimeHost();
   syncNavigationToRoute(host.runtime, "/", {});
-  const [view, discovery] = await Promise.all([loadHomeView(host), loadDiscoveryBundle(host)]);
+  const [view, discovery, account] = await Promise.all([
+    loadHomeView(host),
+    loadDiscoveryBundle(host),
+    loadAccountChrome(),
+  ]);
   return (
-    <AppShell mode={host.mode} active="home" session={host.session.state}>
+    <AppShell mode={host.mode} active="home" session={host.session.state} account={account}>
       <HomeSurface view={view} discovery={discovery} />
     </AppShell>
   );

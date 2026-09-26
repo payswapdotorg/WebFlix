@@ -14,6 +14,10 @@ import { AppShell } from "@/components/shell/AppShell";
 import { ItemDetailSurface } from "@/components/item/ItemDetailSurface";
 import { EmptyState, ErrorState } from "@/components/ui/StateViews";
 import { getWebRuntimeHost } from "@/host/web-host";
+// R30-B — the account chrome view (the request's sign-in truth + the
+// rail subscriptions + the notification truth).
+import { loadAccountChrome } from "@/host/account-chrome";
+
 import { canonicalIdFor } from "@/host/web-host";
 import { DetailLoadError, loadDetailView } from "@/host/view-models";
 import { syncNavigationToRoute } from "@/app/routing";
@@ -34,10 +38,13 @@ export default async function ItemPage({
   const { invalidReason } = syncNavigationToRoute(host.runtime, "/item", params);
   const connectorId = firstParam(params.connector);
   const externalRef = firstParam(params.ref);
+  // R30-B — the account chrome view (every branch's shell carries the
+  // corpus logged-in chrome; the request's sign-in truth).
+  const account = await loadAccountChrome();
 
   if (invalidReason !== null) {
     return (
-      <AppShell mode={host.mode} session={host.session.state}>
+      <AppShell mode={host.mode} session={host.session.state} account={account}>
         <div data-wfx-surface="item" data-wfx-item-state="invalid">
           <h1 className="wfx-page-title">Content</h1>
           <ErrorState
@@ -56,7 +63,7 @@ export default async function ItemPage({
 
   if (connectorId.length === 0 || externalRef.length === 0) {
     return (
-      <AppShell mode={host.mode} session={host.session.state}>
+      <AppShell mode={host.mode} session={host.session.state} account={account}>
         <div data-wfx-surface="item" data-wfx-item-state="missing-params">
           <h1 className="wfx-page-title">Content</h1>
           <EmptyState
@@ -83,7 +90,7 @@ export default async function ItemPage({
     const view = await loadDetailView(host, { connectorId, externalRef, itemId });
     if (view === null) {
       return (
-        <AppShell mode={host.mode} session={host.session.state}>
+        <AppShell mode={host.mode} session={host.session.state} account={account}>
           <div data-wfx-surface="item" data-wfx-item-state="not-found">
             <h1 className="wfx-page-title">Content</h1>
             <EmptyState
@@ -100,14 +107,14 @@ export default async function ItemPage({
       );
     }
     return (
-      <AppShell mode={host.mode} session={host.session.state}>
+      <AppShell mode={host.mode} session={host.session.state} account={account}>
         <ItemDetailSurface view={view} />
       </AppShell>
     );
   } catch (thrown) {
     const failure = thrown instanceof DetailLoadError ? thrown : null;
     return (
-      <AppShell mode={host.mode} session={host.session.state}>
+      <AppShell mode={host.mode} session={host.session.state} account={account}>
         <div data-wfx-surface="item" data-wfx-item-state="error">
           <h1 className="wfx-page-title">Content</h1>
           <ErrorState

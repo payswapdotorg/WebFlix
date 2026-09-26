@@ -59,7 +59,8 @@ export type IconName =
   | "xsocial"
   | "reddit"
   | "pinterest"
-  | "linkedin";
+  | "linkedin"
+  | "bell";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   home: (
@@ -292,6 +293,15 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
     <>
       <rect x="3.5" y="3.5" width="17" height="17" rx="2.5" />
       <path d="M8 10.5V17M8 7.4v.1M12 17v-3.6c0-1.2.8-2.1 2-2.1s2 .9 2 2.1V17" />
+    </>
+  ),
+  // R30-B — the masthead notifications bell (CORPUS §1: the 40x40
+  // icon-button shell's glyph; a hand-rolled stroke mark, the same set's
+  // vocabulary — never a claimed brand mark).
+  bell: (
+    <>
+      <path d="M12 4a5.5 5.5 0 0 1 5.5 5.5v3.2l1.6 2.6a1 1 0 0 1-.85 1.5H5.75a1 1 0 0 1-.85-1.5l1.6-2.6V9.5A5.5 5.5 0 0 1 12 4Z" />
+      <path d="M9.8 19.3a2.4 2.4 0 0 0 4.4 0" />
     </>
   ),
 };
