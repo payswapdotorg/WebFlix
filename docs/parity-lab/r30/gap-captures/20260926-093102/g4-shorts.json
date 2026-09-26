@@ -1,0 +1,119 @@
+{
+ "surface": "g4-shorts",
+ "truth": {
+  "title": "(9) We're sharing, right?#marvel #edit #shorts - YouTube",
+  "actionButtons": [
+   {
+    "aria": "Guide",
+    "text": ""
+   },
+   {
+    "aria": "",
+    "text": "Skip navigation"
+   },
+   {
+    "aria": "Skip navigation",
+    "text": "Skip navigation"
+   },
+   {
+    "aria": "Search",
+    "text": ""
+   },
+   {
+    "aria": "",
+    "text": "Search with your voice"
+   },
+   {
+    "aria": "Search with your voice",
+    "text": ""
+   },
+   {
+    "aria": "",
+    "text": "Create"
+   },
+   {
+    "aria": "Create",
+    "text": "Create"
+   },
+   {
+    "aria": "Notifications",
+    "text": "9+"
+   },
+   {
+    "aria": "Account menu",
+    "text": ""
+   },
+   {
+    "aria": "Subscriptions",
+    "text": ""
+   },
+   {
+    "aria": "You",
+    "text": ""
+   },
+   {
+    "aria": "Pause (k)",
+    "text": ""
+   },
+   {
+    "aria": "Mute (m)",
+    "text": ""
+   },
+   {
+    "aria": "Subtitles/CC turned on",
+    "text": ""
+   },
+   {
+    "aria": "More actions",
+    "text": ""
+   },
+   {
+    "aria": "Enter Full Screen (f)",
+    "text": ""
+   },
+   {
+    "aria": "Subscribe to @JackieMcReY.",
+    "text": "Subscribe"
+   },
+   {
+    "aria": "like this video along with 176 thousand other people",
+    "text": ""
+   },
+   {
+    "aria": "View 512 comments",
+    "text": ""
+   },
+   {
+    "aria": "Share",
+    "text": ""
+   },
+   {
+    "aria": "Remix this Short along with 12 other remixes",
+    "text": ""
+   },
+   {
+    "aria": "Previous video",
+    "text": ""
+   },
+   {
+    "aria": "",
+    "text": "Next video"
+   }
+  ],
+  "counts": [
+   "We're sharing, right?",
+   "#marvel",
+   "#edit",
+   "#shorts"
+  ],
+  "gateText": [],
+  "video": {
+   "readyState": 4,
+   "paused": false,
+   "src": "blob:https://www.youtube.com/b9dac62d-4d2a-4315-83b0-43b31ee8e963"
+  }
+ },
+ "screenshotBytes": 105083,
+ "capturedAt": "2026-09-26T09:31:40Z",
+ "elapsedS": 9.2
+}
