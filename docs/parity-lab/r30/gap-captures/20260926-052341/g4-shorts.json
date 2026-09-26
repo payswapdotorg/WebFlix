@@ -1,0 +1,30 @@
+{
+ "surface": "g4-shorts",
+ "truth": {
+  "title": "- YouTube",
+  "actionButtons": [
+   {
+    "aria": "Play",
+    "text": ""
+   },
+   {
+    "aria": "Guide",
+    "text": ""
+   },
+   {
+    "aria": "Search",
+    "text": ""
+   }
+  ],
+  "counts": [],
+  "gateText": [],
+  "video": {
+   "readyState": 0,
+   "paused": true,
+   "src": ""
+  }
+ },
+ "screenshotBytes": 14208,
+ "capturedAt": "2026-09-26T05:24:41Z",
+ "elapsedS": 10.8
+}

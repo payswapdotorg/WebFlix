@@ -1,0 +1,21 @@
+{
+ "surface": "g3-home-progress",
+ "truth": {
+  "title": "(5) YouTube",
+  "url": "https://www.youtube.com/",
+  "cardCount": 30,
+  "withProgress": 0,
+  "progressCards": [],
+  "shelves": [
+   "YouTube Playables\n                \n                \n        ",
+   "Are you registered?\n\n\n            \n          \n            \n ",
+   "NFL Sunday Ticket\n                \n                YouTube f",
+   "Shorts\n              \n            \n            \n            ",
+   "NaN / NaN\n      \n      \n      \n      \n      \n      \n      \n "
+  ],
+  "contShelf": []
+ },
+ "screenshotBytes": 278861,
+ "capturedAt": "2026-09-26T05:24:30Z",
+ "elapsedS": 8.5
+}

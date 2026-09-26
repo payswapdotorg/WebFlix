@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Yes, a **YouTube menu is open**. Specifically, the **account menu (user profile dropdown)** is currently displayed on the right side of the screen.\n\n### Masthead State:\n*   **Avatar Present:** Yes, there is a user avatar visible in the top-right corner of the masthead (it appears to be a green frog or reptile-like character).\n*   **Menu State:** The menu associated with this avatar is expanded, showing various account and settings options.\n\n### What is on Screen:\n*   **Main Content:** The background shows the YouTube Premium home feed with video thumbnails for content like \"All-In Podcast,\" \"Fresh&Fit,\" \"Tesla Cybercab,\" and \"Did Open AI Build AGI?\".\n*   **Open Menu:** The account menu is overlaying the right side of the screen. It displays:\n    *   **User Info:** The name \"Spartacus\" and handle \"@spartacus_payswap\" at the top.\n    *   **Account Options:** Google Account, Switch account, Sign out.\n    *   **YouTube Features:** YouTube Studio, Purchases and memberships, Your data in YouTube.\n    *   **Settings & Preferences:** Appearance, Display language, Restricted Mode, Location, Keyboard shortcuts, Settings, Help, and Send feedback.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790400287,
+  "id": "20260926132441467ba05d3ad04e77",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260926132441467ba05d3ad04e77",
+  "usage": {
+    "completion_tokens": 263,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1487,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1750
+  }
+}

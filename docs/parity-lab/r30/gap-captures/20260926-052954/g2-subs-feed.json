@@ -1,0 +1,150 @@
+{
+ "surface": "g2-subs-feed",
+ "truth": {
+  "title": "Subscriptions - YouTube",
+  "url": "https://www.youtube.com/feed/subscriptions",
+  "cardCount": 14,
+  "cards": [
+   {
+    "title": "ZIDANE R\u00c9USSIT SA RENTR\u00c9E... DANS LA DOULEUR ! (D\u00e9brief complet)",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "AFTER FOOT",
+    "meta": "AFTER FOOT 64K 7h ago",
+    "thumb": null,
+    "badge": "49:16"
+   },
+   {
+    "title": "ZIDANE R\u00c9USSIT SA RENTR\u00c9E... DANS LA DOULEUR ! (D\u00e9brief complet)",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "AFTER FOOT",
+    "meta": "AFTER FOOT 64K 7h ago",
+    "thumb": null,
+    "badge": "49:16"
+   },
+   {
+    "title": "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the Monologue",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "Jimmy Kimmel Live",
+    "meta": "Jimmy Kimmel Live 2.9M 1d ago",
+    "thumb": null,
+    "badge": "12:46"
+   },
+   {
+    "title": "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the Monologue",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "Jimmy Kimmel Live",
+    "meta": "Jimmy Kimmel Live 2.9M 1d ago",
+    "thumb": null,
+    "badge": "12:46"
+   },
+   {
+    "title": "Watch me start & sell AI Software in 4 hours",
+    "titleGeom": {
+     "h": 22,
+     "w": 338,
+     "font": "11.7px 700"
+    },
+    "channel": "Albert Olgaard",
+    "meta": "Albert Olgaard 8.9K 2d ago",
+    "thumb": null,
+    "badge": "4:15:08"
+   },
+   {
+    "title": "Watch me start & sell AI Software in 4 hours",
+    "titleGeom": {
+     "h": 22,
+     "w": 338,
+     "font": "11.7px 700"
+    },
+    "channel": "Albert Olgaard",
+    "meta": "Albert Olgaard 8.9K 2d ago",
+    "thumb": null,
+    "badge": "4:15:08"
+   },
+   {
+    "title": "CBC News: The National | Tumbler Ridge shooter\u2019s ChatGPT interactions",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "CBC News: The National",
+    "meta": "CBC News: The National 426 watching",
+    "thumb": null,
+    "badge": "LIVE"
+   },
+   {
+    "title": "CBC News: The National | Tumbler Ridge shooter\u2019s ChatGPT interactions",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "CBC News: The National",
+    "meta": "CBC News: The National 426 watching",
+    "thumb": null,
+    "badge": "LIVE"
+   },
+   {
+    "title": "Pompiers en gr\u00e8ve : pourquoi leur col\u00e8re ne retombe pas ?",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "franceinfo",
+    "meta": "franceinfo 2 2\u00a0min ago",
+    "thumb": null,
+    "badge": "1:31"
+   },
+   {
+    "title": "Pompiers en gr\u00e8ve : pourquoi leur col\u00e8re ne retombe pas ?",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "franceinfo",
+    "meta": "franceinfo 2 2\u00a0min ago",
+    "thumb": null,
+    "badge": "1:31"
+   }
+  ],
+  "banners": [
+   "12:46Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 2.9M 1d ago",
+   "12:46Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 2.9M 1d ago",
+   "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 2.9M 1d ago",
+   "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 2.9M 1d ago",
+   "Jimmy Kimmel Live 2.9M 1d ago"
+  ],
+  "grid": {
+   "x": 72,
+   "y": 56,
+   "w": 1352,
+   "h": 12981,
+   "text": "Latest\n            \n          \n        \n        \n        \n        \n        \n        \n      \n      \n      All subscriptions\n      \n    \n    \n  \n  \n\n\n\n\n  \n    \n  ",
+   "cls": "style-scope ytd-two-column-browse-results-renderer",
+   "font": "10px 400",
+   "display": "flex"
+  }
+ },
+ "screenshotBytes": 114998,
+ "capturedAt": "2026-09-26T05:30:21Z",
+ "elapsedS": 8.1
+}
