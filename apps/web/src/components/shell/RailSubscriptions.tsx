@@ -1,6 +1,8 @@
 /**
  * @wfx/app-web — THE RAIL SUBSCRIPTIONS SECTION (R30-B, CORPUS §4 —
- * docs/parity-lab/r30/lead-captures/CORPUS.md).
+ * docs/parity-lab/r30/lead-captures/CORPUS.md; R31 §G2 — the heading
+ * link, GAP-CORPUS.md
+ * docs/parity-lab/r30/gap-captures/20260926-052954).
  *
  * THE CORPUS GRAMMAR (measured, run-2 09:45 — the avatars still live):
  * the guide's Subscriptions section is a FLAT CHANNEL LIST with the
@@ -19,6 +21,15 @@
  * row's REAL destination: the entry's own player surface. An entry
  * whose source identity this process never joined renders UNLINKED
  * (the cards' own law — never a fabricated link).
+ *
+ * R31 §G2 — THE HEADING LINK (the corpus taxonomy's Subscriptions
+ * entry): the section heading now carries the subscriptions FEED's
+ * destination (/feed/subscriptions — the captured corpus URL), exactly
+ * the taxonomy join R30-B made for the You group's Playlists row
+ * (→ /library, the real destination where the playlists render). One
+ * element — the heading's own text/geometry/position and every row
+ * stay byte-identical (the seam law: no rail redesign); the feed's
+ * grid renders the SAME stored truth this section lists.
  *
  * THE SECTION LAW (the seam law: no rail redesign): the section joins
  * BETWEEN the primary group and the You group exactly where the corpus
@@ -43,7 +54,15 @@ export function RailSubscriptions({
 }): JSX.Element {
   return (
     <div className="wfx-railsub" data-wfx-rail-subscriptions>
-      <h3 className="wfx-rail__heading">Subscriptions</h3>
+      {/* R31 §G2 — the heading carries the feed's destination (the
+          corpus taxonomy's Subscriptions entry → /feed/subscriptions,
+          the captured corpus URL — the Playlists-row precedent's own
+          join; the heading family's own style, unchanged). */}
+      <h3 className="wfx-rail__heading">
+        <a className="wfx-railsub__heading" href="/feed/subscriptions" data-wfx-rail-subscriptions-heading>
+          Subscriptions
+        </a>
+      </h3>
       {entries.length === 0 ? (
         // The honest empty note (the flat list's real truth — the same
         // vocabulary the Library's sections carry, never a fabricated row).

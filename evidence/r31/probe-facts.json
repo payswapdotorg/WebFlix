@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-09-26T08:17:25.805Z",
+  "surfaces": [
+    {
+      "file": "00-account-menu-closed.html",
+      "corpusSection": "the pinned control (the closed-menu state stays byte-identical to R30-B)",
+      "facts": [
+        "the island's initial render is the TRIGGER ALONE (no panel, no picker — the open state is the browser-level truth)",
+        "the trigger: the squircle chip + aria-expanded=false + data-wfx-account-trigger (R30-B's own markup)"
+      ]
+    },
+    {
+      "file": "01-account-menu-root.html",
+      "corpusSection": "GAP-CORPUS.md §G1 (the path) + CORPUS.md §3 (the row grammar)",
+      "facts": [
+        "the Appearance row keeps its state-bearing label (Appearance: Device theme)",
+        "the row is the picker's ACTIVATION: a menuitem button (data-wfx-appearance-row) + §3's own right-arrow chevron",
+        "the Display-language row stays a pure state display (wfx-account__row--state)",
+        "appearanceStateLabel('dark') === \"Appearance: Dark theme\" (the label the row shows when Dark persists)"
+      ]
+    },
+    {
+      "file": "02-theme-picker-device.html",
+      "corpusSection": "GAP-CORPUS.md §G1 (g1-2-theme-picker.jpg [VLM-verified] + g1-targeted-2.json)",
+      "facts": [
+        "the header: 'Appearance' + the BACK ARROW icon button (aria-label=Back, the arrow-left glyph)",
+        "the subtext: 'Setting applies to this browser only' (verbatim)",
+        "exactly 3 option rows in the captured order: Use device theme / Dark theme / Light theme",
+        "the captured selected state: 'Use device theme' (data-wfx-theme-selected) — no stored choice",
+        "the selected row's left slot paints the BARE CHECKMARK (the captured DOM's single check path, no box outline; no circle — never a radio dot; adjudicated 2026-09-26)",
+        "the reserved 24px mark slot renders on EVERY row (the captured label alignment, x=1164 vs the row's x=1108)"
+      ]
+    },
+    {
+      "file": "03-theme-picker-dark.html",
+      "corpusSection": "GAP-CORPUS.md §G1 (the two-layer truth: the picker row's CHECK follows the seam's stored truth)",
+      "facts": [
+        "the persisted state selects 'Dark theme' (data-wfx-theme-selected on the dark row)",
+        "exactly ONE bare checkmark paints (the device row's marker is gone)",
+        "storedThemeOfState('dark') === \"dark\" (the write persists the choice)",
+        "storedThemeOfState('device') === null (the device write REMOVES the stored choice — the boot law resumes)",
+        "themeStateOfStored(null) === \"device\" (no stored choice = the device law)"
+      ]
+    },
+    {
+      "file": "04-subs-feed-grid.html",
+      "corpusSection": "GAP-CORPUS.md §G2 (g2-subs-feed.json + .jpg — the healthy window's 14 real cards)",
+      "facts": [
+        "the captured section heading renders ('Latest' — present in both captured states)",
+        "the browse grid renders the THREE stored entries (data-wfx-subsfeed-entry per item)",
+        "each card: the SAME card grammar every feed surface renders (ItemCard) over the JOINED connector read",
+        "each card's destination: the entry's own player surface (the rail rows' route law)",
+        "the stored truth: 3 Subscriptions entries through the REAL subscribe seam (POST /api/library, listName 'Subscriptions')",
+        "NO fabricated meta data: no view counts, no ages, no LIVE badges (the domain model carries none — the honest divergence)"
+      ]
+    },
+    {
+      "file": "05-subs-feed-empty.html",
+      "corpusSection": "GAP-CORPUS.md §G2 (the empty state — the capability row's own vocabulary)",
+      "facts": [
+        "the honest empty state: 'No subscriptions yet' + 'Subscribe from any watch page' (the rail's own vocabulary)",
+        "NEVER a fabricated card (no data-wfx-subsfeed-entry, no card titles)"
+      ]
+    },
+    {
+      "file": "06-shell-rail-heading.html",
+      "corpusSection": "GAP-CORPUS.md §G2 (the destination join — the corpus taxonomy's Subscriptions entry)",
+      "facts": [
+        "the rail's Subscriptions section heading carries href=/feed/subscriptions (data-wfx-rail-subscriptions-heading)",
+        "the signed-in chrome renders (the bell + the avatar trigger; no sign-in pill)",
+        "the rows keep R30-B's grammar (the 24x24 monogram avatars, the per-entry player destinations)"
+      ]
+    },
+    {
+      "file": "07-rail-subscriptions.html",
+      "corpusSection": "CORPUS.md §4 + GAP-CORPUS.md §G2 (the seam law: rows unchanged)",
+      "facts": [
+        "the heading link + the flat list with the 24x24 avatars + the 204x40 entries",
+        "each row: the entry's own player href (the join's law — UNLINKED when unjoined)"
+      ]
+    }
+  ]
+}
