@@ -854,6 +854,73 @@ a.wfx-account__row:hover {
   color: var(--wfx-accent);
 }
 
+/* §G1 (R31 — GAP-CORPUS.md, docs/parity-lab/r30/gap-captures/
+ * 20260926-052954) — THE THEME-PICKER SUB-PAGE: the multi-page menu's
+ * Appearance page. The captured grammar: the header "Appearance" + the
+ * back-arrow icon (the wfx-account__subhead family above), the subtext
+ * "Setting applies to this browser only", then EXACTLY 3 option rows —
+ * 300x40 each, stacked at the 40px vertical pitch (the captured
+ * y=162/202/242), the label at the captured 56px indent (16px row
+ * padding + the 24px reserved marker slot + a 16px gap — the captured
+ * labels all start at x=1164 vs the row's x=1108). The selected row's
+ * marker slot paints the CHECK-IN-BOX (never a radio dot). */
+.wfx-account--picker {
+  padding-bottom: 8px;
+}
+
+.wfx-picker__subtext {
+  margin: 4px 16px 12px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-picker__row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 300px;
+  min-height: 40px;
+  /* The 40px pitch: fixed-height contiguous rows (the captured stack). */
+  height: 40px;
+  padding: 0 16px 0 16px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-picker__row:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-picker__row--selected {
+  font-weight: 500;
+}
+
+/* The reserved left marker slot (24px on EVERY row — the captured label
+ * alignment); only the selected row paints the check-in-box inside it. */
+.wfx-picker__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  color: var(--wfx-text);
+}
+
+.wfx-picker__label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* §4 — THE RAIL SUBSCRIPTIONS SECTION: the flat list with the 24x24
  * monogram avatars (the corpus-measured channel-avatar grammar), the
  * entries 204x40 (the corpus guide-entry box), the section heading in
@@ -934,6 +1001,74 @@ a.wfx-railsub__row:hover {
 
   html[data-wfx-guide="drawer"] .wfx-railsub {
     display: block;
+  }
+}
+
+/* R31 §G2 — the rail Subscriptions HEADING LINK (the corpus taxonomy's
+ * Subscriptions entry → the feed destination): the heading family's own
+ * look, unchanged — the anchor inherits and only gains the nav's own
+ * hover law. */
+.wfx-railsub__heading {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wfx-railsub__heading:hover {
+  color: var(--wfx-text);
+  text-decoration: underline;
+}
+
+.wfx-railsub__heading:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+ * R31 §G2 — THE SUBSCRIPTIONS-FEED GRID (GAP-CORPUS.md,
+ * docs/parity-lab/r30/gap-captures/20260926-052954/g2-subs-feed.json:
+ * the healthy window's 14 real cards in the two-column browse grid).
+ * The captured section heading ("Latest" — present in both captured
+ * states) + the card grid at the repo's own browse-grid column law
+ * (4 >=1300 / 3 >=1000 / 2 >=600 / 1 <600, 16px gaps — the captured
+ * 1440-viewport grid bar w=1352 renders 3 full cards + a partial 4th,
+ * the 4-column law's own geometry). The captured grid-bar origin
+ * (x=72, the collapsed-guide window) is recorded in the divergence
+ * ledger: WebFlix's shell keeps its frozen 240px rail — the grid's
+ * origin is the shell's content area, never a rail redesign.
+ * ------------------------------------------------------------------------- */
+
+.wfx-subsfeed__heading {
+  margin: 0 0 16px;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.wfx-subsfeed__grid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 16px 16px;
+}
+
+@media (min-width: 600px) {
+  .wfx-subsfeed__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .wfx-subsfeed__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1300px) {
+  .wfx-subsfeed__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

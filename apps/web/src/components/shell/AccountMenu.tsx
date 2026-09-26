@@ -33,10 +33,13 @@
  * - APPEARANCE: <state> → the REAL theme state, embedded in the label
  *   (the corpus cross-cutting law): "Device theme" with no stored
  *   choice (WebFlix's own boot law — the OS preference), "Dark theme"
- *   / "Light theme" when a choice is persisted. The THEME-PICKER
- *   SUBMENU ROWS stay CORPUS-PENDING (README's honest gap: never
- *   captured open — never built from memory; the row carries NO
- *   picker behind it);
+ *   / "Light theme" when a choice is persisted. R31 §G1 (GAP-CORPUS.md
+ *   — docs/parity-lab/r30/gap-captures/20260926-052954, the picker now
+ *   CAPTURED OPEN: g1-2-theme-picker.jpg/.html + g1-targeted-2.json the
+ *   attempt of record): the row ACTIVATES the theme-picker SUB-PAGE —
+ *   the multi-page menu's second page behind this row, exactly the
+ *   corpus's own path (the row is the ytd-toggle-theme link; the picker
+ *   is a sub-page of the same menu, the back arrow returns to the root);
  * - DISPLAY LANGUAGE: <state> → the session's REAL locale (the session
  *   context's law: env override, then navigator, then "en"), rendered
  *   as its own display name. No language picker exists (no language
@@ -62,6 +65,17 @@ import { useCallback, useEffect, useRef, useState, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
 import { ShortcutsSheetBody } from "@/components/shell/ShortcutsSheet";
+// R31 §G1 — the picker's pure grammar module (the bell-grammar pattern:
+// the captured option set + the stored-truth read/write laws + the
+// state label — ONE truth, shared by the panel and the tests).
+import {
+  appearanceStateLabel,
+  deviceThemeDerived,
+  storedThemeOfState,
+  themeStateOfStored,
+  THEME_PICKER_OPTIONS,
+  type ThemeChoice,
+} from "@/components/shell/theme-picker-grammar";
 
 /** The account menu's serialized input (the account-chrome view's own fields). */
 export interface AccountMenuProps {
@@ -77,32 +91,60 @@ export interface AccountMenuProps {
   readonly locale: string;
 }
 
-/** The theme state vocabulary (the seam's own — the persisted choice or the device law). */
-type ThemeState = "device" | "dark" | "light";
+/** The theme state vocabulary (the seam's own — re-exported for the panel's props). */
+export type ThemeState = ThemeChoice;
 
 /** Read the theme seam's CURRENT state (the gear's own law, never a guess). */
 function currentThemeState(): ThemeState {
   if (typeof localStorage === "undefined") return "device";
   try {
-    const stored = localStorage.getItem("wfx-theme");
-    return stored === "dark" || stored === "light" ? stored : "device";
+    return themeStateOfStored(localStorage.getItem("wfx-theme"));
   } catch {
     return "device";
   }
 }
 
-/** The Appearance row's state label (the corpus cross-cutting law: the state embedded in the label). */
-function appearanceStateLabel(state: ThemeState): string {
-  switch (state) {
-    case "dark":
-      return "Appearance: Dark theme";
-    case "light":
-      return "Appearance: Light theme";
-    case "device":
-      // The corpus's own captured state — WebFlix's default boot law (no
-      // stored choice follows the OS preference).
-      return "Appearance: Device theme";
+/**
+ * R31 §G1 — write one theme choice through the REAL seam (the SAME
+ * stored truth the Appearance row's state label reads — the grammar
+ * module's write law): "dark"/"light" persist the choice (`data-theme`
+ * + `wfx-theme` in localStorage + the theme-color meta — the gear's own
+ * applyTheme law); "device" REMOVES the stored choice and applies the
+ * operating system's preference live (the boot law's own derivation).
+ * The subtext's truth holds either way: the setting applies to THIS
+ * BROWSER (localStorage is the persistence scope — never a claim about
+ * the account).
+ */
+function writeThemeState(state: ThemeState): void {
+  if (typeof document === "undefined") return;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  const stored = storedThemeOfState(state);
+  if (stored === null) {
+    try {
+      localStorage.removeItem("wfx-theme");
+    } catch {
+      // The persistence seam is unavailable (private mode) — the live
+      // application below still honors the choice for this view; the
+      // stored truth (no choice) returns with the next load.
+    }
+  } else {
+    try {
+      localStorage.setItem("wfx-theme", stored);
+    } catch {
+      // Private mode: the choice applies for this view; the default
+      // returns next load (the toggle's own law).
+    }
   }
+  const applied =
+    state === "device"
+      ? deviceThemeDerived(
+          typeof window !== "undefined" &&
+            window.matchMedia !== undefined &&
+            window.matchMedia("(prefers-color-scheme: light)").matches,
+        )
+      : state;
+  document.documentElement.dataset.theme = applied;
+  if (meta !== null) meta.setAttribute("content", applied === "light" ? "#ffffff" : "#0f0f0f");
 }
 
 /** The Display-language row's state label (the real locale's own display name). */
@@ -138,6 +180,7 @@ export function AccountMenuPanel({
   locale,
   themeState,
   onOpenSwitch,
+  onOpenAppearance,
   onOpenShortcuts,
   onSignOut,
 }: {
@@ -151,6 +194,8 @@ export function AccountMenuPanel({
   readonly themeState: ThemeState;
   /** Open the Switch-account subpage (the island wires it). */
   readonly onOpenSwitch: () => void;
+  /** R31 §G1 — open the theme-picker subpage (the island wires it). */
+  readonly onOpenAppearance: () => void;
   /** Open the Keyboard-shortcuts subpage (the island wires it). */
   readonly onOpenShortcuts: () => void;
   /** Perform the Sign-out write (the island wires the REAL logout seam). */
@@ -210,12 +255,25 @@ export function AccountMenuPanel({
         Your data in WebFlix
       </a>
       {/* Row 7 — APPEARANCE: <state> (the corpus cross-cutting law: the
-          state embedded in the label). A real STATE row — the
-          theme-picker submenu stays CORPUS-PENDING (never captured
-          open), so NO picker renders behind this row. */}
-      <p className="wfx-account__row wfx-account__row--state" data-wfx-account-item="appearance">
-        {appearanceStateLabel(themeState)}
-      </p>
+          state embedded in the label; §3's own right-arrow grammar — the
+          row carries a subpage, exactly the captured menu row). R31 §G1:
+          the row ACTIVATES the theme-picker sub-page (GAP-CORPUS.md —
+          the picker now captured open; the captured path is the
+          Appearance row's own activation, the picker renders as the
+          multi-page menu's second page). */}
+      <button
+        type="button"
+        className="wfx-account__row"
+        role="menuitem"
+        onClick={onOpenAppearance}
+        data-wfx-account-item="appearance"
+        data-wfx-appearance-row
+      >
+        <span>{appearanceStateLabel(themeState)}</span>
+        <span className="wfx-account__chevron" aria-hidden="true">
+          <Icon name="arrowRight" size={18} />
+        </span>
+      </button>
       {/* Row 8 — DISPLAY LANGUAGE: <state>: the session's REAL locale. A
           real STATE row — no language packs exist, so no picker renders. */}
       <p className="wfx-account__row wfx-account__row--state" data-wfx-account-item="language">
@@ -250,10 +308,106 @@ export function AccountMenuPanel({
   );
 }
 
+/**
+ * R31 §G1 — THE THEME-PICKER SUB-PAGE (GAP-CORPUS.md §1 — the R30-B
+ * gap #1, now captured open: g1-2-theme-picker.jpg [VLM-verified] +
+ * .html + g1-targeted-2.json the attempt of record — the REAL-mouse
+ * law at the Appearance row's label center). The captured grammar,
+ * bound verbatim:
+ *
+ * - the header: **"Appearance"** with a **BACK ARROW ICON** (left — the
+ *   captured ytd-simple-menu-header-renderer's back button,
+ *   aria-label="Back", the arrow-left glyph); the arrow returns to the
+ *   main menu (the multi-page menu's own page law);
+ * - the subtext: **"Setting applies to this browser only"** — honestly
+ *   true in WebFlix's own seam (localStorage is the persistence scope);
+ * - exactly **3 option rows**, in order: **"Use device theme"** /
+ *   **"Dark theme"** / **"Light theme"** — 300x40 each, stacked at the
+ *   **40px vertical pitch** (the captured y=162/202/242), the label at
+ *   the captured 56px indent (x=1164 vs the row's x=1108);
+ * - the SELECTED row: the row matching the theme seam's STORED TRUTH
+ *   carries a **CHECKMARK ICON INSIDE A BOX** in its left slot (a
+ *   check-in-box, NOT a radio dot — the corpus's explicit finding). No
+ *   stored choice = "Use device theme" selected (the captured state);
+ *   "Dark theme"/"Light theme" when persisted;
+ * - selecting a row writes through the REAL theme seam (the same
+ *   stored truth the root row's state label reads) — the write
+ *   composes: the label updates on return to the main menu.
+ *
+ * Exported as the sync presentational page so the grammar is
+ * unit-provable (the island's open/page state stays the browser-level
+ * truth, the gear's own pattern).
+ */
+export function AppearancePickerPanel({
+  themeState,
+  onSelect,
+  onBack,
+}: {
+  /** The theme seam's CURRENT state (the island syncs it on open — the gear's law). */
+  readonly themeState: ThemeState;
+  /** Write one choice through the REAL theme seam (the island wires it). */
+  readonly onSelect: (state: ThemeState) => void;
+  /** Return to the main menu (the back arrow's own law). */
+  readonly onBack: () => void;
+}): JSX.Element {
+  return (
+    <div className="wfx-account wfx-account--picker" role="menu" aria-label="Appearance" data-wfx-theme-picker>
+      {/* §G1 — the header: the BACK ARROW ICON (left) + "Appearance"
+          (the captured simple-menu-header grammar). */}
+      <div className="wfx-account__subhead" data-wfx-theme-picker-head>
+        <button
+          type="button"
+          className="wfx-gear__back"
+          aria-label="Back"
+          onClick={onBack}
+          data-wfx-account-back
+          data-wfx-theme-picker-back
+        >
+          <Icon name="arrowLeft" size={20} />
+        </button>
+        <span>Appearance</span>
+      </div>
+      {/* §G1 — the subtext (verbatim, the captured ytd-message-renderer
+          line; honestly true of WebFlix's own persistence scope). */}
+      <p className="wfx-picker__subtext" data-wfx-theme-picker-subtext>
+        Setting applies to this browser only
+      </p>
+      {/* §G1 — the 3 option rows (the captured order), 300x40 at the
+          40px pitch; the SELECTED row carries the check-in-box in the
+          left slot (aria-checked rides the menuitemradio role). */}
+      {THEME_PICKER_OPTIONS.map((option) => {
+        const selected = option.id === themeState;
+        return (
+          <button
+            key={option.id}
+            type="button"
+            className={`wfx-picker__row${selected ? " wfx-picker__row--selected" : ""}`}
+            role="menuitemradio"
+            aria-checked={selected}
+            onClick={() => {
+              onSelect(option.id);
+            }}
+            data-wfx-theme-option={option.id}
+            {...(selected ? { "data-wfx-theme-selected": "true" } : {})}
+          >
+            {/* The left marker slot — RESERVED on every row (the captured
+                labels all start at x=1164), painted ONLY on the selected
+                row: the check-in-box (never a radio dot). */}
+            <span className="wfx-picker__mark" aria-hidden="true">
+              {selected ? <Icon name="checkBox" size={20} /> : null}
+            </span>
+            <span className="wfx-picker__label">{option.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** The account menu island: the avatar trigger + the corpus panel + the real writes. */
 export function AccountMenu(props: AccountMenuProps): JSX.Element {
   const [open, setOpen] = useState(false);
-  const [page, setPage] = useState<"root" | "switch" | "shortcuts">("root");
+  const [page, setPage] = useState<"root" | "switch" | "shortcuts" | "appearance">("root");
   const [themeState, setThemeState] = useState<ThemeState>("device");
   const [outcome, setOutcome] = useState<AccountWriteOutcome | null>(null);
   const [pending, setPending] = useState(false);
@@ -364,6 +518,9 @@ export function AccountMenu(props: AccountMenuProps): JSX.Element {
               onOpenSwitch={() => {
                 setPage("switch");
               }}
+              onOpenAppearance={() => {
+                setPage("appearance");
+              }}
               onOpenShortcuts={() => {
                 setPage("shortcuts");
               }}
@@ -421,6 +578,22 @@ export function AccountMenu(props: AccountMenuProps): JSX.Element {
                 the carrier.
               </p>
             </div>
+          ) : null}
+          {page === "appearance" ? (
+            <AppearancePickerPanel
+              themeState={themeState}
+              onSelect={(state) => {
+                // §G1 — the write-through: the REAL theme seam (the same
+                // stored truth the root row's state label reads); the
+                // island's state updates so the label is current when
+                // the back arrow returns to the main menu.
+                writeThemeState(state);
+                setThemeState(state);
+              }}
+              onBack={() => {
+                setPage("root");
+              }}
+            />
           ) : null}
           {page === "shortcuts" ? (
             <div className="wfx-account" data-wfx-account-shortcuts>

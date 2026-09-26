@@ -203,6 +203,7 @@ write(
         locale: account.locale,
         themeState: "device",
         onOpenSwitch: () => {},
+        onOpenAppearance: () => {},
         onOpenShortcuts: () => {},
         onSignOut: () => {},
       }),

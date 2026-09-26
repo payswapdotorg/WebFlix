@@ -148,8 +148,18 @@ export function deriveNavigationState(pathname: string, params: RouteParams): Ro
   if (surface === undefined) {
     // Not a product-surface route (the player route is the adapter's
     // playback surface — a presentation route, not a navigation state;
-    // the runtime's playback session owns it).
-    if (pathname === "/player" || pathname === "/offline") {
+    // the runtime's playback session owns it). R31 §G2 — the
+    // subscriptions feed joins the same presentation-route class: the
+    // runtime's `SurfaceId` set is frozen (the navigation machine's own
+    // law), and the feed is a library-truth content surface (the stored
+    // Subscriptions fold the rail section and the Library list render)
+    // — its destination is the rail's Subscriptions section heading,
+    // never a new navigation state.
+    if (
+      pathname === "/player" ||
+      pathname === "/offline" ||
+      pathname === "/feed/subscriptions"
+    ) {
       return { ok: false, reason: "presentation-route" };
     }
     return { ok: false, reason: `unknown route '${pathname}'` };
