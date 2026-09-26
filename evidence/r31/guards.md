@@ -80,3 +80,31 @@ device write's stored-choice removal + the live OS-preference application;
 cold-boot UNLINKED card (the Library's own law) → the connector-read join →
 the LINKED card's player click-through; zero page errors; the 390px
 single-column responsive law). The evidence screenshots: `captures/browser-*.png`.
+
+---
+
+## THE FIX WAVE (the §G1 marker adjudication — gates re-run on the fix tree)
+
+The lead's REQUIRE-CHANGES review (08:07Z) adjudicated ledger row 1: the
+capture is the contract — the captured DOM's selected-row icon carries a
+SINGLE check path ("M19.793 5.793 8.5 17.086l-4.293-4.293a1 1 0 10-1.414
+1.414L8.5 19.914 21.207 7.207a1 1 0 10-1.414-1.414Z"), no rect anywhere
+in the 83KB picker HTML; the "check-in-box" corpus prose was the
+capture-time over-interpretation. The fix: the bare `check` glyph ships,
+the lane-new `checkBox` icon removed, the tests flipped, the corpus
+erratum written, the ledger row resolved, the probe regenerated.
+
+| # | Stage | Command | Result |
+|---|-------|---------|--------|
+| F1 | scoped suites | `bun test apps/web/tests/gap-theme-picker.test.ts apps/web/tests/subscriptions-feed.test.ts` | PASS — 23/0/0, 104 expects (the flipped marker grammar: check path PRESENT, `<rect>` ABSENT, `<circle>` NEVER) |
+| F2 | typecheck | `bun run typecheck` + `tsc --noEmit -p apps/web/tsconfig.json` | PASS (root + journeys + app: zero diagnostics) |
+| F3 | scoped lint | `bunx eslint` on the fix's 5 lintable files | 0 errors / 0 warnings |
+| F4 | battery | `nice -n 19 ionice -c3 bun test --parallel=1` | **PASS: 5188/1/0** — 5189 tests, 296 files [226.51s]; 33384 expects (+3: the flipped assertions); zero regressions |
+| F5 | build | `NODE_OPTIONS=--max-old-space-size=2048 bun run --filter '@wfx/app-web' build` | PASS — "✓ Compiled successfully in 3.8s", `ƒ /feed/subscriptions`, exit 0 |
+| F6 | probe regen | `WFX_DEV_FIXTURES=1 bun apps/web/scripts/r31-gap-probe.ts` | PASS — 8 captures + probe-facts.json regenerated from ONE run: 02/03 now carry the bare check (check path present, zero `<rect>`); 04/06/07 refresh the fixture transport's per-run item IDs/hues (same 3 subscribed items, same card grammar — the fixture identity law); 00/01/05 byte-stable |
+
+The pre-fix gate records above stand as the history of the first tree;
+this section is the fix tree's own record. The browser PNGs
+(`captures/browser-*.png`) are pre-fix records — superseded on the marker
+question only (ledger row 1); every other proof they carry (geometry,
+write-throughs, the §G2 golden paths) is unchanged by the glyph swap.

@@ -15,8 +15,9 @@
  * 3. "Light theme"
  *
  * …each 300x40 at the 40px vertical pitch; the row matching the theme
- * seam's STORED TRUTH carries a CHECKMARK ICON INSIDE A BOX to its left
- * (a check-in-box, NOT a radio dot — the corpus's explicit finding).
+ * seam's STORED TRUTH carries a BARE CHECKMARK to its left (never a
+ * radio dot — the ADJUDICATED corpus truth: the captured DOM's single
+ * check path, no box outline; GAP-CORPUS.md §G1 erratum 2026-09-26).
  *
  * THE TWO-LAYER TRUTH (the corpus's own finding: "the captured selected
  * state matches the account-menu row's own state label — the two-layer

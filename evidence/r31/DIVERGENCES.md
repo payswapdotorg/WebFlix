@@ -9,18 +9,33 @@ the trigger alone, byte-identical; the signed-out shell untouched — the
 AccountMenu and the rail's Subscriptions section render only in the signed-in
 chrome; the pre-existing signed-out suites green at their R30-B counts).
 
-1. **[NOTE] §G1 — the selected-row marker: the corpus's binding finding
-   followed; the re-verification observation recorded.** The binding grammar
-   (GAP-CORPUS.md §G1): "a checkmark icon inside a box to its left (a
-   check-in-box, not a radio dot — VLM-verified on the open picker)". This
-   lane's own re-verification (two fresh VLM reads of g1-2-theme-picker.jpg +
-   a pixel-level analysis of the marker region) reads the rendered marker as
-   a BARE checkmark (no box outline detected; the captured HTML's content-icon
-   slot carries the bare check path). The BINDING corpus finding was followed
-   (the check-in-box glyph ships — `Icon.tsx`'s `checkBox`); the observation
-   is recorded here per the never-build-from-memory law's own spirit. The
-   corpus's actual point — the marker is a CHECK, never a radio dot — holds
-   under both readings.
+1. **[RESOLVED 2026-09-26] §G1 — the selected-row marker: the lane's
+   contrary read was ADJUDICATED CORRECT; the code now matches the
+   capture.** The lane's original re-verification (two fresh VLM reads of
+   g1-2-theme-picker.jpg + a pixel-level analysis of the marker region)
+   read the rendered marker as a BARE checkmark, and was recorded here as
+   a NOTE while the binding prose ("checkmark inside a box") was followed
+   — the honest-divergence discipline. The lead's re-adjudication (three
+   independent reads: (1) the captured DOM itself — the selected row's
+   content-icon slot carries a SINGLE path
+   "M19.793 5.793 8.5 17.086l-4.293-4.293a1 1 0 10-1.414 1.414L8.5
+   19.914 21.207 7.207a1 1 0 10-1.414-1.414Z", no box path, no rect
+   anywhere in the 83KB picker HTML; (2) a fresh full-page VLM read —
+   "a bare checkmark with NO surrounding box"; (3) a 3x-zoomed crop VLM
+   read — "two distinct strokes, no border/outline") ruled: THE CAPTURE
+   IS THE CONTRACT — the marker is a BARE CHECKMARK; the GAP-CORPUS §G1
+   "check-in-box" prose was the capture-time over-interpretation. The
+   fix (the follow-up commit on this lane): the selected row now paints
+   the repo's own bare `check` glyph (AccountMenu.tsx), the lane-new
+   `checkBox` icon REMOVED from Icon.tsx (no dead code), the picker
+   tests flipped (check path PRESENT, `<rect>` ABSENT, `<circle>` still
+   NEVER), GAP-CORPUS.md §G1 carries the erratum in place, and the
+   probe's facts/captures regenerated (02/03 now show the bare
+   checkmark). The pre-fix browser PNGs
+   (captures/browser-01-picker-device.png etc.) show the superseded
+   check-in-box form — records of the pre-fix verification, superseded
+   on the marker question ONLY (the geometry, write-through, and
+   golden-path proofs they carry are unchanged by the glyph swap).
 
 2. **[HD] §G1 — the picker's rows render at the account-menu panel's own
    paper-menu family, not the captured page-anchored geometry.** The corpus

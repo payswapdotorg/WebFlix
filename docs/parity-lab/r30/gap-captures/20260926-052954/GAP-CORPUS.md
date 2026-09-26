@@ -25,9 +25,14 @@ THE GRAMMAR (g1-2-theme-picker.jpg [VLM-verified] + .html [83KB] + rows dump):
   3. **"Light theme"**
 - Row geometry: **300×40** each (x=1108 in a 1440 viewport), stacked at a
   **40px vertical pitch** (y=162/202/242); the inner label ~72-110×20
-- The SELECTED row: **"Use device theme"** — indicated by a **checkmark icon
-  inside a box** to its left (a check-in-box, not a radio dot — VLM-verified
-  on the open picker)
+- The SELECTED row: **"Use device theme"** — indicated by a **bare
+  checkmark icon** to its left (never a radio dot). [ERRATUM 2026-09-26:
+  the original "checkmark inside a box" read (a check-in-box) was a
+  capture-time over-interpretation — the selected-row marker is a BARE
+  CHECKMARK: the captured yt-icon carries a single check path, no box
+  outline; adjudicated 2026-09-26 by the captured DOM + two zoomed
+  re-reads (a fresh full-page VLM read + a 3x-zoomed crop read). The
+  check-never-radio point holds.]
 - The captured selected state matches the account-menu row's own state label
   ("Appearance: Device theme") — the two-layer truth: the menu row carries
   the STATE, the picker row carries the CHECK.

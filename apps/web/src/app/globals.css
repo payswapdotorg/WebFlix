@@ -863,7 +863,9 @@ a.wfx-account__row:hover {
  * y=162/202/242), the label at the captured 56px indent (16px row
  * padding + the 24px reserved marker slot + a 16px gap — the captured
  * labels all start at x=1164 vs the row's x=1108). The selected row's
- * marker slot paints the CHECK-IN-BOX (never a radio dot). */
+ * marker slot paints the BARE CHECKMARK (the captured DOM's single
+ * check path, no box outline — adjudicated 2026-09-26; never a radio
+ * dot). */
 .wfx-account--picker {
   padding-bottom: 8px;
 }
@@ -903,7 +905,8 @@ a.wfx-account__row:hover {
 }
 
 /* The reserved left marker slot (24px on EVERY row — the captured label
- * alignment); only the selected row paints the check-in-box inside it. */
+ * alignment); only the selected row paints the bare checkmark inside
+ * it. */
 .wfx-picker__mark {
   display: inline-flex;
   align-items: center;

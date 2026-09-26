@@ -326,8 +326,9 @@ export function AccountMenuPanel({
  *   **40px vertical pitch** (the captured y=162/202/242), the label at
  *   the captured 56px indent (x=1164 vs the row's x=1108);
  * - the SELECTED row: the row matching the theme seam's STORED TRUTH
- *   carries a **CHECKMARK ICON INSIDE A BOX** in its left slot (a
- *   check-in-box, NOT a radio dot — the corpus's explicit finding). No
+ *   carries a **BARE CHECKMARK ICON** in its left slot (never a radio
+ *   dot — the ADJUDICATED corpus truth: the captured DOM's single check
+ *   path, no box outline; GAP-CORPUS.md §G1 erratum 2026-09-26). No
  *   stored choice = "Use device theme" selected (the captured state);
  *   "Dark theme"/"Light theme" when persisted;
  * - selecting a row writes through the REAL theme seam (the same
@@ -373,7 +374,7 @@ export function AppearancePickerPanel({
         Setting applies to this browser only
       </p>
       {/* §G1 — the 3 option rows (the captured order), 300x40 at the
-          40px pitch; the SELECTED row carries the check-in-box in the
+          40px pitch; the SELECTED row carries the bare checkmark in the
           left slot (aria-checked rides the menuitemradio role). */}
       {THEME_PICKER_OPTIONS.map((option) => {
         const selected = option.id === themeState;
@@ -392,9 +393,11 @@ export function AppearancePickerPanel({
           >
             {/* The left marker slot — RESERVED on every row (the captured
                 labels all start at x=1164), painted ONLY on the selected
-                row: the check-in-box (never a radio dot). */}
+                row: the bare checkmark (the captured DOM's single check
+                path, no box outline — adjudicated 2026-09-26; never a
+                radio dot). */}
             <span className="wfx-picker__mark" aria-hidden="true">
-              {selected ? <Icon name="checkBox" size={20} /> : null}
+              {selected ? <Icon name="check" size={20} /> : null}
             </span>
             <span className="wfx-picker__label">{option.label}</span>
           </button>

@@ -18,9 +18,14 @@
  *   "Appearance" + the BACK ARROW icon button; the subtext "Setting
  *   applies to this browser only"; exactly 3 rows in the captured
  *   order; the SELECTED row per the theme seam's stored truth carries
- *   the CHECK-IN-BOX marker in its left slot (a rect+check glyph —
- *   never a radio dot); the captured state ("Use device theme"
- *   selected with no stored choice) + the persisted states.
+ *   the BARE-CHECKMARK marker in its left slot (the captured DOM's
+ *   single check path "M19.793 5.793 8.5 17.086l-4.293-4.293a1 1 0
+ *   10-1.414 1.414L8.5 19.914 21.207 7.207a1 1 0 10-1.414-1.414Z",
+ *   no box outline — never a radio dot; ADJUDICATED 2026-09-26 by the
+ *   lead's three-read re-verification: the captured DOM + a fresh
+ *   full-page VLM read + a 3x-zoomed crop read); the captured state
+ *   ("Use device theme" selected with no stored choice) + the persisted
+ *   states.
  * - THE ROOT ROW (AccountMenuPanel): the Appearance row ACTIVATES the
  *   picker (a menuitem button carrying the state label + §3's own
  *   right-arrow grammar — the subpage join; the Display-language row
@@ -155,7 +160,7 @@ describe("R31 §G1 the picker panel (the captured sub-page: header + back arrow 
     expect(markup).toContain("Light theme");
   });
 
-  it("the captured selected state: no stored choice = 'Use device theme' selected, the check-in-box to its left", () => {
+  it("the captured selected state: no stored choice = 'Use device theme' selected, the bare checkmark to its left", () => {
     const markup = pickerOf("device");
     // The selected row: the captured state (the account runs the device
     // theme — no stored choice).
@@ -166,13 +171,22 @@ describe("R31 §G1 the picker panel (the captured sub-page: header + back arrow 
     expect(selected.length).toBe(1);
     const unchecked = markup.match(/aria-checked="false"/g) ?? [];
     expect(unchecked.length).toBe(2);
-    // The CHECK-IN-BOX marker: the selected row's left slot paints the
-    // box glyph (a rect + check — the corpus's explicit finding, never a
-    // radio dot). The reserved 24px mark slot renders on EVERY row (the
-    // captured label alignment); only the selected row paints in it.
+    // The BARE-CHECKMARK marker — ADJUDICATED 2026-09-26 (the lead's
+    // three-read re-verification): the captured DOM's selected-row
+    // content-icon carries a SINGLE check path ("M19.793 5.793 8.5
+    // 17.086l-4.293-4.293a1 1 0 10-1.414 1.414L8.5 19.914 21.207 7.207
+    // a1 1 0 10-1.414-1.414Z"), no rect anywhere in the 83KB picker
+    // HTML, + a fresh full-page VLM read ("a bare checkmark with NO
+    // surrounding box") + a 3x-zoomed crop read ("two distinct
+    // strokes, no border/outline") — the corpus's original
+    // "check-in-box" prose was the capture-time over-interpretation;
+    // THE CAPTURE IS THE CONTRACT. The reserved 24px mark slot renders
+    // on EVERY row (the captured label alignment); only the selected
+    // row paints in it.
     const markSlots = markup.match(/class="wfx-picker__mark"/g) ?? [];
     expect(markSlots.length).toBe(3);
-    expect(markup).toContain("<rect");
+    expect(markup).toContain('d="m4.5 12.5 5 5 10-11"');
+    expect(markup).not.toContain("<rect");
     // NEVER a radio dot: no circle glyph in the picker.
     expect(markup).not.toContain("<circle");
   });
@@ -183,8 +197,10 @@ describe("R31 §G1 the picker panel (the captured sub-page: header + back arrow 
       expect(markup).toContain(`data-wfx-theme-option="${state}" data-wfx-theme-selected="true"`);
       const selected = markup.match(/data-wfx-theme-selected="true"/g) ?? [];
       expect(selected.length).toBe(1);
-      // The check-in-box paints on the persisted row too.
-      expect(markup).toContain("<rect");
+      // The bare checkmark paints on the persisted row too (no box
+      // outline — the adjudicated capture grammar).
+      expect(markup).toContain('d="m4.5 12.5 5 5 10-11"');
+      expect(markup).not.toContain("<rect");
     }
   });
 });

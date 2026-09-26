@@ -27,7 +27,6 @@ export type IconName =
   | "arrowLeft"
   | "arrowRight"
   | "check"
-  | "checkBox"
   | "skip"
   | "sparkle"
   | "pause"
@@ -129,16 +128,6 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   arrowUp: <path d="M12 20V4m0 0-6 6m6-6 6 6" />,
   arrowDown: <path d="M12 4v16m0 0 6-6m-6 6-6-6" />,
   check: <path d="m4.5 12.5 5 5 10-11" />,
-  // R31 §G1 — the check-in-box (GAP-CORPUS.md §G1: "a checkmark icon
-  // inside a box to its left (a check-in-box, not a radio dot)" — the
-  // selected theme-option row's own marker, distinct from the bare check
-  // the gear's Appearance rows carry).
-  checkBox: (
-    <>
-      <rect x="3.5" y="3.5" width="17" height="17" rx="2" />
-      <path d="m7.5 12.2 3.2 3.2 5.8-6.4" />
-    </>
-  ),
   skip: <path d="M6 5v14m2 0 10.5-7L8 5v14Z" />,
   sparkle: (
     <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3Z" />

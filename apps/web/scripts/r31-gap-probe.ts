@@ -187,7 +187,8 @@ write(
 );
 
 // 02 — §G1 THE PICKER (the captured selected state: "Use device theme" —
-// no stored choice; the check-in-box on the device row).
+// no stored choice; the bare checkmark on the device row — the
+// adjudicated marker, GAP-CORPUS.md §G1 erratum 2026-09-26).
 write(
   "02-theme-picker-device.html",
   renderToStaticMarkup(
@@ -285,7 +286,7 @@ const facts: ProbeFacts = {
         "the subtext: 'Setting applies to this browser only' (verbatim)",
         "exactly 3 option rows in the captured order: Use device theme / Dark theme / Light theme",
         "the captured selected state: 'Use device theme' (data-wfx-theme-selected) — no stored choice",
-        "the selected row's left slot paints the CHECK-IN-BOX (the rect+check glyph; no circle — never a radio dot)",
+        "the selected row's left slot paints the BARE CHECKMARK (the captured DOM's single check path, no box outline; no circle — never a radio dot; adjudicated 2026-09-26)",
         "the reserved 24px mark slot renders on EVERY row (the captured label alignment, x=1164 vs the row's x=1108)",
       ],
     },
@@ -294,7 +295,7 @@ const facts: ProbeFacts = {
       corpusSection: "GAP-CORPUS.md §G1 (the two-layer truth: the picker row's CHECK follows the seam's stored truth)",
       facts: [
         "the persisted state selects 'Dark theme' (data-wfx-theme-selected on the dark row)",
-        "exactly ONE check-in-box paints (the device row's marker is gone)",
+        "exactly ONE bare checkmark paints (the device row's marker is gone)",
         `storedThemeOfState('dark') === ${JSON.stringify(storedThemeOfState("dark"))} (the write persists the choice)`,
         `storedThemeOfState('device') === ${JSON.stringify(storedThemeOfState("device"))} (the device write REMOVES the stored choice — the boot law resumes)`,
         `themeStateOfStored(null) === ${JSON.stringify(themeStateOfStored(null))} (no stored choice = the device law)`,
