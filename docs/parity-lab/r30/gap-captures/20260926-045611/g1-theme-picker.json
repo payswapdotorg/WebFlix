@@ -1,0 +1,21 @@
+{
+ "surface": "g1-theme-picker",
+ "menuOpen": false,
+ "menuProbe": {
+  "open": false,
+  "count": 0,
+  "titles": [],
+  "docTitle": "(4) YouTube"
+ },
+ "appearanceClick": "no-appearance-row; rows= |  | Home\n  \n  \n    Home | Shorts\n  \n  \n    Shorts | Subscriptions\n  \n  \n    Subscr | You\n  \n  \n    You |  | YouTube Playables | Instant games, no downloads | Are you registered? | Learn how to register to vote  |  | NFL Sunday Ticket | Watch every out-of-market Sund",
+ "pickerOpen": false,
+ "pickerProbe": {
+  "open": false,
+  "anyThemeText": false,
+  "count": 0,
+  "texts": [],
+  "docTitle": "(4) YouTube"
+ },
+ "capturedAt": "2026-09-26T04:56:36Z",
+ "elapsedS": 25.7
+}

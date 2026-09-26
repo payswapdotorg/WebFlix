@@ -1,0 +1,29 @@
+{
+ "surface": "g2-subs-feed",
+ "truth": {
+  "title": "Subscriptions - YouTube",
+  "url": "https://www.youtube.com/feed/subscriptions",
+  "cardCount": 0,
+  "cards": [],
+  "banners": [
+   "ShareInclude playlistAn error occurred while retrieving sharing information. Please try again later.",
+   "ShareInclude playlistAn error occurred while retrieving sharing information. Please try again later.",
+   "An error occurred while retrieving sharing information. Please try again later.",
+   "Watch laterShareCopy link",
+   "Watch laterShareCopy link"
+  ],
+  "grid": {
+   "x": 72,
+   "y": 56,
+   "w": 1352,
+   "h": 24,
+   "text": "",
+   "cls": "style-scope ytd-two-column-browse-results-renderer",
+   "font": "10px 400",
+   "display": "flex"
+  }
+ },
+ "screenshotBytes": 50955,
+ "capturedAt": "2026-09-26T04:56:45Z",
+ "elapsedS": 8.6
+}
