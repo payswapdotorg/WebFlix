@@ -6,7 +6,7 @@ subscriptions-feed grid (GAP-CORPUS.md,
 docs/parity-lab/r30/gap-captures/20260926-052954/). The two still-pending gaps
 (home resume bar, shorts action rail) are NOT built.
 
-## Status: COMPLETE — all gates green on the final tree; the push is the only remaining step
+## Status: COMPLETE — all gates green; the lane COMMITTED at 4a94baa; the remote push BLOCKED by the sandbox's credentials (recorded below)
 
 ## What is DONE (the full record)
 
@@ -57,13 +57,22 @@ docs/parity-lab/r30/gap-captures/20260926-052954/). The two still-pending gaps
 
 ## What REMAINS
 
-- The commit + push of `wfx/r31/gaps` (the full message; the gates output
-  already pasted in guards.md) + the completion report to the lead.
+- THE PUSH — BLOCKED, honestly: this sandbox holds NO GitHub write credentials
+  (the clone was anonymous HTTPS; no token in the environment, no `gh`, no
+  credential helper; `git push origin wfx/r31/gaps` fails at auth — the
+  attempt is recorded). The lane is COMMITTED locally at
+  `4a94baa3e44bda044653d907325ec4c504d36e94` (32 files, +2213/−30) and
+  transported as a VERIFIED git bundle at `/home/z/webflix-r31-gaps.bundle`
+  (contains exactly `refs/heads/wfx/r31/gaps` = 4a94baa on top of
+  `54e0e4f`; the lead fetches it with
+  `git fetch /path/to/webflix-r31-gaps.bundle wfx/r31/gaps` and pushes, or
+  re-enters with a token). The completion report records the same.
 
-## Notes for re-entry (if the push stalls)
+## Notes for re-entry (if the push is retried with credentials)
 
-- The lane tree: `/home/z/webflix` (branch `wfx/r31/gaps`, all changes in the
-  working tree, uncommitted until the push step).
+- The lane tree: `/home/z/webflix` (branch `wfx/r31/gaps` @ 4a94baa —
+  everything committed).
+- The transport bundle: `/home/z/webflix-r31-gaps.bundle` (verified).
 - The isolated base worktree `/home/z/webflix-base` (at 54e0e4f) exists for
   the floor comparison; it can be removed after the push
   (`git worktree remove /home/z/webflix-base` from the lane tree).
