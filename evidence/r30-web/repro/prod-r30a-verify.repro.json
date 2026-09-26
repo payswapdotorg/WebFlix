@@ -1,0 +1,55 @@
+{
+  "tag": "prod-r30a-verify",
+  "base": "https://webflix-steel.vercel.app",
+  "at": "2026-09-25T06:01:48.202Z",
+  "phase": "full",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_1DR4VB96K3P3Z9MZZVPKTYEHM6&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short"
+    },
+    "itemIdentity": {
+      "connectorId": "wfx-experience-service",
+      "externalRef": "3uyGhtARP4M",
+      "itemId": "wfxitm_1DR4VB96K3P3Z9MZZVPKTYEHM6",
+      "title": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+      "type": "short"
+    },
+    "pillFresh": {
+      "pressed": "false",
+      "state": "idle"
+    },
+    "subscribeClick": {
+      "label": "Unsubscribe from wfx-experience-service",
+      "pressed": "true",
+      "state": "subscribed",
+      "status": "Subscribed — saved to your Subscriptions list in Library."
+    },
+    "librarySubscriptions": {
+      "entryTitles": [
+        "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study "
+      ],
+      "playlistCount": 1,
+      "subsFound": true,
+      "subsListTitle": "Subscriptions"
+    },
+    "subscribeDurable": {
+      "label": "Unsubscribe from wfx-experience-service",
+      "pressedAfterReload": "true",
+      "stateAfterReload": "subscribed"
+    },
+    "freshLoadRemove": "{\"status\":200,\"body\":{\"ok\":true,\"entry\":{\"itemId\":\"wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD\",\"title\":\"1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi\",\"listName\":\"Subscriptions\",\"sync\":\"synced\",\"savedAt\":\"2026-09-25T06:01:58.391Z\"}}}",
+    "freshLoadRemoveNoIdentity": "{\"status\":200,\"body\":{\"ok\":false,\"kind\":\"not-found\",\"detail\":\"item 'wfxitm_1DR4VB96K3P3Z9MZZVPKTYEHM6' is not in the local watchlist\"}}",
+    "freshLoadRemovePill": {
+      "state": "subscribed",
+      "status": ""
+    },
+    "cleanupRoundTrip": {
+      "state": "subscribed"
+    },
+    "libraryAfterCleanup": {
+      "entryTitles": null,
+      "playlistCount": 0,
+      "subsFound": false
+    }
+  }
+}

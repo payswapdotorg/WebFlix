@@ -1,0 +1,41 @@
+{
+  "tag": "leadfix-a",
+  "base": "http://localhost:3101",
+  "at": "2026-09-25T05:43:59.496Z",
+  "phase": "subscribe-leave",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_24TRPWBAPTJMB1G6QM9GHX77BV&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000"
+    },
+    "itemIdentity": {
+      "connectorId": "fake-source",
+      "externalRef": "fake:short-1",
+      "itemId": "wfxitm_24TRPWBAPTJMB1G6QM9GHX77BV",
+      "title": "Neon Rain",
+      "type": "short"
+    },
+    "pillFresh": {
+      "pressed": "false",
+      "state": "idle"
+    },
+    "subscribeClick": {
+      "label": "Subscribe to Fake Source (TEST FIXTURE — nev",
+      "pressed": "false",
+      "state": "idle",
+      "status": ""
+    },
+    "librarySubscriptions": {
+      "entryTitles": [
+        "NR0:45Neon RainFrom fake-sourceSynced"
+      ],
+      "playlistCount": 1,
+      "subsFound": true,
+      "subsListTitle": "Subscriptions"
+    },
+    "subscribeDurable": {
+      "label": "Unsubscribe from Fake Source (TEST FIXTURE —",
+      "pressedAfterReload": "true",
+      "stateAfterReload": "subscribed"
+    }
+  }
+}

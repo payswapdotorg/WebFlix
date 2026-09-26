@@ -1,0 +1,46 @@
+{
+  "tag": "prod-r30a-clean",
+  "base": "https://webflix-steel.vercel.app",
+  "at": "2026-09-25T06:02:44.674Z",
+  "phase": "fresh-load",
+  "checks": {
+    "entry": {
+      "watchHref": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short"
+    },
+    "itemIdentity": {
+      "connectorId": "wfx-experience-service",
+      "externalRef": "3uyGhtARP4M",
+      "itemId": "wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD",
+      "title": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+      "type": "short"
+    },
+    "pillFresh": {
+      "pressed": "false",
+      "state": "idle"
+    },
+    "librarySubscriptions": {
+      "entryTitles": null,
+      "playlistCount": 0,
+      "subsFound": false,
+      "subsListTitle": null
+    },
+    "subscribeDurable": {
+      "label": "Subscribe to wfx-experience-service",
+      "pressedAfterReload": "false",
+      "stateAfterReload": "idle"
+    },
+    "freshLoadRemove": "{\"status\":200,\"body\":{\"ok\":false,\"kind\":\"not-found\",\"detail\":\"item 'wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD' is not in the local watchlist\"}}",
+    "freshLoadRemovePill": {
+      "state": "idle",
+      "status": ""
+    },
+    "cleanupRoundTrip": {
+      "state": "idle"
+    },
+    "libraryAfterCleanup": {
+      "entryTitles": null,
+      "playlistCount": 0,
+      "subsFound": false
+    }
+  }
+}
