@@ -29,6 +29,22 @@
  *   like/save capabilities render no control (typed absence — the tree
  *   omits them). Emission failures surface visibly; nothing is swallowed.
  *
+ * R32 — THE G4 RAIL JOIN (docs/parity-lab/r30/gap-captures/20260926-093102/
+ * G4-CORPUS.md, the shorts action rail — the fourth-gap corpus, now
+ * captured live): the current card's engagement actions render as the
+ * captured RIGHT ACTION COLUMN (the 48px-wide rail hugging the viewport's
+ * right edge, 48x48 buttons at the 78px vertical pitch, the count slot
+ * under each icon, the channel avatar as the rail's 5th element below)
+ * + the captured CHANNEL ROW (bottom-left, above the title): the sources
+ *   model's own identity + the Subscribe pill through the REAL subscribe
+ *   seam (the same POST /api/library the watch page's pill, the rail
+ *   subscriptions, and the subscriptions feed use). THE HONEST-RAIL LAW:
+ *   the rail binds to REAL capabilities only — comments and remix have no
+ *   WebFlix surface (omitted — the typed absence) and the count slots
+ *   bind ONLY to real data (like/save carry no like-count datum — the
+ *   icon-only form; share carries its captured "Share" text label).
+ *   §G3 (the home resume bar) stays PENDING — not this lane's surface.
+ *
  * Determinism seams (tests inject both): `now` (the clock — production
  * reads real time, the documented client-side seam; every DECISION consumes
  * the injected value) and `fetchPage` (the fresh-page source — production
@@ -64,6 +80,37 @@ import {
 import type { ShortsBootPayload } from "@/host/shorts";
 import { Icon } from "@/components/shell/Icon";
 import { placeholderArt, placeholderMonogram } from "@/components/ui/format";
+// R32 — the G4 channel row (the REAL subscribe seam's pill).
+import { ShortsSubscribeRow, type ShortsSubscribeRowProps } from "@/components/shorts/ShortsSubscribeRow";
+
+// ---------------------------------------------------------------------------
+// R32 — the session channel truths (the G4 rail's identity joins)
+// ---------------------------------------------------------------------------
+
+/** The session's source-identity index key (the durable cross-load key). */
+function sourceKeyOf(realization: { connectorId: string; externalRef: string }): string {
+  return `${realization.connectorId}\u0000${realization.externalRef}`;
+}
+
+/** Seed the session's subscribed-record from the boot payload's library read. */
+function seedSubscribedKeys(payload: ShortsBootPayload): ReadonlySet<string> {
+  const keys = new Set<string>();
+  for (const key of payload.subscriptions.sourceKeys) {
+    keys.add(sourceKeyOf(key));
+  }
+  for (const itemId of payload.subscriptions.itemIds) {
+    keys.add(itemId);
+  }
+  return keys;
+}
+
+/** The rail's channel chrome: the current card's identity truth (or null). */
+interface RailChannelTruth {
+  /** The sources model's own display name (the honest fallback: the connector id). */
+  readonly channelName: string;
+  readonly connectorId: string;
+  readonly externalRef: string;
+}
 
 // ---------------------------------------------------------------------------
 // The session reducer (pure, exported for the composition tests)
@@ -291,7 +338,21 @@ interface RenderContext {
   art: { readonly current: string | null; readonly next: string | null };
   /** Monogram per role (decorative). */
   monogram: { readonly current: string | null; readonly next: string | null };
+  /**
+   * R32 — the G4 rail's channel chrome (the current card's identity truth):
+   * the sources-model name for the avatar monogram (the monogram law), or
+   * null when the current card carries no joined source identity (the
+   * avatar honestly renders no element — never a fabricated channel).
+   */
+  channel: { readonly name: string } | null;
+  /**
+   * R32 — the G4 channel row's serialized input (the subscribe seam's own
+   * props, the controlled truth included), or null when the current card
+   * carries no source identity.
+   */
+  subscribe: ShortsSubscribeRowProps | null;
 }
+
 
 /** Render the framework-neutral element tree with the shell's components. */
 function renderElements(elements: readonly ShortFeedElement[], ctx: RenderContext): JSX.Element[] {
@@ -312,40 +373,39 @@ function renderElements(elements: readonly ShortFeedElement[], ctx: RenderContex
           </div>
         );
       case "action": {
+        // R32 — THE G4 RAIL CELL (G4-CORPUS.md "THE ACTION RAIL": the 48x48
+        // button at the 78px vertical pitch, the count label under the
+        // icon, the 24px icon — g4-rail-full.json's yt-icon measure).
         // The tree's keys are `action:${type}:${itemId}` — the control key.
         const state = ctx.actionStates[element.key] ?? IDLE_ACTION;
         const active = state.optimistic || state.settled !== "idle";
         const iconName = element.action === "like" ? "like" : element.action === "save" ? "save" : "share";
-        const label =
-          element.action === "like"
-            ? state.optimistic
-              ? "Liking…"
-              : state.settled === "confirmed"
-                ? "Liked"
-                : "Like"
-            : element.action === "save"
-              ? state.optimistic
-                ? "Saving…"
-                : state.settled === "confirmed"
-                  ? "Saved"
-                  : "Save"
-              : "Share";
+        // THE COUNT-SLOT LAW (the honest-rail law): count labels bind ONLY
+        // to real WebFlix data. Like/save carry NO like-count datum (the
+        // actionStates seam settles a receipt, never a count) — the
+        // icon-only form, never a fabricated "176K". Share carries its
+        // captured "Share" TEXT label (the corpus's own no-count form).
         return (
-          <button
-            key={element.key}
-            type="button"
-            className={`wfx-roundbtn${active ? " wfx-roundbtn--active" : ""}`}
-            onClick={() => {
-              ctx.onAction(element.action);
-            }}
-            aria-label={element.a11yLabel}
-            aria-pressed={active}
-            disabled={state.pending}
-            data-wfx-shorts-action={element.action}
-          >
-            <Icon name={iconName} size={20} />
-            <span className="wfx-roundbtn__label">{label}</span>
-          </button>
+          <div key={element.key} className="wfx-shortrail__cell" data-wfx-shortrail-cell={element.action}>
+            <button
+              type="button"
+              className={`wfx-shortrail__btn${active ? " wfx-shortrail__btn--active" : ""}`}
+              onClick={() => {
+                ctx.onAction(element.action);
+              }}
+              aria-label={element.a11yLabel}
+              {...(element.action === "share" ? {} : { "aria-pressed": active })}
+              disabled={state.pending}
+              data-wfx-shorts-action={element.action}
+            >
+              <Icon name={iconName} size={24} />
+            </button>
+            {element.action === "share" ? (
+              <span className="wfx-shortrail__count" data-wfx-shortrail-count="share">
+                Share
+              </span>
+            ) : null}
+          </div>
         );
       }
       case "card": {
@@ -366,6 +426,17 @@ function renderElements(elements: readonly ShortFeedElement[], ctx: RenderContex
               </span>
             ) : null}
             <div className="wfx-shortcard__overlay">
+              {/* R32 — THE G4 CHANNEL ROW (G4-CORPUS.md "THE CHANNEL ROW
+                  (bottom-left)": the @handle slot + the Subscribe pill,
+                  above the title). WebFlix's identity truth: the sources
+                  model's own display name (never a fabricated @handle);
+                  the pill writes through the REAL subscribe seam. The
+                  row is keyed by the current card so a swipe remounts it
+                  on the new card's own truth (the feed owns the session
+                  record — see the component body). */}
+              {isCurrent && ctx.subscribe !== null ? (
+                <ShortsSubscribeRow key={`subscribe:${element.key}`} {...ctx.subscribe} />
+              ) : null}
               <h2 className="wfx-shortcard__title">{element.overlayTitle}</h2>
               {element.overlayTopic !== null ? (
                 <p className="wfx-shortcard__meta">{element.overlayTopic}</p>
@@ -377,11 +448,31 @@ function renderElements(elements: readonly ShortFeedElement[], ctx: RenderContex
               ) : null}
             </div>
             {isCurrent ? (
-              <div className="wfx-shortcard__actions">
+              <div
+                className="wfx-shortrail"
+                data-wfx-shortrail
+                data-wfx-shortrail-absent="comments remix"
+                role="group"
+                aria-label="Short actions"
+              >
+                {/* The tree's action elements (present affordances only —
+                    like/save/share through the frozen wiring + the
+                    actionStates seam) rendered at the captured grammar. */}
                 {renderElements(
                   element.children.filter((child) => child.type === "action"),
                   ctx,
                 )}
+                {/* R32 — THE RAIL'S 5TH ELEMENT (G4-CORPUS.md: the channel
+                    avatar BELOW the actions): the monogram law (the rail
+                    subscriptions' 24x24 pattern — the channel identity's
+                    own first mark). NO LINK: WebFlix has no channel
+                    destination (the honest absence — never a fabricated
+                    link); the identity renders in the channel row. */}
+                {ctx.channel !== null ? (
+                  <span className="wfx-shortrail__avatar" aria-hidden="true" data-wfx-shortrail-avatar>
+                    {ctx.channel.name.length > 0 ? ctx.channel.name[0]!.toUpperCase() : "W"}
+                  </span>
+                ) : null}
               </div>
             ) : null}
           </article>
@@ -435,6 +526,41 @@ export function ShortsFeed({
   const presenterRef = useRef<ShortFeedPresenter | null>(null);
   if (presenterRef.current === null) presenterRef.current = createShortFeedPresenter();
   const presenter = presenterRef.current;
+
+  // R32 — THE SESSION REALIZATION INDEX (the G4 rail's identity source):
+  // itemId → the card's source realization (connectorId + externalRef),
+  // seeded from the boot page and extended by every fresh re-rank page —
+  // so a re-ranked current card keeps its channel row + subscribe write
+  // (the boot page alone cannot answer for cards it never carried; the
+  // index is the session's own record, never a second source of truth —
+  // every entry comes from a real page the runtime composed).
+  const realizationIndexRef = useRef<Map<string, { connectorId: string; externalRef: string }>>(
+    new Map(),
+  );
+  if (realizationIndexRef.current.size === 0) {
+    for (const card of payload.page.cards) {
+      const realization = card.candidate?.realization;
+      if (
+        typeof card.candidate?.itemId === "string" &&
+        typeof realization?.connectorId === "string" &&
+        typeof realization?.externalRef === "string"
+      ) {
+        realizationIndexRef.current.set(card.candidate.itemId, {
+          connectorId: realization.connectorId,
+          externalRef: realization.externalRef,
+        });
+      }
+    }
+  }
+
+  // R32 — THE SESSION SUBSCRIBED-RECORD (the subscribe pill's controlled
+  // truth): seeded from the boot payload's library read (the stored
+  // rows' source identities — the durable cross-load key — + the local
+  // fold's canonical item ids), kept current by the pill's writes. A
+  // swipe away and back renders the CURRENT card's own truth.
+  const [subscribedKeys, setSubscribedKeys] = useState<ReadonlySet<string>>(() =>
+    seedSubscribedKeys(payload),
+  );
 
   const [session, dispatch] = useReducer(shortsSessionReducer, payload, (boot) => ({
     view: presenter.initial(boot.page, {
@@ -494,6 +620,22 @@ export function ShortsFeed({
           nowMs,
         });
         return;
+      }
+      // R32 — index the fresh page's realizations (the session record the
+      // rail's channel row reads; never a second source of identity — the
+      // page is the runtime's own composition).
+      for (const card of page.cards) {
+        const realization = card.candidate?.realization;
+        if (
+          typeof card.candidate?.itemId === "string" &&
+          typeof realization?.connectorId === "string" &&
+          typeof realization?.externalRef === "string"
+        ) {
+          realizationIndexRef.current.set(card.candidate.itemId, {
+            connectorId: realization.connectorId,
+            externalRef: realization.externalRef,
+          });
+        }
       }
       const projection = buildShortCards(page, {});
       dispatch({
@@ -679,6 +821,56 @@ export function ShortsFeed({
   const saveState =
     current !== null ? session.actionStates[`action:save:${current.item.id}`] : undefined;
 
+  // R32 — THE G4 RAIL'S CHANNEL TRUTHS (the current card's own): the
+  // realization join through the session index, the sources-model display
+  // name (the honest fallback: the connector id — never a fabricated
+  // @handle), and the controlled subscribed truth for the channel row.
+  // No joined source identity ⇒ null (the avatar + the row render no
+  // element — honest).
+  const currentRealization = current !== null ? realizationIndexRef.current.get(current.item.id) : undefined;
+  const railChannel: RailChannelTruth | null =
+    current !== null && currentRealization !== undefined
+      ? {
+          channelName:
+            payload.sourceNames[currentRealization.connectorId] ?? currentRealization.connectorId,
+          connectorId: currentRealization.connectorId,
+          externalRef: currentRealization.externalRef,
+        }
+      : null;
+  /** The pill's write settles: the session record adopts both keys. */
+  const onRailSubscribedChange = useCallback(
+    (nextSubscribed: boolean): void => {
+      if (current === null || currentRealization === undefined) return;
+      const itemId = current.item.id;
+      const sourceKey = sourceKeyOf(currentRealization);
+      setSubscribedKeys((previous) => {
+        const record = new Set(previous);
+        if (nextSubscribed) {
+          record.add(itemId);
+          record.add(sourceKey);
+        } else {
+          record.delete(itemId);
+          record.delete(sourceKey);
+        }
+        return record;
+      });
+    },
+    [current, currentRealization],
+  );
+  const railSubscribe: ShortsSubscribeRowProps | null =
+    current !== null && railChannel !== null
+      ? {
+          channelName: railChannel.channelName,
+          itemId: current.item.id,
+          title: current.overlay.title,
+          connectorId: railChannel.connectorId,
+          externalRef: railChannel.externalRef,
+          subscribed:
+            subscribedKeys.has(sourceKeyOf(railChannel)) || subscribedKeys.has(current.item.id),
+          onSubscribedChange: onRailSubscribedChange,
+        }
+      : null;
+
   // R24-W2 — THE SHORTS PARITY CONTROLS (the R24-C Shorts rows: speed
   // controls / clear-screen viewing / inline feedback / the source link).
   // View-state + the same seams the long-form surfaces use: the session
@@ -749,6 +941,16 @@ export function ShortsFeed({
             current: current !== null ? placeholderMonogram(current.overlay.title) : null,
             next: next !== null ? placeholderMonogram(next.overlay.title) : null,
           },
+          // R32 — the G4 rail's channel chrome (the current card's own
+          // truth): the realization join (the session index — boot page +
+          // every fresh re-rank page), the sources-model display name (the
+          // honest fallback: the connector id), and the controlled
+          // subscribed truth for the subscribe row. No joined identity ⇒
+          // no avatar + no channel row (honest — never a fabricated
+          // channel).
+          channel:
+            current !== null && railChannel !== null ? { name: railChannel.channelName } : null,
+          subscribe: railSubscribe,
         })}
         {position !== null ? (
           <span className="wfx-shorts__position" data-wfx-shorts-position>

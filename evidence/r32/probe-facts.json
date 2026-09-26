@@ -1,0 +1,37 @@
+{
+  "generatedAt": "2026-09-26T12:02:56.724Z",
+  "surfaces": [
+    {
+      "file": "01-rail-boot.html",
+      "corpusSection": "G4-CORPUS.md — THE ACTION RAIL + THE CHANNEL ROW + THE BINDING LAWS",
+      "facts": [
+        "the rail column renders (data-wfx-shortrail) with the typed product-absences \"comments remix\" (data-wfx-shortrail-absent)",
+        "the share cell renders its captured \"Share\" TEXT label (the corpus's own no-count form) — exactly ONE count slot (the count-slot law: like/save carry no like-count datum — icon-only)",
+        "like/save render NO control in the real boot (the runtime's search hits carry no capability claim — the frozen tree's typed absence; never a greyed-out lie)",
+        "the channel row renders the sources model's own display name: \"Fake Source (TEST FIXTURE — never production)\" (the N29 identity seam; never a fabricated @handle)",
+        "the Subscribe pill renders idle (aria \"Subscribe to Fake Source (TEST FIXTURE — never production)\", 78x32-class form)",
+        "the rail's 5th element: the monogram avatar (the channel name's own first mark, the rail subscriptions' 24x24 pattern) with NO link (WebFlix has no channel destination)",
+        "the item's own title renders (the overlay's h2); no hashtags (the model carries none — none fabricated)",
+        "the pinned controls stay: the R24-W2 parity row + the real queue navigation (data-wfx-shorts-next/back)"
+      ]
+    },
+    {
+      "file": "02-rail-like-capable.html",
+      "corpusSection": "G4-CORPUS.md — THE ACTION RAIL (the like button) + THE BINDING LAWS (the honest-divergence law)",
+      "facts": [
+        "a realization that DECLARES the like/save capabilities renders the cells through the frozen tree (the tree's own gate — the a11y labels verbatim from the view model)",
+        "the like/save cells render ICON-ONLY (no count-slot content — the count-slot law: the actionStates seam settles a receipt, never a count; never a fabricated \"176K\")",
+        "the toggle state rides aria-pressed (the captured toggle form); the write goes through the EXISTING machinery (fireAction → POST /api/actions → the actionStates reducer: optimistic + receipt-truth + rollback)"
+      ]
+    },
+    {
+      "file": "03-rail-subscribed.html",
+      "corpusSection": "G4-CORPUS.md — THE CHANNEL ROW (the Subscribe pill)",
+      "facts": [
+        "the pill's write is the REAL subscribe seam (POST /api/library {op:\"save\", listName:\"Subscriptions\"} — the same write the watch page's pill, the rail subscriptions, and the subscriptions feed use)",
+        "the boot payload re-reads the seam's stored truth (the dual law: the stored source identities + the hydrated local fold) — the pill renders SUBSCRIBED (never an idle lie on a re-read of a real subscription)",
+        "the stored source-identity join is the durable cross-load key (the reload-durability law — proven live in the lane test)"
+      ]
+    }
+  ]
+}

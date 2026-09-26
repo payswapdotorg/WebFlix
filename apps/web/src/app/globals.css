@@ -3207,18 +3207,142 @@ html[data-theme="light"] .wfx-subscribe {
   font-style: italic;
 }
 
-.wfx-shortcard__actions {
+/* R32 — THE SHORTS ACTION RAIL (the G4 corpus join:
+ * docs/parity-lab/r30/gap-captures/20260926-093102/G4-CORPUS.md
+ * "THE ACTION RAIL (the right vertical column — REEL-ACTION-BAR-VIEW-MODEL)").
+ * THE CAPTURED GEOMETRY: the 48px-wide vertical column hugging the
+ * player's right edge, the 48x48 buttons at the 78px vertical pitch, the
+ * count labels under the icons (the 24px icon measure — g4-rail-full.json).
+ * THE ADAPTATION (honest): WebFlix's shorts viewport is its own
+ * 420px-scale card — the column keeps the established right-edge/bottom
+ * anchor at that scale; the ROW-LOCAL grammar binds (48px column, 48x48
+ * buttons, the 78px pitch, the 24px icons, the count slot under the
+ * icon). The count slots bind ONLY to real WebFlix data (like/save carry
+ * no like-count datum — the icon-only form; share carries its captured
+ * "Share" text label); the channel avatar joins as the rail's 5th
+ * element below (the monogram law). */
+.wfx-shortrail {
   position: absolute;
   right: 0.5rem;
   bottom: 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  align-items: center;
+  width: 48px;
   z-index: 3;
 }
 
-/* The shorts action rail (the corpus: 48px targets, counts 12/500 under
- * each — the YouTube shorts grammar). */
+/* One action cell: the 48x48 button + the count slot below — the cell's
+ * fixed 78px height IS the captured vertical pitch (every button top
+ * sits 78px below the previous one, labeled cell or not). */
+.wfx-shortrail__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 78px;
+}
+
+.wfx-shortrail__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background var(--wfx-transition), color var(--wfx-transition);
+}
+
+.wfx-shortrail__btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.wfx-shortrail__btn:active {
+  transform: scale(0.94);
+}
+
+.wfx-shortrail__btn--active {
+  color: var(--wfx-accent);
+}
+
+/* The count slot under the icon — carries ONLY real data (share's
+ * captured "Share" text; like/save render no slot content — the
+ * icon-only form, never a fabricated count). */
+.wfx-shortrail__count {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+/* The rail's 5th element — the channel avatar BELOW the actions (the
+ * monogram law: the rail subscriptions' established 24x24 pattern, the
+ * channel identity's own first mark; no link — WebFlix has no channel
+ * destination). */
+.wfx-shortrail__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 24px;
+  height: 24px;
+  margin-top: 30px; /* the captured inter-button rhythm below the last cell */
+  border-radius: 50%;
+  background: var(--wfx-surface-2);
+  border: 1px solid var(--wfx-border-strong);
+  color: var(--wfx-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* R32 — THE G4 CHANNEL ROW (bottom-left, above the title): the captured
+ * @handle slot + the 78x32 Subscribe pill. The identity truth: the
+ * sources model's own display name (never a fabricated @handle); the
+ * pill writes through the REAL subscribe seam. */
+.wfx-shortschannel {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wfx-shortschannel__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.wfx-shortschannel__note {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.wfx-shortschannel__note--error {
+  color: var(--wfx-accent);
+}
+
+/* The 78x32-class subscribe pill (the captured rect) — the wfx-subscribe
+ * family's own colors, the shorts overlay's own scale. */
+.wfx-subscribe--shorts {
+  height: 32px;
+  min-width: 78px;
+  padding: 0 14px;
+  border-radius: 16px;
+}
+
+/* The shorts nav buttons' own family (the real queue navigation —
+ * Next/Back; the G4 corpus's 56x56 arrow form is recorded as the honest
+ * divergence: no nav rebuild — the seam law). */
 .wfx-roundbtn {
   display: inline-flex;
   flex-direction: column;
@@ -3387,8 +3511,10 @@ html[data-theme="light"] .wfx-subscribe {
     height: calc(100dvh - var(--wfx-topbar-h) - var(--wfx-bottomnav-h) - env(safe-area-inset-bottom, 0px));
   }
 
-  .wfx-shortcard__actions {
-    bottom: calc(1rem + 3.25rem); /* clear the swipe hint + touch law */
+  /* The G4 rail keeps the established mobile offset (the 44px law —
+   * clear the swipe hint + touch law). */
+  .wfx-shortrail {
+    bottom: calc(1rem + 3.25rem);
   }
 }
 
@@ -6582,7 +6708,7 @@ html[data-theme="light"] .wfx-switch__knob {
 
 /* — The shorts parity controls. */
 .wfx-shorts__viewport--clear .wfx-shortcard__overlay,
-.wfx-shorts__viewport--clear .wfx-shortcard__actions,
+.wfx-shorts__viewport--clear .wfx-shortrail,
 .wfx-shorts__viewport--clear .wfx-shortcard__monogram {
   display: none;
 }
