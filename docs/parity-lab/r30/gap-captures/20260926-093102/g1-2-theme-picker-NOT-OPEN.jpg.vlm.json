@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Yes, a YouTube menu is open. Specifically, the **account menu** (the dropdown that appears when clicking the user avatar) is currently displayed on the right side of the screen.\n\n**Masthead State:**\n- The **user avatar is present** in the top-right corner of the masthead (showing a green dinosaur/character icon)\n- The avatar has been clicked, triggering the account menu to open\n\n**What is on screen:**\nThe account menu is displaying the following options:\n- User profile header (\"Spartacus\" @spartacus_payswap with \"View your channel\" link)\n- Google Account\n- Switch account (with arrow indicating submenu)\n- Sign out\n- YouTube Studio\n- Purchases and memberships\n- Your data in YouTube\n- Appearance: Device theme (with arrow)\n- Display language: English (with arrow)\n- Restricted Mode: Off (with arrow)\n- Location: Hong Kong (with arrow)\n- Keyboard shortcuts\n- Settings\n- Help\n- Send feedback\n\nBehind this open menu, the main YouTube homepage is visible showing video thumbnails for content like \"AGENT ERA IS HERE,\" \"BIG MISTAKE\" (Cybertruck video), music mixes, and AI-related videos.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790415107,
+  "id": "20260926173140c78d52a29be5422a",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260926173140c78d52a29be5422a",
+  "usage": {
+    "completion_tokens": 252,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1487,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1739
+  }
+}

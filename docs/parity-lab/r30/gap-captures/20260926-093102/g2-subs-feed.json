@@ -1,0 +1,150 @@
+{
+ "surface": "g2-subs-feed",
+ "truth": {
+  "title": "(9) Subscriptions - YouTube",
+  "url": "https://www.youtube.com/feed/subscriptions",
+  "cardCount": 14,
+  "cards": [
+   {
+    "title": "ZIDANE R\u00c9USSIT SA RENTR\u00c9E... DANS LA DOULEUR ! (D\u00e9brief complet)",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "AFTER FOOT",
+    "meta": "AFTER FOOT 109K 11h ago",
+    "thumb": null,
+    "badge": "49:16"
+   },
+   {
+    "title": "ZIDANE R\u00c9USSIT SA RENTR\u00c9E... DANS LA DOULEUR ! (D\u00e9brief complet)",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "AFTER FOOT",
+    "meta": "AFTER FOOT 109K 11h ago",
+    "thumb": null,
+    "badge": "49:16"
+   },
+   {
+    "title": "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the Monologue",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "Jimmy Kimmel Live",
+    "meta": "Jimmy Kimmel Live 3M 1d ago",
+    "thumb": null,
+    "badge": "12:46"
+   },
+   {
+    "title": "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the Monologue",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "Jimmy Kimmel Live",
+    "meta": "Jimmy Kimmel Live 3M 1d ago",
+    "thumb": null,
+    "badge": "12:46"
+   },
+   {
+    "title": "Energy Is Everything \u2013 It Separates Winners From Losers In 2026 Dating",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "Troy Francis",
+    "meta": "Troy Francis 479 15h ago",
+    "thumb": null,
+    "badge": "11:46"
+   },
+   {
+    "title": "Energy Is Everything \u2013 It Separates Winners From Losers In 2026 Dating",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "Troy Francis",
+    "meta": "Troy Francis 479 15h ago",
+    "thumb": null,
+    "badge": "11:46"
+   },
+   {
+    "title": "SPORTS \u2022 FRANCE 24",
+    "titleGeom": {
+     "h": 22,
+     "w": 215,
+     "font": "11.7px 700"
+    },
+    "channel": "FRANCE 24",
+    "meta": "FRANCE 24 179 13\u00a0min ago",
+    "thumb": null,
+    "badge": "5:56"
+   },
+   {
+    "title": "SPORTS \u2022 FRANCE 24",
+    "titleGeom": {
+     "h": 22,
+     "w": 215,
+     "font": "11.7px 700"
+    },
+    "channel": "FRANCE 24",
+    "meta": "FRANCE 24 179 13\u00a0min ago",
+    "thumb": null,
+    "badge": "5:56"
+   },
+   {
+    "title": "\"Je suis \u00e9merveill\u00e9 par tout ceux qui demandent le sacrement de l'initiation chr\u00e9tienne\" (L\u00e9on XIV)",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "franceinfo",
+    "meta": "franceinfo 122 16\u00a0min ago",
+    "thumb": null,
+    "badge": "15:38"
+   },
+   {
+    "title": "\"Je suis \u00e9merveill\u00e9 par tout ceux qui demandent le sacrement de l'initiation chr\u00e9tienne\" (L\u00e9on XIV)",
+    "titleGeom": {
+     "h": 44,
+     "w": 380,
+     "font": "11.7px 700"
+    },
+    "channel": "franceinfo",
+    "meta": "franceinfo 122 16\u00a0min ago",
+    "thumb": null,
+    "badge": "15:38"
+   }
+  ],
+  "banners": [
+   "12:46Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 3M 1d ago",
+   "12:46Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 3M 1d ago",
+   "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 3M 1d ago",
+   "Trump Showers Chinese President with Praise & Jimmy\u2019s Assistant Natalie Interrupts the MonologueJimmy Kimmel Live 3M 1d ago",
+   "Jimmy Kimmel Live 3M 1d ago"
+  ],
+  "grid": {
+   "x": 72,
+   "y": 56,
+   "w": 1352,
+   "h": 13049,
+   "text": "Latest\n            \n          \n        \n        \n        \n        \n        \n        \n      \n      \n      All subscriptions\n      \n    \n    \n  \n  \n\n\n\n\n  \n    \n  ",
+   "cls": "style-scope ytd-two-column-browse-results-renderer",
+   "font": "10px 400",
+   "display": "flex"
+  }
+ },
+ "screenshotBytes": 224707,
+ "capturedAt": "2026-09-26T09:31:23Z",
+ "elapsedS": 7.2
+}

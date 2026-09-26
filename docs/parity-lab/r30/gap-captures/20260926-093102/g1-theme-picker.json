@@ -1,0 +1,25 @@
+{
+ "surface": "g1-theme-picker",
+ "menuOpen": true,
+ "menuProbe": {
+  "open": true,
+  "count": 2,
+  "titles": [
+   "",
+   ""
+  ],
+  "docTitle": "(9) YouTube"
+ },
+ "menuHtmlBytes": 67148,
+ "appearanceClick": "no-appearance-row; rows= |  | Home\n  \n  \n    Home | Shorts\n  \n  \n    Shorts | Subscriptions\n  \n  \n    Subscr | You\n  \n  \n    You | Enjoy perks like members-only  | 45:50\n    45:50\n  Now playing | SemiAnalysis MOTS: AI Chip Sho | SemiAnalysis MOTS: AI Chip Sho | Matthew Berman | Matthew Berman | 13:46\n    13:46\n  Now playing | \ud83d\udea8 Le march\u00e9 obligataire paniq | \ud83d\udea8 Le march\u00e9 obligataire paniq | Julien Roman | Finance & Inves | Julien Roman | Finance & Inves | 3:54\n    3:54\n  Now playing | I Will Be Reviewing, Rating, T | I Will Be Reviewing, Rating, T | The Poor Mans Podcast Reacts | The Poor Mans Podcast Reacts | Spartacus | @spartacus_payswap | View your channel",
+ "pickerOpen": false,
+ "pickerProbe": {
+  "open": false,
+  "anyThemeText": false,
+  "count": 0,
+  "texts": [],
+  "docTitle": "(9) YouTube"
+ },
+ "capturedAt": "2026-09-26T09:31:16Z",
+ "elapsedS": 14.2
+}
