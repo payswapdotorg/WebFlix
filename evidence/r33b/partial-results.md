@@ -4,77 +4,70 @@ Lane: `wfx/r33b/shell-residuals` (base `main @ 178873a`, branch created clean).
 This file records the lane's in-flight state so a session interruption can be
 resumed surgically — never restarted.
 
-## DONE (the state at the last write)
+## THE LANE IS COMPLETE (the final state)
 
-1. **STEP ZERO** — repo cloned at `/home/z/webflix`; `main @ 178873a`
-   checked out; branch `wfx/r33b/shell-residuals` created; full survey
-   complete (MATRIX.md rows D3/D4/D6/D8/N28 + O6's meta theme-color
-   residual; app-shell.md; r30 lead-captures/CORPUS.md; R31/R32 evidence
-   packs; the shell code). Survey conclusions recorded in
-   `/home/z/my-project/worklog.md` (Task ID 0).
-2. **D6 + N33 — the code** — COMMITTED @ `7661a17`:
-   - `apps/web/src/components/shell/Icon.tsx`: the `subscriptions` glyph
-     (hand-rolled stacked-tile + play mark).
-   - `apps/web/src/components/shell/AppShell.tsx`: `RailEntry` now carries
-     explicit href+icon (the presentation-route class); the
-     state-conditional primary group (`RAIL_PRIMARY_SIGNED_OUT` = Home ·
-     Shorts · Subscriptions · Library / `RAIL_PRIMARY_SIGNED_IN` = Home ·
-     Shorts · Library — the R30-B section carries Subscriptions, never a
-     duplicate); the bottom nav = Home · Shorts · Subscriptions · Library;
-     the new optional `activeRailHref` prop (the aria-current seam); the
-     stale RAIL_YOU absent-list comment corrected.
-   - `apps/web/src/app/feed/subscriptions/page.tsx`: passes
-     `activeRailHref="/feed/subscriptions"`.
-   - `apps/web/tests/shell-residuals.test.ts`: 17 lane tests (all green).
-   - `apps/web/tests/subscriptions-feed.test.ts`: the R31 signed-out href
-     control honestly flipped to the D6 grammar (the only call-site
-     update; documented in the test).
-3. **MATRIX.md** — updated (uncommitted at this write): D3, D4, D6, D8,
-   N28 rows re-verified statuses; N33 added (the fresh-sweep row); O6's
-   verdict note closes the meta theme-color residual; the R33-B
-   scoreboard addendum + the verification-log row.
-4. **Typecheck** — PASS (root tsc via
-   `./node_modules/.bin/tsc --noEmit -p apps/web/tsconfig.json`, 0
-   diagnostics). Shell-rendering suites re-run green (77 + 118 pass
-   across the AppShell-rendering files).
+Every gate passed on the lane head; the evidence pack is committed; the relay
+is the only remaining transport step (see the end of this file).
 
-## IN FLIGHT
+### The commit chain
 
-5. **The base floor battery** — running on the isolated worktree
-   `/home/z/webflix-base` @ `178873a` (`bun install --frozen-lockfile`
-   done): `nice -n 19 ionice -c3 bun test --parallel=1` →
-   `/tmp/battery-base.log`. Expect the 5200/1/0 floor (the R32 merge
-   commit's claim — this run re-measures it directly).
-   NOTE: an earlier base-battery attempt died after 3 lines (resource
-   contention with concurrent lane test runs — restarted alone).
+- `7661a17` — the D6+N33 code batch: `AppShell.tsx` (the state-conditional
+  primary group, the href-based RailEntry, the bottom-nav grammar, the
+  `activeRailHref` seam), `Icon.tsx` (the subscriptions glyph),
+  `app/feed/subscriptions/page.tsx` (the active-rail claim),
+  `tests/shell-residuals.test.ts` (17 lane tests),
+  `tests/subscriptions-feed.test.ts` (the honest R31 call-site update).
+- `9276502` — the matrix updates + the evidence pack (INDEX.md, guards.md,
+  DIVERGENCES.md, browser-verification.md, 13 captures, 2 VLM reads, this
+  file).
+- `<the final commit>` — this file's final update (+ nothing else).
 
-## REMAINS (the exact next steps)
+### The gates (all green, on the lane head)
 
-6. **Browser verification** (agent-browser @1440×900 + @390×844 against
-   `WFX_DEV_FIXTURES=1 next dev -p 3101` from `/home/z/webflix`):
-   the signed-out rail reads Home · Shorts · Subscriptions · Library;
-   the Subscriptions entry navigates to /feed/subscriptions with
-   aria-current painted; the signed-in chrome (fixture persona through
-   /settings?section=general) reads Home · Shorts · Library + the
-   Subscriptions section + the bell (no badge); ONE History entry; the
-   mic honestly absent; the meta theme-color follows the boot (persisted
-   light → #ffffff, dark → #0f0f0f, no stored choice → OS preference);
-   the bottom nav at mobile width; captures → `captures/`.
-7. **The final lane battery** — `nice -n 19 ionice -c3 bun test
-   --parallel=1` on the lane tree (expect 5200 + 17 = 5217/1/0).
-8. **The remaining gates** — lint (repo + lane-scoped), typecheck (root +
-   journeys + app), contract-check, lane-check, parity-conformance
-   (19/19), build `--filter '@wfx/app-web'`.
-9. **The evidence pack** — finish `INDEX.md` (the closure table),
-   `guards.md` (the gates table), `browser-verification.md`,
-   `DIVERGENCES.md` (written below), captures; commit.
-10. **The relay** — `git bundle create webflix-r33b-thin.bundle
-    178873a..wfx/r33b/shell-residuals`; relay `evidence/r33b/` + the
-    bundle + RELAY-MANIFEST.txt (sha256s) into the workspace storage
-    root (`/home/z/my-project`); the completion report.
+1. **Battery**: `5217/1/0` (5218 tests, 298 files) — the base floor
+   `5200/1/0` DIRECTLY re-measured on the isolated base worktree
+   `/home/z/webflix-base` @ 178873a (5201 tests, 297 files) + exactly 17.
+2. **Lint**: lane-scoped 0/0; repo 115/32/83 byte-identical to the base.
+3. **Typecheck**: root + journeys + app — zero diagnostics.
+4. **contract-check**: OK (12 frozen blocks, 7 extension types).
+5. **lane-check**: OK (943 files).
+6. **parity-conformance**: 19/19.
+7. **build --filter '@wfx/app-web'**: exit 0.
+8. **Browser-verified live**: 13 captures + 2 VLM reads, zero page errors —
+   see browser-verification.md. The instrument note: the pass runs on the
+   `http://localhost:3101` origin (the `127.0.0.1` origin trips Next 16's
+   cross-origin dev-resource block — the HMR refusal leaves the islands
+   unhydrated; recorded honestly in the evidence).
 
-## The commit plan
+### The row closures (the short form — INDEX.md carries the full table)
 
-- `7661a17` — the D6+N33 code + tests (DONE).
-- next — the matrix + evidence pack (after the gates).
-- the lane head for the lead's re-verification = the final commit.
+- **D6 FIXED** (7661a17): the state-conditional rail grammar, both corpus
+  cites bound; the Watch surface holds no rail slot; the flat list verified
+  (the "Show more" bound stays CORPUS-PENDING — DIVERGENCES row 3).
+- **N33 added + landed** (the fresh sweep's one new shell residual — D6's
+  mobile form).
+- **D8 VERIFIED** (R29-B held; the stale matrix status recorded).
+- **D4 VERIFIED** (R30-B held; the stale matrix status recorded).
+- **D3 WONT-FIX honest re-adjudicated + pinned** (no voice-search transport).
+- **N28 re-adjudicated** (the rail install entry: real transport, kept).
+- **O6's meta theme-color residual CLOSED** (R29-B's seam; re-verified live:
+  light → #ffffff, dark → #0f0f0f, no stored → OS preference).
+
+## REMAINS (the transport only)
+
+- `git bundle create webflix-r33b-thin.bundle 178873a..wfx/r33b/shell-residuals`
+- Relay `evidence/r33b/` (every file, same relative paths) + the bundle +
+  RELAY-MANIFEST.txt (the file list with sha256s + the lane SHAs) into the
+  workspace storage root (`/home/z/my-project` — where package.json/src/
+  live).
+- The completion report (=== R33-B COMPLETION REPORT ===).
+
+## Sandbox mechanics learned (for any re-entry)
+
+- Background processes (dev server, bun test) DIE with each Bash tool
+  session — run long jobs in the foreground (the 600s timeout fits the
+  ~230s battery) or inside one driver script.
+- The dev server must be probed on `http://localhost:3101` (not 127.0.0.1).
+- The agent-browser daemon resets between sessions (about:blank) — the
+  browser cookie state may persist across a daemon restart within a sandbox
+  lifetime; re-verify the session truth before asserting signed-in states.
