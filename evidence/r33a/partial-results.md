@@ -5,7 +5,52 @@ Lane: `wfx/r33a/shorts-player` from `main @ 178873a`. The operator's #1:
 stack with NO media element (the R32 divergence ledger row 8). This lane
 closes that gap with the REAL machinery.
 
-## DONE
+## STATE: COMPLETE (all gates green; the transport relayed)
+
+The lane head: `f017cf5` → (final evidence commit appended after the
+browser verification — see RELAY-MANIFEST.txt for the exact lane SHA).
+
+### 0. Boot + survey (COMPLETE — see the survey record below)
+### 1. The design (frozen before code — below)
+### 2. The build (COMPLETE)
+
+- `apps/web/src/components/shorts/shorts-stage-client.ts` (NEW) — the
+  resolve cache, the pure evidence folds, the key-command derivation, the
+  provider channel binding, the session folds.
+- `apps/web/src/components/shorts/ShortsMediaStage.tsx` (NEW) — the
+  stage component (the real embed + the honest fallback + the k/m
+  bindings + the unmute affordance + the session/watch-state folds).
+- `apps/web/src/components/shorts/ShortsFeed.tsx` (EDIT — the join:
+  `stage`/`stageNext` in the RenderContext; the stage as the card's
+  first child; `data-wfx-shorts-media` on the article).
+- `apps/web/src/host/shorts.ts` (EDIT — `resolveShortsPlaybackSession`:
+  the watch surface's own seam, minimal form).
+- `apps/web/src/app/api/shorts-session/route.ts` (NEW — the thin
+  escalation seam).
+- `apps/web/src/app/globals.css` (EDIT — the `wfx-shortstage` block +
+  the mobile 44px law; the pinned chrome's rules untouched).
+- `apps/web/tests/shorts-media-stage.test.ts` (NEW — 19 lane tests).
+
+### 3. The gates (ALL GREEN — guards.md)
+
+battery **5219/1/0** (the 5200 floor + 19, ZERO regressions) · lint
+lane-clean (repo 115/32 = the pre-existing r28/r29-recon debt) ·
+typecheck clean · contract-check OK · lane-check OK (946 files) ·
+parity-conformance 19/19 CONFORMANT · `bun run --filter '@wfx/app-web'
+build` exit 0 · browser-verified live (browser-verification.md — both
+boots, 8 captures).
+
+### 4. The browser verification (COMPLETE — browser-verification.md)
+
+Service boot: the real nocookie embed staged full-bleed (the exact
+presentation law src), the provider channel LIVE, the unmute + m-key
+round trips through the documented channel, the session law's round
+trip through the live routes, the prefetch law (2 reads / 1 iframe /
+the swipe re-stage from the warm cache), the R32 rail byte-identical,
+the mobile 44px law. The provider's own bot-gate blocked the MEDIA in
+this egress (the honest phase kept throughout — the R28-B corpus's
+recorded environmental truth). Fixtures boot: the honest unbound state
+(live=false), the clear-screen law (the stage stays).
 
 ### 0. Boot + survey (COMPLETE)
 
