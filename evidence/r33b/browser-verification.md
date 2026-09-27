@@ -42,15 +42,18 @@ whole pass (`agent-browser errors` empty at the close of every stage).
    Shorts · Library · History · Playlists · Offline · Settings — ONE
    History, ZERO Watch, ZERO duplicate Subscriptions navlinks.
 6. **The stored-truth round trip** (`captures/08`–`11`, the R31 restart
-   law reproduced): the player's REAL Subscribe pill (honest toggle — the
-   pass reads the pill's state BEFORE any click: "Subscribed" after the
-   prior write, NO click fired) → the fresh process reads the fixtures
-   file back → **the section's stored row renders** ("D Deep Field Diary"
-   — the 24x24 monogram avatar + the entry's own title, LINKED with the
-   entry's real player destination) and **the feed grid renders the same
-   stored truth** (1 entry: the full card grammar "Deep Field Diary ·
-   From fake-source"). The feed through the section-heading navigation
-   paints aria-current on the bottom-nav Subscriptions item.
+   law reproduced): the player's REAL Subscribe pill reads its honest
+   state BEFORE any click — "Subscribed" (the prior session's REAL write
+   landed in the fixtures file; the toggle law means NO re-click fires)
+   → the fresh process reads the fixtures file back → **the section's
+   stored row renders** ("D Deep Field Diary" — the 24x24 monogram
+   avatar + the entry's own title, LINKED with the entry's real player
+   destination) and **the feed grid renders the same stored truth** (1
+   entry: the full card grammar "Deep Field Diary · From fake-source"),
+   and **the Library's own Subscriptions list renders it too** (the
+   write's third surface — `captures/09`). The feed through the
+   section-heading navigation paints aria-current on the bottom-nav
+   Subscriptions item.
 7. **The mobile sweep** (`captures/12`–`13`, @390×844): the bottom nav
    reads Home · Shorts · **Subscriptions (aria-current="page" on the feed
    route)** · Library; the guide toggle opens the DRAWER (the corpus
