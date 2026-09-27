@@ -1741,7 +1741,11 @@ html[data-wfx-guide="drawer"] /* R29-B (N13) — THE RAIL SIGN-IN PROMO (the cor
 }
 
 .wfx-chip:hover {
-  background: var(--wfx-surface-2);
+  /* R33-C (O6 residual) — the corpus chips/buttons hover-overlay family
+   * (color-survey.md row 29: rgba(0,0,0,0.05) light / rgba(255,255,255,0.1)
+   * dark — the token's own values); the off-corpus #e5e5e5/#3f3f3f is
+   * gone from the content surfaces. */
+  background: var(--wfx-bg-hover);
 }
 
 .wfx-chip--active {
@@ -2352,7 +2356,10 @@ html[data-theme="light"] .wfx-btn--primary:hover {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: var(--wfx-surface-2);
+  /* R33-C (O6 residual) — the corpus raised family (color-survey.md
+   * row 27: #f2f2f2 light / #272727 dark — the cards-adjacent raised
+   * surface; the honest monogram's own floor). */
+  background: var(--wfx-bg-raised);
   color: var(--wfx-text);
   font-size: 12px;
   font-weight: 700;
@@ -2415,7 +2422,8 @@ html[data-theme="light"] .wfx-btn--primary:hover {
 }
 
 .wfx-filterspill:hover {
-  background: var(--wfx-surface-2);
+  /* R33-C (O6 residual) — the corpus hover-overlay family (row 29). */
+  background: var(--wfx-bg-hover);
 }
 
 /* R29-B — THE SEARCH FILTERS DIALOG (N23, the corpus search-anatomy.md):
@@ -2804,7 +2812,9 @@ html[data-wfx-guide="drawer"] .wfx-shell[data-wfx-shell-guide="hidden"] .wfx-rai
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--wfx-surface-2);
+  /* R33-C (O6 residual) — the corpus raised family (color-survey.md
+   * row 27: #f2f2f2 light / #272727 dark). */
+  background: var(--wfx-bg-raised);
   color: var(--wfx-text);
   font-weight: 700;
   font-size: 16px;
@@ -2953,7 +2963,9 @@ html[data-theme="light"] .wfx-subscribe {
 }
 
 .wfx-actions__pill:hover {
-  background: var(--wfx-surface-2);
+  /* R33-C (O6 residual) — the corpus hover-overlay family (color-survey
+   * row 29; watch-geometry.md's actions-row bg pair). */
+  background: var(--wfx-bg-hover);
 }
 
 .wfx-actions__pill:focus-visible {
@@ -5756,7 +5768,8 @@ html[data-theme="light"] .wfx-subscribe {
 }
 
 .wfx-upnext__chip:hover {
-  background: var(--wfx-surface-2);
+  /* R33-C (O6 residual) — the corpus hover-overlay family (row 29). */
+  background: var(--wfx-bg-hover);
 }
 
 .wfx-upnext__chip--active {
@@ -6465,7 +6478,11 @@ html[data-theme="light"] .wfx-switch__knob {
   padding: 0 0.6rem;
   border-radius: 999px;
   border: 1px solid var(--wfx-border);
-  background: var(--wfx-surface);
+  /* R33-C (O6 residual) — the corpus raised family (color-survey.md
+   * row 27: #f2f2f2 light / #272727 dark — the card-meta's quiet action
+   * row is a cards-adjacent raised surface; the off-corpus
+   * #f7f7f7/#212121 leaves the content surfaces). */
+  background: var(--wfx-bg-raised);
   color: var(--wfx-text-dim);
   font: inherit;
   font-size: 0.75rem;

@@ -69,6 +69,7 @@ export function ItemCard({
   linked = true,
   availability,
   actions,
+  sourceName,
 }: {
   readonly card: CardView;
   readonly variant?: "wide" | "short" | "result";
@@ -78,7 +79,13 @@ export function ItemCard({
   readonly availability?: string;
   /** R24-W2 — the cards' action context (queue/save/share + the preview policy). */
   readonly actions?: CardActionContextInput;
+  /** R33-C (N29) — the sources model's displayName for card.connectorId (the honest channel identity; connector id fallback). */
+  readonly sourceName?: string;
 }): JSX.Element {
+  // R33-C (N29) — the channel-slot identity: the sources model's own
+  // displayName when the map carried one, else the connector id (the
+  // honest fallback — the sources-model identity law).
+  const channelName = sourceName !== undefined && sourceName.length > 0 ? sourceName : card.connectorId;
   const playHref = playerHref(
     {
       itemId: card.itemId,
@@ -137,10 +144,10 @@ export function ItemCard({
                 photos) + the 12px/400 channel name. */}
             <p className="wfx-result__channel">
               <span className="wfx-result__avatar" aria-hidden="true">
-                {card.connectorId.length > 0 ? card.connectorId[0]!.toUpperCase() : "W"}
+                {channelName.length > 0 ? channelName[0]!.toUpperCase() : "W"}
               </span>
               {linked && card.connectorId.length > 0 ? (
-                <span data-wfx-card-source>From {card.connectorId}</span>
+                <span data-wfx-card-source>From {channelName}</span>
               ) : (
                 <span>Source unknown in this session</span>
               )}
@@ -233,7 +240,7 @@ export function ItemCard({
                 primary): the card's honest source identity. */}
             <p className="wfx-card__channel">
               {linked && card.connectorId.length > 0 ? (
-                <span data-wfx-card-source>From {card.connectorId}</span>
+                <span data-wfx-card-source>From {channelName}</span>
               ) : (
                 <span>Source unknown in this session</span>
               )}
