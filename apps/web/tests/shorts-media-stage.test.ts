@@ -36,7 +36,14 @@
  *   failure (never a fabricated session id); the thin /api/shorts-session
  *   route validates its body and carries the typed outcome verbatim;
  * - THE k/m GRAMMAR (the chrome law's WebFlix bindings): the watch
- *   surface's key derivation with the typing guard.
+ *   surface's key derivation with the typing guard;
+ * - THE PINNED-CONTROLS COLLISION LAW (the lead's REQUIRE-CHANGES fix):
+ *   the player's top-chrome zone is the player's own — the pinned rows
+ *   (the discovery chips / the position pill / the R24-W2 parity
+ *   controls) clear the unmute affordance's zone geometrically (the pill
+ *   is trapped inside the card's z=2 stacking context, so a z-index can
+ *   never win it; raising the card would steal the chips' clicks) —
+ *   probed from the stylesheet's own numbers, desktop + mobile.
  *
  * Determinism: fixture transport, controlled env (restored), no network.
  */
@@ -455,5 +462,111 @@ describe("R33-A — the stage's stylesheet grammar (the full-bleed form + the mo
     expect(css).toMatch(
       /@media \(max-width: 791px\) \{[\s\S]*?\.wfx-shortstage__unmute \{[^}]*min-height: 44px;/,
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// THE PINNED-CONTROLS COLLISION LAW (the lead's REQUIRE-CHANGES fix) —
+// G4-CORPUS.md's top player chrome ("y=80, 48×48 each") is the PLAYER'S
+// OWN; the pinned WebFlix rows never sit over the player's chrome
+// affordances. The defect this law closes (the lead's user-level probe on
+// the settled service-boot feed, 1440×900, the discovery chips present):
+// the unmute pill (205×36 at the card's top-left, 642..847 × 68..104) was
+// covered across its ENTIRE rect — the "Blend" chip + the discovery band
+// (z=6) over its left fifth, the R24-W2 controls row + its source chip
+// (z=12) over the rest; elementFromPoint at the pill's center resolved to
+// the source-chip span, so a real user could not click unmute. The pill
+// lives inside the card's z=2 stacking context (the frozen current/next
+// swipe layering), so no z-index can win it back, and raising the card
+// would steal the chips' clicks — the corpus-true fix is GEOMETRIC
+// CLEARANCE: every pinned row sits below the chrome zone (the corpus
+// chrome height 48px + its own 8px inter-control gap — the 56px
+// origin-to-origin pitch, Pause @366 → Mute @422). The full-bleed
+// adaptation (the approved WFX-051 form) has no band above the card (the
+// card's top = the shell's top), so the honest clear is below.
+// ---------------------------------------------------------------------------
+
+describe("R33-A — the pinned-controls collision law (the player's top-chrome zone is the player's own)", () => {
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  const PX_PER_REM = 16;
+  /** The corpus's own inter-chrome gap (the 56px origin pitch − the 48px control). */
+  const CHROME_GAP_PX = 8;
+
+  /** The unmute pill's own anchor + family measure, parsed from the stage's rule. */
+  const unmute = css.match(
+    /\.wfx-shortstage__unmute \{[^}]*?left: (\d+)px;\s*[^}]*?top: (\d+)px;[^}]*?min-height: (\d+)px;/s,
+  );
+
+  /** A pinned row's `top: calc(Arem + Brem)` resolved to px (null = the rule moved away). */
+  const rowTopPx = (selector: string): number | null => {
+    const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = css.match(
+      new RegExp(`${escaped} \\{[^}]*?top: calc\\((\\d+(?:\\.\\d+)?)rem \\+ (\\d+(?:\\.\\d+)?)rem\\)`),
+    );
+    return match === null ? null : (Number(match[1]) + Number(match[2])) * PX_PER_REM;
+  };
+
+  it("the desktop form: the pill keeps the corpus's top-left anchor and every pinned row clears the chrome zone (the collision law, computed from the stylesheet's own numbers)", () => {
+    // THE PILL'S ANCHOR NEVER MOVES (the lead's DON'T): the corpus's
+    // top-left anchor, the 12px inset grammar.
+    expect(unmute).not.toBeNull();
+    expect(Number(unmute![1])).toBe(12); // left
+    expect(Number(unmute![2])).toBe(12); // top
+    const chromeZoneBottom = Number(unmute![2]) + Number(unmute![3]); // 12 + 36
+
+    // THE CARD'S OWN STACKING TRUTH (why the fix is geometric): the
+    // current card's frozen z=2 context traps the pill under the pinned
+    // rows' z=6/z=12 — the rows must clear the zone, not out-stack it.
+    expect(css).toMatch(/\.wfx-shortcard--current \{[^}]*?z-index: 2;/s);
+
+    // THE PILL'S CLICK LAYER (the defect's second half — the lead's
+    // user-level pass): the stage root is pointer-events:none (the inert
+    // marker forms never block the card), so every interactive child
+    // re-arms — the unmute pill is a real button; without this it
+    // inherits none and elementFromPoint falls through it to whatever
+    // sits below (the frame — or, pre-fix, the chips/controls covers).
+    expect(css).toMatch(/\.wfx-shortstage__unmute \{[^}]*?pointer-events: auto;/s);
+
+    // THE COLLISION LAW: every pinned row's band starts at or beyond the
+    // chrome zone's bottom + the corpus's own 8px gap (the settled live
+    // geometry: the pill 68..104 page-y, the rows' band from 124 — a
+    // 20px clear; elementFromPoint across the pill's rect answers the pill).
+    for (const selector of [".wfx-shorts__discovery", ".wfx-shorts__position", ".wfx-shorts__controls"]) {
+      const top = rowTopPx(selector);
+      expect(top, `${selector}'s top calc`).not.toBeNull();
+      expect(top!).toBeGreaterThanOrEqual(chromeZoneBottom + CHROME_GAP_PX);
+    }
+  });
+
+  it("the mobile form: the rows clear the 44px chrome zone (the 791px law) and the band stays below the shifted position pill (the 767px law)", () => {
+    // The mobile chrome zone: the same 12px anchor + the 44px touch-target pill.
+    const mobilePill = css.match(
+      /@media \(max-width: 791px\) \{[\s\S]*?\.wfx-shortstage__unmute \{[^}]*?min-height: (\d+)px;/,
+    );
+    expect(mobilePill).not.toBeNull();
+    const mobileZoneBottom = Number(unmute![2]) + Number(mobilePill![1]); // 12 + 44 = 56
+
+    // The position pill + the controls row clear the mobile chrome zone
+    // (12 + 44 + the 8px gap = 64px = 0.75rem + 3.25rem).
+    const rows791 = css.match(
+      /@media \(max-width: 791px\) \{[\s\S]*?\.wfx-shorts__position,\s*\.wfx-shorts__controls \{[^}]*?top: calc\((\d+(?:\.\d+)?)rem \+ (\d+(?:\.\d+)?)rem\);/,
+    );
+    expect(rows791).not.toBeNull();
+    const rows791Top = (Number(rows791![1]) + Number(rows791![2])) * PX_PER_REM;
+    expect(rows791Top).toBeGreaterThanOrEqual(mobileZoneBottom + CHROME_GAP_PX);
+
+    // The discovery band clears the mobile chrome zone too AND keeps its
+    // own narrow-screen law (below the position pill: the pill's 64px top
+    // + its 28px height = 92 → the band's 96px clears it). Anchored to the
+    // band's OWN 767px block (the LAST one — an earlier 767px block owns
+    // other rules, and the base band rule sits between the two blocks).
+    const mobile767 = css.slice(css.lastIndexOf("@media (max-width: 767px) {"));
+    const band767 = mobile767.match(
+      /\.wfx-shorts__discovery \{[^}]*?top: calc\((\d+(?:\.\d+)?)rem \+ (\d+(?:\.\d+)?)rem\);/,
+    );
+    expect(band767).not.toBeNull();
+    const band767Top = (Number(band767![1]) + Number(band767![2])) * PX_PER_REM;
+    expect(band767Top).toBeGreaterThanOrEqual(mobileZoneBottom + CHROME_GAP_PX);
+    expect(band767Top).toBeGreaterThanOrEqual(rows791Top + 28); // below the position pill
   });
 });

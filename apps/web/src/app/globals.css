@@ -3429,7 +3429,15 @@ html[data-theme="light"] .wfx-subscribe {
   position: absolute;
   left: 12px;
   top: 12px;
-  z-index: 4;
+  z-index: 4; /* within the card's own z=2 stacking context — the pinned rows
+   * clear this zone geometrically (the pinned-controls law; see the
+   * discovery band's block) — a z-index can never win it from inside */
+  pointer-events: auto; /* the frame's own re-arming law: the stage root is
+   * pointer-events:none (the inert marker forms never block the card), so
+   * EVERY interactive child re-arms — the unmute pill is a real button;
+   * without this it inherits none and a real user can never click it
+   * (the lead's user-level pass: elementFromPoint fell through the pill
+   * to whatever sat below — the defect's second half) */
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
@@ -3488,7 +3496,10 @@ html[data-theme="light"] .wfx-subscribe {
 
 .wfx-shorts__position {
   position: absolute;
-  top: 0.75rem;
+  /* R33-A (the lead's REQUIRE-CHANGES fix) — THE PINNED-CONTROLS LAW:
+   * below the player's top-chrome zone (the discovery band's block
+   * carries the corpus citation). */
+  top: calc(0.75rem + 3.5rem);
   left: 50%;
   transform: translateX(-50%);
   z-index: 4;
@@ -3598,6 +3609,15 @@ html[data-theme="light"] .wfx-subscribe {
    * no unmute measure; the watch surface's own pill grammar scales up). */
   .wfx-shortstage__unmute {
     min-height: 44px;
+  }
+
+  /* R33-A (the lead's REQUIRE-CHANGES fix) — THE PINNED-CONTROLS LAW at
+   * the mobile form: the chrome zone grows with the 44px touch-target
+   * pill (12px inset + 44px + the 8px gap = the 3.25rem offset) — the
+   * pinned rows clear it. */
+  .wfx-shorts__position,
+  .wfx-shorts__controls {
+    top: calc(0.75rem + 3.25rem);
   }
 }
 
@@ -4744,7 +4764,24 @@ html[data-theme="light"] .wfx-subscribe {
 }
 
 /* The shorts discovery overlay: floats quiet over the feed, top-left,
-   clear of the centered position pill. */
+   clear of the centered position pill.
+   R33-A (the lead's REQUIRE-CHANGES fix) — THE PINNED-CONTROLS LAW (the
+   corpus's own): G4-CORPUS.md's top player chrome ("y=80, 48×48 each" —
+   the auto-hiding band at the player's top) is the PLAYER'S OWN, and the
+   pinned WebFlix rows must never sit over the player's chrome
+   affordances. The unmute pill anchors that zone's top-left (the card's
+   12px inset — the corpus's own y=80 = player-top − 12 grammar), and the
+   pill lives INSIDE the card's z=2 stacking context (the current/next
+   swipe layering — frozen), so the discovery band's z=6 / the controls'
+   z=12 sit over it by construction; a z-index can never fix it, and
+   raising the card would steal the chips' clicks. The corpus-true fix is
+   geometric: the pinned rows sit BELOW the chrome zone — the corpus
+   chrome height (48px) + its own 8px inter-control gap (the 56px
+   origin-to-origin pitch: Pause @366 → Mute @422) = the 3.5rem offset.
+   The full-bleed adaptation (the approved WFX-051 form) has no band
+   ABOVE the card (the card's top = the shell's top), so the honest clear
+   is below — the rows keep their pinned form and every click; the pill
+   owns its click layer. */
 .wfx-shorts-shell {
   position: relative;
   flex: 1;
@@ -4755,7 +4792,9 @@ html[data-theme="light"] .wfx-subscribe {
 
 .wfx-shorts__discovery {
   position: absolute;
-  top: 0.75rem;
+  /* the pinned-controls law — below the player's top-chrome zone (the
+   * block above carries the full corpus citation). */
+  top: calc(0.75rem + 3.5rem);
   left: 0.75rem;
   z-index: 6;
   max-width: min(92vw, 30rem);
@@ -4873,7 +4912,10 @@ html[data-theme="light"] .wfx-subscribe {
   .wfx-shorts__discovery {
     left: 0.5rem;
     right: 0.5rem;
-    top: 2.75rem; /* below the position pill on narrow screens */
+    /* below the SHIFTED position pill on narrow screens (the
+     * pinned-controls law: the band clears the 44px chrome zone too —
+     * 2.75rem + the same 3.25rem offset). */
+    top: calc(2.75rem + 3.25rem);
     max-width: none;
   }
 }
@@ -6798,7 +6840,10 @@ html[data-theme="light"] .wfx-switch__knob {
 
 .wfx-shorts__controls {
   position: absolute;
-  top: 0.75rem;
+  /* R33-A (the lead's REQUIRE-CHANGES fix) — THE PINNED-CONTROLS LAW:
+   * below the player's top-chrome zone (the discovery band's block
+   * carries the corpus citation). */
+  top: calc(0.75rem + 3.5rem);
   right: 0.75rem;
   z-index: 12;
   display: flex;
