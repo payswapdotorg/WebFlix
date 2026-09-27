@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot provided, here is the information you requested:\n\n**Left Navigation Rail Entries (Top to Bottom):**\n1.  Home\n2.  Shorts\n3.  Library\n4.  Subscriptions\n5.  History\n6.  Playlists\n7.  Offline\n8.  Settings\n\n**Answers to your specific questions:**\n\n(1) **Is there a 'Subscriptions' SECTION with a channel-style list below the primary entries?**\n**Yes.** There is a \"Subscriptions\" section header in the rail. Below it is text stating \"No subscriptions yet — subscribe from any watch page,\" indicating the section exists but the list is currently empty.\n\n(2) **Does the top-right area show a bell/notifications icon?**\n**Yes.** There is a bell icon located in the top-right toolbar.\n\n(3) **Does the bell show any unread-count badge?**\n**No.** The bell icon does not display any numerical badge or red dot indicating unread notifications.\n\n(4) **Is there an avatar/account button at the top right?**\n**Yes.** To the right of the bell icon, there is a circular pink button containing the letter \"D\", which serves as the account/avatar button for the signed-in user.\n\n(5) **How many rail entries read 'History'?**\n**One.** The label \"History\" appears exactly once in the navigation rail (under the \"You\" sub-header).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790501047,
+  "id": "20260927172402f58c754f42c84823",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "20260927172402f58c754f42c84823",
+  "usage": {
+    "completion_tokens": 300,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1799,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 2099
+  }
+}

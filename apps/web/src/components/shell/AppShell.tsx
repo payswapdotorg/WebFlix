@@ -18,12 +18,24 @@
  * - THE MINIPLAYER DOCK (R29-B N25): the persistent bottom-right
  *   floating player — mounted at the shell level so it survives every
  *   surface (renders nothing until a playback is docked).
- * - LEFT RAIL: the corpus groups — primary (Home · Shorts · Watch ·
- *   Library), divider, the "You" group (History · Offline · Settings —
- *   WebFlix's REAL surfaces; every unmapped YouTube destination is
- *   honestly absent, never a dead link), divider, the footnote. 240px
- *   labeled ≥1280 / 72px icon 792–1279 / drawer <1280 (the GuideToggle's
- *   overlay) / bottom nav <792 (4 items, 48px + safe-area).
+ * - LEFT RAIL: the corpus groups — R33-B (D6, MATRIX.md row D6): the
+ *   primary group reads Home · Shorts · [Subscriptions ·] Library — the
+ *   SIGNED-OUT grammar (corpus app-shell.md "Primary group: Home ·
+ *   Shorts · Subscriptions · You") renders the Subscriptions ENTRY
+ *   bound to the REAL subscriptions feed (/feed/subscriptions — the R31
+ *   surface, the row's honest mapping); the SIGNED-IN grammar (r30
+ *   lead-captures/CORPUS.md §4's taxonomy: [Home, Shorts] then the
+ *   [Subscriptions: flat channel list] section) drops the entry — the
+ *   R30-B/R31-verified RailSubscriptions SECTION carries the destination
+ *   (its heading link), never a duplicate. The long-form "Watch" browse
+ *   surface keeps its frozen route (URL-direct) but NO rail slot — the
+ *   corpus rail carries no Watch-like entry (the D6 remap). Divider, the
+ *   "You" group (History · Offline · Settings — WebFlix's REAL
+ *   surfaces; every unmapped YouTube destination is honestly absent,
+ *   never a dead link), divider, the footnote. 240px labeled ≥1280 /
+ *   72px icon 792–1279 / drawer <1280 (the GuideToggle's overlay) /
+ *   bottom nav <792 (4 items: Home · Shorts · Subscriptions · You→Library
+ *   — the corpus bottom-nav grammar, 48px + safe-area).
  *
  * SESSION HONESTY (the R07 product-framing law, unchanged): the session
  * menu renders the honest signed-out/anonymous state from
@@ -76,29 +88,46 @@ import { ArtworkFallback } from "@/components/cards/ArtworkFallback";
 // the corpus `ytd-video-preview` grammar; the card triggers drive it).
 import { HoverPreviewLayer } from "@/components/cards/HoverPreviewLayer";
 
-/** One shell navigation icon per surface (item surfaces are not in the shell nav). */
-const SURFACE_ICONS: Readonly<Record<SurfaceId, IconName>> = {
-  home: "home",
-  watch: "film",
-  shorts: "shorts",
-  search: "search",
-  item: "film",
-  library: "library",
-  settings: "settings",
-};
-
-/** One rail entry (a surface link + its corpus icon). */
+/** One rail/bottom-nav entry — R33-B (D6): an explicit href + its icon +
+ * label (the Subscriptions entry binds to the /feed/subscriptions
+ * PRESENTATION route — the /player law: the frozen SurfaceId set is
+ * untouched; the History/Playlists/Offline explicit-href precedent's own
+ * class, now the entry set's uniform shape). */
 interface RailEntry {
-  readonly surface: SurfaceId;
+  readonly href: string;
+  readonly icon: IconName;
   readonly label: string;
 }
 
-/** The PRIMARY group (the corpus order: Home · Shorts · the long-form browse · Library). */
-const RAIL_PRIMARY: readonly RailEntry[] = [
-  { surface: "home", label: "Home" },
-  { surface: "shorts", label: "Shorts" },
-  { surface: "watch", label: "Watch" },
-  { surface: "library", label: "Library" },
+/** The subscriptions feed's own route (the R31 corpus URL — the D6 entry's
+ * real destination; the same href the RailSubscriptions section's heading
+ * link carries). */
+const SUBSCRIPTIONS_HREF = "/feed/subscriptions";
+
+/**
+ * The PRIMARY group (corpus order): SIGNED-OUT = Home · Shorts ·
+ * Subscriptions · Library (app-shell.md's logged-out grammar — the
+ * Subscriptions ENTRY bound to the REAL feed surface, the D6 close);
+ * SIGNED-IN = Home · Shorts · Library (r30 CORPUS.md §4's logged-in
+ * taxonomy — [Home, Shorts] then the [Subscriptions: flat channel list]
+ * SECTION below carries the destination; an entry would duplicate it,
+ * the D8 class of operator-visible sloppiness). The long-form Watch
+ * browse surface keeps its frozen route (URL-direct) but no longer holds
+ * the slot Subscriptions owns — the corpus rail carries no Watch-like
+ * entry (the D6 remap: "WebFlix renders 'Watch' where Subscriptions
+ * belongs").
+ */
+const RAIL_PRIMARY_SIGNED_OUT: readonly RailEntry[] = [
+  { href: "/", icon: "home", label: "Home" },
+  { href: "/shorts", icon: "shorts", label: "Shorts" },
+  { href: SUBSCRIPTIONS_HREF, icon: "subscriptions", label: "Subscriptions" },
+  { href: "/library", icon: "library", label: "Library" },
+];
+
+const RAIL_PRIMARY_SIGNED_IN: readonly RailEntry[] = [
+  { href: "/", icon: "home", label: "Home" },
+  { href: "/shorts", icon: "shorts", label: "Shorts" },
+  { href: "/library", icon: "library", label: "Library" },
 ];
 
 /**
@@ -107,20 +136,28 @@ const RAIL_PRIMARY: readonly RailEntry[] = [
  * is the account/settings entry). R29-B (D8/N4) — THE HISTORY DEDUPE:
  * the group carries ONE History entry (the explicit link with its
  * Library?section=history href below); the duplicate top-level entry is
- * GONE. YouTube destinations WebFlix truthfully lacks (Subscriptions,
- * Playlists, Your videos, Explore, Premium…) are honestly ABSENT —
- * recorded in DIVERGENCES.
+ * GONE. YouTube destinations WebFlix truthfully lacks (Your videos, Watch
+ * later, Liked videos, Explore, Premium…) are honestly ABSENT — recorded
+ * in DIVERGENCES. (R33-B note: Subscriptions and Playlists no longer
+ * belong on the absent list — the R31 feed + the R30-B Playlists row
+ * landed both; the D6 entry above and the You group's Playlists anchor
+ * below are their bindings.)
  */
 const RAIL_YOU: readonly RailEntry[] = [
-  { surface: "settings", label: "Settings" },
+  { href: "/settings", icon: "settings", label: "Settings" },
 ];
 
-/** The bottom nav set (the corpus's 4 fixed items, honest mapping). */
+/** The bottom nav set (the corpus's 4 fixed items — app-shell.md's
+ * bottom-nav grammar "Home · Shorts · Subscriptions · You", the honest
+ * You→Library mapping; the Subscriptions item binds to the REAL feed
+ * surface in BOTH states — the route answers the signed-out boot with
+ * its honest empty state, never a dead link). R33-B (D6's mobile form,
+ * recorded as the fresh-sweep row N33). */
 const BOTTOMNAV: readonly RailEntry[] = [
-  { surface: "home", label: "Home" },
-  { surface: "shorts", label: "Shorts" },
-  { surface: "watch", label: "Watch" },
-  { surface: "library", label: "Library" },
+  { href: "/", icon: "home", label: "Home" },
+  { href: "/shorts", icon: "shorts", label: "Shorts" },
+  { href: SUBSCRIPTIONS_HREF, icon: "subscriptions", label: "Subscriptions" },
+  { href: "/library", icon: "library", label: "Library" },
 ];
 
 /** The History entry's honest href (the Library's History section). */
@@ -132,7 +169,10 @@ const OFFLINE_HREF = "/offline";
 /** The Playlists entry's honest href (the Library — where the playlists render). */
 const PLAYLISTS_HREF = "/library";
 
-/** Render one rail group's links (the labeled/icon forms answer in CSS). */
+/** Render one rail group's links (the labeled/icon forms answer in CSS).
+ * R33-B (D6): every entry carries its own href + icon (the explicit-href
+ * class — the Subscriptions entry's presentation route has no SurfaceId);
+ * the active match is the plain href comparison. */
 function RailLinks({
   entries,
   activeHref,
@@ -143,16 +183,15 @@ function RailLinks({
   return (
     <>
       {entries.map((entry) => {
-        const href = surfaceHref(entry.surface);
         return (
           <a
-            key={`${entry.surface}-${entry.label}`}
+            key={`${entry.href}-${entry.label}`}
             className="wfx-navlink"
-            href={href}
-            {...(activeHref === href ? { "aria-current": "page" as const } : {})}
+            href={entry.href}
+            {...(activeHref === entry.href ? { "aria-current": "page" as const } : {})}
           >
             <span className="wfx-navlink__icon">
-              <Icon name={SURFACE_ICONS[entry.surface]} />
+              <Icon name={entry.icon} />
             </span>
             <span>{entry.label}</span>
           </a>
@@ -177,6 +216,7 @@ export function AppShell({
   account,
   mainClass,
   guide = "default",
+  activeRailHref,
   children,
 }: {
   /** The boot mode (badge honesty). */
@@ -207,10 +247,23 @@ export function AppShell({
    * at any width, YouTube's own watch behavior).
    */
   readonly guide?: "default" | "hidden";
+  /**
+   * R33-B (D6) — the ACTIVE rail href for a PRESENTATION route (a route
+   * outside the frozen SurfaceId set whose rail entry is an explicit
+   * href): /feed/subscriptions passes its own path so its rail +
+   * bottom-nav Subscriptions entry paints `aria-current="page"` (the
+   * corpus active-item grammar — the CSS seam's own [aria-current]
+   * law: raised treatment + weight). Undefined on every SurfaceId
+   * route (the `active` prop is the truth there; when both are passed
+   * the explicit href wins — the presentation route's own claim).
+   */
+  readonly activeRailHref?: string;
   readonly children: ReactNode;
 }): JSX.Element {
   const badge = modeBadge(mode);
-  const activeHref = active !== undefined ? surfaceHref(active) : undefined;
+  // R33-B (D6) — the active href: the presentation route's explicit
+  // claim, else the active surface's own route (the SurfaceId law).
+  const activeHref = activeRailHref ?? (active !== undefined ? surfaceHref(active) : undefined);
   // R30-B — the corpus logged-in state: the account chrome view's sign-in
   // truth (the request's own answer — never the page's host guess).
   const signedIn = account?.session.signedIn === true;
@@ -350,7 +403,21 @@ export function AppShell({
           <div className="wfx-rail__scrim" data-wfx-rail-scrim aria-hidden="true" />
           <div className="wfx-rail__inner">
             <div className="wfx-rail__group">
-              <RailLinks entries={RAIL_PRIMARY} activeHref={activeHref} />
+              {/* R33-B (D6, MATRIX.md row D6) — the primary group's
+                  state-conditional grammar: the SIGNED-OUT rail renders
+                  Home · Shorts · Subscriptions · Library (corpus
+                  app-shell.md's logged-out primary group — the
+                  Subscriptions ENTRY bound to the REAL R31 feed surface,
+                  the row's blocker now gone); the SIGNED-IN rail renders
+                  Home · Shorts · Library (r30 CORPUS.md §4's logged-in
+                  taxonomy — the Subscriptions SECTION below carries the
+                  destination, never a duplicate entry). The Watch browse
+                  surface holds no slot in either state (the corpus rail
+                  carries no Watch-like entry). */}
+              <RailLinks
+                entries={signedIn ? RAIL_PRIMARY_SIGNED_IN : RAIL_PRIMARY_SIGNED_OUT}
+                activeHref={activeHref}
+              />
             </div>
             <div className="wfx-rail__divider" />
             {/* R30-B (CORPUS §4) — THE SUBSCRIPTIONS SECTION: the flat list
@@ -431,17 +498,20 @@ export function AppShell({
         </main>
       </div>
       <nav className="wfx-bottomnav" aria-label="Primary mobile">
+        {/* R33-B (D6's mobile form — the fresh-sweep row N33): the corpus
+            bottom-nav grammar "Home · Shorts · Subscriptions · You" with
+            the honest You→Library mapping; the Subscriptions item binds
+            to the REAL feed surface in both states. */}
         {BOTTOMNAV.map((entry) => {
-          const href = surfaceHref(entry.surface);
           return (
             <a
-              key={entry.surface}
+              key={`${entry.href}-${entry.label}`}
               className="wfx-navlink"
-              href={href}
-              {...(activeHref === href ? { "aria-current": "page" as const } : {})}
+              href={entry.href}
+              {...(activeHref === entry.href ? { "aria-current": "page" as const } : {})}
             >
               <span className="wfx-navlink__icon">
-                <Icon name={SURFACE_ICONS[entry.surface]} size={22} />
+                <Icon name={entry.icon} size={22} />
               </span>
               <span>{entry.label}</span>
             </a>

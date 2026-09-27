@@ -31,7 +31,16 @@ export default async function SubscriptionsFeedPage() {
   syncNavigationToRoute(host.runtime, "/feed/subscriptions", {});
   const account = await loadAccountChrome();
   return (
-    <AppShell mode={host.mode} session={host.session.state} account={account}>
+    // R33-B (D6, MATRIX.md row D6) — the shell's active-rail claim: the
+    // page passes its own path so the rail/bottom-nav Subscriptions entry
+    // paints aria-current="page" (the corpus active-item grammar) — the
+    // presentation-route law (no frozen SurfaceId exists for this route).
+    <AppShell
+      mode={host.mode}
+      session={host.session.state}
+      account={account}
+      activeRailHref="/feed/subscriptions"
+    >
       <SubscriptionsFeedSurface entries={account.railSubscriptions} />
     </AppShell>
   );

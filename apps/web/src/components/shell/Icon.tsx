@@ -60,7 +60,8 @@ export type IconName =
   | "reddit"
   | "pinterest"
   | "linkedin"
-  | "bell";
+  | "bell"
+  | "subscriptions";
 
 const PATHS: Readonly<Record<IconName, JSX.Element>> = {
   home: (
@@ -302,6 +303,18 @@ const PATHS: Readonly<Record<IconName, JSX.Element>> = {
     <>
       <path d="M12 4a5.5 5.5 0 0 1 5.5 5.5v3.2l1.6 2.6a1 1 0 0 1-.85 1.5H5.75a1 1 0 0 1-.85-1.5l1.6-2.6V9.5A5.5 5.5 0 0 1 12 4Z" />
       <path d="M9.8 19.3a2.4 2.4 0 0 0 4.4 0" />
+    </>
+  ),
+  // R33-B (D6 — MATRIX.md row D6; corpus app-shell.md "Item anatomy: 24px
+  // icon + 14px/400 label") — the rail Subscriptions entry's glyph: a
+  // hand-rolled stacked-tile mark with a play wedge (the set's own
+  // vocabulary — the corpus captured the item's GEOMETRY, never the glyph
+  // shape; never a claimed brand mark).
+  subscriptions: (
+    <>
+      <rect x="7" y="3.5" width="13" height="13" rx="2.5" />
+      <path d="M17 20.5H7.5A3.5 3.5 0 0 1 4 17V7.5" />
+      <path d="m10.5 7 4.5 3-4.5 3V7Z" />
     </>
   ),
 };
