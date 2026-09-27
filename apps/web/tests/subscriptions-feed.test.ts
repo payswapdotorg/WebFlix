@@ -352,8 +352,13 @@ describe("R31 §G2 the rail seam (the corpus taxonomy's Subscriptions entry → 
     );
     expect(markup).toContain('href="/feed/subscriptions"');
     expect(markup).toContain("data-wfx-rail-subscriptions-heading");
-    // The signed-out shell stays byte-identical (the pinned control):
-    // the section renders ONLY in the signed-in chrome.
+    // The signed-out shell: the SECTION stays the signed-in chrome's own
+    // (the pinned control), but R33-B (D6, MATRIX.md row D6; corpus
+    // app-shell.md's logged-out primary group "Home · Shorts ·
+    // Subscriptions · You") closed the row — the signed-out rail now
+    // renders the Subscriptions ENTRY bound to this same feed URL (the
+    // honest mapping the row waited for), so the href PRESENCE flipped
+    // from the R31-era absence to the corpus grammar.
     const signedOut = renderToStaticMarkup(
       createElement(AppShell, {
         mode: host.mode,
@@ -362,6 +367,6 @@ describe("R31 §G2 the rail seam (the corpus taxonomy's Subscriptions entry → 
       }),
     );
     expect(signedOut).not.toContain("data-wfx-rail-subscriptions-heading");
-    expect(signedOut).not.toContain('href="/feed/subscriptions"');
+    expect(signedOut).toContain('href="/feed/subscriptions"');
   });
 });
