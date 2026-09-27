@@ -60,10 +60,18 @@ export function SectionStatus({ status, title }: { readonly status: SectionStatu
 export function Row({
   row,
   actions,
+  sourceNames,
 }: {
   readonly row: RowView;
   /** R24-W2 — the cards' action context (queue/save/share + the preview policy). */
   readonly actions?: CardActionContextInput;
+  /**
+   * R33-C (N29) — the surface's source-name map (connectorId → the
+   * sources model's displayName): each card's channel slot resolves
+   * through it; a missing entry keeps the connector id (the honest
+   * fallback — the R32 `sourceNames` seam pattern).
+   */
+  readonly sourceNames?: Readonly<Record<string, string>>;
 }): JSX.Element | null {
   const hasContent = row.cards.length > 0;
   if (!hasContent && row.status.state === "ready") return null; // honest absence — no empty scaffolding
@@ -77,7 +85,14 @@ export function Row({
       {hasContent ? (
         <div className="wfx-row__scroller">
           {row.cards.map((card) => (
-            <ItemCard key={card.itemId} card={card} {...(actions !== undefined ? { actions } : {})} />
+            <ItemCard
+              key={card.itemId}
+              card={card}
+              {...(actions !== undefined ? { actions } : {})}
+              {...(sourceNames !== undefined && sourceNames[card.connectorId] !== undefined
+                ? { sourceName: sourceNames[card.connectorId] }
+                : {})}
+            />
           ))}
         </div>
       ) : null}
@@ -89,9 +104,12 @@ export function Row({
 function ContinueRow({
   entries,
   status,
+  sourceNames,
 }: {
   readonly entries: readonly ContinueCardView[];
   readonly status: SectionStatusView;
+  /** R33-C (N29) — the surface's source-name map (connectorId → displayName). */
+  readonly sourceNames?: Readonly<Record<string, string>>;
 }): JSX.Element | null {
   if (entries.length === 0 && status.state === "ready") return null; // honest absence on a fresh session
   return (
@@ -135,6 +153,9 @@ function ContinueRow({
                 key={entry.itemId}
                 card={card}
                 resume={{ resumePositionMs: entry.positionMs, completionRatio: entry.completionRatio }}
+                {...(sourceNames !== undefined && sourceNames[card.connectorId] !== undefined
+                  ? { sourceName: sourceNames[card.connectorId] }
+                  : {})}
               />
             );
           })}
@@ -228,12 +249,18 @@ export function HomeSurface({
           grid follows immediately — no hero, no orientation zone). */}
       <ChipBar categories={categories} />
       {/* The content rows — Continue watching first (the corpus feed's own
-          shelf), then the feed rows, then the Shorts shelf. */}
-      <ContinueRow entries={view.continueWatching.entries} status={view.continueWatching.status} />
+          shelf), then the feed rows, then the Shorts shelf. R33-C (N29):
+          every card's channel slot resolves through view.sourceNames —
+          the sources model's own display names, connector-id fallback. */}
+      <ContinueRow
+        entries={view.continueWatching.entries}
+        status={view.continueWatching.status}
+        sourceNames={view.sourceNames}
+      />
       {importedSection !== null ? <ImportedFeedSection section={importedSection} /> : null}
       {showDiscoveryRows
         ? view.rows.map((row) => (
-            <Row key={row.id} row={row} actions={view.cardActions} />
+            <Row key={row.id} row={row} actions={view.cardActions} sourceNames={view.sourceNames} />
           ))
         : null}
       {/* THE SHORTS SHELF (the corpus: a row of 9:16 cards between the

@@ -1,0 +1,88 @@
+{
+  "lane": "wfx/r33c/content-residuals",
+  "measuredAt": "2026-09-27 (fixtures boot, WFX_DEV_FIXTURES=1, next dev -p 3101, agent-browser)",
+  "viewport": "1440x900 unless noted",
+  "D14": {
+    "row": "D14 — .wfx-player padding (corpus watch-geometry.md: 16px @1440 / 24px @>=1600)",
+    "at1440": {
+      "playerComputedPadding": "12px 0px 48px 16px",
+      "stage": { "x": 16, "y": 68, "w": 996, "h": 560 },
+      "note": "left 16px side margin (the corpus page margin @1440; the >=1016 band zeroes the right padding — the secondary runs flush to the viewport edge per the corpus's own geometry); y=68 = the 56px masthead + the 12px top gap"
+    },
+    "at1600": {
+      "viewport": "1600x900",
+      "playerComputedPadding": "24px 24px 48px",
+      "stage": { "x": 24, "y": 80, "w": 1124, "h": 632 },
+      "secondary": { "x": 1164, "w": 412 },
+      "note": "24 + 1124 + 16 + 412 + 24 = 1600 — the corpus >=1600 row: margins 24px, secondary 412 fixed"
+    },
+    "verdict": "CLOSED (R29-B; re-verified EXACT at both captured breakpoints on this lane head)"
+  },
+  "D13": {
+    "row": "D13 — watch primary column width (corpus 1012px @1440 guide-collapsed)",
+    "at1440GuideCollapsed": {
+      "stage": { "x": 16, "w": 996 },
+      "secondary": { "x": 1028, "w": 412 },
+      "sum": "16 + 996 + 16 + 412 = 1440 (the corpus's own two-column composition; primary column = 996 + 16 left margin = the corpus measure's family)"
+    },
+    "guideOpenDelta": {
+      "stageWhenGuideOpen": { "x": 16, "w": 996 },
+      "drawer": { "x": 0, "w": 240, "display": "flex" },
+      "note": "WebFlix's guide-open is an OVERLAY drawer (the content does not reflow); YouTube's own guide-open narrows the primary column (the matrix's 724px note). The corpus's guide-COLLAPSED measure is the spec and matches EXACT; the guide-open mechanism difference is the recorded honest divergence."
+    },
+    "verdict": "CLOSED (R29-B N21; guide-collapsed geometry re-verified EXACT; guide-open delta = mechanism divergence, recorded)"
+  },
+  "D11": {
+    "row": "D11 — owner-row Subscribe CTA (the honest-CTA law: bound to the real POST /api/library seam)",
+    "pill": { "h": 36, "radius": "18px", "idleLabel": "Subscribe" },
+    "ownerName": "Fake Source (TEST FIXTURE — never production) (the sources model's displayName, the N29 truth)",
+    "roundTrip": {
+      "click": { "state": "subscribed", "label": "Subscribed", "note": "Subscribed — saved to your Subscriptions list in Library." },
+      "afterReload": { "state": "subscribed", "label": "Subscribed" },
+      "verdict": "the R32 verification pattern: subscribe -> reload -> subscribed (the R30 reload-durability read joins the stored row by connectorId+externalRef)"
+    },
+    "verdict": "CLOSED (R29-B; the real-seam round-trip re-verified live on this lane head)"
+  },
+  "N19": {
+    "row": "N19 — duration-badge grammar (the captured corner pill)",
+    "searchResultBadge": { "w": 32, "h": 16, "insetRight": 8, "insetBottom": 8, "text": "0:45", "font": "12px/500", "color": "rgb(255,255,255)", "bg": "rgba(0,0,0,0.6)", "radius": "4px", "pad": "1px 4px" },
+    "homeCardBadge": { "text": "40:00", "insetRight": 8, "insetBottom": 8, "font": "12px/500", "bg": "rgba(0,0,0,0.6)" },
+    "shortsShelf": "no badge (the corpus shorts shelf — never a duration on a short)",
+    "verdict": "CLOSED (R29-B; the pill grammar re-verified EXACT by measured capture)"
+  },
+  "N3": {
+    "row": "N3 — search thumb geometry (corpus search-card-grammar.json: row 1152x281, thumb 500x281 r12)",
+    "row": { "w": 1152, "h": 281 },
+    "thumb": { "w": 500, "h": 281, "radius": "12px" },
+    "fonts": { "title": "18px/400/26px clamp2 #0f0f0f", "meta": "12px/400 #606060", "channel": "12px/400 #606060", "avatar": "24x24 radius 50%" },
+    "verdict": "CLOSED (R29-B; re-verified EXACT at 1440)"
+  },
+  "N29": {
+    "row": "N29 — the channel slot renders the connector id (card scope)",
+    "build": "sourceNames map (connectorId -> sources-model displayName) on HomeView/WatchBrowseView/SearchView via sourceNamesOf (the R32 loadShortsPayload seam pattern); ItemCard renders From {sourceName ?? connectorId}; the search avatar monogram derives its initial from the resolved name",
+    "fixturesHome": "From Fake Source (TEST FIXTURE — never production) — all card channel slots (home rows, continue row, watch browse rows, search result rows)",
+    "honestFallback": "a connector the sources model does not carry keeps the connector id (SSR test: the empty map renders 'From fake-source'); the unlinked card keeps 'Source unknown in this session'",
+    "serviceTruth": "the current WFX_API_BASE deployment answers the app's own HTML at the Experience API paths (GET /sources returns the web app) — the sources read fails honestly, the map stays empty, the connector id is the identity; the 96bb075 service sighting's law is unchanged",
+    "shortsShelf": "no channel row (the corpus shorts grammar, byte-law verified)",
+    "verdict": "BUILT + CLOSED (the displayName path renders wherever the sources model carries one; the connector-id fallback stays honest)"
+  },
+  "O6-raised-gray": {
+    "row": "the raised-gray residual (the matrix O6's honest residual: 7.7% vs YT 4.1%)",
+    "before": { "fixtureLight1440": "1.9%", "fixtureDark1440": "2.1%", "serviceLight1440": "1.8% (empty feed — the deployed service's honest answer)" },
+    "after": { "fixtureLight1440": "2.1%", "fixtureDark1440": "2.4%", "serviceLight1440": "1.8% (unchanged — empty feed, no cards render)" },
+    "direction": "toward the corpus 4.1% from below, by binding REAL surfaces to the corpus raised values (the card actionbtn #f7f7f7->#f2f2f2 light binding moves near-white-family pixels into the raised band; the dark #212121/#3f3f3f -> #272727 bindings land in the corpus raised-dark band). Never a deleted capability surface; never a fabricated gray surface",
+    "bindings": {
+      "chips-hovers": [".wfx-chip:hover", ".wfx-filterspill:hover", ".wfx-upnext__chip:hover", ".wfx-actions__pill:hover — var(--wfx-bg-hover) [rgba(0,0,0,0.05) light / rgba(255,255,255,0.1) dark — color-survey.md row 29]"],
+      "avatars": [".wfx-result__avatar (24x24) measured #f2f2f2 light / #272727 dark; .wfx-channel__avatar (40x40) measured #272727 dark — var(--wfx-bg-raised) [row 27]"],
+      "card-meta": [".wfx-card__actionbtn (the row form) measured #272727 dark / #f2f2f2-family light — var(--wfx-bg-raised) [row 27]"]
+    },
+    "adjudication": "the R29-C 7.7% over-share is GONE on the current tree (1.9%/2.1% before this lane; the intervening waves dissolved it). The remaining under-share (2.1-2.4% vs 4.1%) is a surface-count truth: WebFlix's content surfaces render fewer gray surfaces than YouTube's logged-out home (no guide rail in the capture frame, no hover states in a static capture, no fabricated gray). Recorded as the honest divergence; never fabricated parity",
+    "verdict": "RESIDUAL DIRECTION REVERSED + THE NAMED SURFACES BOUND; the honest share divergence recorded"
+  },
+  "freshSweep": {
+    "home": { "chip": "h32 r8 14/500", "cardTitle": "16px/500 clamp2", "cardMeta": "12px/400 #606060", "channelRow": "14px/400 #606060", "shortsShelf": "208x311 vertical thumb, no badge, no channel row", "kebab": "40x40 (the R28-B N18 grammar)" },
+    "search": { "title": "18px/400/26px clamp2", "meta": "12px/400", "channel": "12px/400", "avatar": "24x24 r50% #f2f2f2 light" },
+    "watch": { "upnextChip": "h32 14/500 (active #0f0f0f light — the inverted corpus form)", "descPanel": "#f2f2f2 r12 14/20 light", "actionsPill": "h40 r20 #f2f2f2 light", "ownerRow": "the displayName + the 36px subscribe pill" },
+    "newResiduals": "NONE observed on the content surfaces of this lane (the sweep found no new visible residual; the guide-open mechanism divergence was already recorded)"
+  }
+}

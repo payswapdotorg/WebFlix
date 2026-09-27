@@ -139,6 +139,10 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
       <div className="wfx-grid" data-wfx-search-results>
         {view.cards.map((card) => {
           const availability = view.availability.get(card.itemId);
+          // R33-C (N29) — the channel slot's honest identity: the sources
+          // model's displayName when it carries one, else the connector id
+          // (the R32 `sourceNames` seam — never a fabricated name).
+          const sourceName = view.sourceNames[card.connectorId];
           return (
             <ItemCard
               key={card.itemId}
@@ -146,6 +150,7 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
               variant="result"
               {...(availability !== undefined ? { availability } : {})}
               actions={view.cardActions}
+              {...(sourceName !== undefined ? { sourceName } : {})}
             />
           );
         })}

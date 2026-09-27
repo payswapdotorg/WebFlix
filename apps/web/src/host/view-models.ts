@@ -405,6 +405,12 @@ export interface HomeView {
   };
   /** R24-W2 \u2014 the cards' action context (queue/save/share + the preview policy). */
   readonly cardActions: CardActionContext;
+  /**
+   * R33-C (N29) — the sources model's display names (connectorId →
+   * displayName): the home cards' channel-slot identities resolve through
+   * this map; a missing entry keeps the connector id (the honest fallback).
+   */
+  readonly sourceNames: Readonly<Record<string, string>>;
 }
 
 /**
@@ -453,6 +459,32 @@ export function cardActionContextOf(host: WebRuntimeHost): CardActionContext {
   };
 }
 
+/**
+ * R33-C (N29) — THE CONTENT-SURFACE SOURCE NAMES: the sources model's own
+ * display names (connectorId → displayName), the same read the watch
+ * channel row (R29-B) and the shorts rail's boot payload (R32
+ * `sourceNames`) perform. One refresh per surface render; a failing read
+ * keeps the map EMPTY — the connector id is the honest fallback identity
+ * in every channel slot, never a fabricated channel name (the frozen
+ * sources-model identity law).
+ */
+export async function sourceNamesOf(
+  host: WebRuntimeHost,
+): Promise<Readonly<Record<string, string>>> {
+  const sourceNames: Record<string, string> = {};
+  try {
+    const sources = await host.runtime.sources.refresh();
+    for (const source of sources.sources) {
+      if (typeof source.displayName === "string" && source.displayName.trim().length > 0) {
+        sourceNames[source.connectorId] = source.displayName;
+      }
+    }
+  } catch {
+    // The sources read failed: the connector id stays the identity.
+  }
+  return sourceNames;
+}
+
 /** Load the home view from the runtime (Continue Watching + the discovery rows). */
 export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
   const runtime = host.runtime;
@@ -467,6 +499,8 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
   const forYouCards = cardsFromModel(forYouModel);
   const trendingCards = cardsFromModel(trendingModel);
   const shortsCards = cardsFromModel(shortsModel);
+  // R33-C (N29) — the home cards' channel-slot source names (one read).
+  const sourceNames = await sourceNamesOf(host);
   return {
     mode: host.mode,
     continueWatching: {
@@ -494,6 +528,7 @@ export async function loadHomeView(host: WebRuntimeHost): Promise<HomeView> {
       cards: shortsCards,
     },
     cardActions: cardActionContextOf(host),
+    sourceNames,
   };
 }
 
@@ -507,6 +542,8 @@ export interface WatchBrowseView {
   readonly rows: readonly RowView[];
   /** R24-W2 \u2014 the cards' action context (queue/save/share + the preview policy). */
   readonly cardActions: CardActionContext;
+  /** R33-C (N29) — the browse cards' channel-slot source names (connectorId → displayName). */
+  readonly sourceNames: Readonly<Record<string, string>>;
 }
 
 /** Load the long-form watch browse view from the runtime. */
@@ -518,6 +555,8 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
   ]);
   const forYouCards = cardsFromModel(forYouModel);
   const seenForYou = new Set(forYouCards.map((card) => card.itemId));
+  // R33-C (N29) — the browse cards' channel-slot source names (one read).
+  const sourceNames = await sourceNamesOf(host);
   return {
     mode: host.mode,
     rows: [
@@ -537,6 +576,7 @@ export async function loadWatchBrowseView(host: WebRuntimeHost): Promise<WatchBr
       },
     ],
     cardActions: cardActionContextOf(host),
+    sourceNames,
   };
 }
 
@@ -594,6 +634,11 @@ export interface SearchView {
   readonly filters: SearchFilterSelection;
   /** R29-B — the UNFILTERED per-type counts (the contextual chips' truth). */
   readonly typeCounts: ReadonlyMap<string, number>;
+  /**
+   * R33-C (N29) — the result cards' channel-slot source names
+   * (connectorId → displayName; the honest fallback is the connector id).
+   */
+  readonly sourceNames: Readonly<Record<string, string>>;
 }
 
 /** The compact availability summary of one result card (R21-E, pure). */
@@ -692,6 +737,9 @@ export async function loadSearchView(
       cardActions: cardActionContextOf(host),
       filters: {},
       typeCounts: new Map<string, number>(),
+      // R33-C (N29) — no search ran; the empty map keeps every channel
+      // slot on the connector-id fallback (no fabricated names).
+      sourceNames: {},
     };
   }
   // R23-H: the semantic search runs alongside the title search (search
@@ -764,6 +812,8 @@ export async function loadSearchView(
     }
     return true;
   });
+  // R33-C (N29) — the result cards' channel-slot source names (one read).
+  const sourceNames = await sourceNamesOf(host);
   return {
     mode: host.mode,
     query,
@@ -775,6 +825,7 @@ export async function loadSearchView(
     cardActions: cardActionContextOf(host),
     filters: selection,
     typeCounts,
+    sourceNames,
   };
 }
 

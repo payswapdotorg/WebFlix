@@ -39,8 +39,11 @@ export function WatchBrowseSurface({
       </h1>
       <p className="wfx-page-subtitle">Long-form browsing — your sources&apos; movies, series, and episodes.</p>
       {discovery !== undefined ? <CompactDiscoveryControls bundle={discovery} surface="watch" /> : null}
+      {/* R33-C (N29) — every card's channel slot resolves through
+          view.sourceNames (the sources model's own display names; the
+          connector id stays the honest fallback). */}
       {view.rows.map((row) => (
-        <Row key={row.id} row={row} actions={view.cardActions} />
+        <Row key={row.id} row={row} actions={view.cardActions} sourceNames={view.sourceNames} />
       ))}
       {!hasContent && !allFailed ? (
         <EmptyState
