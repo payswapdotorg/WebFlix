@@ -15,9 +15,20 @@
  * An error/empty shorts model projects to an EMPTY page (the honest empty
  * state downstream, never fabricated cards); the typed failure is carried
  * so the surface can render the error state.
+ *
+ * R33-A — THE SHORTS PLAYBACK SESSION (the session law): the media stage's
+ * plays record through the SAME session seam the watch surface uses —
+ * `resolveShortsPlaybackSession` below is the player page's media path
+ * (`host/view-models.ts`'s resolvePlayback → prepare → the playback
+ * bridge's record) in its minimal form, resolved for the CURRENT card at
+ * view time (the stage's first provider-reported play mints it through
+ * `POST /api/shorts-session`): the runtime's own session id + the bridge
+ * intent, so the stage's /api/playback commands and /api/events folds land
+ * in the SAME watch-state machinery — resume truth and watch state stay
+ * coherent across surfaces.
  */
 
-import type { RecommendationPolicy } from "@wfx/domain";
+import type { PlaybackRealization, RecommendationPolicy } from "@wfx/domain";
 import { DEFAULT_PREFETCH_AHEAD, type ShortFeedCard, type ShortFeedPage } from "@wfx/experience";
 import type { SearchHit } from "@wfx/client-runtime";
 
@@ -27,6 +38,9 @@ import { SHORTS_SEED_QUERY } from "./view-models";
 // (the frozen list name the REAL subscribe seam writes — the same the watch
 // page's pill, the rail subscriptions, and the subscriptions feed use).
 import { SUBSCRIPTIONS_LIST } from "@/components/player/subscription-list";
+// R33-A — the session seam's own machinery (the SAME the watch surface's
+// media path uses: the playback bridge's intent record).
+import { recordPlaybackSession } from "./playback-bridge";
 
 /** The serializable payload the shorts surface boots from. */
 export interface ShortsBootPayload {
@@ -189,4 +203,101 @@ export async function loadShortsPayload(host: WebRuntimeHost): Promise<ShortsBoo
     sourceNames,
     subscriptions: { sourceKeys: subscriptionSourceKeys, itemIds: subscriptionItemIds },
   };
+}
+
+// ---------------------------------------------------------------------------
+// R33-A — the shorts playback session (the watch surface's own seam)
+// ---------------------------------------------------------------------------
+
+/** The typed outcome of one shorts playback-session resolution. */
+export type ShortsPlaybackSessionOutcome =
+  | { readonly ok: true; readonly sessionId: string }
+  | { readonly ok: false; readonly kind: string; readonly detail: string };
+
+/**
+ * R33-A — resolve one shorts card's playback session through the SAME
+ * seam the watch surface's media path uses (`host/view-models.ts`'s
+ * resolvePlayback → controller.prepare() → the playback bridge's
+ * `recordPlaybackSession` — the frozen path, never a second playback
+ * system):
+ *
+ * - the EMBED realization is preferred (the realization the media stage
+ *   actually mounts — resolved through `serverPort.resolve` exactly as the
+ *   player page's `&mode=embed` switch does, then handed to the runtime's
+ *   own capability-checked resolve);
+ * - `prepare()` engages the surface exactly as the page engaged it;
+ * - the bridge intent records so the stage's later `POST /api/playback`
+ *   commands resolve on every module/invocation boundary (the R24-W2
+ *   bridge + the R26-W2 client-carried intent laws);
+ * - a resolution that cannot complete answers the TYPED failure (never a
+ *   fabricated session id — the stage then records nothing, honestly).
+ */
+export async function resolveShortsPlaybackSession(
+  host: WebRuntimeHost,
+  input: {
+    readonly itemId: string;
+    readonly connectorId: string;
+    readonly externalRef: string;
+  },
+): Promise<ShortsPlaybackSessionOutcome> {
+  // The embed realization lookup — the same transport + preference the
+  // player page's `&mode=embed` resolution performs (view-models.ts's
+  // preferred-mode law).
+  let preferredRealization: PlaybackRealization | undefined;
+  try {
+    const resolved = await host.serverPort.resolve(input.externalRef);
+    if (resolved.ok && Array.isArray(resolved.value)) {
+      preferredRealization = resolved.value.find(
+        (realization) =>
+          realization.mode === "embed" &&
+          typeof realization.url === "string" &&
+          realization.url.length > 0,
+      );
+    }
+  } catch {
+    // The resolve read failed: the runtime's own precedence answers
+    // below (never a fabricated preference).
+  }
+  if (preferredRealization === undefined) {
+    return {
+      ok: false,
+      kind: "no-embed-realization",
+      detail:
+        "the source provides no embed realization for this short — the stage has no playable realization to session-bind",
+    };
+  }
+  try {
+    // THE SAME frozen resolve path the watch surface runs.
+    const session = await host.runtime.resolvePlayback({
+      itemId: input.itemId,
+      externalRef: input.externalRef,
+      connectorId: input.connectorId,
+      realization: preferredRealization,
+    });
+    const controller = host.runtime.playback.controller(session.id);
+    if (controller === undefined) {
+      return { ok: false, kind: "no-controller", detail: "the resolved playback session admitted no controller" };
+    }
+    const prepared = await controller.prepare();
+    if (!prepared.ok) {
+      return { ok: false, kind: "prepare-failed", detail: prepared.detail };
+    }
+    // THE BRIDGE RECORD — the same intent record the player page writes
+    // (the /api/playback route's dev-split + multi-instance law).
+    recordPlaybackSession({
+      sessionId: session.id,
+      itemId: input.itemId,
+      externalRef: input.externalRef,
+      connectorId: input.connectorId,
+      preferredMode: "embed",
+    });
+    return { ok: true, sessionId: session.id };
+  } catch (thrown) {
+    const kind = (thrown as { kind?: unknown }).kind;
+    return {
+      ok: false,
+      kind: typeof kind === "string" ? kind : "unavailable",
+      detail: thrown instanceof Error ? thrown.message : String(thrown),
+    };
+  }
 }

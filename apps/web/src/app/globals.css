@@ -3379,6 +3379,82 @@ html[data-theme="light"] .wfx-subscribe {
   letter-spacing: 0;
 }
 
+/* R33-A — THE SHORTS MEDIA STAGE (the operator's #1: "the shorts are
+ * still bad"; G4-CORPUS.md "THE PLAYER": "Vertical 716×716, autoplaying
+ * (readyState 4, paused false, blob src)" — the player IS the surface).
+ * THE FULL-BLEED FORM: the stage fills the shorts viewport's card at
+ * WebFlix's own 420px-scale form (the captured 716×716-within-1440×900
+ * truth adapted to the established WFX-051 viewport — the adaptation
+ * recorded in the lane's divergence ledger). The stage joins as the
+ * card's FIRST child in the DOM, so the paint order stacks it under the
+ * monogram/overlay/rail with ZERO changes to the pinned chrome's rules
+ * (the seam law); the R32 rail keeps its own right-edge anchor over the
+ * stage, the channel row its bottom-left one.
+ * The non-staged forms (resolving / unavailable / the next card's
+ * resolve-only prefetch marker) render NO visible element — the card's
+ * placeholder-art + title form stands unchanged (the honest-fallback
+ * law; never a spinner, never a fake player). The clear-screen law hides
+ * overlay chrome only — the stage is the media and stays visible. */
+.wfx-shortstage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* The staged form: the REAL provider embed, full-bleed (the shared
+ * presentation law — the provider's own privacy-enhanced host +
+ * enablejsapi + the muted-autoplay pair, in the containment-law sandbox
+ * posture). The frame re-arms pointer events: the provider's own
+ * controls are this surface's chrome (the chrome law), and the corpus's
+ * tap behavior is the provider's own in-frame tap — the stage never
+ * covers them. */
+.wfx-shortstage[data-wfx-shortstage-state="staged"] {
+  background: var(--wfx-stage-black);
+}
+
+.wfx-shortstage__frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  pointer-events: auto;
+}
+
+/* THE UNMUTE AFFORDANCE (the watch surface's own family form —
+ * EmbedStage's wfx-player__unmute grammar, evidence-gated on the
+ * provider's own muted report): anchored at the card's top-left, clear
+ * of the pinned channel row (bottom-left) and the R32 rail (right edge),
+ * inside the corpus's own top-chrome zone. */
+.wfx-shortstage__unmute {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 36px;
+  padding: 0 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wfx-shortstage__unmute:hover,
+.wfx-shortstage__unmute:focus-visible {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.wfx-shortstage__unmute:focus-visible {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: 2px;
+}
+
 .wfx-shorts__nav {
   position: absolute;
   right: calc(50% - min(210px, 50%) - 4.25rem);
@@ -3515,6 +3591,13 @@ html[data-theme="light"] .wfx-subscribe {
    * clear the swipe hint + touch law). */
   .wfx-shortrail {
     bottom: calc(1rem + 3.25rem);
+  }
+
+  /* R33-A — the stage's unmute affordance carries the 44px touch-target
+   * law on the mobile form (the established family law — the corpus has
+   * no unmute measure; the watch surface's own pill grammar scales up). */
+  .wfx-shortstage__unmute {
+    min-height: 44px;
   }
 }
 
