@@ -47,3 +47,12 @@ row — never fabricated parity.
   provider's own in-frame controls are the mapping (divergence rows 3–6).
 - A shorts-player watermark datum → the card's pinned monogram stays
   (divergence row 10).
+
+## The REQUIRE-CHANGES fix round (the lead's review @ 1610d44 — the
+pinned-controls collision law; every element cites its datum)
+
+| # | The element | The citation |
+|---|---|---|
+| F1 | The top-chrome zone is the player's own (the rows' clearance law) | G4-CORPUS.md "THE TOP PLAYER CHROME (auto-hiding — the DOM record, y=80, 48×48 each)" + g4-rail-extras.json's pitch record (Pause (k) @366 → Mute (m) @422 — the 56px origin-to-origin pitch = the 48px control + its 8px gap) — the pinned rows clear the zone by the corpus's own measures (divergence row 16) |
+| F2 | The pill's click-layer re-arm (`pointer-events: auto`) | globals.css's own stage law (`.wfx-shortstage__frame { pointer-events: auto }` — "The frame re-arms pointer events: the provider's own controls are this surface's chrome") — the unmute pill is the stage's other interactive child; it re-arms the same way (the defect's second half, divergence row 16) |
+| F3 | The pill's untouched top-left anchor | G4-CORPUS.md's chrome anchor grammar (the corpus's own y=80 = the player's top − 12; the captured controls' x=366 ≈ the player's left edge + 4) — WebFlix's 12px/12px card inset, the approved form (divergence row 15), byte-identical through the fix |

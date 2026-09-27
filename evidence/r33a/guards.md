@@ -48,3 +48,25 @@ new files included through the root project's `apps/*/src` + `apps/*/tests`
 includes — the repo's own typecheck convention covers the app).
 
 (The remaining stages append below as they complete.)
+
+---
+
+## THE REQUIRE-CHANGES FIX ROUND (the lead's review @ 1610d44 — the
+pinned-controls collision; re-run on the fix head)
+
+| # | Stage | Command | Result |
+|---|-------|---------|--------|
+| 1 | battery (serial) | `nice -n 19 ionice -c3 bun test --parallel=1` | **PASS — 5221 pass / 1 skip / 0 fail** (the 5200/1/0 floor + the lane's now-21 — the 19 + the 2 new pinned-controls collision tests — ZERO regressions; 33549 expect() calls, 298 files, 228.48s; the 1 skip = the R11 webtorrent honest env skip) — `guards-battery-fix.log` |
+| 2 | lint (lane-clean) | `bunx eslint <the lane's files>` | PASS — 0 errors, 0 warnings (the fix round touched `globals.css` + `shorts-media-stage.test.ts`; the lane's source set re-linted clean) |
+| 3 | typecheck | `bun run typecheck` | PASS — exit 0, zero diagnostics (root + journeys) |
+| 4 | contract-check | `bun run contract-check` | PASS — "contract-check: OK — 12 frozen blocks in sync, 7 extension types present." |
+| 5 | lane-check | `bun run lane-check` | PASS — "lane-check: OK — 946 files, no cross-lane private imports." (unchanged count: the fix round adds no files) |
+| 6 | parity-conformance | `bun test tests/parity-conformance.test.ts` | PASS — **19 pass / 0 fail** (366 expect() calls) — CONFORMANT |
+| 7 | build | `bun run --filter '@wfx/app-web' build` | PASS — Next.js production build exit 0 |
+| 8 | browser-verified live (the fix's own bar) | the settled service-boot feed: elementFromPoint + the REAL click round trips | **PASS** — browser-verification.md §11: every elementFromPoint probe across the pill's rect resolves to THE PILL (before: every probe covered by the chips band + the controls row + the source chip); the REAL coordinate click at (745,86) → the provider's own mutedDelivery muted=false → the pill retired; the chips still function on both honest paths (the typed refusal + the ok→reload); the mobile 44px form clear; the VLM-read before/after pair |
+
+The fix round's changed files: `apps/web/src/app/globals.css` (the
+pinned-controls law: the three rows' top offsets, desktop + mobile, + the
+pill's pointer-events re-arm — CSS only, zero markup changes) +
+`apps/web/tests/shorts-media-stage.test.ts` (the collision-law regression
+describe, 2 new tests).

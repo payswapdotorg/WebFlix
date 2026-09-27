@@ -174,3 +174,42 @@ their R32 counts on this lane's markup).
     the pill carries the 44px touch-target law (the established family
     law; the desktop form keeps the watch surface's 36px family
     measure).
+
+16. **[HD] The pinned-controls collision law — the rows sit BELOW the
+    player's top-chrome zone (the lead's REQUIRE-CHANGES fix).** The
+    settled service-boot state placed the R24-W2 discovery chips + the
+    position pill + the parity controls row in the same top band as the
+    unmute pill (all at `top: 0.75rem` over the full-bleed card), and
+    the pill is trapped inside the card's frozen z=2 stacking context
+    (the current/next swipe layering), so the band's z=6 / the
+    controls' z=12 sat over the pill's rect by construction —
+    elementFromPoint at every probe resolved to the chips/controls,
+    never the pill. The corpus's own law (G4-CORPUS.md "THE TOP PLAYER
+    CHROME": the 48×48 auto-hiding band at the player's top is the
+    player's own) resolves it GEOMETRICALLY: every pinned row sits
+    below the chrome zone — the corpus chrome height (48px) + its own
+    8px inter-control gap (the 56px origin pitch, Pause @366 → Mute
+    @422) = the 3.5rem desktop offset; the mobile form clears the 44px
+    touch-target zone (the 3.25rem offset; the band keeps its own
+    below-the-position-pill law at 2.75rem + 3.25rem). The lead's
+    "fully above the chrome band" reading is geometrically impossible
+    in the approved full-bleed adaptation (the card's top = the shell's
+    top — no band exists above it; the captured grammar's margins
+    belong to the corpus's centered 716×716 form, divergence row 2),
+    so the honest clear is below — recorded here. The rows keep their
+    pinned form and every click (the mode switch verified live on both
+    its honest paths — the typed refusal + the ok→reload); the pill
+    keeps the corpus's top-left anchor byte-identically. THE DEFECT'S
+    SECOND HALF, found in the fix's live re-probe: the stage root is
+    `pointer-events: none` (the inert marker forms never block the
+    card) and the pill INHERITED it — computed `pointer-events: none`,
+    so a real user could never click it even where uncovered (the
+    previous session's automated click bypassed hit-testing; the lead's
+    user-level pass exposed exactly this class of gap). The pill now
+    re-arms `pointer-events: auto` — the frame's own re-arming law
+    (globals.css: "The frame re-arms pointer events") applied to the
+    stage's other interactive child. The lane's regression suite
+    carries the law (shorts-media-stage.test.ts's pinned-controls
+    collision describe: the anchor + the clearance computed from the
+    stylesheet's own numbers, desktop + mobile, + the click-layer
+    re-arm).

@@ -182,3 +182,93 @@ capture.
 - `browser-06-fixture-unbound.png` — the fixtures boot's honest unbound stage (staged, live=false)
 - `browser-07-clearscreen-stage-visible.png` — clear-screen: the chrome hidden, the stage visible
 - `browser-08-fixture-rail-over-stage.png` — the R32 rail + channel row over the joined stage (the fixture card, chrome restored)
+
+## 11. THE LEAD'S REQUIRE-CHANGES FIX — THE PINNED-CONTROLS COLLISION
+(fix-01..fix-05 + probes/fix-before|after-elementfrompoint.json; the lane
+head moved past the approved `1610d44` by exactly this fix)
+
+**THE DEFECT, REPRODUCED LIVE BEFORE THE FIX**
+(`probes/fix-before-elementfrompoint.json`): the settled service-boot feed
+(WFX_API_BASE=webflix-api.vercel.app, 1440×900, the discovery chips
+present — the state the lead's user-level pass probed), the unmute pill at
+(642,68) 205×36 was covered across its ENTIRE rect — the "Blend" chip +
+the discovery band (z=6) over its left fifth, the R24-W2 controls row +
+its source chip (z=12) over the rest; elementFromPoint at the pill's
+center resolved to `SPAN.wfx-capchip` ("From wfx-experience-service"),
+and the sweep resolved to the chips/controls at every probe point. The
+pill is trapped inside the card's frozen z=2 stacking context (the
+current/next swipe layering), so no z-index can win it back, and raising
+the card would steal the chips' clicks.
+
+**THE ROOT CAUSES (two — the second found in the fix's live re-probe):**
+(1) the three pinned rows (the discovery band / the position pill / the
+controls row) anchored the same top band over the full-bleed card at
+z=6/z=4/z=12; (2) the stage root is `pointer-events: none` (the inert
+marker forms never block the card) and the pill INHERITED it — computed
+`pointer-events: none`, so a real user could never click it even where
+uncovered (the previous session's automated click bypassed hit-testing;
+the lead's user-level pass exposed exactly this class of gap).
+
+**THE FIX (the corpus's own law — G4-CORPUS.md's top-chrome band is the
+player's):** (1) every pinned row sits BELOW the chrome zone — the corpus
+chrome height (48px) + its own 8px inter-control gap (the 56px origin
+pitch, Pause @366 → Mute @422) = the 3.5rem desktop offset; the mobile
+form clears the 44px touch-target zone (the 3.25rem offset; the band
+keeps its below-the-position-pill law at 2.75rem + 3.25rem); (2) the pill
+re-arms `pointer-events: auto` — the frame's own re-arming law. The
+pill's anchor is UNTOUCHED (12px/12px, the corpus's top-left); the
+chips/controls keep their pinned form and every click. The regression
+lives in the lane suite (shorts-media-stage.test.ts's pinned-controls
+collision describe — the anchor, the clearance computed from the
+stylesheet's own numbers, desktop + mobile, + the click-layer re-arm;
+the lane's count 19 → 21).
+
+**THE VERIFICATION (all real-coordinate, hit-tested clicks):**
+
+- **elementFromPoint across the pill's rect** (a 15-point sweep,
+  `probes/fix-after-elementfrompoint.json`): **every probe resolves to
+  THE PILL**; the center (745,86) resolves to the pill; the chrome-zone
+  clearance = 20px (the rows' band top 124 − the pill's bottom 104); the
+  pill's computed `pointer-events: auto`.
+- **THE UNMUTE ROUND TRIP, REAL**: a coordinate-based mouse click at
+  (745,86) — the hit-tested path a real user's click takes — → `unMute`
+  through the documented channel → **the provider answered its own
+  `mutedDelivery: muted=false`** → `data-wfx-shortstage-muted="false"` +
+  the pill retired (evidence-gated) — `fix-04-after-unmute-roundtrip-pill-retired.png`.
+- **THE CHIPS STILL FUNCTION, both honest paths**: a real coordinate
+  click on "Following" → `POST /api/feed-mode` → the deployed API's
+  honest TYPED REFUSAL ("the Following mode needs someone you follow
+  first" + the "Bring your feed" recovery — the R21-D
+  discoverable-not-hidden law; the anonymous service state carries only
+  for-you as available); a real coordinate click on "For you"
+  (available) → POST ok → **the honest reload** (the no-optimism law:
+  the server's next read) — the mode-switch transport proven on both
+  its honest paths. All four chips render at their shifted band (y=130).
+- **MOBILE (390×844, fix-05)**: the pill 205×44 (the touch law), the
+  center resolves to the pill, every row clear (the controls 124, the
+  position 120, the band 152 — the wrapped chips at 158/210); the one
+  non-pill sweep probe is the pill's own inline SVG icon (a child of the
+  button — its click bubbles to the pill's own target).
+- **THE VLM READ** of the before/after pair (glm-5v-turbo): "In image 1
+  the chips visibly cover and obscure the right portion of the unmute
+  pill… in image 2 the unmute pill is completely free of overlap, fully
+  visible, intact, and clearly looks clickable at the card's top-left
+  corner."
+
+### The fix round's captures
+
+- `fix-01-before-chips-and-controls-cover-pill.png` — the defect (the
+  settled feed, the chips + the controls row over the pill's band)
+- `fix-02-after-rows-below-chrome-zone.png` — the rows shifted below the
+  chrome zone (the pill's band clear; the click-layer re-arm followed)
+- `fix-03-after-pill-owns-chrome-zone.png` — the settled state: the pill
+  owns the chrome zone, the chips + position + controls in their own
+  band below (VLM-verified with fix-01)
+- `fix-04-after-unmute-roundtrip-pill-retired.png` — after the REAL
+  coordinate click: the provider reported muted=false, the pill retired
+- `fix-05-mobile-390-rows-clear-chrome-zone.png` — the mobile form (the
+  44px pill clear; the rows in their shifted band)
+- `probes/fix-before-elementfrompoint.json` +
+  `probes/fix-after-elementfrompoint.json` — the elementFromPoint probe
+  truth (before: every probe covered by the chips band + the controls
+  row + the source chip; after: every probe resolves to the pill)

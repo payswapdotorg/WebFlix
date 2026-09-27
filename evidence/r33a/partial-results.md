@@ -5,10 +5,35 @@ Lane: `wfx/r33a/shorts-player` from `main @ 178873a`. The operator's #1:
 stack with NO media element (the R32 divergence ledger row 8). This lane
 closes that gap with the REAL machinery.
 
-## STATE: COMPLETE (all gates green; the transport relayed)
+## STATE: COMPLETE — the REQUIRE-CHANGES fix round DONE (all gates green;
+## the transport relayed)
 
-The lane head: `f017cf5` → (final evidence commit appended after the
-browser verification — see RELAY-MANIFEST.txt for the exact lane SHA).
+- The lane head through the approved review: `1610d44` (the lead's review:
+  95% verified, ONE blocking defect — the pinned-controls collision).
+- THE FIX ROUND (this re-entry): the defect reproduced live BEFORE
+  (`probes/fix-before-elementfrompoint.json` — the pill's rect covered by
+  the Blend chip + the discovery band (z=6) on its left fifth and the
+  R24-W2 controls row + its source chip (z=12) over the rest; the pill's
+  center resolved to the source-chip span) + a SECOND root cause found in
+  the re-probe (the pill inherited `pointer-events: none` from the stage
+  root — a real user could never click it even where uncovered). THE FIX
+  (the corpus's own law, G4-CORPUS.md's top-chrome band is the player's):
+  the three pinned rows (discovery band / position pill / controls row)
+  sit BELOW the chrome zone (the corpus 48px chrome height + its 8px gap
+  = the 56px pitch → the 3.5rem desktop / 3.25rem mobile offsets; the
+  band keeps its below-the-position-pill mobile law) + the pill re-arms
+  `pointer-events: auto` (the frame's own law). The pill's anchor
+  UNTOUCHED; the chips keep every click (both mode-switch paths verified
+  live). The regression: the lane suite's pinned-controls collision
+  describe (2 new tests, 19 → 21).
+- THE FIX'S GATES (guards.md's fix-round table): battery **5221/1/0**
+  (the floor + 21, ZERO regressions) · lint lane-clean · typecheck clean
+  · contract-check OK · lane-check OK (946) · parity-conformance 19/19
+  · build exit 0 · browser-verified live (§11: every probe resolves to
+  THE PILL; the REAL coordinate click round trip; the chips' both honest
+  paths; the mobile 44px form; the VLM-read before/after).
+- The final lane SHA: see RELAY-MANIFEST.txt (the fix commit on top of
+  `1610d44`).
 
 ### 0. Boot + survey (COMPLETE — see the survey record below)
 ### 1. The design (frozen before code — below)
