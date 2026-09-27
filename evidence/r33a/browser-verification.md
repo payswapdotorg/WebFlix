@@ -259,11 +259,13 @@ the lane's count 19 → 21).
 
 - `fix-01-before-chips-and-controls-cover-pill.png` — the defect (the
   settled feed, the chips + the controls row over the pill's band)
-- `fix-02-after-rows-below-chrome-zone.png` — the rows shifted below the
-  chrome zone (the pill's band clear; the click-layer re-arm followed)
 - `fix-03-after-pill-owns-chrome-zone.png` — the settled state: the pill
   owns the chrome zone, the chips + position + controls in their own
-  band below (VLM-verified with fix-01)
+  band below (VLM-verified with fix-01). [An intermediate
+  rows-shift-only capture was taken and removed: byte-identical to
+  fix-03 pixel-for-pixel — the pointer-events re-arm changes hit-testing
+  truth (the probes), not a rendered pixel; the lane's own
+  byte-identical-capture discipline.]
 - `fix-04-after-unmute-roundtrip-pill-retired.png` — after the REAL
   coordinate click: the provider reported muted=false, the pill retired
 - `fix-05-mobile-390-rows-clear-chrome-zone.png` — the mobile form (the
