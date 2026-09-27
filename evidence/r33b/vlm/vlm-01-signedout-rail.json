@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the image provided, here are the navigation entries in the left rail from top to bottom:\n\n**Navigation Entries:**\n*   Home\n*   Shorts\n*   Subscriptions\n*   Library\n*   **You**\n*   History\n*   Playlists\n*   Offline\n*   Settings\n\n**Answers to your questions:**\n\n1.  **Is there an entry labeled 'Subscriptions' in the primary (top) group of the rail?**\n    Yes.\n2.  **Is there any entry labeled 'Watch'?**\n    No.\n3.  **How many entries read 'History'?**\n    One (1).\n4.  **Does the top search bar area show any microphone/voice-search button next to it?**\n    No, there is only a magnifying glass search icon button visible inside the right end of the search bar; there is no microphone icon.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790501034,
+  "id": "202609271723504dfa6a26017b4ccf",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609271723504dfa6a26017b4ccf",
+  "usage": {
+    "completion_tokens": 184,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1796,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1980
+  }
+}
