@@ -45,6 +45,22 @@
  *   icon-only form; share carries its captured "Share" text label).
  *   §G3 (the home resume bar) stays PENDING — not this lane's surface.
  *
+ * R33-A — THE MEDIA STAGE JOIN (the operator's #1: "the shorts are still
+ * bad"): the current card grows the REAL provider embed, full-bleed
+ * (`components/shorts/ShortsMediaStage` — the same resolve seam the hover
+ * preview uses, the shared presentation law verbatim, the provider's own
+ * broadcasts as the only evidence, the plays recorded through the SAME
+ * session seam the watch surface uses). THE SEAM LAW: the stage joins as
+ * the card's FIRST child (DOM-order stacking under the monogram/overlay/
+ * rail — zero changes to the pinned chrome's rules); the R32 rail, the
+ * channel row, the swipe/keys/queue wiring, and the re-rank loop stay
+ * byte-identical. THE PREFETCH LAW: only the current card MOUNTS an
+ * embed; the next card's stage is the resolve-only prefetch form (the
+ * cache warms, nothing mounts — never the whole stack). An item with no
+ * available realization keeps the honest current card form (the
+ * placeholder-art + title truth — the stage's typed-absence states render
+ * no visible element).
+ *
  * Determinism seams (tests inject both): `now` (the clock — production
  * reads real time, the documented client-side seam; every DECISION consumes
  * the injected value) and `fetchPage` (the fresh-page source — production
@@ -82,6 +98,9 @@ import { Icon } from "@/components/shell/Icon";
 import { placeholderArt, placeholderMonogram } from "@/components/ui/format";
 // R32 — the G4 channel row (the REAL subscribe seam's pill).
 import { ShortsSubscribeRow, type ShortsSubscribeRowProps } from "@/components/shorts/ShortsSubscribeRow";
+// R33-A — the media stage (the real provider embed, full-bleed, joined as
+// the card's first child — the seam law's minimal growth).
+import { ShortsMediaStage, type ShortsMediaStageProps } from "@/components/shorts/ShortsMediaStage";
 
 // ---------------------------------------------------------------------------
 // R32 — the session channel truths (the G4 rail's identity joins)
@@ -351,6 +370,20 @@ interface RenderContext {
    * carries no source identity.
    */
   subscribe: ShortsSubscribeRowProps | null;
+  /**
+   * R33-A — THE MEDIA STAGE's serialized input for the CURRENT card (the
+   * card's own realization identity through the session index — the same
+   * join the rail's channel row reads), or null when the card carries no
+   * joined realization identity (the honest fallback: no stage, the
+   * placeholder-art card form unchanged).
+   */
+  stage: ShortsMediaStageProps | null;
+  /**
+   * R33-A — the NEXT card's resolve-only stage input (the prefetch law:
+   * the cache warms, nothing mounts), or null when the next card carries
+   * no joined realization identity.
+   */
+  stageNext: ShortsMediaStageProps | null;
 }
 
 
@@ -412,14 +445,28 @@ function renderElements(elements: readonly ShortFeedElement[], ctx: RenderContex
         const isCurrent = element.role === "current";
         const art = isCurrent ? ctx.art.current : ctx.art.next;
         const monogram = isCurrent ? ctx.monogram.current : ctx.monogram.next;
+        // R33-A — THE MEDIA STAGE (the real-media law): the card's own
+        // realization identity joins the REAL provider embed as the
+        // article's FIRST child — the DOM order stacks it under the
+        // monogram/overlay/rail, so the pinned card chrome needs zero
+        // rule changes and the stage fills the card full-bleed behind it
+        // (the corpus's "the player IS the surface" form). The current
+        // card mounts the embed (the singleton discipline); the next
+        // card's stage is the resolve-only prefetch form. No joined
+        // identity ⇒ no stage element (the honest placeholder-art card).
+        const stageProps = isCurrent ? ctx.stage : ctx.stageNext;
         return (
           <article
             key={element.key}
             className={`wfx-shortcard${isCurrent ? " wfx-shortcard--current" : " wfx-shortcard--next"}`}
             aria-label={`${element.a11y.title}. ${element.a11y.position}. ${element.a11y.action}. ${element.a11y.affordances}.`}
             data-wfx-shorts-card={element.role}
+            data-wfx-shorts-media={stageProps !== null ? (isCurrent ? "stage" : "prefetch") : "absent"}
             style={art !== null ? { background: art } : undefined}
           >
+            {stageProps !== null ? (
+              <ShortsMediaStage key={`stage:${element.key}`} {...stageProps} active={isCurrent} />
+            ) : null}
             {monogram !== null ? (
               <span className="wfx-shortcard__monogram" aria-hidden="true">
                 {monogram}
@@ -871,6 +918,36 @@ export function ShortsFeed({
         }
       : null;
 
+  // R33-A — THE MEDIA STAGE INPUTS (the real-media law): the current +
+  // next cards' own realization identities through the SAME session
+  // realization index the rail's channel row reads (the boot page + every
+  // fresh re-rank page — never a second source of identity). The current
+  // card's input carries `active` (the stage mounts the real embed); the
+  // next card's is the resolve-only prefetch form. A card with no joined
+  // identity keeps the honest placeholder-art card form (stage null —
+  // typed absence).
+  const currentStage: ShortsMediaStageProps | null =
+    current !== null && currentRealization !== undefined
+      ? {
+          itemId: current.item.id,
+          connectorId: currentRealization.connectorId,
+          externalRef: currentRealization.externalRef,
+          title: current.overlay.title,
+          active: true,
+        }
+      : null;
+  const nextRealization = next !== null ? realizationIndexRef.current.get(next.item.id) : undefined;
+  const nextStage: ShortsMediaStageProps | null =
+    next !== null && nextRealization !== undefined
+      ? {
+          itemId: next.item.id,
+          connectorId: nextRealization.connectorId,
+          externalRef: nextRealization.externalRef,
+          title: next.overlay.title,
+          active: false,
+        }
+      : null;
+
   // R24-W2 — THE SHORTS PARITY CONTROLS (the R24-C Shorts rows: speed
   // controls / clear-screen viewing / inline feedback / the source link).
   // View-state + the same seams the long-form surfaces use: the session
@@ -951,6 +1028,10 @@ export function ShortsFeed({
           channel:
             current !== null && railChannel !== null ? { name: railChannel.channelName } : null,
           subscribe: railSubscribe,
+          // R33-A — the media stage inputs (the current card's real embed +
+          // the next card's resolve-only prefetch form — the prefetch law).
+          stage: currentStage,
+          stageNext: nextStage,
         })}
         {position !== null ? (
           <span className="wfx-shorts__position" data-wfx-shorts-position>
