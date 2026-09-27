@@ -19,6 +19,10 @@ Command sequence (the task's gates, in order, on the lane head):
 | 8 | browser-verified live | the stage playing a real embed end-to-end | **PASS** — browser-verification.md: the real nocookie embed staged full-bleed with the exact presentation law (service boot), the provider's channel LIVE (its own initialDelivery), the unmute + m-key round trips through the documented channel (provider-reported evidence advancing the visible truth), the session law's full round trip through the live routes (mint → play command → watch-state fold, all ok), the prefetch law (exactly 2 resolve reads + exactly 1 live iframe; the swipe re-stages from the warm cache), the R32 rail byte-identical over the stage, the mobile 44px law, the fixtures boot's honest unbound state, the clear-screen law (the stage stays). The provider's own bot-gate blocked the MEDIA in this egress (the VLM-read "Sign in to confirm you're not a bot" — the R28-B corpus's recorded environmental truth); the surface kept the honest phase throughout (unstarted, never fabricated) — recorded in full |
 
 The battery log (the long stage): `guards-battery.log` in this folder.
+**The final-head re-proof**: the battery was re-run VERBATIM on the final
+lane head `2c356b5` (the evidence-only commits after `f017cf5` change no
+code): `guards-battery-final.log` — **5219 pass / 1 skip / 0 fail**
+(33532 expect() calls, 298 files, 221.54s) — identical.
 
 ## Stage results
 
