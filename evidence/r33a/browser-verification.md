@@ -30,20 +30,25 @@ position **1 / 24**):
 | the R32 rail over the stage | **48px wide @ x=994** — the card's right edge minus its own 0.5rem anchor (1050−8−48) — the R32 anchor law holding OVER the joined stage |
 | the channel row | present over the stage (bottom-left, the R32 row) + the subscribe pill |
 
-## 2. THE UNMUTE ROUND TRIP — REAL PROVIDER EVIDENCE (browser-03)
+## 2. THE UNMUTE ROUND TRIP — REAL PROVIDER EVIDENCE (browser-03a/03b)
 
 **Click "Sound off — tap to unmute"** → the command went out through the
 provider's documented channel (`unMute`) → **the provider answered with
 its own `mutedDelivery: muted=false`** → the evidence store advanced →
 `data-wfx-shortstage-muted="false"` and the pill retired (evidence-gated:
-it renders only while the provider reports muted). The **m key** (the
-watch surface's grammar) round-tripped the same way in reverse: a
-dispatched keydown "m" → `mute` through the channel → the provider
-answered `muted=true` → the pill re-rendered. [NOTE: `agent-browser
-press k/m` after a click inside the provider's cross-origin frame did
-not reach the parent window (the focus lived in the frame — keyboard
-events do not bubble out of a cross-origin iframe); the dispatched
-events prove the bindings. Recorded as the environmental note.]
+it renders only while the provider reports muted). The two distinct
+captures (VLM-verified, glm-5v-turbo): *"in the first image, there is a
+pill-shaped button at the top-left of the vertical video reading 'Sound
+off — tap to unmute'… in the second image, that pill-shaped button is
+gone (absent)"* — the round trip's before/after visual truth. The **m
+key** (the watch surface's grammar) round-tripped the same way in
+reverse: a dispatched keydown "m" → `mute` through the channel → the
+provider answered `muted=true` → the pill re-rendered. [NOTE:
+`agent-browser press k/m` after a click inside the provider's
+cross-origin frame did not reach the parent window (the focus lived in
+the frame — keyboard events do not bubble out of a cross-origin iframe);
+the dispatched events prove the bindings. Recorded as the environmental
+note.]
 
 ## 3. THE PROVIDER'S OWN GATE — THE HONEST PHASE TRUTH (browser-02)
 
@@ -168,9 +173,10 @@ capture.
 
 ## Captures
 
-- `browser-01-service-staged.png` — the real nocookie embed staged full-bleed (1440×900, service boot)
+- `browser-01-service-staged.png` — the real nocookie embed staged full-bleed (1440×900, service boot, the muted pill present)
 - `browser-02-provider-gate.png` — the provider's own bot-gate inside the frame (the VLM-read environmental truth)
-- `browser-03-unmute-roundtrip.png` — after the unmute round trip (muted=false, the pill retired)
+- `browser-03a-muted.png` — the muted state (the pill present — VLM-verified)
+- `browser-03b-unmuted.png` — after the unmute round trip (the provider reported muted=false; the pill retired — VLM-verified)
 - `browser-04-swipe-staged.png` — the second card staged from the warm prefetch cache (position 2/24)
 - `browser-05-mobile-390.png` — the mobile form (the 44px unmute + the rail's anchor + full-bleed)
 - `browser-06-fixture-unbound.png` — the fixtures boot's honest unbound stage (staged, live=false)
