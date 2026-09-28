@@ -1,0 +1,173 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "2dc3da2439d707e744f1da475da17cc503cf3333",
+  "branch": "main",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T23:16:36.099Z",
+    "finishedAt": "2026-09-28T23:16:54.709Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790637401936)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J46",
+      "title": "Chat replay scrub",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the watch page renders the ARCHIVED-LIVE-VOD mode for an ended broadcast",
+          "expected": "data-wfx-livewatch-state of [data-wfx-livewatch] is \"archived-live-vod\"",
+          "observed": "\"archived-live-vod\"",
+          "pass": true
+        },
+        {
+          "description": "the 'was live' badge renders (the ended truth, never red)",
+          "expected": "[data-wfx-livedone-badge] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the archived VOD carries its duration (it scrubs like any video)",
+          "expected": "text of [data-wfx-archive-duration] contains \"13:00\"",
+          "observed": "\"13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the chat replay panel renders",
+          "expected": "[data-wfx-chatreplay] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the replay truth names the committed log (never a live stream)",
+          "expected": "text of [data-wfx-chatreplay-truth] contains \"committed log, never a live stream\"",
+          "observed": "\"Chat replay — the archived live chat, timed to the video position (a committed log, never a live stream).\"",
+          "pass": true
+        },
+        {
+          "description": "the archived slow-mode fact renders in the past tense (a recorded session fact)",
+          "expected": "text of [data-wfx-chatreplay-facts] contains \"Slow mode (5s) was on during this stream\"",
+          "observed": "\"Slow mode (5s) was on during this stream. 15 archived messages.\"",
+          "pass": true
+        },
+        {
+          "description": "the committed log's size is disclosed",
+          "expected": "text of [data-wfx-chatreplay-facts] contains \"15 archived messages\"",
+          "observed": "\"Slow mode (5s) was on during this stream. 15 archived messages.\"",
+          "pass": true
+        },
+        {
+          "description": "no live-chat surface renders on an archived broadcast (the ended stream never streams a current chat)",
+          "expected": "zero live-chat panels",
+          "observed": "0",
+          "pass": true
+        },
+        {
+          "description": "the replay clock starts at the video's start",
+          "expected": "text of [data-wfx-chatreplay-clock] is exactly \"0:00 / 13:00\"",
+          "observed": "\"0:00 / 13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the clock follows the scrub",
+          "expected": "text of [data-wfx-chatreplay-clock] is exactly \"0:20 / 13:00\"",
+          "observed": "\"0:20 / 13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the window at 0:20 holds exactly the entries the playhead passed (1s/5s/11s/18s — the 26s+ ones absent)",
+          "expected": "offsets 1000, 5000, 11000, 18000",
+          "observed": "1000, 5000, 11000, 18000",
+          "pass": true
+        },
+        {
+          "description": "nothing is pinned at 0:20 (the pin stands from its own 44s offset)",
+          "expected": "no pinned bar",
+          "observed": "no pinned bar",
+          "pass": true
+        },
+        {
+          "description": "the clock follows the second scrub",
+          "expected": "text of [data-wfx-chatreplay-clock] is exactly \"1:40 / 13:00\"",
+          "observed": "\"1:40 / 13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the window at 1:40 moved with the playhead (the 74s/88s entries; the pre-70s ones gone)",
+          "expected": "offsets 74000, 88000",
+          "observed": "74000, 88000",
+          "pass": true
+        },
+        {
+          "description": "the archived pinned message renders past its own offset",
+          "expected": "[data-wfx-chatreplay-pinned] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the moderator's archived pin is the pinned message (the log's own pin)",
+          "expected": "text of [data-wfx-chatreplay-pinned] contains \"Pinned: tonight's shot list\"",
+          "observed": "\"Pinned\nmod_ana: 📌 Pinned: tonight's shot list is in the description — timestamps included!\"",
+          "pass": true
+        },
+        {
+          "description": "the viewer's own archived message renders with the honest self-identity",
+          "expected": "[data-wfx-chatreplay-entry-you] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the replay starts paused (the surface's own control)",
+          "expected": "data-wfx-chatreplay-state of [data-wfx-chatreplay] is \"paused\"",
+          "observed": "\"paused\"",
+          "pass": true
+        },
+        {
+          "description": "play starts the replay clock",
+          "expected": "data-wfx-chatreplay-state of [data-wfx-chatreplay] is \"playing\"",
+          "observed": "\"playing\"",
+          "pass": true
+        },
+        {
+          "description": "the replay clock advances past 1:00 (the messages arrive in time order as it moves)",
+          "expected": "a clock beyond 1:00",
+          "observed": "1:01 / 13:00",
+          "pass": true
+        },
+        {
+          "description": "the arrival count discloses the time-ordered flow (never a stream)",
+          "expected": "text of [data-wfx-chatreplay-facts] contains \"replayed so far\"",
+          "observed": "\"Slow mode (5s) was on during this stream. 15 archived messages — 12 replayed so far.\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r37-merge/journeys-j46/j46-chat-replay-scrub.png",
+        "evidence/r37-merge/journeys-j46/j46-chat-replay-scrub.snapshot.txt",
+        "evidence/r37-merge/journeys-j46/j46-chat-replay-scrub.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9977
+    }
+  ],
+  "limitations": []
+}
