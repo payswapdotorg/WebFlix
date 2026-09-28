@@ -66,6 +66,12 @@ import { j44CreatorChannels } from "./j44-creator-channels";
 // resolution R36 itself recorded for its own J43/J44 renumbering).
 import { j45LiveWatchChat } from "./j45-live-watch-chat";
 import { j46ChatReplayScrub } from "./j46-chat-replay-scrub";
+// R38-B — the studio edit + customize round trip (the survey's WAVE R38
+// studio journey; encoded as J48 — the survey's "J47" numbering belongs
+// to the R38-A upload lane (concurrent, not at this base); J45/J46 are
+// R37's live lane, now merged ahead — the next free catalog number
+// after them is J48).
+import { j48StudioEditCustomize } from "./j48-studio-edit-customize";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -137,6 +143,12 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // replay timed to the playhead).
   j45LiveWatchChat,
   j46ChatReplayScrub,
+  // R38-B — J48 (the studio edit + customize round trip) is encoded over
+  // the REAL studio surfaces the fixtures boot wires (the content list →
+  // the draft/schedule round trip → the details editor → the moderation
+  // round trip over the ONE comments store → the honest analytics map →
+  // the customization round trip through the domain-graph seam).
+  j48StudioEditCustomize,
 ];
 
 import type { LimitationRecord } from "../lib/report";
