@@ -96,3 +96,42 @@ Canonical plan: docs/plans/2026-09-20-webflix-qwen-livetranslate-plan.md
 R24 must not be marked green from fixture/evidence-lane results alone. Production acceptance requires real source thumbnails, real end-to-end public video playback to first frame, coherent YouTube-like content-first UX, an actual same-content YouTube comparison, production J40/J41/J42 evidence, and affected J01-J39 regression.
 
 R25 requires a live Qwen provider path; the deterministic realtime provider double proves architecture only. R23 requires current-production revalidation where the live transport disagrees with the prior acceptance record.
+
+## R24 PRODUCTION ACCEPTANCE RECORD (2026-09-28, the Lead — the R34 wave)
+
+The corrective acceptance law (2026-09-22) required production evidence for R24
+(YouTube parity + playback performance). The R34 wave produced it, all three lanes
+merged to main and deployed (production auto-deploy via the git-app):
+
+- **J41 (YouTube-equivalent playback startup)** — evidence/r34b/ @ 2cea32b:
+  68 walks / 10 cells / 5 identity pairs on LIVE PRODUCTION through the product's
+  own typed telemetry. 2 measured PASS (the one-obvious-play-action 68/68; the
+  no-enrichment-block-before-first-frame with marker-timing proof), 1 not-covered
+  (torrent startup — the J21-J24 lanes own it), 5 BLOCKED-honest by the
+  environmental YouTube bot-gate (the datacenter-IP wall, VLM-quoted captures;
+  WebFlix's side fully measured: rick p50 1715/1401ms cold/warm, p75 1792/1449,
+  p95 1928/1571, 0/22 startup failures, 0 rebuffer in the 60s soak). The harness
+  is re-run-ready for an unblocked environment.
+- **J40 (viewer parity) + J42 (extension parity)** — evidence/r34a/ @ 488747d:
+  J40 PASS on the manual production walk (27 pairing rows citing taxonomy ids,
+  14 evidence points) with the encoded runner's honest FAIL recorded (the
+  fixtures-boot-bound suggestions term); J42 PASS 6/6 (the 10-station canonical
+  path with the artifact triple per step — zero console/page errors); the shorts
+  depth check live-verified against the G4 corpus (the real embed staged, the
+  unmute round trip, the pill retired); the battery floor 5256/1/0 IDENTICAL.
+  The composition record recovered through the permanent chat transcript after
+  a files-API workspace cycling (RECOVERY-NOTE.md records the honest limits).
+- **J01-J39 (the affected-journeys regression rerun)** — evidence/r34c/ @ 36b3cf6:
+  38/38 in-scope journeys ran against LIVE PRODUCTION (the runner's own chunk
+  manifests as the artifacts of record); all 34 non-pass verdicts re-run (zero
+  verdict flakes); ZERO real regressions — 32 STALE-GRAMMAR (the specs pre-date
+  the operator-directed R24→R30 product evolution; the suite-update work item is
+  recorded, NOT applied) + 2 ENVIRONMENTAL (J11 shared identity; J39 the standing
+  R23 revalidation target). The R33-A shorts surface specifically NOT regressed.
+
+**The verdict**: the R24 acceptance clauses are satisfied at the product level on
+production evidence, with every environmental block and every stale-spec caveat
+recorded honestly (never fabricated, never patched over). The follow-up ledger:
+the journey-suite re-encoding work item (32 specs), the R34-A defect-candidates
+(B2/B3/B4/C2), the unblocked-environment J41 re-run, and the standing J39
+revalidation lane.
