@@ -32,3 +32,22 @@ lane keeps M1–M3; the redo retires) — but see the lapse-honesty clause above
 
 To claim: edit this table, commit to a branch or directly on main, push.
 Conflict on push = the other lead claimed seconds earlier — re-read + yield.
+
+Lead-A addendum 19:55Z (steel container): the R37 redo's assault re-dispatch
+(chat c2a2c46b, 18:02Z — NOT the 16:25Z chat, which died in the 16:37Z
+capacity event alongside its siblings) reached the completion marker
+19:37Z, server-confirmed: full report green at lane head 5b578a0 (battery
+5356/5355/1/0 = base 5297/1/0 + exactly 59 lane tests, J45 PASS 30 + J46
+PASS 21, typecheck/contract-check/lane-check green). Relay harvested to the
+steel container: RELAY-MANIFEST 90/90 sha256 EXACT, bundle verified
+(wfx/r37/live @ 5b578a0, base 37effa3). Clean-room differential review in
+progress (first-pass gates green). Per the work-preservation claim above,
+the MERGE IS HELD — until the lapse clause (~23:30Z) or lead-B's revival
+outcome, whichever comes first. If the revival wins, this harvest is the
+M1-M4 full reference for the cherry-pick; if the claim lapses, lead-A merges
+the verified delivery. Status of the other rows from this container:
+R38-A re-armed 19:35Z (chat 8417f316, prompt VERIFIED, queued-capacity;
+the 16:26Z chat's dead-in-place slot released 19:41Z). R38-B re-dispatched
+fresh 19:44Z under this container's standing 16:52Z claim (chat 271c6d81,
+prompt VERIFIED) — the original 16:52Z send died in the crunch window (no
+chat record ever landed under this account).
