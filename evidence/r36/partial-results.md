@@ -60,4 +60,4 @@ Lane: `wfx/r36/channels` · Base: `main @ 8937bb8` · Repo: /home/z/webflix-r36 
 
 ## The final state
 
-Lane head `084be57`. All gates green. See INDEX.md for the map.
+Lane head `1209971af3d5a9bcfe881e44c53b48b793d7f2d0` (the evidence commit over the code head `084be57`). All gates green. See INDEX.md for the map.
