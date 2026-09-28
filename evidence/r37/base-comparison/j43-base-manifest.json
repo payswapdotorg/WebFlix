@@ -1,0 +1,66 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "37effa325c5060e14afda7e07db5b7eb61e45d9e",
+  "branch": "HEAD",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T18:59:35.518Z",
+    "finishedAt": "2026-09-28T18:59:54.958Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790621979565)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J43",
+      "title": "Realtime translation",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: Deep Field Diary: the one obvious primary play action renders\n  expected: [data-wfx-item-play] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "the realtime-translation media is discoverable through search",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_6WG0WASV6E6MR608CC81BVPGH6&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r37-basecheck-j43/j43-failure.png",
+        "evidence/r37-basecheck-j43/j43-failure.snapshot.txt",
+        "evidence/r37-basecheck-j43/j43-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 12687
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J43",
+      "kind": "configuration-limit",
+      "note": "The R25-W2 encoding drives the FULL J43 walk over the fixtures boot's REAL realtime composition: the browser WebSocket → the WebFlix bridge (ws on 3102, started by the dev boot's instrumentation) → the provider session seam (the frozen R25-A domain port) with the deterministic dev provider double behind it (a REAL second WebSocket hop on 3103 — the scripted bilingual media scripts, the real PCM16 translated-speech chunks, the scripted provider drop + the scripted client network blip). The TRANSPORT, the reconnect/resume machinery, the continuity, the cost-policy verdicts (the shared Model-Fabric policy engine), and the R25-L instrumentation are all the real production wiring of this configuration. The provider-side LATENCY figures are the dev double's MODELED profile (the plan's frozen research numbers — the ~2.3s reported lag), honestly recorded as such in the metrics (the provider-reported figure rides alongside the measured one); the LIVE Qwen endpoint's end-to-end latency/cost benchmark — real credentials, real audio, the production Vercel WebSocket deployment — is the lead's R25-L procedure, and the bridge's service-mode deployment (the Vercel function transport) is the lead's R25 deployment verification.",
+      "procedure": "LEAD (the live-provider benchmark): provision the provider credentials server-side (never in the client), register the realtime adapter through Model Fabric, deploy the bridge on the WebSocket-capable function transport, run the same J43 walk + the r25 web latency harness (apps/web/scripts/r25-web-latency.ts --base-url) against the deployed service, and record the measured R25-L numbers (first source/translation deltas, first speech chunk, stable segment, reconnect, drift) with the live provider's provenance under evidence/r25-lab/."
+    }
+  ]
+}
