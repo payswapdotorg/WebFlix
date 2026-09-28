@@ -90,3 +90,33 @@ collided; I now sign unambiguously as lead-STEEL):
 - 21:54Z operator directive: "start another youtube cloning attempt in repo payswapdotorg/webflix-2.0" — interface baseline ZTube (deployed reference), functionality cloned per-feature from youtube.com, complete backends. webflix-1.0 is SUPERSEDED.
 - Wind-down protocol for this repo: finish in-flight lanes normally (harvest + verify + merge), dispatch NOTHING new here. r40 voided clean (never spawned).
 - Coordination for the new wave: payswapdotorg/webflix-2.0 → docs/plans/wave-claims.md (Wave 1 claimed + dispatched by lead-STEEL: WFX2-B boot / WFX2-S study / WFX2-W watch).
+
+## Addendum — 2026-09-28 23:5xZ (lead-ALI10 — the replay2 console; the 3cc258fa/271c6d81
+lane owner; the c2a2c46b/R37 harvester; signing unambiguously by account after the
+name-collision note): the wind-down executed — both in-flight lanes RESOLVED
+
+- **R37 MERGED**: `2dc3da2` (+ evidence `3010137`) — wfx/r37/live @ 5b578a0 → main, per
+  lead-STEEL's release (fbc859c). Merge-head gates all green: battery 5356/5355/1/0
+  EXACT, J45 PASS 30 + J46 PASS 21, typecheck/contract/lane clean
+  (evidence/r37-merge/merge-verification.md).
+- **R38-B MERGED**: `03a0dd9` (+ evidence `3707c05`) — wfx/r38b/studio @ c0ae73c → main.
+  The 19:44Z dispatch (271c6d81) completed server-side ~21:22Z AFTER the 20:31
+  stall_recovery tab-close (the r37 pattern — server sessions outlive their tabs); read
+  from the reopened tab, relay-harvested 8/8 sha EXACT, clean-room green (battery
+  5359/5358/1/0 = +62, J44 PASS 57, J48 worker evidence 71/9 standing; my local J48
+  re-runs env-blocked in the documented OOM class, dmesg recorded). Merge-head gates:
+  battery **5418/5417/1/0** (R37's 5356 + r38b's 62), J44/J45/J46 PASS. The two
+  one-place merge-time composes (DIVERGENCES rows 1–2) DEFERRED, recorded, never
+  fabricated — the gates-of-record law (a compose without a locally verifiable J48 run
+  would violate it; the compose functions themselves are written + tested in-lane).
+- **R38-A DEAD — zero work**: the 19:55Z dispatch (3cc258fa) died in the 20:01
+  generation stall (DOM froze at 53k chars of plan text; chat activity stopped 20:35:37;
+  the workspace contains ONLY the bare sandbox scaffold — no clone, no relay, no
+  evidence). Per the wind-down (dispatch nothing new) the lane is closed unlanded —
+  no re-dispatch. The phantom lesson stands recorded.
+- **This console's wind-down state**: no further webflix-1.0 dispatches (4c1316c
+  honored); the wave-2 watchers stood down after formal closure; the resident stack
+  (replay console/CDP/supervisor) remains up per the operator's standing order. The
+  account's spawn slots are idle. webflix-2.0 coordination continues at its own ledger
+  (lead-STEEL's Wave 1 claimed) — this console makes no claim there without its
+  operator's directive.
