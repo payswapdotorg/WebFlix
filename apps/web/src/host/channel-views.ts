@@ -60,12 +60,12 @@ import type { SourceInfo } from "@wfx/client-runtime";
 import { isShortFormCandidate } from "@wfx/experience";
 
 import type { WebRuntimeHost } from "@/host/web-host";
-import { canonicalIdFor } from "@/host/web-host";
 import {
   FOR_YOU_QUERY,
   SHORTS_SEED_QUERY,
   TRENDING_QUERY,
   cardFromHit,
+  joinedItemByExternalRef,
   joinedItemOf,
 } from "@/host/view-models";
 import type {
@@ -227,8 +227,13 @@ export interface ChannelView {
   };
   /** The user's own subscription truth (the connector-scoped Subscriptions read). */
   readonly subscribed: boolean;
-  /** The subscribed entries' canonical ids (the unsubscribe write's targets). */
-  readonly subscribedItemIds: readonly string[];
+  /** The channel's subscribed entries (the unsubscribe write's targets — full source identities). */
+  readonly subscribedTargets: readonly {
+    readonly itemId: string;
+    readonly title: string;
+    readonly connectorId: string;
+    readonly externalRef: string;
+  }[];
   /** The channel's representative item (the Subscribe write's item identity). */
   readonly representative: {
     readonly itemId: string;
@@ -476,15 +481,28 @@ function storedRowListOf(entry: LibraryEntry): string {
   return typeof list === "string" && list.length > 0 ? list : "Saved";
 }
 
+/** One subscribed entry's full source identity (the unsubscribe write's target). */
+export interface SubscribedTarget {
+  readonly itemId: string;
+  readonly title: string;
+  readonly connectorId: string;
+  readonly externalRef: string;
+}
+
 /** The channel's subscription truth: the stored + local Subscriptions rows for this connector. */
 async function channelSubscriptionTruth(
   host: WebRuntimeHost,
   connectorId: string,
-): Promise<{ subscribed: boolean; itemIds: readonly string[] }> {
-  const subscribedIds = new Set<string>();
-  // The STORED truth first (the reload-durability seam — the same server
-  // read the Library page performs; a failing read degrades to the local
-  // fold, never a fabricated claim).
+): Promise<{ subscribed: boolean; targets: readonly SubscribedTarget[] }> {
+  const targets = new Map<string, SubscribedTarget>();
+  // THE STORED TRUTH FIRST (the player shell's own law): the stored rows
+  // match BY SOURCE KEY (connectorId + externalRef — the durable
+  // cross-load key), resolved into this session's joined item identity
+  // through the join's own reverse scan. NEVER through a freshly-minted
+  // adapter id (the per-process canonical seam cannot cross a fresh
+  // load's module graph — the R30 reload-durability lesson applied to
+  // the channel surface). A failing read degrades to the local fold,
+  // never a fabricated claim.
   let storedLibrary: readonly LibraryEntry[] | null = null;
   try {
     const storedRead = await host.serverPort.readProfileLibrary();
@@ -496,22 +514,34 @@ async function channelSubscriptionTruth(
     for (const entry of storedLibrary) {
       if (entry.connectorId !== connectorId) continue;
       if (storedRowListOf(entry) !== SUBSCRIPTIONS_LIST) continue;
-      // The stored row's canonical id derives through the SAME canonical
-      // seam the join uses (the durable key's own mint).
-      const itemId = canonicalIdFor(entry.connectorId, entry.externalRef);
-      if (joinedItemOf(itemId) !== null) subscribedIds.add(itemId);
+      const joined = joinedItemByExternalRef(entry.connectorId, entry.externalRef);
+      if (joined !== null) {
+        targets.set(joined.itemId, {
+          itemId: joined.itemId,
+          title: joined.title,
+          connectorId: joined.connectorId,
+          externalRef: joined.externalRef,
+        });
+      }
     }
   }
   // The LOCAL fold (the session's own writes — the same truth the rail
-  // subscriptions and the Library read).
+  // subscriptions and the Library read; the write paths keep it current).
   await host.runtime.libraryOps.hydrate();
   for (const entry of host.runtime.libraryOps.entries()) {
     if (entry.listName !== SUBSCRIPTIONS_LIST) continue;
     const joined = joinedItemOf(entry.itemId);
     if (joined === null || joined.connectorId !== connectorId) continue;
-    subscribedIds.add(entry.itemId);
+    if (!targets.has(joined.itemId)) {
+      targets.set(joined.itemId, {
+        itemId: joined.itemId,
+        title: joined.title,
+        connectorId: joined.connectorId,
+        externalRef: joined.externalRef,
+      });
+    }
   }
-  return { subscribed: subscribedIds.size > 0, itemIds: [...subscribedIds] };
+  return { subscribed: targets.size > 0, targets: [...targets.values()] };
 }
 
 // ---------------------------------------------------------------------------
@@ -713,7 +743,7 @@ export async function loadChannelView(
     items,
     sortAvailability,
     subscribed: subscription.subscribed,
-    subscribedItemIds: subscription.itemIds,
+    subscribedTargets: subscription.targets,
     representative,
     playlists,
     stats: {

@@ -1,0 +1,327 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "0d125160904b0e5ad3b9bed7a75b4593dbeb8f9c",
+  "branch": "wfx/r36/channels",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T08:17:51.909Z",
+    "finishedAt": "2026-09-28T08:18:27.402Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790583475406)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J44",
+      "title": "Creator channel round trip",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the channel page's pill renders subscribed on the fresh load (the connector-scoped stored truth — the reload-durability law)\n  expected: data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"\n  observed: \"idle\"",
+      "assertions": [
+        {
+          "description": "the home feed renders",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the creator-name search surfaces the channel result row",
+          "expected": "[data-wfx-channel-result='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel row carries the sources model's own display name (the R33-C seam)",
+          "expected": "text of [data-wfx-channel-result='fake-source'] contains \"Fake Source (TEST FIXTURE — never production)\"",
+          "observed": "\"F\n\nFake Source (TEST FIXTURE — never production)\n\n@fake-source · Subscriber count not declared by this source\n\nThis source declares no channel description — WebFlix does not write one for it.\n\nSubscribe\"",
+          "pass": true
+        },
+        {
+          "description": "the channel row's subscriber slot is the typed absence (never a fabricated count)",
+          "expected": "text of [data-wfx-channel-result='fake-source'] contains \"Subscriber count not declared by this source\"",
+          "observed": "\"F\n\nFake Source (TEST FIXTURE — never production)\n\n@fake-source · Subscriber count not declared by this source\n\nThis source declares no channel description — WebFlix does not write one for it.\n\nSubscribe\"",
+          "pass": true
+        },
+        {
+          "description": "the channel row carries the real inline Subscribe (the one-store law)",
+          "expected": "[data-wfx-channel-result='fake-source'] [data-wfx-channel-inline-subscribe] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel row links to the channel page (the handle law's route)",
+          "expected": "/channel/fake-source",
+          "observed": "/channel/fake-source",
+          "pass": true
+        },
+        {
+          "description": "the channel page renders",
+          "expected": "[data-wfx-surface='channel'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the banner renders its typed absence (the source declares no banner — never a fabricated image)",
+          "expected": "[data-wfx-channel-banner='absent'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the banner absence names its truth honestly",
+          "expected": "text of [data-wfx-channel-banner-absent] contains \"does not fabricate\"",
+          "observed": "\"This source declares no channel banner — WebFlix does not fabricate one.\"",
+          "pass": true
+        },
+        {
+          "description": "the channel avatar renders (the honest monogram)",
+          "expected": "[data-wfx-channel-avatar] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel name is the sources model's own display name (the R33-C seam)",
+          "expected": "text of [data-wfx-channel-name] contains \"Fake Source (TEST FIXTURE — never production)\"",
+          "observed": "\"Fake Source (TEST FIXTURE — never production)\"",
+          "pass": true
+        },
+        {
+          "description": "the meta line carries the honest @handle (the slugified stable connector id)",
+          "expected": "text of [data-wfx-channel-meta] contains \"@fake-source\"",
+          "observed": "\"@fake-source · This source declares no subscriber count — WebFlix never fabricates one. · 6 videos\"",
+          "pass": true
+        },
+        {
+          "description": "the meta line's subscriber slot is the typed absence (never a fabricated number)",
+          "expected": "text of [data-wfx-channel-meta] contains \"declares no subscriber count\"",
+          "observed": "\"@fake-source · This source declares no subscriber count — WebFlix never fabricates one. · 6 videos\"",
+          "pass": true
+        },
+        {
+          "description": "the tab bar renders",
+          "expected": "[data-wfx-channel-tabs] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the home tab renders",
+          "expected": "[data-wfx-channel-tab='home'] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the videos tab renders",
+          "expected": "[data-wfx-channel-tab='videos'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shorts tab renders",
+          "expected": "[data-wfx-channel-tab='shorts'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playlists tab renders",
+          "expected": "[data-wfx-channel-tab='playlists'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the about tab renders",
+          "expected": "[data-wfx-channel-tab='about'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel search field renders",
+          "expected": "[data-wfx-channel-search-input] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel's home tab carries the channel's real items (the discovery-derived feed)",
+          "expected": "[data-wfx-channel-items] [data-wfx-card-title] matches >= 8",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Videos tab renders",
+          "expected": "[data-wfx-channel-videos] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Videos tab carries exactly the 6 long-form items (the short-form eligibility split)",
+          "expected": "[data-wfx-channel-videos] [data-wfx-card-title] matches exactly 6",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Videos tab's sort options are honestly absent (the fixtures declare no dates/counts — the SearchFilters law)",
+          "expected": "text of [data-wfx-channel-sort-note] contains \"declares no publish dates or view counts\"",
+          "observed": "\"This source declares no publish dates or view counts for these items — the channel's own feed order is shown, and sort options appear only when the source declares the data they sort by.\"",
+          "pass": true
+        },
+        {
+          "description": "no dead sort chip renders (an option without real backing never renders)",
+          "expected": "[data-wfx-channel-sort-chip] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts tab renders",
+          "expected": "[data-wfx-channel-shorts] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts tab carries exactly the 3 short-form items (the same eligibility the shorts feed applies)",
+          "expected": "[data-wfx-channel-shorts] [data-wfx-card-title] matches exactly 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel's shorts link into the shorts queue (the real /shorts surface)",
+          "expected": "[data-wfx-channel-shorts] a[data-wfx-card] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Playlists tab renders",
+          "expected": "[data-wfx-channel-playlists] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Playlists tab renders the typed-empty state (the library carries no named list for this channel — never a fabricated playlist)",
+          "expected": "text of [data-wfx-channel-playlists] contains \"No playlists for this channel yet\"",
+          "observed": "\"No playlists for this channel yet\n\nYour library's named lists land here the moment you save one of this channel's items into them — the same lists the Library page renders (WebFlix does not fabricate playlists).\"",
+          "pass": true
+        },
+        {
+          "description": "the About tab renders",
+          "expected": "[data-wfx-channel-about] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the About description is the typed absence (the source declares none)",
+          "expected": "text of [data-wfx-channel-about-description] contains \"declares no channel description\"",
+          "observed": "\"This source declares no channel description — WebFlix does not write one for it.\"",
+          "pass": true
+        },
+        {
+          "description": "the About subscriber-count row carries the honest absence sentence",
+          "expected": "text of [data-wfx-channel-about-subs] contains \"never fabricates\"",
+          "observed": "\"This source declares no subscriber count — WebFlix never fabricates one.\"",
+          "pass": true
+        },
+        {
+          "description": "the About section carries the source's own connection date (the honest phrasing — never a fabricated 'Joined' claim)",
+          "expected": "text of [data-wfx-channel-about-joined] contains \"connection date\"",
+          "observed": "\"Sep 18, 2026 (this source's own connection date — never a fabricated \"Joined\" claim)\"",
+          "pass": true
+        },
+        {
+          "description": "the connected-since row names what its date is (the source's own authorization truth)",
+          "expected": "text of [data-wfx-channel-about-joined] contains \"never a fabricated\"",
+          "observed": "\"Sep 18, 2026 (this source's own connection date — never a fabricated \"Joined\" claim)\"",
+          "pass": true
+        },
+        {
+          "description": "the About content row carries the derived video count (real — from the channel's own items)",
+          "expected": "text of [data-wfx-channel-about-content] contains \"6 videos\"",
+          "observed": "\"6 videos · 3 shorts · 0 playlists in your library — counts derived from this channel's own surfaced items (never fabricated).\"",
+          "pass": true
+        },
+        {
+          "description": "the About content row carries the derived shorts count (real — from the channel's own items)",
+          "expected": "text of [data-wfx-channel-about-content] contains \"3 shorts\"",
+          "observed": "\"6 videos · 3 shorts · 0 playlists in your library — counts derived from this channel's own surfaced items (never fabricated).\"",
+          "pass": true
+        },
+        {
+          "description": "the in-channel search answers with the honest filtered disclosure",
+          "expected": "[data-wfx-channel-search-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the disclosure names the filtered query",
+          "expected": "text of [data-wfx-channel-search-note] contains \"rain\"",
+          "observed": "\"3 matches for “rain” in this channel. Clear\"",
+          "pass": true
+        },
+        {
+          "description": "the in-channel search filters to the 3 title matches (the containment law)",
+          "expected": "[data-wfx-channel-items] [data-wfx-card-title] matches exactly 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the disclosure offers the clear path back to the full channel",
+          "expected": "text of [data-wfx-channel-search-note] contains \"Clear\"",
+          "observed": "\"3 matches for “rain” in this channel. Clear\"",
+          "pass": true
+        },
+        {
+          "description": "the Subscribe pill starts idle (the honest unsubscribed truth)",
+          "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"idle\"",
+          "observed": "\"idle\"",
+          "pass": true
+        },
+        {
+          "description": "the pill flips to subscribed (the real write landed)",
+          "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"",
+          "observed": "\"subscribed\"",
+          "pass": true
+        },
+        {
+          "description": "the Library's playlists section renders the Subscriptions list (the frozen name — one store)",
+          "expected": "[data-wfx-library-playlist='Subscriptions'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Subscriptions list carries the channel's subscribed entry (the real write's durable row)",
+          "expected": "[data-wfx-library-playlist='Subscriptions'] [data-wfx-watchlist-entry] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel page's pill renders subscribed on the fresh load (the connector-scoped stored truth — the reload-durability law)",
+          "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"",
+          "observed": "\"idle\"",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r36/journeys-j44-smoke/j44-channel-home.png",
+        "evidence/r36/journeys-j44-smoke/j44-channel-about.png",
+        "evidence/r36/journeys-j44-smoke/j44-channel-subscribed.png",
+        "evidence/r36/journeys-j44-smoke/j44-library-subscriptions.png",
+        "evidence/r36/journeys-j44-smoke/j44-failure.png",
+        "evidence/r36/journeys-j44-smoke/j44-failure.snapshot.txt",
+        "evidence/r36/journeys-j44-smoke/j44-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 29197
+    }
+  ],
+  "limitations": []
+}

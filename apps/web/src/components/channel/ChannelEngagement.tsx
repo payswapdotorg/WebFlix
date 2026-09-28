@@ -82,12 +82,20 @@ interface SubscribeOutcome {
   readonly detail: string;
 }
 
+/** One unsubscribe target's full identity (the route's bridge law needs it all). */
+export interface UnsubscribeTarget {
+  readonly itemId: string;
+  readonly title: string;
+  readonly connectorId: string;
+  readonly externalRef: string;
+}
+
 /** The channel page's engagement cluster: the Subscribe pill + the bell. */
 export function ChannelEngagement({
   channelName,
   representative,
   initiallySubscribed,
-  subscribedItemIds,
+  subscribedTargets,
 }: {
   /** The channel's honest display name (the R33-C seam's own value). */
   readonly channelName: string;
@@ -95,8 +103,8 @@ export function ChannelEngagement({
   readonly representative: ChannelSubscribeTarget | null;
   /** The connector-scoped subscribed truth at render. */
   readonly initiallySubscribed: boolean;
-  /** The channel's subscribed entries' ids (the unsubscribe write's targets). */
-  readonly subscribedItemIds: readonly string[];
+  /** The channel's subscribed entries (the unsubscribe write's targets — full source identities, the route's bridge law). */
+  readonly subscribedTargets: readonly UnsubscribeTarget[];
 }): JSX.Element {
   const [subscribed, setSubscribed] = useState(initiallySubscribed);
   const [outcome, setOutcome] = useState<SubscribeOutcome | null>(null);
@@ -177,13 +185,17 @@ export function ChannelEngagement({
     }
   }, [representative]);
 
-  /** The unsubscribe write: removes the channel's subscribed entries (every one). */
+  /** The unsubscribe write: removes the channel's subscribed entries —
+   *  every one carries its FULL source identity (the /api/library bridge
+   *  resolves the posted id through the transport's own search; the
+   *  connectorId + externalRef + title are the durable keys that make
+   *  the remove find the stored row on a fresh load — the R30 law). */
   const unsubscribe = useCallback(async (): Promise<void> => {
-    const targets =
-      subscribedItemIds.length > 0
-        ? subscribedItemIds
+    const targets: UnsubscribeTarget[] =
+      subscribedTargets.length > 0
+        ? [...subscribedTargets]
         : representative !== null
-          ? [representative.itemId]
+          ? [representative]
           : [];
     if (targets.length === 0) {
       setOutcome({ ok: false, detail: "No stored subscription entry is known for this channel — nothing to remove." });
@@ -192,11 +204,17 @@ export function ChannelEngagement({
     setPending(true);
     try {
       const results = await Promise.all(
-        targets.map(async (itemId) => {
+        targets.map(async (target) => {
           const response = await fetch("/api/library", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ op: "remove", itemId }),
+            body: JSON.stringify({
+              op: "remove",
+              itemId: target.itemId,
+              title: target.title,
+              connectorId: target.connectorId,
+              externalRef: target.externalRef,
+            }),
           });
           const result = (await response.json().catch(() => null)) as { ok?: boolean } | null;
           return result !== null && result.ok === true;
@@ -220,7 +238,7 @@ export function ChannelEngagement({
     } finally {
       setPending(false);
     }
-  }, [representative, subscribedItemIds]);
+  }, [representative, subscribedTargets]);
 
   const effectivePreference: BellPreference = bellPreference ?? "personalized";
 

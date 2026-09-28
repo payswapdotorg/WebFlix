@@ -268,7 +268,7 @@ describe("R36 — the channel's subscription truth (the one-store law)", () => {
     const view = await loadChannelView(host, "fake-source");
     if (!("identity" in view)) throw new Error("expected the channel view");
     expect(view.subscribed).toBe(false);
-    expect(view.subscribedItemIds).toEqual([]);
+    expect(view.subscribedTargets).toEqual([]);
     // The representative item is the channel's own first feed item (the
     // subscribe write's honest key — a REAL item).
     expect(view.representative).not.toBe(null);
@@ -304,7 +304,7 @@ describe("R36 — the channel's subscription truth (the one-store law)", () => {
     const view = await loadChannelView(host, "fake-source");
     if (!("identity" in view)) throw new Error("expected the channel view");
     expect(view.subscribed).toBe(true);
-    expect(view.subscribedItemIds).toContain(first.card.itemId);
+    expect(view.subscribedTargets.some((target) => target.itemId === first.card.itemId)).toBe(true);
     // The About stats carry the user's own subscription truth.
     expect(view.stats.subscribedHere).toBe(true);
   });
@@ -409,7 +409,7 @@ describe("R36 — the channel surface (the YouTube page grammar, honestly bound)
           externalRef: "fake:video-1",
         },
         initiallySubscribed: false,
-        subscribedItemIds: [],
+        subscribedTargets: [],
       }),
     );
     expect(idleMarkup).toContain('data-wfx-channel-subscribe-state="idle"');
@@ -425,7 +425,14 @@ describe("R36 — the channel surface (the YouTube page grammar, honestly bound)
           externalRef: "fake:video-1",
         },
         initiallySubscribed: true,
-        subscribedItemIds: ["wfxitm_test000000000000000000A"],
+        subscribedTargets: [
+          {
+            itemId: "wfxitm_test000000000000000000A",
+            title: "Deep Field Diary",
+            connectorId: FIXTURE_CONNECTOR_ID,
+            externalRef: "fake:video-1",
+          },
+        ],
       }),
     );
     expect(subscribedMarkup).toContain('data-wfx-channel-subscribe-state="subscribed"');

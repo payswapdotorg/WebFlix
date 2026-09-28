@@ -136,7 +136,8 @@ export const j44CreatorChannels: Journey = {
     await assert.visible("[data-wfx-channel-about]", "the About tab renders");
     await assert.textContains("[data-wfx-channel-about-description]", "declares no channel description", "the About description is the typed absence (the source declares none)");
     await assert.textContains("[data-wfx-channel-about-subs]", "never fabricates", "the About subscriber-count row carries the honest absence sentence");
-    await assert.textContains("[data-wfx-channel-about-joined]", "Connected", "the About row carries the source's own connection date (the honest phrasing — never a fabricated 'Joined' claim)");
+    await assert.textContains("[data-wfx-channel-about-joined]", "connection date", "the About section carries the source's own connection date (the honest phrasing — never a fabricated 'Joined' claim)");
+    await assert.textContains("[data-wfx-channel-about-joined]", "never a fabricated", "the connected-since row names what its date is (the source's own authorization truth)");
     await assert.textContains("[data-wfx-channel-about-content]", "6 videos", "the About content row carries the derived video count (real — from the channel's own items)");
     await assert.textContains("[data-wfx-channel-about-content]", "3 shorts", "the About content row carries the derived shorts count (real — from the channel's own items)");
     await context.screenshot("j44-channel-about");

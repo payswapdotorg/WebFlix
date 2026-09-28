@@ -216,7 +216,7 @@ export function ChannelSurface({ view }: { readonly view: ChannelView }): JSX.El
           channelName={identity.displayName}
           representative={view.representative}
           initiallySubscribed={view.subscribed}
-          subscribedItemIds={view.subscribedItemIds}
+          subscribedTargets={view.subscribedTargets}
         />
       </div>
 
