@@ -1,0 +1,479 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "37effa325c5060e14afda7e07db5b7eb61e45d9e",
+  "branch": "wfx/r38b/studio",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T21:09:24.969Z",
+    "finishedAt": "2026-09-28T21:10:18.159Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790629770953)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J48",
+      "title": "Studio edit + customize round trip",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the studio renders (the content section)",
+          "expected": "[data-wfx-studio] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the studio's managed channel is the catalog's own source (the R33-C seam's own displayName)",
+          "expected": "text of [data-wfx-studio-channel-display-name] contains \"Fake Source\"",
+          "observed": "\"Fake Source (TEST FIXTURE — never production)\"",
+          "pass": true
+        },
+        {
+          "description": "the studio's binding note names the honest local-transport truth",
+          "expected": "text of [data-wfx-studio-binding-note] contains \"stored locally on this device\"",
+          "observed": "\"The studio manages the catalog's own channel — the one channel this WebFlix host's catalog carries. Studio state (drafts, edits, moderation, customization) is WebFlix's own, stored locally on this device.\"",
+          "pass": true
+        },
+        {
+          "description": "the content tab renders",
+          "expected": "[data-wfx-studio-tab='content'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the analytics tab renders",
+          "expected": "[data-wfx-studio-tab='analytics'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the comments tab renders",
+          "expected": "[data-wfx-studio-tab='comments'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the customization tab renders",
+          "expected": "[data-wfx-studio-tab='customization'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the content list carries exactly the channel's 9 real catalog items (the published set — never a fabricated row)",
+          "expected": "[data-wfx-studio-row] matches exactly 9",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the drafts empty state renders honestly (this device's own record is empty)",
+          "expected": "text of [data-wfx-studio-empty-drafts] contains \"No drafts yet\"",
+          "observed": "\"No drafts yet — your next video starts here (this device's own studio record).\"",
+          "pass": true
+        },
+        {
+          "description": "the new-draft form opens",
+          "expected": "[data-wfx-studio-newdraft-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the draft save answers the typed saved state",
+          "expected": "data-wfx-studio-save-state of [data-wfx-studio-save-state] is \"saved\"",
+          "observed": "\"saved\"",
+          "pass": true
+        },
+        {
+          "description": "the draft row renders in the content list",
+          "expected": "[data-wfx-studio-draft-row] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the new record's state is draft (the state is data)",
+          "expected": "data-wfx-studio-row-state of [data-wfx-studio-draft-row] is \"draft\"",
+          "observed": "\"draft\"",
+          "pass": true
+        },
+        {
+          "description": "the draft row carries this journey's own title",
+          "expected": "text of [data-wfx-studio-draft-title] contains \"J48 draft mulqqg3o\"",
+          "observed": "\"J48 draft mulqqg3o\"",
+          "pass": true
+        },
+        {
+          "description": "the draft persists across the reload (the studio store's reload-durability law)",
+          "expected": "text of [data-wfx-studio-draft-title] contains \"J48 draft mulqqg3o\"",
+          "observed": "\"J48 draft mulqqg3o\"",
+          "pass": true
+        },
+        {
+          "description": "the draft editor opens with the stored record",
+          "expected": "[data-wfx-studio-newdraft-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the schedule field renders for the scheduled visibility",
+          "expected": "[data-wfx-studio-newdraft-schedule] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the record's state derives scheduled (a future instant on the scheduled visibility)",
+          "expected": "data-wfx-studio-row-state of [data-wfx-studio-draft-row] is \"scheduled\"",
+          "observed": "\"scheduled\"",
+          "pass": true
+        },
+        {
+          "description": "the scheduled row names the honest publish truth (publishing into the catalog lands with the upload wave — never a fabricated catalog row)",
+          "expected": "text of [data-wfx-studio-draft-publish-note] contains \"upload wave\"",
+          "observed": "\"Publishing into the real catalog lands with the upload wave — your schedule is recorded and ready.\"",
+          "pass": true
+        },
+        {
+          "description": "the published rows link into the details editor (the /player parameterized grammar)",
+          "expected": "an href starting /studio/video",
+          "observed": "/studio/video?id=wfxitm_0X0KBCZG4QJE6FTHTN16E132QV&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000&channel=fake-source",
+          "pass": true
+        },
+        {
+          "description": "the details editor renders",
+          "expected": "[data-wfx-studio-editor] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the editor carries the catalog's own title (the provenance panel)",
+          "expected": "the row's own title",
+          "observed": "Asteroid Drift",
+          "pass": true
+        },
+        {
+          "description": "the provenance note names what the catalog's surfaces render (the concurrent-catalog law)",
+          "expected": "text of [data-wfx-studio-editor-catalog-note] contains \"catalog\"",
+          "observed": "\"The catalog's own surfaces (search, home, the channel page, the player) render this truth. Your edit below is the studio's own record on this device — the catalog write seam is the upload wave's lane, composing here at merge.\"",
+          "pass": true
+        },
+        {
+          "description": "the composed truth carries the studio record's title",
+          "expected": "text of [data-wfx-studio-composed-title] contains \"J48 edit mulqqg3o\"",
+          "observed": "\"J48 edit mulqqg3o\"",
+          "pass": true
+        },
+        {
+          "description": "the composed truth names the catalog's original title beside the studio record (the provenance law)",
+          "expected": "text of [data-wfx-studio-composed] contains \"Asteroid Drift\"",
+          "observed": "\"The studio record (this device)\n\nJ48 edit mulqqg3o\n\nUnlisted\n\nThe studio's own description.\n\nThe catalog's original title was “Asteroid Drift” — the studio record above is this device's own edit, stored locally and reload-durable.\"",
+          "pass": true
+        },
+        {
+          "description": "the editor's route carries the video's canonical id (the ItemRouteTarget grammar)",
+          "expected": "a non-empty id param",
+          "observed": "wfxitm_0X0KBCZG4QJE6FTHTN16E132QV",
+          "pass": true
+        },
+        {
+          "description": "the scripted dev persona signs in (the session controls' signed-in state)",
+          "expected": "[data-wfx-session-signed-in] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the editor links to the watch surface (the same item, the viewer side)",
+          "expected": "an href starting /player",
+          "observed": "/player?id=wfxitm_0X0KBCZG4QJE6FTHTN16E132QV&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "the watch surface's comments section renders",
+          "expected": "[data-wfx-comments] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the signed-in composer opens (the corpus law)",
+          "expected": "[data-wfx-comments-editor] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch surface counts this journey's own comment (the honest local count)",
+          "expected": "text of [data-wfx-comments-count] contains \"1 Comment\"",
+          "observed": "\"1 Comment\"",
+          "pass": true
+        },
+        {
+          "description": "the like records this browser's own reaction (the local wallet)",
+          "expected": "data-wfx-reaction of [data-wfx-action='like'] is \"like\"",
+          "observed": "\"like\"",
+          "pass": true
+        },
+        {
+          "description": "the moderation surface is scoped to the channel's own video (the picker's selected truth)",
+          "expected": "text of [data-wfx-studio-comments-video-title] contains \"Asteroid Drift\"",
+          "observed": "\"Asteroid Drift\"",
+          "pass": true
+        },
+        {
+          "description": "the pin persists on the studio's own record",
+          "expected": "data-wfx-moderation-pinned of [data-wfx-studio-moderation-row] is \"true\"",
+          "observed": "\"true\"",
+          "pass": true
+        },
+        {
+          "description": "the pinned badge renders in the studio (the corpus grammar)",
+          "expected": "[data-wfx-moderation-pinned-badge] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the reply form opens (the signed-in creator's reply)",
+          "expected": "[data-wfx-moderation-reply-form] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the studio renders the reply it wrote",
+          "expected": "text of [data-wfx-studio-moderation-rows] contains \"The J48 creator reply mulqqg3o\"",
+          "observed": "\"Pinned\n@devprofile\n·\nThe J48 moderation target mulqqg3o\n· 1 reply\n↳\n@devprofile\nThe J48 creator reply mulqqg3o\nReply\nHold\nUnpin\"",
+          "pass": true
+        },
+        {
+          "description": "the watch surface counts the studio's reply (the same store — one truth)",
+          "expected": "text of [data-wfx-comments-count] contains \"2 Comments\"",
+          "observed": "\"2 Comments\"",
+          "pass": true
+        },
+        {
+          "description": "the thread's expander carries the studio's reply (the corpus grammar)",
+          "expected": "text of [data-wfx-comment-replies-toggle] contains \"1 reply\"",
+          "observed": "\"1 reply\"",
+          "pass": true
+        },
+        {
+          "description": "the watch surface renders the studio's reply body (the moderation's reply is a real comment)",
+          "expected": "a comment text containing 'The J48 creator reply mulqqg3o'",
+          "observed": "checked over every rendered comment text",
+          "pass": true
+        },
+        {
+          "description": "the held comment leaves the studio's live list",
+          "expected": "[data-wfx-studio-moderation-row] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the held thread lands in the review queue (the restorable record)",
+          "expected": "[data-wfx-studio-held-row] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch surface no longer renders the held comment (real moderation — never cosmetic)",
+          "expected": "text of [data-wfx-comments-count] contains \"0 Comments\"",
+          "observed": "\"0 Comments\"",
+          "pass": true
+        },
+        {
+          "description": "the held thread (parent + reply) is gone from the rendered truth",
+          "expected": "[data-wfx-comment] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the approved comment returns to the studio's live list",
+          "expected": "[data-wfx-studio-moderation-row] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch surface renders the approved thread again (parent + reply)",
+          "expected": "text of [data-wfx-comments-count] contains \"2 Comments\"",
+          "observed": "\"2 Comments\"",
+          "pass": true
+        },
+        {
+          "description": "the watch surface renders the restored parent body",
+          "expected": "a comment text containing 'The J48 moderation target mulqqg3o'",
+          "observed": "checked over every rendered comment text",
+          "pass": true
+        },
+        {
+          "description": "the channel analytics panel renders",
+          "expected": "[data-wfx-studio-analytics-channel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the impressions panel renders its typed absence (no impression transport on this host)",
+          "expected": "text of [data-wfx-analytics-note='impressions'] contains \"does not fabricate a reach number\"",
+          "observed": "\"No impression transport is connected on this host — WebFlix does not fabricate a reach number.\"",
+          "pass": true
+        },
+        {
+          "description": "the subscribers panel renders the R36 typed absence (never a fabricated count)",
+          "expected": "text of [data-wfx-analytics-note='subscribers'] contains \"never fabricates one\"",
+          "observed": "\"This source declares no subscriber count — WebFlix never fabricates one.\"",
+          "pass": true
+        },
+        {
+          "description": "the audience-insights panel renders its typed absence (no audience transport)",
+          "expected": "text of [data-wfx-analytics-note='demographics'] contains \"does not fabricate demographics\"",
+          "observed": "\"No audience-insights transport is connected on this host — WebFlix does not fabricate demographics.\"",
+          "pass": true
+        },
+        {
+          "description": "the channel's total comments counts this journey's own comment + reply (the real sum)",
+          "expected": "text of [data-wfx-analytics-value='totalComments'] contains \"2\"",
+          "observed": "\"2\"",
+          "pass": true
+        },
+        {
+          "description": "the channel's reaction count carries this journey's own like (the local wallet)",
+          "expected": "text of [data-wfx-analytics-value='yourReactions'] contains \"1\"",
+          "observed": "\"1\"",
+          "pass": true
+        },
+        {
+          "description": "the video's engagement panel carries the real per-item comment count",
+          "expected": "text of [data-wfx-analytics-row-comments='wfxitm_0X0KBCZG4QJE6FTHTN16E132QV'] contains \"2 comments\"",
+          "observed": "\"2 comments\"",
+          "pass": true
+        },
+        {
+          "description": "the video's engagement panel carries this journey's own like",
+          "expected": "text of [data-wfx-analytics-row-reaction='wfxitm_0X0KBCZG4QJE6FTHTN16E132QV'] contains \"you liked this\"",
+          "observed": "\"you liked this\"",
+          "pass": true
+        },
+        {
+          "description": "the video's reach panel renders the honest watch-fold truth for this journey (never a fabricated view)",
+          "expected": "text of [data-wfx-analytics-row-yourview='wfxitm_0X0KBCZG4QJE6FTHTN16E132QV'] contains \"not watched by you yet\"",
+          "observed": "\"not watched by you yet\"",
+          "pass": true
+        },
+        {
+          "description": "the customization surface renders",
+          "expected": "[data-wfx-studio-customization] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the base handle is the stable derived one (the pure href law)",
+          "expected": "text of [data-wfx-studio-customization-base-handle] contains \"@fake-source\"",
+          "observed": "\"Handle: @fake-source (the slugified stable connector id)\"",
+          "pass": true
+        },
+        {
+          "description": "the base banner is the typed absence (the fixtures boot's own truth)",
+          "expected": "text of [data-wfx-studio-customization-base-banner] contains \"does not fabricate\"",
+          "observed": "\"Banner: This source declares no channel banner — WebFlix does not fabricate one.\"",
+          "pass": true
+        },
+        {
+          "description": "the base description is the typed absence (the source declares none)",
+          "expected": "text of [data-wfx-studio-customization-base-description] contains \"declares no channel description\"",
+          "observed": "\"Description: This source declares no channel description — WebFlix does not write one for it.\"",
+          "pass": true
+        },
+        {
+          "description": "the typed saved state names the declared-field count (all four of the closed vocabulary)",
+          "expected": "text of [data-wfx-studio-save-status] contains \"4 field(s) declared\"",
+          "observed": "\"Saved — the channel's customized profile (stored locally on this device; 4 field(s) declared).\"",
+          "pass": true
+        },
+        {
+          "description": "the composed preview carries the declared handle",
+          "expected": "text of [data-wfx-studio-customization-preview-handle] contains \"@mademulqqg3o\"",
+          "observed": "\"Handle: @mademulqqg3o (your declared handle)\"",
+          "pass": true
+        },
+        {
+          "description": "the composed preview carries the declared description",
+          "expected": "text of [data-wfx-studio-customization-preview-description] contains \"The J48 customized description mulqqg3o\"",
+          "observed": "\"Description: The J48 customized description mulqqg3o\"",
+          "pass": true
+        },
+        {
+          "description": "the composed preview carries the declared banner",
+          "expected": "text of [data-wfx-studio-customization-preview-banner] contains \"https://example.com/banner-mulqqg3o.png\"",
+          "observed": "\"Banner: your declared artwork (https://example.com/banner-mulqqg3o.png)\"",
+          "pass": true
+        },
+        {
+          "description": "the customization persists across the reload (the profile record's reload-durability law)",
+          "expected": "text of [data-wfx-studio-customization-preview-handle] contains \"@mademulqqg3o\"",
+          "observed": "\"Handle: @mademulqqg3o (your declared handle)\"",
+          "pass": true
+        },
+        {
+          "description": "the channel page renders (the studio's managed channel)",
+          "expected": "[data-wfx-surface='channel'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel page's banner renders its typed absence (the byte-compatible read — no regression)",
+          "expected": "[data-wfx-channel-banner='absent'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel page's meta line carries the STABLE derived handle (the customization's read-side binding is the recorded merge-time compose, never a fabricated claim it shows here)",
+          "expected": "text of [data-wfx-channel-meta] contains \"@fake-source\"",
+          "observed": "\"@fake-source · This source declares no subscriber count — WebFlix never fabricates one. · 6 videos\"",
+          "pass": true
+        },
+        {
+          "description": "the channel page's avatar is still the honest monogram (the derivation law)",
+          "expected": "[data-wfx-channel-avatar] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the studio renders after the full round trip (no login wall)",
+          "expected": "[data-wfx-studio] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the studio round trip never redirected to a sign-in surface (the anonymous law)",
+          "expected": "the studio page still rendered (no login redirect)",
+          "observed": "http://localhost:3101/studio",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r16/j48-studio-content.png",
+        "evidence/r16/j48-draft-scheduled.png",
+        "evidence/r16/j48-details-editor.png",
+        "evidence/r16/j48-watch-comment.png",
+        "evidence/r16/j48-moderation-approved.png",
+        "evidence/r16/j48-analytics.png",
+        "evidence/r16/j48-customization.png",
+        "evidence/r16/j48-studio-edit-customize-round-trip.snapshot.txt",
+        "evidence/r16/j48-studio-edit-customize-round-trip.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 43944
+    }
+  ],
+  "limitations": []
+}

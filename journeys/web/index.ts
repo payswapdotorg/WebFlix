@@ -60,6 +60,12 @@ import { j43RealtimeTranslation } from "./j43-realtime-translation";
 // R25-W2 realtime-translation J43 already in the catalog at base
 // 8937bb8, so the channel journey takes the next free number).
 import { j44CreatorChannels } from "./j44-creator-channels";
+// R38-B — the studio edit + customize round trip (the survey's WAVE R38
+// studio journey; encoded as J48 — the survey's "J47" numbering belongs
+// to the R38-A upload lane (concurrent, not at this base) and J45/J46
+// are R37's live lane (not at this base); the next free catalog number
+// after J44 is J48).
+import { j48StudioEditCustomize } from "./j48-studio-edit-customize";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -124,6 +130,12 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // channel page → the tabs → the ONE-store Subscribe round trip → the
   // bell's persisted preference record).
   j44CreatorChannels,
+  // R38-B — J48 (the studio edit + customize round trip) is encoded over
+  // the REAL studio surfaces the fixtures boot wires (the content list →
+  // the draft/schedule round trip → the details editor → the moderation
+  // round trip over the ONE comments store → the honest analytics map →
+  // the customization round trip through the domain-graph seam).
+  j48StudioEditCustomize,
 ];
 
 import type { LimitationRecord } from "../lib/report";

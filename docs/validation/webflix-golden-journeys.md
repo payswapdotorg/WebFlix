@@ -362,3 +362,50 @@ three (the same J01-precedent procedure) is the recorded follow-up.
 The evidence of record for the re-encode: evidence/r35b/ (the grammar
 survey plan.md, the full-suite run manifest, the production-boot
 verification, the honesty proof, the guards, the battery summary).
+
+## R38-B — J48 the studio edit + customize round trip (2026-09-28)
+
+**Additive record (nothing above is reworded).** The survey's WAVE R38
+studio journey (§1 row 30 + §2 "R38-B (studio surfaces)") is encoded as
+**J48** — `journeys/web/j48-studio-edit-customize.ts` — the next free
+catalog number after J44 (the survey's "J47" numbering belongs to the
+R38-A upload lane and J45/J46 to R37's live lane; neither is at the
+R38-B base). The walk, driven as a user over the fixtures boot:
+
+- **The content list** (`/studio`): the studio manages the catalog's
+  own channel (the honest binding — the same channel R36's page
+  renders); the published rows are the channel's REAL catalog items (9
+  on this boot — the same discovery-derived feed); the drafts/scheduled
+  rows are this device's own studio records with the honest empty
+  states.
+- **The draft round trip**: create (the typed saved state) → RELOAD →
+  reload-durable → schedule → the scheduled state + the honest publish
+  note (publishing into the catalog lands with the upload wave).
+- **The details editor**: the catalog's own truth renders (the
+  provenance panel) → the title/description/visibility edit saves →
+  RELOAD → the composed truth persists with the original named.
+- **The comments moderation** (the R28 composition — the ONE store):
+  sign in (the scripted persona), post a comment ON THE WATCH SURFACE,
+  then in the studio: PIN (the studio's persisted record) → REPLY (a
+  real comment — the watch surface renders it) → HOLD (the comment
+  LEAVES the watch surface's rendered truth) → APPROVE (it returns).
+- **The analytics** (the honest map): the impressions/subscribers/
+  demographics panels render their typed absences with the frozen
+  sentences (never a fabricated chart); the real local truths render
+  their real numbers (the journey's own comment + reply + like).
+- **The customization** (the domain-graph seam): the base derived truth
+  renders (R36's derivation) → the banner/avatar/handle/description
+  edit saves through the graph's channel-profile seam → the composed
+  preview → RELOAD → persisted. The channel page still renders the
+  DERIVED truth (the byte-compatible read — J44's own assertions; the
+  channel page's read-side binding of the customization record is the
+  lane's recorded merge-time compose, evidence/r38b/DIVERGENCES.md).
+- **The anonymous law**: the studio surfaces never redirect to a
+  sign-in wall.
+
+**PASS 71 assertions** on the final fresh boot (the manifest + 9
+artifacts: evidence/r38b/journeys/final-run/). The affected-set
+verification (J01–J44: 39 PASS, the 3 pre-existing base fails
+byte-identical, 1 environmental block proven base-identical, zero new
+failures) + the battery gates: evidence/r38b/ (guards.md,
+journeys-affected/summary.md).
