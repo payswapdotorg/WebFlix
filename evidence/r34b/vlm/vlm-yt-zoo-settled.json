@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Based on the screenshot provided, here is the exact description of the visible content:\n\n**Is a video playing?**\n**No.** The video player area is black and does not contain any video content.\n\n**What is visible (Bot-check / Sign-in requirement):**\nThere is a **sign-in requirement / bot-check wall** displayed in the center of the video player.\n\n**Exact Headline/Text:**\nThe text reads:\n> **\"Sign in to confirm you're not a bot\"**\n>\n> \"This helps protect our community\"\n\nBelow this text are two buttons:\n*   **\"Sign in\"** (White button)\n*   **\"Learn more\"** (Dark grey button)\n\n**Other Visible Details:**\n*   The page title below the video is **\"Me at the zoo\"**.\n*   The channel name is **\"jawed\"**.\n*   Video stats show **437M views**, posted **21 years ago**.\n*   The description begins with: **\"Microplastics are accumulating in human brains at an alarming rate\"**.\n*   There is a sidebar on the right with recommended videos (e.g., \"The B\\*b Job\", \"POV: You're About To Experience...\", etc.).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1790554462,
+  "id": "202609280814205bb9eeebccd749a0",
+  "model": "glm-5v-turbo",
+  "object": "chat.completion",
+  "request_id": "202609280814205bb9eeebccd749a0",
+  "usage": {
+    "completion_tokens": 258,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1731,
+    "prompt_tokens_details": {
+      "cached_tokens": 5
+    },
+    "total_tokens": 1989
+  }
+}
