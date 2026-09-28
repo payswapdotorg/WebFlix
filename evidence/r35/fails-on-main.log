@@ -1,0 +1,136 @@
+bun test v1.3.14 (0d9b296a)
+
+apps/web/tests/r35-b2-item-watchlist-reload.test.ts:
+171 |     // the pill answered "Save to Watchlist" (saved=false) after a
+172 |     // successful save + reload. R35: the stored library read, joined by
+173 |     // the item's SOURCE identity, wins when it answers.
+174 |     const detailB = await loadDetailView(hostB, detailInput(DIARY_B));
+175 |     expect(detailB).not.toBeNull();
+176 |     expect(detailB!.watchlistSaved).toBe(true); // ← FAILS ON MAIN
+                                          ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-b2-item-watchlist-reload.test.ts:176:37)
+(fail) R35 (B2) — the item hub's watchlist truth on a fresh instance (the stored read before the fold) > save → RELOAD → the item hub's watchlistSaved folds the STORED truth (saved), the Library agrees, the fresh remove works [16.04ms]
+(pass) R35 (B2) — the item hub's watchlist truth on a fresh instance (the stored read before the fold) > the same-instance round trip keeps working (save → saved → remove → unsaved, ONE view) [4.13ms]
+
+apps/web/tests/r35-b3-library-playlist-resolution.test.ts:
+144 |     // was taught by the write's own resolution — always worked).
+145 |     const libraryA = await loadLibraryView(hostA);
+146 |     const listA = libraryA.playlists.lists.find((list) => list.name === PARITY_WALK);
+147 |     expect(listA).toBeDefined();
+148 |     expect(listA!.entries).toHaveLength(1);
+149 |     expect(listA!.entries[0]!.joined).not.toBeNull();
+                                                ^
+error: expect(received).not.toBeNull()
+
+Received: null
+
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-b3-library-playlist-resolution.test.ts:149:43)
+(fail) R35 (B3) — the Library resolves a stored playlist row's source realization on a fresh instance > save-to-playlist → RELOAD → the row renders JOINED (no '1 unavailable video is hidden'); the write stays visible on every boot [3.63ms]
+
+apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:
+102 |           // The honest typed failure — NEVER a fake success.
+103 |           expect(response.status).toBe(400);
+104 |           const body = (await response.json()) as { error: string; detail?: string };
+105 |           // THE B4 DEFECT: on main `error` WAS the raw service JSON
+106 |           // verbatim — the exact string the failure element rendered.
+107 |           expect(body.error).not.toContain("x-wfx-user-id"); // ← FAILS ON MAIN
+                                       ^
+error: expect(received).not.toContain(expected)
+
+Expected to not contain: "x-wfx-user-id"
+Received: "{\"error\":\"invalid-request\",\"detail\":\"x-wfx-user-id: required identity header is absent (identity travels as headers, never in URLs)\"}"
+
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:107:34)
+      at async withFetchStub (/home/z/webflix/apps/web/tests/fake-web.ts:347:26)
+      at async <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:97:13)
+      at async withEnv (/home/z/webflix/apps/web/tests/fake-web.ts:276:11)
+      at async <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:96:11)
+(fail) R35 (B4) — the anonymous feedback failure answers viewer-facing copy (never the raw typed error) > the service's identity-absent 400 → the closed code + the typed detail rides the body (status stays the honest 400) [2.35ms]
+129 |           await getWebRuntimeHost();
+130 |           const response = await post(postFeedback, { kind: "not-interested", target: TARGET });
+131 |           expect(response.status).toBe(502); // the service's own typed status
+132 |           const body = (await response.json()) as { error: string; detail?: string };
+133 |           // On main `error` was the raw `{"ok":false,"detail":"service boot failed"}`.
+134 |           expect(body.error).toBe("the feedback control could not be saved right now — retry in a moment"); // ← FAILS ON MAIN
+                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "the feedback control could not be saved right now — retry in a moment"
+Received: "{"ok":false,"detail":"service boot failed"}"
+
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:134:30)
+      at async withFetchStub (/home/z/webflix/apps/web/tests/fake-web.ts:347:26)
+      at async <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:122:13)
+      at async withEnv (/home/z/webflix/apps/web/tests/fake-web.ts:276:11)
+      at async <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:121:11)
+(fail) R35 (B4) — the anonymous feedback failure answers viewer-facing copy (never the raw typed error) > a non-identity service failure answers the honest viewer prose — never the raw JSON body [1.07ms]
+6441 |             null !== type &&
+6442 |             0 === Object.keys(type).length)
+6443 |         )
+6444 |           info +=
+6445 |             " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
+6446 |         throw Error(
+                     ^
+error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+      at renderElement (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:6446:15)
+      at retryNode (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:6783:21)
+      at performWork (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:7919:19)
+      at startWork (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:8807:7)
+      at renderToStringImpl (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:8933:7)
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:151:20)
+(fail) R35 (B4) — the anonymous feedback failure answers viewer-facing copy (never the raw typed error) > the failure element renders the viewer copy + the sign-in recovery path (never the raw typed error) [5.54ms]
+6441 |             null !== type &&
+6442 |             0 === Object.keys(type).length)
+6443 |         )
+6444 |           info +=
+6445 |             " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
+6446 |         throw Error(
+                     ^
+error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+      at renderElement (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:6446:15)
+      at retryNode (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:6783:21)
+      at performWork (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:7919:19)
+      at startWork (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:8807:7)
+      at renderToStringImpl (/home/z/webflix/node_modules/.bun/react-dom@19.3.0+62547eec5a2188e3/node_modules/react-dom/cjs/react-dom-server-legacy.browser.development.js:8933:7)
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-b4-feedback-viewer-copy.test.ts:180:20)
+(fail) R35 (B4) — the anonymous feedback failure answers viewer-facing copy (never the raw typed error) > a raw-JSON body (a shape the law never wrote) renders the honest generic prose — never raw JSON on the surface [0.61ms]
+
+apps/web/tests/r35-c2-session-intent-reflection.test.ts:
+142 |     //     empty and the carried objectives had no path into the read.
+143 |     //     R35: the bundle's personalize read merges the request-carried
+144 |     //     session objectives (the cookie) — the watch page's SSR mark
+145 |     //     renders on ANY instance.
+146 |     const bundle = await loadDiscoveryBundle(hostB, { requestCarriedIntents: [objective] });
+147 |     expect(bundle.personalize.intents.map((intent) => intent.objective)).toContain(objective); // ← FAILS ON MAIN
+                                                                               ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "slow documentaries about deep space"
+Received: []
+
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-c2-session-intent-reflection.test.ts:147:74)
+(fail) R35 (C2) — the session intent reflects on a FRESH instance's page read (the SSR discovery bundle) > POST intent → RELOAD → the fresh discovery bundle carries the intent (the mark's truth); the carrier cookie + the fresh GET agree [2847.92ms]
+176 |     await bootHost();
+177 |     const objective = "loud action tonight";
+178 |     const posted = await post(postPersonalize, { kind: "intent", objective });
+179 |     expect(posted.status).toBe(200);
+180 |     const carriedAfterWrite = carriedObjectivesOfSetCookie(posted.headers.get("set-cookie"));
+181 |     expect(carriedAfterWrite).toContain(objective);
+                                    ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "loud action tonight"
+Received: []
+
+      at <anonymous> (/home/z/webflix/apps/web/tests/r35-c2-session-intent-reflection.test.ts:181:31)
+(fail) R35 (C2) — the session intent reflects on a FRESH instance's page read (the SSR discovery bundle) > clear-intent empties the carrier with the fold (one truth, both stores) [1.10ms]
+
+ 1 pass
+ 8 fail
+ 24 expect() calls
+Ran 9 tests across 4 files. [3.07s]

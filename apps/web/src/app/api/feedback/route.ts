@@ -25,6 +25,17 @@
  *   (idempotent per (profile, kind, target) — the service's own law).
  * - `DELETE /api/feedback?id=<record id>` → undo one control (a REAL
  *   delete — the record and its composition effect vanish together).
+ *
+ * R35 (B4) — THE VIEWER-FACING FAILURE LAW: a failing service answer maps
+ * through `host/feedback-viewer-copy.ts` BEFORE it can reach a page — the
+ * identity-absent class (the anonymous session on the service boot — the
+ * service's own honest 400) answers the closed `identity-required` code,
+ * and every other body answers the honest viewer prose, NEVER the raw
+ * service JSON (the R34-A ledger's B4: the raw typed error rendered
+ * verbatim in the failure element). The typed detail rides the
+ * response's `detail` field (the network tab keeps the engineer's
+ * evidence); the status stays the service's own typed status (a failure
+ * answers a failure — never a fake success).
  */
 
 import { NextResponse } from "next/server";
@@ -37,6 +48,7 @@ import {
   submitFixtureFeedback,
   undoFixtureFeedback,
 } from "@/host/feedback-fixtures";
+import { viewerFailureOfServiceDetail } from "@/host/feedback-viewer-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -66,9 +78,11 @@ export async function GET(request: Request): Promise<NextResponse> {
     );
   }
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
+    // R35 (B4): the viewer-safe map (never the raw service body on a
+    // viewer-facing surface; the typed detail rides `detail`).
+    const raw = await response.text().catch(() => "");
     return NextResponse.json(
-      { error: detail.length > 0 ? detail : "the feedback read failed" },
+      viewerFailureOfServiceDetail(raw, "the feedback read failed"),
       { status: serviceErrorStatus(response.status) },
     );
   }
@@ -124,9 +138,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     );
   }
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
+    // R35 (B4): the viewer-safe map (never the raw service body on a
+    // viewer-facing surface; the typed detail rides `detail`).
+    const raw = await response.text().catch(() => "");
     return NextResponse.json(
-      { error: detail.length > 0 ? detail : "the feedback write failed" },
+      viewerFailureOfServiceDetail(
+        raw,
+        "the feedback control could not be saved right now — retry in a moment",
+      ),
       { status: serviceErrorStatus(response.status) },
     );
   }
@@ -172,9 +191,11 @@ export async function DELETE(request: Request): Promise<NextResponse> {
     );
   }
   if (!response.ok) {
-    const detail = await response.text().catch(() => "");
+    // R35 (B4): the viewer-safe map (never the raw service body on a
+    // viewer-facing surface; the typed detail rides `detail`).
+    const raw = await response.text().catch(() => "");
     return NextResponse.json(
-      { error: detail.length > 0 ? detail : "the undo failed" },
+      viewerFailureOfServiceDetail(raw, "the undo failed"),
       { status: serviceErrorStatus(response.status) },
     );
   }

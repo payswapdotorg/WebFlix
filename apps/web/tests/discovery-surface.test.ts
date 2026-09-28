@@ -455,7 +455,9 @@ describe("R21-D the discovery surfaces", () => {
 
   it("Settings general holds the profile + recommendation management areas", async () => {
     const host = await bootHost();
-    const personalize = loadPersonalizeView(host);
+    // R35 (C2): the personalize read hydrates the durable store first —
+    // async since (the same law the discovery bundle's read follows).
+    const personalize = await loadPersonalizeView(host);
     const markup = renderToStaticMarkup(
       createElement(SettingsSurface, {
         capabilities: host.capabilities,

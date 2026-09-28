@@ -18,6 +18,10 @@ import { getWebRuntimeHost } from "@/host/web-host";
 import { loadAccountChrome } from "@/host/account-chrome";
 import { loadHomeView } from "@/host/view-models";
 import { loadDiscoveryBundle } from "@/host/discoverability";
+// R35 (C2) — the request's carried session-intent objectives (the
+// session-intent cookie; the discovery read merges them so the SSR
+// bundle reflects the session intent on this cold instance too).
+import { readRequestSessionIntents } from "@/host/request-session-intents";
 import { syncNavigationToRoute } from "@/app/routing";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +31,7 @@ export default async function HomePage() {
   syncNavigationToRoute(host.runtime, "/", {});
   const [view, discovery, account] = await Promise.all([
     loadHomeView(host),
-    loadDiscoveryBundle(host),
+    loadDiscoveryBundle(host, { requestCarriedIntents: await readRequestSessionIntents() }),
     loadAccountChrome(),
   ]);
   return (

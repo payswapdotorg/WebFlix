@@ -1,0 +1,24 @@
+R35 — the battery run of record (the full guard command's own tail)
+
+Command: nice -n 19 ionice -c3 bun test --parallel=1   (bun test v1.3.14, repo root, lane wfx/r35/readpath)
+
+(pass) retrieval fixtures — packet minimums > provide at least 12 entertainment items covering ALL 7 canonical types [0.07ms]
+(pass) retrieval fixtures — packet minimums > provide at least 18 source realizations across exactly 3 connector ids [0.03ms]
+(pass) retrieval fixtures — packet minimums > give the 3 connectors DIFFERENT capability sets (native / embed-only / browser+external) [0.07ms]
+(pass) retrieval fixtures — packet minimums > provide 5 user intents across all 5 frozen scopes [0.09ms]
+(pass) retrieval fixtures — canonical id literals > every item / realization / intent / creator / topic id is canonical-shaped [0.18ms]
+(pass) retrieval fixtures — canonical id literals > every realization attaches to a fixture item; base pairs are unique [0.08ms]
+(pass) retrieval fixtures — canonical id literals > the freshness-controlled re-reports bracket their base reports by ULID time [0.11ms]
+(pass) retrieval fixtures — determinism > contains no randomness or hidden clock reads: two builds are identical [1.50ms]
+(pass) retrieval fixtures — determinism > loads every item and realization into the index (19 candidates) [0.53ms]
+(pass) retrieval fixtures — determinism > resolves creator and topic names through the label maps [0.50ms]
+(pass) retrieval fixtures — determinism > search-result fixtures exercise every bridge outcome [0.08ms]
+
+1 tests skipped:
+(skip) R11 — the webtorrent evaluation skip honesty > webtorrent native prebuilt unavailable in this environment (reason recorded)
+
+ 5264 pass
+ 1 skip
+ 0 fail
+ 33700 expect() calls
+Ran 5265 tests across 304 files. [230.27s]

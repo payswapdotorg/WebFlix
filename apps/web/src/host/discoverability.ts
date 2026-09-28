@@ -262,9 +262,58 @@ export function personalizeViewOf(
   };
 }
 
-/** Load the Personalize control's view from the runtime (policy + intents). */
-export function loadPersonalizeView(host: WebRuntimeHost): PersonalizeView {
-  return personalizeViewOf(host.runtime.intents.policy(), host.runtime.intents.intents());
+/**
+ * Load the Personalize control's view from the runtime (policy + intents).
+ *
+ * R35 (C2) — THE PAGE'S READ HYDRATES THE SAME STORE THE WRITES FLOW
+ * THROUGH: the durable server records + policy first (the R05
+ * `intents.hydrate()` seam — the same law the library fold's R30
+ * hydration follows), so a fresh service-mode instance reflects the
+ * written durable truth instead of its empty per-instance view (the
+ * R34-A ledger's C2: the POST/GET round trip answered while the watch
+ * page's SSR bundle rendered no intent mark). A failing hydrate keeps
+ * the local view (the honest degradation — the same law the library
+ * fold's hydration follows, never a fake empty).
+ *
+ * The `requestCarriedIntents` (the session-intent cookie's objectives —
+ * the pages pass them through `request-session-intents.ts`) merge as
+ * SESSION-SCOPED intents the runtime's own fold may not know (the
+ * service-mode split: the POST that wrote them ran on another instance;
+ * the IntentStore law keeps session scopes out of the server's durable
+ * records, so the cookie is the session-scoped carrier). LOCAL entries
+ * win per objective (the same merge law the IntentStore's own hydrate
+ * follows); nothing is fabricated — the mark renders only when an
+ * objective actually rides the request or the runtime's own fold.
+ */
+export async function loadPersonalizeView(
+  host: WebRuntimeHost,
+  requestCarriedIntents?: readonly string[],
+): Promise<PersonalizeView> {
+  try {
+    await host.runtime.intents.hydrate();
+  } catch {
+    // The typed hydrate failure: the local session truth keeps rendering
+    // (the honest degradation — never a fake empty, never a fabricated
+    // durable claim).
+  }
+  const view = personalizeViewOf(host.runtime.intents.policy(), host.runtime.intents.intents());
+  if (requestCarriedIntents === undefined || requestCarriedIntents.length === 0) {
+    return view;
+  }
+  const known = new Set(view.intents.map((intent) => intent.objective));
+  const carried = requestCarriedIntents.filter((objective) => !known.has(objective));
+  if (carried.length === 0) return view;
+  return {
+    ...view,
+    intents: [
+      ...view.intents,
+      ...carried.map((objective) => ({
+        objective,
+        scope: "session",
+        expiryLabel: "ends with this session",
+      })),
+    ],
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -470,10 +519,27 @@ export function importedSectionViewOf(
  * the store), the Personalize view, the source strip, and the imported
  * section the CURRENT mode honors. The seeded discovery rows render on
  * For-you always, and alongside the imported section on Blend.
+ *
+ * R35 (C2): the Personalize view hydrates the durable intent store (the
+ * R05 seam) and merges the request-carried session objectives (the
+ * session-intent cookie — the pages pass them; see
+ * `loadPersonalizeView`).
  */
-export async function loadDiscoveryBundle(host: WebRuntimeHost): Promise<DiscoveryBundle> {
+export async function loadDiscoveryBundle(
+  host: WebRuntimeHost,
+  options?: {
+    /**
+     * The request's carried session-intent objectives (the
+     * `wfx_session_intent` cookie's payload — the pages read it through
+     * `request-session-intents.ts`; the API routes through the request's
+     * own Cookie header). Absent ⇒ the runtime's own fold is the whole
+     * truth (the direct-call/tests case).
+     */
+    readonly requestCarriedIntents?: readonly string[];
+  },
+): Promise<DiscoveryBundle> {
   const feedMode = await loadFeedModeView(host);
-  const personalize = loadPersonalizeView(host);
+  const personalize = await loadPersonalizeView(host, options?.requestCarriedIntents);
   const sourceStrip = await loadSourceStripView(host);
   let feed: ByofFeedView | null = null;
   try {

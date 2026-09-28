@@ -1,0 +1,67 @@
+@wfx/app-web build: ▲ Next.js 16.3.5 (Turbopack)
+@wfx/app-web build: ✓ Running next.config.ts took 28ms
+@wfx/app-web build: Attention: Next.js now collects completely anonymous telemetry regarding usage.
+@wfx/app-web build: This information is used to shape Next.js' roadmap and prioritize features.
+@wfx/app-web build: You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+@wfx/app-web build: https://nextjs.org/telemetry
+@wfx/app-web build: 
+@wfx/app-web build: 
+@wfx/app-web build:   Creating an optimized production build ...
+@wfx/app-web build: ✓ Compiled successfully in 15.2s
+@wfx/app-web build:   Running TypeScript ...
+@wfx/app-web build:   Finished TypeScript in 11.8s ...
+@wfx/app-web build:   Collecting page data using 1 worker ...
+@wfx/app-web build:   Generating static pages using 1 worker (0/7) ...
+@wfx/app-web build:   Generating static pages using 1 worker (1/7) 
+@wfx/app-web build:   Generating static pages using 1 worker (3/7) 
+@wfx/app-web build:   Generating static pages using 1 worker (5/7) 
+@wfx/app-web build: ✓ Generating static pages using 1 worker (7/7) in 137ms
+@wfx/app-web build:   Finalizing page optimization ...
+@wfx/app-web build: 
+@wfx/app-web build: Route (app)
+@wfx/app-web build: ┌ ƒ /
+@wfx/app-web build: ├ ○ /_not-found
+@wfx/app-web build: ├ ƒ /api/acquisition
+@wfx/app-web build: ├ ƒ /api/actions
+@wfx/app-web build: ├ ƒ /api/auth/login
+@wfx/app-web build: ├ ƒ /api/auth/logout
+@wfx/app-web build: ├ ƒ /api/auth/register
+@wfx/app-web build: ├ ƒ /api/auth/select-profile
+@wfx/app-web build: ├ ƒ /api/auth/session
+@wfx/app-web build: ├ ƒ /api/byof
+@wfx/app-web build: ├ ƒ /api/capabilities
+@wfx/app-web build: ├ ƒ /api/events
+@wfx/app-web build: ├ ƒ /api/feed-mode
+@wfx/app-web build: ├ ƒ /api/feedback
+@wfx/app-web build: ├ ƒ /api/health
+@wfx/app-web build: ├ ƒ /api/intelligence
+@wfx/app-web build: ├ ƒ /api/library
+@wfx/app-web build: ├ ƒ /api/model/byom/bind
+@wfx/app-web build: ├ ƒ /api/model/byom/unbind
+@wfx/app-web build: ├ ƒ /api/model/open-models
+@wfx/app-web build: ├ ƒ /api/personalize
+@wfx/app-web build: ├ ƒ /api/playback
+@wfx/app-web build: ├ ƒ /api/playback/telemetry
+@wfx/app-web build: ├ ƒ /api/preview
+@wfx/app-web build: ├ ƒ /api/queue
+@wfx/app-web build: ├ ƒ /api/search/suggest
+@wfx/app-web build: ├ ƒ /api/shorts
+@wfx/app-web build: ├ ƒ /api/shorts-session
+@wfx/app-web build: ├ ƒ /api/sources
+@wfx/app-web build: ├ ƒ /api/sources/catalog
+@wfx/app-web build: ├ ƒ /api/transform
+@wfx/app-web build: ├ ƒ /feed/subscriptions
+@wfx/app-web build: ├ ƒ /item
+@wfx/app-web build: ├ ƒ /library
+@wfx/app-web build: ├ ○ /offline
+@wfx/app-web build: ├ ƒ /player
+@wfx/app-web build: ├ ƒ /search
+@wfx/app-web build: ├ ƒ /settings
+@wfx/app-web build: ├ ƒ /shorts
+@wfx/app-web build: └ ƒ /watch
+@wfx/app-web build: 
+@wfx/app-web build: 
+@wfx/app-web build: ○  (Static)   prerendered as static content
+@wfx/app-web build: ƒ  (Dynamic)  server-rendered on demand
+@wfx/app-web build: 
+@wfx/app-web build: Exited with code 0

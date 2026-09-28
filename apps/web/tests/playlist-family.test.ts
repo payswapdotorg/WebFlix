@@ -36,6 +36,7 @@ import { resetWebHostProcessState } from "../src/host/testing";
 import { getWebRuntimeHost } from "../src/host/web-host";
 import type { WebRuntimeHost } from "../src/host/web-host";
 import { loadLibraryView, loadSearchView } from "../src/host/view-models";
+import { addFixtureLibraryEntry } from "../src/host/library-fixtures";
 import { LibrarySurface } from "../src/components/library/LibrarySurface";
 import { PlaylistControls, shuffled, type PlaylistTarget } from "../src/components/library/PlaylistControls";
 import { POST as postLibrary } from "../src/app/api/library/route";
@@ -207,16 +208,33 @@ describe("R30-B — §8 the playlist header grammar (the corpus header panel, ho
 // ---------------------------------------------------------------------------
 
 describe("R30-B — §9 the honest-unavailable notice + the sort chips", () => {
-  it("entries without a joined source identity hide behind the counted notice (never fabricated links)", async () => {
+  it("entries whose source no longer serves them hide behind the counted notice (never fabricated links)", async () => {
     const host = await bootHost();
-    // The saves land WITHOUT any view loader running first — the join
-    // map never learned these items (the honest per-process truth).
-    const diary = await fixtureItem(host, "Deep Field Diary");
-    const second = await fixtureItem(host, "Signal Fade");
-    await saveToList(host, diary, "Watch later");
-    await saveToList(host, second, "Watch later");
+    // R35 (B3) — THE PREMISE'S HONEST UPDATE: the Library read now
+    // RESOLVES stored rows the source still serves (the R34-A ledger's
+    // B3 — the pre-R35 premise "saves land without a view loader, so
+    // the join never learned them" was the FIXED defect itself: a row
+    // the source serves resolved the moment the read consulted the
+    // search seam; see r35-b3-library-playlist-resolution.test.ts for
+    // the regression pin). The §9 law's honest subject is the row whose
+    // source realization CANNOT resolve — the source no longer serves
+    // it. Seeded through the persona's own typed write seam with
+    // externalRefs the fixture catalog does not carry (retired rows).
+    addFixtureLibraryEntry({
+      op: "add",
+      externalRef: "fake:video-retired-1",
+      title: "Retired Recording",
+      metadata: { connectorId: "fake-source", list: "Watch later" },
+    });
+    addFixtureLibraryEntry({
+      op: "add",
+      externalRef: "fake:video-retired-2",
+      title: "Sunset Archive",
+      metadata: { connectorId: "fake-source", list: "Watch later" },
+    });
     const view = await loadLibraryView(host);
-    // The view's own truth: the entries exist but carry no join.
+    // The view's own truth: the entries exist but carry no join (the
+    // source serves neither — the honest resolution failure).
     const list = view.playlists.lists.find((candidate) => candidate.name === "Watch later")!;
     expect(list.entries.length).toBe(2);
     expect(list.entries.every((entry) => entry.joined === null)).toBe(true);

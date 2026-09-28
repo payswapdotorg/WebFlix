@@ -8,7 +8,9 @@
  * answers the typed 502, never a fake success).
  *
  * - `GET /api/personalize` → the current policy view + the active
- *   session intents (the runtime's own read).
+ *   session intents (the runtime's own read, hydrated from the durable
+ *   store + merged with the request-carried session objectives — see the
+ *   R35 note below).
  * - `POST /api/personalize` `{ kind: "intent", objective }` → a
  *   SESSION-SCOPED intent (`scope: "session"` — cleared when the session
  *   ends, never persisted as long-term preference by the IntentStore
@@ -22,6 +24,22 @@
  * - `POST /api/personalize` `{ kind: "exploration", value }` → the
  *   exploration dial in [0,1] (the current attention mode is retained —
  *   the runtime's policy view keeps unset dials).
+ *
+ * R35 (C2) — THE SESSION-INTENT COOKIE: on the service-mode boot each
+ * route/page render is a COLD runtime, so a session intent written here
+ * never reached the pages' SSR discovery reads (the R34-A ledger's C2:
+ * this route's own GET read the intents back — same instance — while the
+ * watch page rendered no intent mark). The IntentStore law keeps session
+ * scopes out of the server's durable records (they end with the session
+ * by law), so the web adapter's own SESSION-SCOPED carrier is the
+ * `wfx_session_intent` cookie (`host/session-intent-cookie.ts` — a
+ * session cookie that dies with the browser session, exactly the
+ * intent's scope): the intent write sets it to the merged active set,
+ * the clear-intent empties it, and every answer composes the
+ * request-carried objectives into the view (local entries win per
+ * objective — the same merge law the IntentStore's hydrate follows).
+ * Never a fabricated state: the cookie carries only objectives that were
+ * actually submitted this session.
  */
 
 import { NextResponse } from "next/server";
@@ -32,15 +50,53 @@ import { isRuntimeError } from "@wfx/client-runtime";
 
 import { getWebRuntimeHost } from "@/host/web-host";
 import { loadPersonalizeView } from "@/host/discoverability";
+import {
+  clearedSessionIntentCookie,
+  mergeSessionIntentObjectives,
+  sessionIntentCookieFor,
+  sessionIntentObjectivesFromCookieHeader,
+} from "@/host/session-intent-cookie";
 
 export const dynamic = "force-dynamic";
 
 /** The closed action vocabulary the POST accepts. */
 const KINDS = new Set(["intent", "clear-intent", "attention", "exploration"]);
 
-export async function GET(): Promise<NextResponse> {
+/** The request's carried session-intent objectives (the cookie's payload). */
+function carriedIntentsOf(request: Request | undefined): readonly string[] {
+  return sessionIntentObjectivesFromCookieHeader(request?.headers?.get("cookie") ?? null);
+}
+
+/**
+ * The runtime's active SESSION-CLASS objectives (session + momentary —
+ * the scopes `endSession` clears; the cookie carries exactly this class).
+ */
+function activeSessionObjectivesOf(runtime: {
+  readonly intents: {
+    readonly intents: () => readonly { readonly scope: string; readonly objective: string }[];
+  };
+}): readonly string[] {
+  return runtime.intents
+    .intents()
+    .filter((intent) => intent.scope === "session" || intent.scope === "momentary")
+    .map((intent) => intent.objective);
+}
+
+/** One view answer with the carried objectives merged + the cookie set. */
+async function viewWithCookie(
+  host: Awaited<ReturnType<typeof getWebRuntimeHost>>,
+  carried: readonly string[],
+  cookieValue: string,
+): Promise<NextResponse> {
+  const view = await loadPersonalizeView(host, carried);
+  const response = NextResponse.json(view);
+  response.headers.append("set-cookie", cookieValue);
+  return response;
+}
+
+export async function GET(request?: Request): Promise<NextResponse> {
   const host = await getWebRuntimeHost();
-  return NextResponse.json(loadPersonalizeView(host));
+  return NextResponse.json(await loadPersonalizeView(host, carriedIntentsOf(request)));
 }
 
 export async function POST(request: Request): Promise<NextResponse> {
@@ -61,6 +117,7 @@ export async function POST(request: Request): Promise<NextResponse> {
 
   const host = await getWebRuntimeHost();
   const runtime = host.runtime;
+  const carried = carriedIntentsOf(request);
   try {
     if (kind === "intent") {
       const objective = typeof record.objective === "string" ? record.objective.trim() : "";
@@ -74,13 +131,19 @@ export async function POST(request: Request): Promise<NextResponse> {
       // for THIS session — the IntentStore law keeps session intents out
       // of the durable profile (they never corrupt long-term preference).
       await runtime.setIntent({ objective, scope: "session" });
-      return NextResponse.json(loadPersonalizeView(host));
+      // R35 (C2): the session-intent cookie carries the merged active
+      // session set (this write + whatever the request carried — the
+      // service-mode split means an earlier write may have landed on
+      // another instance whose runtime this one never saw).
+      const merged = mergeSessionIntentObjectives(activeSessionObjectivesOf(runtime), carried);
+      return await viewWithCookie(host, carried, sessionIntentCookieFor(merged));
     }
     if (kind === "clear-intent") {
       // The honest clear path: the runtime's own end-session law (session
-      // + momentary intents are cleared; durable scopes are untouched).
+      // + momentary intents are cleared; durable scopes are untouched)
+      // + the carrier cookie emptied with it (one truth, both stores).
       runtime.intents.endSession();
-      return NextResponse.json(loadPersonalizeView(host));
+      return await viewWithCookie(host, [], clearedSessionIntentCookie());
     }
     if (kind === "attention") {
       const mode = typeof record.attentionMode === "string" ? record.attentionMode : undefined;
@@ -91,7 +154,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         );
       }
       await runtime.setRecommendationPolicy({ attentionMode: mode as AttentionMode });
-      return NextResponse.json(loadPersonalizeView(host));
+      return NextResponse.json(await loadPersonalizeView(host, carried));
     }
     // kind === "exploration"
     const value = record.value;
@@ -108,7 +171,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       attentionMode: current.attentionMode,
       exploration: value,
     });
-    return NextResponse.json(loadPersonalizeView(host));
+    return NextResponse.json(await loadPersonalizeView(host, carried));
   } catch (thrown) {
     if (isRuntimeError(thrown)) {
       return NextResponse.json({ error: thrown.message }, { status: 400 });
