@@ -54,14 +54,18 @@ export const j05UnifiedSearch: Journey = {
       results.resultCards === 3,
     );
 
-    // Every result card is a canonical item link (source-neutral identity).
+    // Every result card carries the canonical identity — the R28-B
+    // one-click grammar: the canonical identity rides the player URL's
+    // id param (the card's primary link is the play path; /item is the
+    // kebab's Details deep action).
     const hrefs = await browser.eval<readonly string[]>(
       `(() => [...document.querySelectorAll("[data-wfx-search-results] a[data-wfx-card]")].map((a) => a.getAttribute('href') ?? ''))()`,
     );
-    const canonical = (hrefs ?? []).filter((href) => href.startsWith("/item?id=wfxitm_"));
+    // binds R28-B one-click play: the id-first /player href (the canonical identity link).
+    const canonical = (hrefs ?? []).filter((href) => href.startsWith("/player?id=wfxitm_"));
     assert.that(
-      "every result links the canonical item detail",
-      `${(hrefs ?? []).length} cards all linking /item?id=wfxitm_…`,
+      "every result links the canonical identity (the id-first one-click play path)",
+      `${(hrefs ?? []).length} cards all linking /player?id=wfxitm_…`,
       `${canonical.length} of ${(hrefs ?? []).length}`,
       (hrefs ?? []).length === 3 && canonical.length === 3,
     );

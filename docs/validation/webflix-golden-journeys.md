@@ -316,3 +316,49 @@ Expected:
 - torrent/local/live playback may use the same realtime session seam.
 
 R25 release acceptance additionally requires latency/cost evidence and fresh agent-browser/native evidence.
+
+## R35b — The journey-suite re-encode to the current product grammar (2026-09-28)
+
+**Additive record (nothing above is reworded).** The R34-C production
+sweep (evidence/r34c/) adjudicated 32 of the J01–J39 journey specs as
+STALE-GRAMMAR: they bind the pre-R24→R30 product grammar (predominantly
+R28-B's home/item/player restructure — one-click `/player` card links,
+`/item` demoted to the card kebab's Details deep action, the
+ActionButtons/acquisition-panel mounts on `ItemDetailSurface` — and
+R29-B/R30-B/R33-B's shell/rail grammar). The R35b lane
+(`wfx/r35b/journeys`, base `acff71b8b363`) re-encoded those 32 specs to
+the CURRENT grammar without weakening a single journey's check
+strength:
+
+- **26 grammar-drift re-encodes** — each changed assertion cites the
+  grammar element it now binds (the R28-B one-click `/player` href, the
+  `[data-wfx-card-details]` deep path, the R33-B rail set, the R28-B
+  chip-bar home composition, the R29-B watch-kebab report rows, the
+  R29-B WatchActions split pill). The user-visible intent is preserved
+  assertion-for-assertion where the surface still exists.
+- **6 production-neutral re-encodes** (J04, J14, J15, J16, J33, J38) —
+  the fixtures-catalog/config bindings became boot-neutral: J04's
+  position pill binds the `N / M` grammar (not the fixtures page size);
+  J14's source card binds the typed per-boot truth through the loud
+  mode badge; J15/J16's note predicates bind the frozen
+  replacement/kept-runway vocabulary (both boots' wordings); J33's
+  determinism drive binds the typed 200-or-refusal truth; J38 binds the
+  where-to-watch grouping law + the typed service-mode absences. Each
+  cites the R23 production sweep (evidence/r23/production-sweep.md) as
+  the production truth of record, and each was verified green on BOTH
+  the fixtures boot and the live production surface.
+- The honesty proof (evidence/r35b/honesty-proof.md): three
+  representative classes failed under exact simulated grammar
+  regressions (the mutations and the failing assertions recorded) —
+  the re-encoded specs have teeth.
+
+**The honest remaining gap (recorded, never silently skipped):** J40,
+J41, and J43 — outside the R34-C sweep's scope and outside R35b's owned
+file set — fail on the current fixtures boot with the same R28-B
+stale-grammar class (verified byte-identically at the base commit;
+evidence/r35b/guards.md §4). A journey-spec update work item for those
+three (the same J01-precedent procedure) is the recorded follow-up.
+
+The evidence of record for the re-encode: evidence/r35b/ (the grammar
+survey plan.md, the full-suite run manifest, the production-boot
+verification, the honesty proof, the guards, the battery summary).

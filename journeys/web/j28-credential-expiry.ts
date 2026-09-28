@@ -16,11 +16,15 @@
  * the REAUTHORIZE recovery (the source is signed in again and reads work).
  * The journey RESTORES the recovered state before finishing (the scripted
  * feed is shared with every later journey).
+ *
+ * R35b re-encode: the player link of step 0 is the search card's own
+ * ONE-CLICK /player href (the R28-B grammar — the card IS the play
+ * decision); the player reads of steps 3/4 use that captured href.
  */
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch, playerHrefFromItem } from "../lib/journeys";
+import { goto, itemHrefFromSearch } from "../lib/journeys";
 
 export const j28CredentialExpiry: Journey = {
   id: "J28",
@@ -32,20 +36,14 @@ export const j28CredentialExpiry: Journey = {
 
     // 0. A real item + its player link, captured while the source is
     //    healthy (the search read works — the fixture feed's own truth).
-    const itemHref = await itemHrefFromSearch(context, "Harbor", "Harbor Lights");
+    //    binds R28-B one-click play: the search card's own /player href IS
+    //    the play decision (the card click starts playback).
+    const playerHref = await itemHrefFromSearch(context, "Harbor", "Harbor Lights");
     assert.that(
-      "the search surface offers the item while the source is signed in",
-      "an item link",
-      itemHref ?? "<absent>",
-      itemHref !== null,
-    );
-    await goto(context, itemHref ?? "/");
-    const playerHref = await playerHrefFromItem(context);
-    assert.that(
-      "the item page offers its play decision while the source is signed in",
-      "a player link",
+      "the search surface offers the item's one-click player link while the source is signed in",
+      "an id-first /player link (the R28-B play decision)",
       playerHref ?? "<absent>",
-      playerHref !== null,
+      playerHref !== null && playerHref.startsWith("/player?id=wfxitm_"),
     );
 
     // 1. The healthy signed-in truth (the source card's own state).

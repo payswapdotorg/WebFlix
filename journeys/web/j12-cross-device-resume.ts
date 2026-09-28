@@ -17,6 +17,10 @@
  * The dev split-module reality also isolates the per-route runtime
  * folds (the same documented law the J11 limitation names). The
  * service-mode procedure is the manifest limitation entry.
+ *
+ * R35b re-encode: the play path is the R28-B ONE-CLICK grammar — the
+ * search card's primary link IS the /player href (the resume param
+ * rides the URL contract exactly as before).
  */
 
 import { describe } from "./journey-description";
@@ -30,13 +34,14 @@ export const j12CrossDeviceResume: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    const itemHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
-    assert.that("the search surface offers the item", "an item link", itemHref ?? "<absent>", itemHref !== null);
-    await goto(context, itemHref ?? "/");
-    const playHref = await browser.eval<string | null>(
-      `document.querySelector('[data-wfx-item-play]')?.getAttribute('href') ?? null`,
+    // The one-click play path (R28-B): the card's own /player href.
+    const playHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    assert.that(
+      "the search surface offers the card's one-click play path",
+      "an id-first /player link",
+      playHref ?? "<absent>",
+      playHref !== null && playHref.startsWith("/player?id=wfxitm_"),
     );
-    assert.that("the detail page offers playback", "a play href", playHref ?? "<absent>", playHref !== null);
 
     // Carry a resume position (the continuity the URL contract accepts).
     const withResume = `${playHref}${(playHref ?? "").includes("?") ? "&" : "?"}resume=60000`;

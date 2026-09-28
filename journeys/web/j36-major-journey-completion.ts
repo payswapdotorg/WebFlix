@@ -43,6 +43,13 @@
  * connected truth is encoded here); the production-parity sweep (J35)
  * remains the lead's live-deployment journey. The harness imports
  * nothing from any @wfx package per the layering law.
+ *
+ * R35b re-encode: step 5 (the feed modes) + step 6 (the personalize
+ * controls) re-bind to the Watch surface's CompactDiscoveryControls band
+ * (the R28-B placement — the controls moved off Home with the
+ * restructure); the imported-feed mode binds the byof option's
+ * availability truth; step 7's item hub is reached through the card
+ * kebab's Details deep path. Every other step is unchanged.
  */
 
 import { describe } from "./journey-description";
@@ -228,23 +235,30 @@ export const j36MajorJourneyCompletion: Journey = {
 
     // ------------------------------------------------------------------
     // 5 — the feed modes (the imported feed is now a real mode).
-    // ------------------------------------------------------------------
-    await goto(context, "/");
+    // binds the R28-B placement: the Watch surface's compact discovery
+    // band carries the feed-mode control (Home's orientation zone moved
+    // with the restructure — the controls live on the feed surfaces).
+    await goto(context, "/watch");
     await assert.visible(
       "[data-wfx-feed-mode-option]",
-      "the feed-mode choices render on the live surface (For you / Following / Your imported feed / Blend)",
+      "the feed-mode choices render on the live feed surface (For you / Following / Your imported feed / Blend)",
     );
-    const homeText = await browser.tryText("[data-wfx-surface='home']");
+    // binds the mode-control grammar: the byof option's label + its
+    // availability truth (the mode transition law — an import that owns
+    // records makes the mode real).
+    const importedOption = await browser.eval<{ readonly label: string | null; readonly available: string | null }>(
+      `(() => { const option = document.querySelector("[data-wfx-feed-mode-option='byof']"); return option === null ? { label: null, available: null } : { label: option.textContent ?? null, available: option.getAttribute('data-wfx-feed-mode-available') }; })()`,
+    );
     assert.that(
       "the imported feed mode is present after the BYOF import (the mode transition law)",
-      "the imported-feed mode label",
-      homeText !== null && /imported/i.test(homeText) ? "imported mode present" : "no imported mode text",
-      homeText !== null && /imported/i.test(homeText),
+      "the 'Your imported feed' option, available",
+      `label: ${importedOption?.label ?? "<none>"} · available: ${importedOption?.available ?? "<none>"}`,
+      (importedOption?.label ?? "").includes("imported") && importedOption?.available === "true",
     );
 
     // ------------------------------------------------------------------
-    // 6 — temporary intent + attention mode (the personalize controls).
-    // ------------------------------------------------------------------
+    // 6 — temporary intent + attention mode (the personalize controls —
+    // the R28-B compact band on the feed surface).
     await browser.clickInteractive("[data-wfx-personalize-toggle]");
     await assert.visible(
       "[data-wfx-personalize-set-intent]",
@@ -256,14 +270,18 @@ export const j36MajorJourneyCompletion: Journey = {
     );
 
     // ------------------------------------------------------------------
-    // 7 — the item hub: Where to watch + AI tray + feedback.
-    // ------------------------------------------------------------------
+    // 7 — the item hub: Where to watch + AI tray + feedback, reached
+    // through the card kebab's Details deep path (the R28-B grammar —
+    // the card's primary link is the one-click /player href; the item
+    // hub is the quiet deep action).
+    // binds R28-B deep surface: the home card kebab's Details link.
+    await goto(context, "/");
     const itemHref = await browser.eval<string | null>(
-      `(() => { const link = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '') !== ''); return link === undefined ? null : link.getAttribute('href'); })()`,
+      `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '') !== ''); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
     );
     assert.that(
-      "a source-backed item is browsable from the normal surface (no direct route navigation)",
-      "a card link on Home",
+      "a source-backed item's Details deep path is browsable from the normal surface (no direct route navigation)",
+      "a card's /item Details link on Home",
       itemHref ?? "<none>",
       itemHref !== null && itemHref.length > 0,
     );

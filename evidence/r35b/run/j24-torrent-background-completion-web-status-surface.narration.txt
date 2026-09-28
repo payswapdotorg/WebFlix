@@ -1,0 +1,1 @@
+- completing (80%) → verifying ('Checking the finished files.', 100%) → the earned ready-offline verdict with its verified size and typed actions

@@ -11,11 +11,32 @@
  * with their verified statuses, and the item detail carries the
  * ready-offline panel with its verified size. Reads only: the web
  * status/read truth (the matrix's Web column).
+ *
+ * R35b re-encode: the verified item's read surface is the ITEM hub (the
+ * R28-B mount — the ready-offline panel rides `ItemDetailSurface`),
+ * reached through the search card's kebab Details deep path; the
+ * offline entries' links re-bind to the id-first one-click /player href
+ * (the library's cards are one-click now — the canonical identity rides
+ * the player URL's id param).
  */
 
 import { describe } from "./journey-description";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j26VerifiedAssetInLibrary: Journey = {
   id: "J26",
@@ -49,18 +70,20 @@ export const j26VerifiedAssetInLibrary: Journey = {
     );
 
     // The verified entry is playable from the library (the link target).
+    // binds R28-B one-click play: the library cards' id-first /player href.
     const links = await browser.eval<readonly string[]>(
       `(() => [...document.querySelectorAll('[data-wfx-offline-entry] a[data-wfx-card]')].map((a) => a.getAttribute('href') ?? ''))()`,
     );
     assert.that(
-      "the offline entries link their canonical items (replay from the library)",
-      "item links on the entries",
+      "the offline entries link their canonical items (the id-first one-click play path — replay from the library)",
+      "id-first /player links on the entries",
       `${(links ?? []).length} links`,
-      (links ?? []).length === 2 && (links ?? []).every((href) => href.startsWith("/item?id=wfxitm_")),
+      (links ?? []).length === 2 && (links ?? []).every((href) => href.startsWith("/player?id=wfxitm_")),
     );
 
     // The item detail carries the ready-offline panel (the read side).
-    const harborHref = await itemHrefFromSearch(context, "Harbor", "Harbor Lights");
+    // binds R28-B deep surface: the search card's kebab Details link → the item hub.
+    const harborHref = await detailHrefFromSearch(context, "Harbor", "Harbor Lights");
     await goto(context, harborHref ?? "/");
     await assert.attrEquals("[data-wfx-acquisition]", "data-wfx-acquisition-state", "ready-offline", "the verified item's detail renders the ready-offline state");
     await assert.textEquals("[data-wfx-acquisition-size]", "1.5 MB · verified offline", "the ready-offline item states its verified size");

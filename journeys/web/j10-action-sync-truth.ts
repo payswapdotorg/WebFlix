@@ -21,12 +21,32 @@
  * source DECLARES like/save — the fixture catalog carries none. The
  * grammar ships in the R15 ActionButtons surface and is exercised
  * service-side; the manifest limitation names the local procedure.
+ *
+ * R35b re-encode: the typed-absent action grammar is read from the ITEM
+ * surface (the R28-B mount — `ActionButtons` rides `ItemDetailSurface`;
+ * the player's action row is the R29-B `WatchActions` split pill whose
+ * provider-sync truth the journey still checks on the player). The item
+ * hub is reached through the card kebab's Details deep path.
  */
 
 import { describe } from "./journey-description";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
 import { parseActionbar } from "../lib/state";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j10ActionSyncTruth: Journey = {
   id: "J10",
@@ -35,11 +55,13 @@ export const j10ActionSyncTruth: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    const itemHref = await itemHrefFromSearch(context, "Asteroid", "Asteroid Drift");
-    assert.that("the search surface offers the item", "an item link", itemHref ?? "<absent>", itemHref !== null);
+    // binds R28-B deep surface: the card kebab's Details link → the item hub.
+    const itemHref = await detailHrefFromSearch(context, "Asteroid", "Asteroid Drift");
+    assert.that("the search card carries the Details deep path to the item hub", "an /item link", itemHref ?? "<absent>", itemHref !== null);
     await goto(context, itemHref ?? "/");
 
     // The typed-absent grammar: unsupported actions never appear as successful.
+    // binds the R28-B mount: ActionButtons ([data-wfx-action-absent]) on the item surface.
     const barHtml = await browser.outerHtml("[data-wfx-surface='item']");
     const actionbar = parseActionbar(barHtml ?? "");
     assert.that(
@@ -72,8 +94,13 @@ export const j10ActionSyncTruth: Journey = {
     await goto(context, playHref ?? "/");
     await assert.countAtLeast("[data-wfx-report='complete']", 1, "the explicit watch report control is present");
 
-    // Fire the report (the robust island click: in view + hydrated) and
-    // observe the honest settled state.
+    // Fire the report through the user path: the report rows live in the
+    // R29-B watch kebab's menu (variant="menu" — the explicit watch-state
+    // reports are the kebab's own rows); open the disclosure first.
+    // binds the R29-B watch kebab: [data-wfx-watch-kebab-summary] → the report rows.
+    await browser.clickInteractive("[data-wfx-watch-kebab-summary]");
+    await browser.settle();
+    // The robust island click: in view + hydrated.
     await browser.clickInteractive("[data-wfx-report='complete']");
     await browser.waitSelector("[data-wfx-report-status]", 10_000);
     const reportStatus = await browser.tryText("[data-wfx-report-status]");

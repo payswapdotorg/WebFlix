@@ -1,0 +1,1 @@
+- the library's offline-and-verified section listed the earned copies with verified statuses; the item detail carried the ready-offline panel with its verified size

@@ -1,0 +1,364 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "acff71b8b363ba6f85ab7a3e9b08ca7ba3e5a419",
+  "branch": "wfx/r35b/journeys",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T12:38:52.288Z",
+    "finishedAt": "2026-09-28T12:40:17.025Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790599137486)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 2,
+    "encoded": 2,
+    "passed": 1,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the item page offers Play to the anonymous viewer\n  expected: a play href\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the anonymous viewer lands on Home (no gate, no interstitial)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu states the honest anonymous truth",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session truth names accountless watching (login optional, never a prerequisite)",
+          "expected": "no account is needed to watch public content",
+          "observed": "You are watching in an anonymous session — no account is needed to watch public ",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the public title anonymously",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_6E0FPZZJ1SAFE38Z1AB21A4RYN&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the access truth renders: the source's own sign-in is active, so playback works without a WebFlix account (provider truth, distinguished from any WebFlix-account truth)",
+          "expected": "[data-wfx-watch-access=\"provider-authorized\"] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the access sentence names the source's own sign-in (the R23-A independence law)",
+          "expected": "works without a WebFlix account",
+          "observed": "This source's own sign-in is active, so playback works without a WebFlix account.",
+          "pass": true
+        },
+        {
+          "description": "the item page offers Play to the anonymous viewer",
+          "expected": "a play href",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-g/j37-failure.png",
+        "evidence/r35b/m1/group-g/j37-failure.snapshot.txt",
+        "evidence/r35b/m1/group-g/j37-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 11668
+    },
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (web: browser-capable + honest fallbacks)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the peer-copy-capable title",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_4YYFGC18CM1HCVKHVDJAVHG8FQ&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000",
+          "pass": true
+        },
+        {
+          "description": "Where to watch groups: the WebFlix source first, the Authorized peer copy second (the frozen order)",
+          "expected": "webflix-source then authorized-peer-copy",
+          "observed": "webflix-source → authorized-peer-copy",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy entry renders the frozen vocabulary ('Authorized peer copy', never merely 'Offline copy')",
+          "expected": "Authorized peer copy",
+          "observed": "Authorized peer copy",
+          "pass": true
+        },
+        {
+          "description": "the peer copy is ELIGIBLE for the primary play decision (its own Play-this-way path, not hidden under Settings or diagnostics)",
+          "expected": "a realization=torrent play path",
+          "observed": "/player?id=wfxitm_4YYFGC18CM1HCVKHVDJAVHG8FQ&connector=fake-source&ref=fake%3Ashort-3&title=Rain+Check&type=short&duration=30000&realization=torrent",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy player stage renders (the browser rung engaged)",
+          "expected": "[data-wfx-torrent-stage] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stage's primary language is watching (not a download workflow)",
+          "expected": "text of [data-wfx-torrent-rung-detail] contains \"plays like any other way of watching\"",
+          "observed": "\"Playing your authorized peer copy — it plays like any other way of watching, keeps your place, and lands in your Library.\"",
+          "pass": true
+        },
+        {
+          "description": "the realization switch row renders on the peer-copy player (the parity set)",
+          "expected": "[data-wfx-where-to-watch] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the AI tray renders on the peer-copy player (the parity set)",
+          "expected": "[data-wfx-ai-tray] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"available\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"available\"",
+          "observed": "\"available\"",
+          "pass": true
+        },
+        {
+          "description": "the \"available\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Ready to be made available offline.\"",
+          "observed": "Ready to be made available offline.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Available",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Preparing the files you selected.\"",
+          "observed": "Preparing the files you selected.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"buffering\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"buffering\"",
+          "observed": "\"buffering\"",
+          "pass": true
+        },
+        {
+          "description": "the \"buffering\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Getting enough of the video ready to play smoothly.\"",
+          "observed": "Getting enough of the video ready to play smoothly.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Buffering",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"playing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"playing\"",
+          "observed": "\"playing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"playing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Playing while the rest of the offline copy is finished in the background.\"",
+          "observed": "Playing while the rest of the offline copy is finished in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Playing",
+          "pass": true
+        },
+        {
+          "description": "the playing state states its truthful buffered runway (playback before full completion, honestly)",
+          "expected": "text of [data-wfx-acquisition-runway] is exactly \"38s buffered ahead\"",
+          "observed": "\"38s buffered ahead\"",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy player resumes at the carried position (the same resume seam)",
+          "expected": "[data-wfx-torrent-resume] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the pause action states the honest paused modifier",
+          "expected": "text of [data-wfx-acquisition-label] is exactly \"Paused\"",
+          "observed": "\"Paused\"",
+          "pass": true
+        },
+        {
+          "description": "the resume action restores the playing truth",
+          "expected": "text of [data-wfx-acquisition-label] contains \"Playing\"",
+          "observed": "\"Playing\"",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background.\"",
+          "observed": "Finishing the offline copy in the background.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"ready-offline\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"ready-offline\"",
+          "observed": "\"ready-offline\"",
+          "pass": true
+        },
+        {
+          "description": "the \"ready-offline\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Verified and available to watch without a connection.\"",
+          "observed": "Verified and available to watch without a connection.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Ready offline",
+          "pass": true
+        },
+        {
+          "description": "the verified offline copy states its size (verified truth)",
+          "expected": "[data-wfx-acquisition-size] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the verified peer copy appears in the Library (the same Library integration as any way of watching)",
+          "expected": "[data-wfx-offline-entry] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Library's offline truth names this title's verified copy",
+          "expected": "Rain Check in the offline library",
+          "observed": "Offline and verified\nHL\n\nHarbor Lights\n\nFrom fake-source\n\nReady offline · 1.5 MB · 2 files · watchable without a connection\n\nRC\n0:30\n\nRain Check\n\nFrom fake-sour",
+          "pass": true
+        },
+        {
+          "description": "the adapter truth stays progressively disclosed (the 'How this copy reaches you' panel is closed by default)",
+          "expected": "closed by default",
+          "observed": "closed",
+          "pass": true
+        },
+        {
+          "description": "the wired adapter identity is inspectable behind the disclosure (webtorrent@3.0.21 browser build — never a silent claim)",
+          "expected": "[data-wfx-torrent-implementation] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the viewer's WebRTC environment truth renders (the honest per-context probe)",
+          "expected": "[data-wfx-torrent-probe-webrtc] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ordinary-swarm title is offered",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_0AS0XFB4CEYWXT1TF480F42HWB&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "the ordinary swarm's peer copy stays VISIBLE with its honest not-here truth (never hidden, never a dead unavailable)",
+          "expected": "[data-wfx-watch-option=\"authorized-peer-copy\"][data-wfx-watch-usable=\"false\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the ordinary-swarm entry names the Desktop native player as the honest next step (WebTorrent-capable ≠ ordinary torrent)",
+          "expected": "needs the Desktop app's native player — the browser cannot reach this swarm's peers",
+          "observed": "This authorized peer copy needs the Desktop app's native player — the browser cannot reach this swarm's peers.",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-g/j38-torrent-playback.png",
+        "evidence/r35b/m1/group-g/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.snapshot.txt",
+        "evidence/r35b/m1/group-g/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 65518
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J38",
+      "kind": "configuration-limit",
+      "note": "The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.",
+      "procedure": "LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure."
+    }
+  ]
+}

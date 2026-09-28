@@ -11,11 +11,15 @@
  * and the containment note states the boundary truth (cookie-isolated;
  * WebFlix never injects into or inspects the provider page — no
  * circumvention).
+ *
+ * R35b re-encode: the user path is the R28-B ONE-CLICK grammar — the
+ * search card's primary link IS the play path; the player surface is
+ * reached directly through the card's own /player href.
  */
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch, playerHrefFromItem } from "../lib/journeys";
+import { goto, itemHrefFromSearch } from "../lib/journeys";
 import { parsePlayer } from "../lib/state";
 
 export const j08BrowserPlayback: Journey = {
@@ -25,18 +29,16 @@ export const j08BrowserPlayback: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    // The user path: search → detail → play (Deep Field Diary is the
-    // browser-realized catalog item — no embed realization present).
-    const itemHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    // The user path: search → the card's one-click play (R28-B) — Deep
+    // Field Diary is the browser-realized catalog item (no embed
+    // realization present).
+    const playHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
     assert.that(
-      "the search surface offers the browser-realized item",
-      "an item link",
-      itemHref ?? "<absent>",
-      itemHref !== null,
+      "the search surface offers the browser-realized card",
+      "an id-first /player link (the one-click play path)",
+      playHref ?? "<absent>",
+      playHref !== null && playHref.startsWith("/player?id=wfxitm_"),
     );
-    await goto(context, itemHref ?? "/");
-    const playHref = await playerHrefFromItem(context);
-    assert.that("the detail page offers playback", "a play href", playHref ?? "<absent>", playHref !== null);
     await goto(context, playHref ?? "/");
 
     await assert.visible("[data-wfx-surface='player']", "the player surface renders");
@@ -47,6 +49,7 @@ export const j08BrowserPlayback: Journey = {
     assert.that("the browser rung wins when embed is honestly absent", 'data-wfx-player-mode="browser"', player.mode ?? "<none>", player.mode === "browser");
 
     // The contained, session-scoped browser surface.
+    // binds the R28-B player stage: [data-wfx-player-frame] on the browser surface.
     const containedSurface = await browser.tryAttr("[data-wfx-player-frame]", "data-wfx-player-frame");
     assert.that(
       "the provider page renders inside the contained surface mount",
@@ -75,6 +78,6 @@ export const j08BrowserPlayback: Journey = {
     await assert.textContains("[data-wfx-player-mode-label]", "browser", "the mode label names the contained browser surface");
 
     await context.screenshot("j08-browser-playback");
-    await describe(context, "the browser rung played inside the contained, sandboxed, cookie-isolated surface with the no-injection boundary stated");
+    await describe(context, "the one-click card path started the browser rung inside the contained, sandboxed, cookie-isolated surface with the no-injection boundary stated");
   },
 };

@@ -1,0 +1,102 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "acff71b8b363ba6f85ab7a3e9b08ca7ba3e5a419",
+  "branch": "wfx/r35b/journeys",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-28T13:26:50.822Z",
+    "finishedAt": "2026-09-28T13:27:02.973Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790602010822)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (web: browser-capable + honest fallbacks)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers a catalog card's one-click play path",
+          "expected": "an id-first /player link",
+          "observed": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+          "pass": true
+        },
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "service",
+          "pass": true
+        },
+        {
+          "description": "Where to watch groups: the WebFlix source first (the frozen order) — never a fabricated group",
+          "expected": "webflix-source first",
+          "observed": "webflix-source",
+          "pass": true
+        },
+        {
+          "description": "the service boot renders NO authorized-peer-copy entry (no torrent realization in the real catalog — never fabricated)",
+          "expected": "zero authorized-peer-copy entries",
+          "observed": "0 entry(ies)",
+          "pass": true
+        },
+        {
+          "description": "the search card carries the Details deep path to the item hub",
+          "expected": "an /item link",
+          "observed": "/item?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+          "pass": true
+        },
+        {
+          "description": "the item's offline-copy panel renders its no-session state (no torrent realization)",
+          "expected": "[data-wfx-acquisition-none] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy note states the honest Desktop next step (the R23 production-sweep truth)",
+          "expected": "text of [data-wfx-acquisition-elsewhere] contains \"WebFlix desktop app\"",
+          "observed": "\"You can make this title available offline in the WebFlix desktop app — it downloads and verifies a copy you can watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "the service boot's acquisition drive answers its typed read-only refusal (never a fake lifecycle)",
+          "expected": "the 'web transport serves reads only' refusal",
+          "observed": "HTTP 503: {\"error\":\"native acquisition actions run in the WebFlix desktop app — the web transport serves reads only\"}",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/b2/j38-torrent-playback.png",
+        "evidence/r35b/prod-check/b2/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.snapshot.txt",
+        "evidence/r35b/prod-check/b2/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 10887
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J38",
+      "kind": "configuration-limit",
+      "note": "The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.",
+      "procedure": "LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure."
+    }
+  ]
+}

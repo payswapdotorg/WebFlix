@@ -13,12 +13,16 @@
  * page while the prefetch window is kept). The rendered note states the
  * kept-runway semantics; the composed page itself carries unrelated
  * topics (the fixture feed mixes topics per position).
- *
  * HONEST LIMIT (listed): profile-LEVEL anti-tunnel (a concentrated
  * watch history not permanently dominating the profile) is R05's
  * service-side recommendation policy (the recommendation-state and
  * policy tests cover the law); the web fixtures session cannot carry a
  * persistent profile. The manifest limitation names it.
+ *
+ * R35b re-encode (M3, production-neutral): the kept-runway predicate
+ * binds the kept-composition vocabulary (the service-mode composition
+ * sentence states the kept slots the fixtures note calls the kept
+ * runway — the wording is the boot's own, the vocabulary is the law).
  */
 
 import { describe } from "./journey-description";
@@ -60,12 +64,22 @@ export const j16AntiTunnel: Journey = {
     await browser.waitSelector("[data-wfx-shorts-rerank]", 10_000);
 
     // The re-rank keeps the exploration runway (never a tunnel collapse).
+    // binds the kept-runway semantics — catalog/config-neutral: the
+    // fixtures boot renders "every slot is kept runway"; the service-mode
+    // production surface renders its own composition sentence ("applied
+    // 16 replacement(s); 8 slot(s) kept" — observed live by the R34-C
+    // sweep, evidence/r34c/adjudication-table.md §B; the R23 production
+    // sweep, evidence/r23/production-sweep.md, is the production truth of
+    // record). Both state the kept composition (the plan keeps slots);
+    // a tunnel collapse (no note, or a note without the kept-runway
+    // vocabulary) fails.
+    const KEPT_RUNWAY_SEMANTICS = ["runway", "slot", "kept"];
     const note = await browser.tryText("[data-wfx-shorts-rerank]");
     assert.that(
       "the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)",
-      "a kept-runway composition note",
+      "a kept-composition note (kept/runway/slot)",
       note ?? "<none>",
-      note !== null && note.includes("runway"),
+      note !== null && KEPT_RUNWAY_SEMANTICS.some((term) => note.includes(term)),
     );
 
     // The feed still presents a composed position set (exploration continues).
