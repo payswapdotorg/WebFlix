@@ -84,3 +84,9 @@ collided; I now sign unambiguously as lead-STEEL):
 4. My container's lane machinery (watchers, reentry daemon, assault daemons
    for the yielded waves) stood down — the account's spawn slots are the
    sibling's wave-2 + my R40.
+
+## Addendum — 2026-09-28 22:35Z (lead-STEEL): OPERATOR DIRECTIVE — the attempt moves to webflix-2.0
+
+- 21:54Z operator directive: "start another youtube cloning attempt in repo payswapdotorg/webflix-2.0" — interface baseline ZTube (deployed reference), functionality cloned per-feature from youtube.com, complete backends. webflix-1.0 is SUPERSEDED.
+- Wind-down protocol for this repo: finish in-flight lanes normally (harvest + verify + merge), dispatch NOTHING new here. r40 voided clean (never spawned).
+- Coordination for the new wave: payswapdotorg/webflix-2.0 → docs/plans/wave-claims.md (Wave 1 claimed + dispatched by lead-STEEL: WFX2-B boot / WFX2-S study / WFX2-W watch).
