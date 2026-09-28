@@ -11,12 +11,32 @@
  * never fabricated), and the GATED diagnostics naming the selection
  * phase ("selecting") inside the closed disclosure — the technical
  * detail exists for troubleshooting but is not primary UX.
+ *
+ * R35b re-encode: the acquisition lifecycle surface is the ITEM hub (the
+ * R28-B mount — the acquisition panel + the gated diagnostics ride
+ * `ItemDetailSurface`); the journey reaches it through the search card's
+ * kebab Details deep path (the card's primary link is the one-click
+ * /player href).
  */
 
 import { describe } from "./journey-description";
 import { assertAcquisition, diagnosticsSessionState, driveAcquisition } from "./acquisition-drive";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j22MetadataFileSelection: Journey = {
   id: "J22",
@@ -25,7 +45,9 @@ export const j22MetadataFileSelection: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    const itemHref = await itemHrefFromSearch(context, "Asteroid", "Asteroid Drift");
+    // binds R28-B deep surface: the search card's kebab Details link →
+    // the item hub (where the acquisition panel mounts).
+    const itemHref = await detailHrefFromSearch(context, "Asteroid", "Asteroid Drift");
     await goto(context, itemHref ?? "/");
 
     // The scripted acquisition is already preparing (J21's drive order

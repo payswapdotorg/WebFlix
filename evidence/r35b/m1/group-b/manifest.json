@@ -1,0 +1,206 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "acff71b8b363ba6f85ab7a3e9b08ca7ba3e5a419",
+  "branch": "wfx/r35b/journeys",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T12:34:53.080Z",
+    "finishedAt": "2026-09-28T12:35:31.966Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790598897231)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 6,
+    "encoded": 6,
+    "passed": 0,
+    "failed": 6,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J06",
+      "title": "Item detail / availability / realization choice",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the item detail surface renders\n  expected: [data-wfx-surface='item'] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "the item detail surface renders",
+          "expected": "[data-wfx-surface='item'] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-b/j06-failure.png",
+        "evidence/r35b/m1/group-b/j06-failure.snapshot.txt",
+        "evidence/r35b/m1/group-b/j06-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9341
+    },
+    {
+      "id": "J07",
+      "title": "Official embed playback",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the detail page offers playback\n  expected: a play href\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_7CM1FGBYT3FC2P1KS149G030PX&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the detail page offers playback",
+          "expected": "a play href",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-b/j07-failure.png",
+        "evidence/r35b/m1/group-b/j07-failure.snapshot.txt",
+        "evidence/r35b/m1/group-b/j07-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4665
+    },
+    {
+      "id": "J08",
+      "title": "Contained Browser playback",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the detail page offers playback\n  expected: a play href\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the browser-realized item",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_0V0PK2M4K4V23GHQ9AWMQTX377&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the detail page offers playback",
+          "expected": "a play href",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-b/j08-failure.png",
+        "evidence/r35b/m1/group-b/j08-failure.snapshot.txt",
+        "evidence/r35b/m1/group-b/j08-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 3618
+    },
+    {
+      "id": "J09",
+      "title": "External playback fallback / return context",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the player renders the Media Surface precedence trace (the fallback decision surface)\n  expected: [data-wfx-precedence-trace] matches exactly 1\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "the search surface offers the multi-realization item",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_0V0PK2M4K4V23GHQ9AWMQTX377&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the player renders the Media Surface precedence trace (the fallback decision surface)",
+          "expected": "[data-wfx-precedence-trace] matches exactly 1",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-b/j09-failure.png",
+        "evidence/r35b/m1/group-b/j09-failure.snapshot.txt",
+        "evidence/r35b/m1/group-b/j09-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5688
+    },
+    {
+      "id": "J10",
+      "title": "Like/save/action synchronization truth",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: like renders its typed absent state when the source declares it unsupported\n  expected: data-wfx-action-absent='like'\n  observed: <no absent markers>",
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_6RVDX4T942SZ6FQ7GRG8BS53JF&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000",
+          "pass": true
+        },
+        {
+          "description": "like renders its typed absent state when the source declares it unsupported",
+          "expected": "data-wfx-action-absent='like'",
+          "observed": "<no absent markers>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-b/j10-failure.png",
+        "evidence/r35b/m1/group-b/j10-failure.snapshot.txt",
+        "evidence/r35b/m1/group-b/j10-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 3733
+    },
+    {
+      "id": "J12",
+      "title": "Cross-device resume",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the detail page offers playback\n  expected: a play href\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_0V0PK2M4K4V23GHQ9AWMQTX377&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the detail page offers playback",
+          "expected": "a play href",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-b/j12-failure.png",
+        "evidence/r35b/m1/group-b/j12-failure.snapshot.txt",
+        "evidence/r35b/m1/group-b/j12-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4611
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J09",
+      "kind": "configuration-limit",
+      "note": "The external-rung WIN (the visible external handoff with its return-context link) requires an item whose only realization is external — the fixture catalog carries none (every item resolves embed or browser first). The fallback DECISION trace and the typed failure states are encoded; the handoff itself is not reachable in this configuration.",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration with a source that declares an external-only realization (or a realization whose embed/browser URLs the provider restricts), open its player, and capture the data-wfx-player-mode=\"external\" handoff + the return-context link under evidence/<run>/."
+    },
+    {
+      "journeyId": "J12",
+      "kind": "configuration-limit",
+      "note": "Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes)."
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+- landed in a useful discovery state (the chip-bar + rows composition) with the full current navigation, the honest anonymous session, and no implementation diagnostics

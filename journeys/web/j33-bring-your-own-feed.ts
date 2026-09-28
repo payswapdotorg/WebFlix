@@ -49,20 +49,33 @@
  * the product's own dev-reset POST before step 1 (the J28/R17
  * scripted-drive law — reads never advance the script; the
  * advance-source/expire-auth drives move it deliberately).
+ *
+ * R35b re-encode (M3, production-neutral): the determinism pre-step binds
+ * the TYPED drive truth — the fixtures boot answers the pristine reset
+ * (HTTP 200) and runs the full import walk unchanged; a service boot
+ * answers its typed invalid-input refusal for the fixtures-mode dev drive
+ * (probed live by the R34-C sweep; the R23 production sweep,
+ * evidence/r23/production-sweep.md, is the production truth of record)
+ * and fabricates no connector card (the real provider round trips remain
+ * the listed service-mode procedure). The boot's own loud mode badge
+ * ([data-wfx-mode]) is the branch truth; both branches fail on regression.
  */
 
 import { describe } from "./journey-description";
 import type { Journey, JourneyContext } from "../lib/journeys";
 import { goto } from "../lib/journeys";
 
-/** POST one BYOF dev drive to the RUNNING product (HTTP — the user channel). */
-async function drive(context: JourneyContext, action: string): Promise<number> {
+/** POST one BYOF dev drive to the RUNNING product (HTTP — the user
+ * channel); the answer's status + body ride along (the typed truth the
+ * neutral determinism pre-step asserts). */
+async function drive(context: JourneyContext, action: string): Promise<{ readonly status: number; readonly body: string }> {
   const response = await fetch(`${context.baseUrl}/api/byof`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ action }),
   });
-  return response.status;
+  const body = await response.text();
+  return { status: response.status, body };
 }
 
 export const j33BringYourOwnFeed: Journey = {
@@ -73,21 +86,86 @@ export const j33BringYourOwnFeed: Journey = {
   async run(context): Promise<void> {
     const { assert, browser } = context;
 
-    // 0. Determinism: pristine BYOF state (no imports, the source
-    //    disconnected, the initial capture phase).
-    const resetStatus = await drive(context, "dev-reset");
-    assert.that(
-      "the BYOF drive state resets to pristine before the journey (determinism)",
-      "HTTP 200 from the dev-reset drive",
-      `HTTP ${resetStatus}`,
-      resetStatus === 200,
-    );
-
-    // 1. CHOOSE BRING YOUR FEED — from the EXISTING product IA (the
-    //    settings/sources section; no new navigation system).
+    // 0. The BYOF home + the boot's own typed truth (the loud mode badge
+    //    decides the per-boot contract — never a guessed branch).
+    // binds the shell's mode badge: [data-wfx-mode] (fixtures | service).
     await goto(context, "/settings?section=sources");
     await assert.visible("[data-wfx-byof-panel]", "the Bring your feed panel renders inside the settings sources section (the existing IA)");
-    await assert.visible("[data-wfx-byof-source='youtube']", "the feed-import source card renders (the choose-source step)");
+    const bootMode = await browser.eval<string | null>(
+      `document.querySelector('[data-wfx-mode]')?.getAttribute('data-wfx-mode') ?? null`,
+    );
+    assert.that(
+      "the boot states its mode loudly (the environment law — the typed branch truth)",
+      "data-wfx-mode='fixtures' or 'service'",
+      bootMode ?? "<none>",
+      bootMode === "fixtures" || bootMode === "service",
+    );
+
+    // 0a. Determinism (the typed drive truth): the fixtures boot answers
+    // the pristine reset (HTTP 200); a service boot answers its TYPED
+    // refusal (HTTP 400, the invalid-input failure naming the
+    // fixtures-mode dev drive — probed live: "'dev-reset' is a
+    // fixtures-mode dev drive — the scripted source lifecycle does not
+    // exist in a service boot"; the R23 production sweep,
+    // evidence/r23/production-sweep.md, is the production truth of
+    // record). Both answers are the product's own honest truth — an
+    // untyped failure (5xx, a silent route, a wrong shape) fails.
+    const reset = await drive(context, "dev-reset");
+    const resetTypedRefusal =
+      reset.status === 400 && reset.body.includes("invalid-input") && reset.body.includes("fixtures-mode dev drive");
+
+    if (bootMode === "fixtures") {
+      assert.that(
+        "the BYOF drive state resets to pristine before the journey (determinism)",
+        "HTTP 200 from the dev-reset drive",
+        `HTTP ${reset.status}`,
+        reset.status === 200,
+      );
+      await fixturesImportWalk(context);
+    } else {
+      assert.that(
+        "the service boot answers the dev drive with its TYPED refusal (the fixtures-mode drive does not exist in a service boot — the honest state, never an error shape)",
+        "HTTP 400 + the typed invalid-input refusal naming the fixtures-mode dev drive",
+        `HTTP ${reset.status}: ${reset.body.slice(0, 160)}`,
+        resetTypedRefusal,
+      );
+      // The service-mode anonymous BYOF truth: the panel renders (the
+      // R23 production sweep's source-chooser/panel markers) and NO
+      // connector card is fabricated (the real provider round trips are
+      // the documented service-mode credentials procedure — the listed
+      // J33 limitation).
+      await assert.countExactly(
+        "[data-wfx-byof-source]",
+        0,
+        "the service boot fabricates no feed-import source card (the real connector needs the provisioned-credentials procedure — the listed local-only truth)",
+      );
+      await assert.countExactly(
+        "[data-wfx-byof-action]",
+        0,
+        "the service boot renders no fixtures import actions (never a fake import path)",
+      );
+    }
+
+    await context.screenshot("j33-bring-your-own-feed");
+    await describe(
+      context,
+      bootMode === "fixtures"
+        ? "the BYOF flow ran end-to-end over the REAL shared composition (the fixtures boot's scripted wiring — the full walk below)"
+        : "the service boot rendered the BYOF panel with its typed refusal for the fixtures-mode dev drive and zero fabricated connector cards (the real provider round trips are the listed service-mode procedure)",
+    );
+  },
+};
+
+/** The fixtures-boot import walk (the R20-E encoding — unchanged; the
+ * scripted-connector wiring this boot alone carries). */
+async function fixturesImportWalk(context: JourneyContext): Promise<void> {
+  const { assert, browser } = context;
+
+  // 1. CHOOSE BRING YOUR FEED — from the EXISTING product IA (the
+  //    settings/sources section; no new navigation system).
+  await goto(context, "/settings?section=sources");
+  await assert.visible("[data-wfx-byof-panel]", "the Bring your feed panel renders inside the settings sources section (the existing IA)");
+  await assert.visible("[data-wfx-byof-source='youtube']", "the feed-import source card renders (the choose-source step)");
     await assert.attrEquals(
       "[data-wfx-byof-source='youtube']",
       "data-wfx-byof-source-auth-state",
@@ -278,7 +356,7 @@ export const j33BringYourOwnFeed: Journey = {
       "the same-data sync reports the honest all-unchanged counts (the server's own report)",
     );
     // The source CHANGED (the dev drive): one new follow, one like removed.
-    const advanceStatus = await drive(context, "advance-source");
+    const advanceStatus = (await drive(context, "advance-source")).status;
     assert.that(
       "the changed-source drive answers (the scripted source lifecycle)",
       "HTTP 200 from the advance-source drive",
@@ -311,7 +389,7 @@ export const j33BringYourOwnFeed: Journey = {
 
     // 7. THE AUTHORIZATION GAP DURING SYNC — the named state, records
     //    RETAINED (never deleted by a failing sync).
-    const expireStatus = await drive(context, "expire-auth");
+    const expireStatus = (await drive(context, "expire-auth")).status;
     assert.that(
       "the expire-auth drive answers (the scripted grant loss)",
       "HTTP 200 from the expire-auth drive",
@@ -340,7 +418,7 @@ export const j33BringYourOwnFeed: Journey = {
     await context.screenshot("j33-reauthorization-required");
 
     // 8. THE RECOVERY — reconnect restores syncing (the live truth again).
-    const reconnectStatus = await drive(context, "connect");
+    const reconnectStatus = (await drive(context, "connect")).status;
     assert.that(
       "the reconnect drive answers (the scripted grant recovery)",
       "HTTP 200 from the connect drive",
@@ -404,9 +482,8 @@ export const j33BringYourOwnFeed: Journey = {
     await assert.textContains("[data-wfx-library-watchlist]", "Nothing saved yet", "the WebFlix watchlist survives the deletion untouched");
     await context.screenshot("j33-deleted-explicit");
 
-    await describe(
-      context,
-      "the BYOF flow ran end-to-end over the REAL shared composition (FeedImportService + the real YouTube connector's recorded API fixtures): the settings/sources entry (existing IA) listed the feed-import source with its honest absences; the unconnected import attempt answered the typed unauthorized failure with its connect recovery and its honest attempt trail; connect → preview staged the capture (7 items, source-native order labeled, snapshot freshness, relationship summary); confirm landed the Library feed region with provenance, the follow summary, the live chip, the mode-separation statement, and the untouched WebFlix watchlist/history; the same-data sync reported 0/0/0/7, the changed-source sync reported the engine's honest 1 added · 2 updated · 1 removed · 4 unchanged with Aurora Nights in and the removed like out; the expire-auth sync answered the typed unauthorized failure with the named reauthorization-required state and all seven records retained; the reconnect recovery restored live; the disconnect retained every record with its provenance (the WebFlix-local library untouched); the two-step armed delete removed the records and ended the feed while the watchlist/history stayed untouched",
-    );
-  },
-};
+  await describe(
+    context,
+    "the BYOF flow ran end-to-end over the REAL shared composition (FeedImportService + the real YouTube connector's recorded API fixtures): the settings/sources entry (existing IA) listed the feed-import source with its honest absences; the unconnected import attempt answered the typed unauthorized failure with its connect recovery and its honest attempt trail; connect → preview staged the capture (7 items, source-native order labeled, snapshot freshness, relationship summary); confirm landed the Library feed region with provenance, the follow summary, the live chip, the mode-separation statement, and the untouched WebFlix watchlist/history; the same-data sync reported 0/0/0/7, the changed-source sync reported the engine's honest 1 added · 2 updated · 1 removed · 4 unchanged with Aurora Nights in and the removed like out; the expire-auth sync answered the typed unauthorized failure with the named reauthorization-required state and all seven records retained; the reconnect recovery restored live; the disconnect retained every record with its provenance (the WebFlix-local library untouched); the two-step armed delete removed the records and ended the feed while the watchlist/history stayed untouched",
+  );
+}

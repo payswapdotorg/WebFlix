@@ -12,12 +12,31 @@
  * interrupted session (Deep Field's retained progress: the "Resuming"
  * badge, the "55% already saved" sentence, the 62% transfer — resumed,
  * never a fresh restart lying about completion).
+ *
+ * R35b re-encode: the acquisition lifecycle surface is the ITEM hub (the
+ * R28-B mount); the journey reaches both scripted items through the
+ * search card's kebab Details deep path (the card's primary link is the
+ * one-click /player href).
  */
 
 import { describe } from "./journey-description";
 import { assertAcquisition, driveAcquisition } from "./acquisition-drive";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j25InterruptionRecovery: Journey = {
   id: "J25",
@@ -28,8 +47,10 @@ export const j25InterruptionRecovery: Journey = {
     const { assert, browser } = context;
 
     // The recoverable failure (Desert Rain Doc's scripted interruption).
-    const failedHref = await itemHrefFromSearch(context, "Desert Rain", "Desert Rain Doc");
-    assert.that("the search surface offers the interrupted-acquisition item", "an item link", failedHref ?? "<absent>", failedHref !== null);
+    // binds R28-B deep surface: the search card's kebab Details link →
+    // the item hub (where the acquisition panel mounts).
+    const failedHref = await detailHrefFromSearch(context, "Desert Rain", "Desert Rain Doc");
+    assert.that("the search card offers the interrupted-acquisition item's Details deep path", "an /item link", failedHref ?? "<absent>", failedHref !== null);
     await goto(context, failedHref ?? "/");
 
     await assertAcquisition(context, "failed", "The download source had a problem. You can try again.");
@@ -46,8 +67,8 @@ export const j25InterruptionRecovery: Journey = {
 
     // The interrupted session resumed WITH retained progress (Deep Field
     // Diary's scripted resume — never fresh, never falsely complete).
-    const resumedHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
-    assert.that("the search surface offers the resumed-session item", "an item link", resumedHref ?? "<absent>", resumedHref !== null);
+    const resumedHref = await detailHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    assert.that("the search card offers the resumed-session item's Details deep path", "an /item link", resumedHref ?? "<absent>", resumedHref !== null);
     await goto(context, resumedHref ?? "/");
     await assertAcquisition(
       context,

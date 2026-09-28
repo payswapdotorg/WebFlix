@@ -15,12 +15,32 @@
  * at locating), and the protocol vocabulary gated inside the closed
  * advanced-diagnostics disclosure (the J21 "no native protocol on Web"
  * law: the default surface carries no torrent terms).
+ *
+ * R35b re-encode: the acquisition lifecycle surface is the ITEM hub (the
+ * R28-B mount — the acquisition panel + its typed actions + the gated
+ * diagnostics ride `ItemDetailSurface`); the journey reaches it through
+ * the search card's kebab Details deep path (the card's primary link is
+ * the one-click /player href).
  */
 
 import { describe } from "./journey-description";
 import { assertAcquisition, diagnosticsOpen, driveAcquisition } from "./acquisition-drive";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j21AuthorizedAcquisition: Journey = {
   id: "J21",
@@ -29,8 +49,10 @@ export const j21AuthorizedAcquisition: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    const itemHref = await itemHrefFromSearch(context, "Asteroid", "Asteroid Drift");
-    assert.that("the search surface offers the scripted authorized acquisition item", "an item link", itemHref ?? "<absent>", itemHref !== null);
+    // binds R28-B deep surface: the search card's kebab Details link →
+    // the item hub (where the acquisition panel mounts).
+    const itemHref = await detailHrefFromSearch(context, "Asteroid", "Asteroid Drift");
+    assert.that("the search card offers the scripted authorized acquisition item's Details deep path", "an /item link", itemHref ?? "<absent>", itemHref !== null);
     await goto(context, itemHref ?? "/");
 
     // The authorized basis is stated in the gated diagnostics (vault:family-media / user-owned).

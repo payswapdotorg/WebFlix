@@ -1,0 +1,135 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "acff71b8b363ba6f85ab7a3e9b08ca7ba3e5a419",
+  "branch": "wfx/r35b/journeys",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-28T13:26:18.722Z",
+    "finishedAt": "2026-09-28T13:26:36.003Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790601978722)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 2,
+    "encoded": 2,
+    "passed": 1,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J33",
+      "title": "Bring Your Own Feed: import, preview, confirm, sync, provenance",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the Bring your feed panel renders inside the settings sources section (the existing IA)",
+          "expected": "[data-wfx-byof-panel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "service",
+          "pass": true
+        },
+        {
+          "description": "the service boot answers the dev drive with its TYPED refusal (the fixtures-mode drive does not exist in a service boot — the honest state, never an error shape)",
+          "expected": "HTTP 400 + the typed invalid-input refusal naming the fixtures-mode dev drive",
+          "observed": "HTTP 400: {\"ok\":false,\"failure\":{\"kind\":\"invalid-input\",\"detail\":\"'dev-reset' is a fixtures-mode dev drive — the scripted source lifecycle does not exist in a service boo",
+          "pass": true
+        },
+        {
+          "description": "the service boot fabricates no feed-import source card (the real connector needs the provisioned-credentials procedure — the listed local-only truth)",
+          "expected": "[data-wfx-byof-source] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the service boot renders no fixtures import actions (never a fake import path)",
+          "expected": "[data-wfx-byof-action] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/b/j33-bring-your-own-feed.png",
+        "evidence/r35b/prod-check/b/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.snapshot.txt",
+        "evidence/r35b/prod-check/b/j33-bring-your-own-feed-import-preview-confirm-sync-provenance.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9544
+    },
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (web: browser-capable + honest fallbacks)",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search card carries the Details deep path to the item hub\n  expected: an /item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers a catalog card's one-click play path",
+          "expected": "an id-first /player link",
+          "observed": "/player?id=wfxitm_01M2KR6R00XDZHNKYJ4GME8PHD&connector=wfx-experience-service&ref=3uyGhtARP4M&title=1+HOUR+Rainy+Day+in+Airport+%E2%9C%88%EF%B8%8F+%7C+Cozy+Lofi+for+Relax%2C+Study+%26+Sleep+%23lofirainy+%231hourlofi&type=short",
+          "pass": true
+        },
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "service",
+          "pass": true
+        },
+        {
+          "description": "Where to watch groups: the WebFlix source first (the frozen order) — never a fabricated group",
+          "expected": "webflix-source first",
+          "observed": "webflix-source",
+          "pass": true
+        },
+        {
+          "description": "the service boot renders NO authorized-peer-copy entry (no torrent realization in the real catalog — never fabricated)",
+          "expected": "zero authorized-peer-copy entries",
+          "observed": "0 entry(ies)",
+          "pass": true
+        },
+        {
+          "description": "the search card carries the Details deep path to the item hub",
+          "expected": "an /item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/b/j38-failure.png",
+        "evidence/r35b/prod-check/b/j38-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6100
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J38",
+      "kind": "configuration-limit",
+      "note": "The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.",
+      "procedure": "LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure."
+    },
+    {
+      "journeyId": "J33",
+      "kind": "local-only",
+      "note": "The R20-E encoding runs the FULL J33 flow (choose source → connect → preview → confirm → feed appears → sync → reauthorization gap → recovery → disconnect → explicit delete) over the REAL shared composition the fixtures boot wires: the FeedImportService (R20-C) running the real reconciliation and the REAL YouTube connector (R20-B) answering importFeedResult from its documented recorded API fixtures (the same recorded-shape determinism the connectors' and persistence's own integration tests use — no fixture-only production claim: the code path IS the shipped composition). The REAL provider round trips — a live Google OAuth consent, live Data API quota, a real Takeout export — require provisioned credentials and the service-mode boot; they remain local-only.",
+      "procedure": "LOCAL-ONLY: provision YOUTUBE_* credentials (the frozen .env names), boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY) with the YouTube connector wired to its fetch transport, boot apps/web in service mode (WFX_API_BASE) once the feed-import service routes are wired (the lead's R20-H integration step), drive the /settings sources connect flow with a real Google account, and capture each BYOF state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    }
+  ]
+}

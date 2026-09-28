@@ -22,6 +22,11 @@
  * /experience/feedback + policy routes); the web adapter ships the
  * session re-rank explainability + the absent grammar. The manifest
  * limitation names the service-mode procedure.
+ *
+ * R35b re-encode (M3, production-neutral): the re-rank note predicate
+ * binds the frozen replacement-semantics vocabulary (the service-mode
+ * composition sentence names the same semantics the fixtures note
+ * does — the wording is the boot's own, the vocabulary is the law).
  */
 
 import { describe } from "./journey-description";
@@ -65,11 +70,22 @@ export const j15RecommendationFeedback: Journey = {
     );
 
     // The note is typed explainability (the replacement plan's reason).
+    // binds the re-rank note's replacement-semantics vocabulary —
+    // catalog/config-neutral: the fixtures boot renders "the fresh page
+    // replaced nothing — every slot is kept runway"; the service-mode
+    // production surface renders its own composition sentence ("applied
+    // 16 replacement(s); 8 slot(s) kept" — observed live by the R34-C
+    // sweep, evidence/r34c/adjudication-table.md §B; the R23 production
+    // sweep, evidence/r23/production-sweep.md, is the production truth
+    // of record). Both name the replacement/kept-slot semantics; a
+    // silent swap (no note, or a note without the composition
+    // vocabulary) fails.
+    const REPLACEMENT_SEMANTICS = ["replaced", "replacement", "re-rank", "runway", "slot", "kept"];
     assert.that(
       "the re-rank note names the composition decision (typed reasons — never a silent swap)",
-      "a note naming the replacement semantics",
+      "a note naming the replacement semantics (replaced/replacement/kept/slot/re-rank/runway)",
       note ?? "<none>",
-      note !== null && (note.includes("replaced") || note.includes("runway") || note.includes("re-rank")),
+      note !== null && REPLACEMENT_SEMANTICS.some((term) => note.includes(term)),
     );
 
     await context.screenshot("j15-recommendation-feedback");

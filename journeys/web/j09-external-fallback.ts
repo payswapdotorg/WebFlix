@@ -20,11 +20,16 @@
  * service-mode configuration (a source with an external-only
  * realization) exercises it; the procedure is the manifest limitation
  * entry.
+ *
+ * R35b re-encode: the user path is the R28-B ONE-CLICK grammar — the
+ * search card's primary link IS the play path; the player surface (and
+ * its precedence trace, inside the playback-diagnostics disclosure) is
+ * reached directly through the card's own /player href.
  */
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch, playerHrefFromItem } from "../lib/journeys";
+import { goto, itemHrefFromSearch } from "../lib/journeys";
 import { parsePlayer } from "../lib/state";
 
 export const j09ExternalFallback: Journey = {
@@ -34,17 +39,22 @@ export const j09ExternalFallback: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    // The fallback decision surface on a contained-mode item.
-    const itemHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
-    assert.that("the search surface offers the multi-realization item", "an item link", itemHref ?? "<absent>", itemHref !== null);
-    await goto(context, itemHref ?? "/");
-    const playHref = await playerHrefFromItem(context);
+    // The fallback decision surface on a contained-mode item: the
+    // one-click card path lands on the player directly (R28-B).
+    const playHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    assert.that(
+      "the search surface offers the multi-realization card",
+      "an id-first /player link (the one-click play path)",
+      playHref ?? "<absent>",
+      playHref !== null && playHref.startsWith("/player?id=wfxitm_"),
+    );
     await goto(context, playHref ?? "/");
 
     const html = await browser.outerHtml("[data-wfx-surface='player']");
     const player = parsePlayer(html ?? "");
 
     // The precedence trace: every rung named, in frozen order.
+    // binds the player's PlaybackDiagnostics disclosure: [data-wfx-precedence-trace].
     await assert.countExactly("[data-wfx-precedence-trace]", 1, "the player renders the Media Surface precedence trace (the fallback decision surface)");
     const trace = player.precedenceLines.join(" | ");
     assert.that(

@@ -11,11 +11,16 @@
  * invariant 10: a fixture is never presented as production capability),
  * and the playback phase is the evidence-backed truth (no fake
  * progress).
+ *
+ * R35b re-encode: the user path is the R28-B ONE-CLICK grammar — the
+ * search card's primary link IS the play path (card click → playback
+ * starts); the player surface is reached directly through the card's
+ * own /player href.
  */
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch, playerHrefFromItem } from "../lib/journeys";
+import { goto, itemHrefFromSearch } from "../lib/journeys";
 import { parsePlayer } from "../lib/state";
 
 export const j07EmbedPlayback: Journey = {
@@ -25,17 +30,14 @@ export const j07EmbedPlayback: Journey = {
   ci: true,
   async run(context): Promise<void> {
     const { assert, browser } = context;
-    // The user path: search → detail → play.
-    const itemHref = await itemHrefFromSearch(context, "Harbor", "Harbor Lights");
+    // The user path: search → the card's one-click play (R28-B).
+    const playHref = await itemHrefFromSearch(context, "Harbor", "Harbor Lights");
     assert.that(
-      "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
-      "an item link",
-      itemHref ?? "<absent>",
-      itemHref !== null,
+      "the search surface offers the Harbor Lights card (the embed-realized catalog item)",
+      "an id-first /player link (the one-click play path)",
+      playHref ?? "<absent>",
+      playHref !== null && playHref.startsWith("/player?id=wfxitm_"),
     );
-    await goto(context, itemHref ?? "/");
-    const playHref = await playerHrefFromItem(context);
-    assert.that("the detail page offers playback", "a play href", playHref ?? "<absent>", playHref !== null);
     await goto(context, playHref ?? "/");
 
     // The contained embed surface.
@@ -77,11 +79,12 @@ export const j07EmbedPlayback: Journey = {
     await assert.textContains("[data-wfx-player-mode-label]", "embed", "the mode label names the embed surface");
     await assert.textContains("[data-wfx-player-phase]", "buffering", "the playback phase is the evidence-backed truth (buffering — no fabricated progress)");
 
-    // The engagement truth: the watch-report controls are present.
+    // The engagement truth: the watch-report controls are present
+    // binds the R29-B watch kebab: the explicit watch-state reports.
     await assert.countAtLeast("[data-wfx-report='complete']", 1, "the player offers the explicit watch report control");
     await assert.countAtLeast("[data-wfx-report='skip']", 1, "the player offers the explicit skip report control");
 
     await context.screenshot("j07-embed-playback");
-    await describe(context, "the embed rung played inside the contained, sandboxed iframe mount with the honest unofficial-attestation note and the evidence-backed buffering phase");
+    await describe(context, "the one-click card path started the embed rung inside the contained, sandboxed iframe mount with the honest unofficial-attestation note and the evidence-backed buffering phase");
   },
 };

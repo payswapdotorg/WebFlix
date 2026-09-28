@@ -1,0 +1,400 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "acff71b8b363ba6f85ab7a3e9b08ca7ba3e5a419",
+  "branch": "wfx/r35b/journeys",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T12:35:37.063Z",
+    "finishedAt": "2026-09-28T12:36:22.603Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790598940767)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 5,
+    "encoded": 5,
+    "passed": 3,
+    "failed": 2,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J14",
+      "title": "Source connect / reauthorize / disconnect",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source card renders (the runtime's own sources read)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its authorization truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "the chip label (case-insensitive)",
+          "observed": "Connected",
+          "pass": true
+        },
+        {
+          "description": "the source card states its connection truth",
+          "expected": "text of [data-wfx-source-recovery-detail] contains \"This source is connected\"",
+          "observed": "\"This source is connected.\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source offers its typed disconnect action",
+          "expected": "[data-wfx-source-action='disconnect'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no fabricated authorization states render beyond the scripted truth",
+          "expected": "no expired/failed chips while signed in",
+          "observed": "no expired chip",
+          "pass": true
+        },
+        {
+          "description": "no expired source row renders while signed in (never a fabricated state)",
+          "expected": "[data-wfx-source-auth-state='expired'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the sources section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=sources'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=model'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the general section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=general'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-c/j14-source-management.png",
+        "evidence/r35b/m1/group-c/j14-source-connect-reauthorize-disconnect.snapshot.txt",
+        "evidence/r35b/m1/group-c/j14-source-connect-reauthorize-disconnect.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6743
+    },
+    {
+      "id": "J15",
+      "title": "Recommendation feedback controls",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the like feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='like'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the save feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='save'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the share feedback control is present (the event-only vocabulary)",
+          "expected": "[data-wfx-shorts-action='share'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no re-rank decision is rendered before the engagement threshold",
+          "expected": "no re-rank note before 5 forward swipes",
+          "observed": "<none>",
+          "pass": true
+        },
+        {
+          "description": "engagement affects future candidate composition (the re-rank decision renders its typed note)",
+          "expected": "a re-rank explainability note",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        },
+        {
+          "description": "the re-rank note names the composition decision (typed reasons — never a silent swap)",
+          "expected": "a note naming the replacement semantics",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-c/j15-recommendation-feedback.png",
+        "evidence/r35b/m1/group-c/j15-recommendation-feedback-controls.snapshot.txt",
+        "evidence/r35b/m1/group-c/j15-recommendation-feedback-controls.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 7683
+    },
+    {
+      "id": "J16",
+      "title": "Anti-tunnel / exploration after a single watched topic",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the composed feed carries more than one distinct item (exploration-capable composition before concentration)",
+          "expected": "multiple distinct cards",
+          "observed": "Midnight Scoop, Rain Check",
+          "pass": true
+        },
+        {
+          "description": "the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)",
+          "expected": "a kept-runway composition note",
+          "observed": "the fresh page replaced nothing — every slot is kept runway (typed reasons in the plan)",
+          "pass": true
+        },
+        {
+          "description": "the feed continues presenting its composed position set after the re-rank",
+          "expected": "a position label",
+          "observed": "3 / 3",
+          "pass": true
+        },
+        {
+          "description": "a current card remains presented (the feed never empties into a tunnel)",
+          "expected": "[data-wfx-shorts-card='current'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-c/j16-anti-tunnel.png",
+        "evidence/r35b/m1/group-c/j16-anti-tunnel-exploration-after-a-single-watched-topic.snapshot.txt",
+        "evidence/r35b/m1/group-c/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4327
+    },
+    {
+      "id": "J17",
+      "title": "Explicit intent: learn / happier / surprise / tonight / friend taste",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the home composition renders after the session intents (no corrupted feed)\n  expected: [data-wfx-hero] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "a stated intent answers the session's candidates (the rain intent composes its results)",
+          "expected": "[data-wfx-search-results] a[data-wfx-card] matches >= 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stated intent is echoed by the surface (the session's retained intent)",
+          "expected": "the query echo names 'rain'",
+          "observed": "3 results for “rain”",
+          "pass": true
+        },
+        {
+          "description": "a new intent composes a fresh answer (the intent is replaceable, never sticky in this session)",
+          "expected": "a fresh result set for 'harbor'",
+          "observed": "1 result cards",
+          "pass": true
+        },
+        {
+          "description": "the replaced intent is what the surface now states (no residue of the earlier intent)",
+          "expected": "the query echo names 'harbor'",
+          "observed": "1 result for “harbor”",
+          "pass": true
+        },
+        {
+          "description": "the home composition renders after the session intents (no corrupted feed)",
+          "expected": "[data-wfx-hero] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-c/j17-failure.png",
+        "evidence/r35b/m1/group-c/j17-failure.snapshot.txt",
+        "evidence/r35b/m1/group-c/j17-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6791
+    },
+    {
+      "id": "J20",
+      "title": "AI subtitles / translation / transcription / dubbing / commentary",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the player carries the same AI action tray (transforming what is playing — the primary discovery surface)\n  expected: [data-wfx-ai-tray-surface='player'] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "the Model & AI section renders (the AI transformation surface's management home)",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'transcription' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions transcription",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'subtitles' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions subtitles",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'translation' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions translation",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'dubbing' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions dubbing",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'commentary' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions commentary",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the AI action tray renders on the item decision hub (the contextual entry — no Settings-first path required)",
+          "expected": "[data-wfx-ai-tray] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the tray names the five-action vocabulary up front",
+          "expected": "transcribe · subtitles · translate · dub · commentary",
+          "observed": "transcribe · subtitles · translate · dub · commentary",
+          "pass": true
+        },
+        {
+          "description": "the tray names which model class will run (the honest 'Not configured' names the first-party default — never a fabricated provider)",
+          "expected": "a model-class sentence",
+          "observed": "Not configured — the WebFlix model (wfx-first-party) runs it.",
+          "pass": true
+        },
+        {
+          "description": "local-model execution carries its honest Desktop platform truth (unsupported is not undiscoverable)",
+          "expected": "the Desktop sentence",
+          "observed": "Local-model execution runs in the Desktop app — on Web the same actions run through your service providers.",
+          "pass": true
+        },
+        {
+          "description": "the subtitles action names its precondition (composes from a transcript — discoverable + explained)",
+          "expected": "the precondition sentence",
+          "observed": "Composes from a transcript — transcribe this title first.",
+          "pass": true
+        },
+        {
+          "description": "the submission answers the TYPED operation state (queued — explicit states only)",
+          "expected": "state='queued'",
+          "observed": "queued",
+          "pass": true
+        },
+        {
+          "description": "the operation renders its state sentence with NO fabricated progress (no percent, no fake bar)",
+          "expected": "a queued sentence without fabricated progress",
+          "observed": "transcript: Queued — the operation starts when your model chain picks it up.",
+          "pass": true
+        },
+        {
+          "description": "the queued operation offers its cancel recovery on the spot",
+          "expected": "[data-wfx-ai-cancel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the cancel recovery answers the typed cancelled state (reversible operations — never a silent no-op)",
+          "expected": "the cancelled sentence",
+          "observed": "transcript: Cancelled — nothing is running.",
+          "pass": true
+        },
+        {
+          "description": "the tray carries the Model & AI management path (one link away)",
+          "expected": "[data-wfx-ai-tray-manage] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player carries the same AI action tray (transforming what is playing — the primary discovery surface)",
+          "expected": "[data-wfx-ai-tray-surface='player'] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/m1/group-c/j20-failure.png",
+        "evidence/r35b/m1/group-c/j20-failure.snapshot.txt",
+        "evidence/r35b/m1/group-c/j20-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13205
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J14",
+      "kind": "local-only",
+      "note": "The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state."
+    },
+    {
+      "journeyId": "J15",
+      "kind": "local-only",
+      "note": "The full reversible feedback vocabulary (More-like-this / Not-interested / creator-source suppression / Already-watched) is R05's service-side policy surface (apps/api /experience/feedback + /experience/policy routes). The web adapter ships the session re-rank explainability + the typed-absent feedback grammar (both encoded).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + apply each feedback control through the API routes, verify the policy composition change, and capture the affected surfaces."
+    },
+    {
+      "journeyId": "J16",
+      "kind": "local-only",
+      "note": "Profile-LEVEL anti-tunnel (a concentrated watch history not permanently dominating the profile) is R05's service-side recommendation policy; the web fixtures session has no persistent profile. The feed-level exploration mechanics (kept runway, multi-item composition) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + a concentrated watch history through /experience/history, then verify the recommendation composition retains exploration (the R05 policy tests' scenario) with captured evidence."
+    },
+    {
+      "journeyId": "J17",
+      "kind": "local-only",
+      "note": "The explicit intent VOCABULARY (learn/happier/surprise/tonight/friend-taste) is the service-side intent submission (apps/api /experience/intents — session-scoped by design). The web session's query-intent mechanics (state/retain/replace, no preference corruption) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + submit each intent kind through /experience/intents, verify the session-scoped composition and the untouched long-term policy, and capture the affected feed surfaces."
+    },
+    {
+      "journeyId": "J20",
+      "kind": "local-only",
+      "note": "R21-E: the AI ACTION TRAY is the web surface of the completed transforms transport (the R21-B/R21-C model-controls seam — the fixtures persona answers the service shapes deterministically): the five frozen actions, the model-class truth, the named preconditions, and the typed queued/cancelled operation states are encoded. The full pipeline's running→succeeded transitions (real progress + result payloads) are the service-side fabric (apps/api /experience/transforms).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + start each transformation operation through the tray (or /experience/transforms), capture the explicit running and completed states with results."
+    }
+  ]
+}

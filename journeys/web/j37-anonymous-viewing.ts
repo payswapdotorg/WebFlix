@@ -24,6 +24,12 @@
  * boot is the documented Turbopack split-module reality (J11/J12's
  * entry); the anonymous CONTINUATION mechanics encode through the
  * player's own resume truth.
+ *
+ * R35b re-encode: the anonymous play path is the R28-B ONE-CLICK grammar
+ * — the search card's primary link IS the /player href (the card click
+ * starts playback; no extra hop, no gate). The access-truth assertions
+ * hold on the player's own Where-to-watch row; the frame/no-redirect/
+ * progress-scope/resume/switch assertions are unchanged.
  */
 
 import { describe } from "./journey-description";
@@ -52,10 +58,18 @@ export const j37AnonymousViewing: Journey = {
     );
 
     // SEARCH → open a PUBLIC title (the fixture source's own sign-in is
-    // active — its realizations play without a WebFlix account).
-    const itemHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
-    assert.that("the search surface offers the public title anonymously", "an item link", itemHref ?? "<absent>", itemHref !== null);
-    await goto(context, itemHref ?? "/");
+    // active — its realizations play without a WebFlix account). The
+    // card's own link is the one-click play path (R28-B — the anonymous
+    // viewer's play decision needs no extra hop).
+    // binds R28-B one-click play: the search card's id-first /player href.
+    const playHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    assert.that(
+      "the search surface offers the public title's one-click play path anonymously",
+      "an id-first /player link (the R28-B play decision — no gate, no extra hop)",
+      playHref ?? "<absent>",
+      playHref !== null && playHref.startsWith("/player?id=wfxitm_"),
+    );
+    await goto(context, playHref ?? "/");
 
     // The PROVIDER-AUTH distinction: the where-to-watch access truth
     // names the source's OWN sign-in as the provider's truth (never a
@@ -72,12 +86,8 @@ export const j37AnonymousViewing: Journey = {
       (accessSentence ?? "").includes("without a WebFlix account"),
     );
 
-    // PLAY: the player renders — NO login redirect, NO settings redirect.
-    const playHref = await browser.eval<string | null>(
-      `document.querySelector('[data-wfx-item-play]')?.getAttribute('href') ?? null`,
-    );
-    assert.that("the item page offers Play to the anonymous viewer", "a play href", playHref ?? "<absent>", playHref !== null);
-    await goto(context, playHref ?? "/");
+    // PLAY: the player renders — NO login redirect, NO settings redirect
+    // (the one-click card path landed here directly).
     await assert.visible("[data-wfx-surface='player']", "the player renders for the anonymous viewer (no wall)");
     await assert.visible(
       "[data-wfx-player-frame]",

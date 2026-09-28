@@ -11,11 +11,30 @@
  * states the desktop-app truth ("you can make this title available
  * offline in the WebFlix desktop app"). The web never pretends native
  * capability it does not have.
+ *
+ * R35b re-encode: the unscripted item's offline-copy note is read on
+ * the ITEM hub (the R28-B mount — the acquisition panel rides
+ * `ItemDetailSurface`), reached through the search card's kebab Details
+ * deep path (the card's primary link is the one-click /player href).
  */
 
 import { describe } from "./journey-description";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j27NativePlayback: Journey = {
   id: "J27",
@@ -48,8 +67,9 @@ export const j27NativePlayback: Journey = {
     // acquisition item (the metadata-failure journey) — the honest
     // no-session note now renders on any UNSCRIPTED item; "Neon Rain"
     // (fake:short-1, native-capable, unscripted) carries it.
-    const unscriptedHref = await itemHrefFromSearch(context, "Neon", "Neon Rain");
-    assert.that("the search surface offers an unscripted item (no acquisition session)", "an item link", unscriptedHref ?? "<absent>", unscriptedHref !== null);
+    // binds R28-B deep surface: the search card's kebab Details link → the item hub.
+    const unscriptedHref = await detailHrefFromSearch(context, "Neon", "Neon Rain");
+    assert.that("the search card offers an unscripted item's Details deep path (no acquisition session)", "an /item link", unscriptedHref ?? "<absent>", unscriptedHref !== null);
     await goto(context, unscriptedHref ?? "/");
     await assert.visible("[data-wfx-acquisition-none]", "the offline-copy panel renders its no-session state");
     await assert.textContains("[data-wfx-acquisition-elsewhere]", "WebFlix desktop app", "the offline-copy note states where native acquisition runs (the honest desktop truth)");

@@ -1,0 +1,1 @@
+- the service boot rendered the BYOF panel with its typed refusal for the fixtures-mode dev drive and zero fabricated connector cards (the real provider round trips are the listed service-mode procedure)

@@ -19,12 +19,30 @@
  *   resume-or-clean-restart choice (both typed actions, the surface saying
  *   which is which), then the exercised clean restart landing FRESH
  *   (no resuming badge, no retained progress — never a false continuation).
+ *
+ * R35b re-encode: the scripted network-loss session surface is the ITEM
+ * hub (the R28-B mount — the acquisition panel rides `ItemDetailSurface`),
+ * reached through the search card's kebab Details deep path.
  */
 
 import { describe } from "./journey-description";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
 import { driveAcquisition } from "./acquisition-drive";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j29NetworkLossRecovery: Journey = {
   id: "J29",
@@ -75,10 +93,12 @@ export const j29NetworkLossRecovery: Journey = {
     // bearing "Signal Fade" (fake:video-4) — the drive's scripted host.
     // (The no-metadata "Static Bloom" fake:video-2 stays a frozen fixture
     // law; its item page can never mount the acquisition panel.)
-    const itemHref = await itemHrefFromSearch(context, "Signal Fade", "Signal Fade");
+    // binds R28-B deep surface: the search card's kebab Details link →
+    // the item hub (where the acquisition panel mounts).
+    const itemHref = await detailHrefFromSearch(context, "Signal Fade", "Signal Fade");
     assert.that(
-      "the search surface offers the network-loss item",
-      "an item link",
+      "the search card offers the network-loss item's Details deep path",
+      "an /item link",
       itemHref ?? "<absent>",
       itemHref !== null,
     );

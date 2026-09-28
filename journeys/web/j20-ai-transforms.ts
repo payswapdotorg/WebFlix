@@ -21,11 +21,29 @@
  * fabric (apps/api /experience/transforms over the model fabric); the
  * fixtures persona answers queued operations deterministically. The
  * manifest limitation names the local procedure.
+ *
+ * R35b re-encode: the item decision hub is reached through the R28-B
+ * DEEP-SURFACE path (the home card's kebab Details link — the card's
+ * primary link is the one-click /player href); the tray assertions
+ * then run on the item surface exactly as before, and the player half
+ * reads the item's own play link.
  */
 
 import { describe } from "./journey-description";
-import type { Journey } from "../lib/journeys";
-import { goto, openHomeAndClickCard } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
+
+/** The R28-B deep-surface path: the card kebab's Details link href (the
+ * /item detail is the card's quiet deep action; the primary link is the
+ * one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromCard(
+  context: JourneyContext,
+  cardTitle: string,
+): Promise<string | null> {
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j20AiTransforms: Journey = {
   id: "J20",
@@ -50,8 +68,16 @@ export const j20AiTransforms: Journey = {
     }
 
     // The AI ACTION TRAY on the item decision hub: the contextual entry.
+    // binds R28-B deep surface: the card kebab's Details link → the item hub.
     await goto(context, "/");
-    await openHomeAndClickCard(context, "Asteroid Drift");
+    const itemHref = await detailHrefFromCard(context, "Asteroid Drift");
+    assert.that(
+      "the home card carries the Details deep path to the item decision hub",
+      "an /item?id=wfxitm_… Details href",
+      itemHref ?? "<none>",
+      itemHref !== null && itemHref.startsWith("/item?id=wfxitm_"),
+    );
+    await goto(context, itemHref ?? "/");
     await assert.visible("[data-wfx-ai-tray]", "the AI action tray renders on the item decision hub (the contextual entry — no Settings-first path required)");
 
     // The tray's vocabulary is named BEFORE any interaction (server
@@ -130,6 +156,7 @@ export const j20AiTransforms: Journey = {
     await assert.visible("[data-wfx-ai-tray-manage]", "the tray carries the Model & AI management path (one link away)");
 
     // The same tray rides the PLAYER (transforming what is playing).
+    // binds the item hub's play decision: [data-wfx-item-play] → the player.
     const playHref = await browser.eval<string | null>(
       `document.querySelector('[data-wfx-item-play]')?.getAttribute('href') ?? null`,
     );

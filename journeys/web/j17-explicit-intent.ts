@@ -18,6 +18,10 @@
  * (apps/api /experience/intents — R05's delivery, session-scoped by
  * design); the web adapter ships the query intent. The manifest
  * limitation names the service-mode procedure.
+ *
+ * R35b re-encode: the "no corrupted feed" check binds the R28-B home
+ * composition (chip bar + rows + cards — the hero is gone with the
+ * restructure; the honest composition grammar replaced it).
  */
 
 import { describe } from "./journey-description";
@@ -66,8 +70,12 @@ export const j17ExplicitIntent: Journey = {
 
     // The session intent never writes a persistent preference: the home
     // feed (the long-term composition surface) is untouched by the intents.
+    // binds the R28-B home composition: the chip-bar + rows grammar (the
+    // hero moved to Settings→General with the restructure — honestly absent).
     await goto(context, "/");
-    await assert.visible("[data-wfx-hero]", "the home composition renders after the session intents (no corrupted feed)");
+    await assert.visible("[data-wfx-surface='home']", "the home composition renders after the session intents (no corrupted feed)");
+    await assert.visible("[data-wfx-chipbar]", "the home composition keeps its discovery grammar (the chip bar — the R28-B composition)");
+    await assert.countAtLeast("[data-wfx-row]", 2, "the home composition keeps its discovery rows");
     await assert.countAtLeast("a[data-wfx-card]", 4, "the home composition still carries its cards (the session intent corrupted no long-term preference)");
 
     await context.screenshot("j17-explicit-intent");

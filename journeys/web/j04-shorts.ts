@@ -10,17 +10,36 @@
  * the bounded forward/back navigation with a stable current card, the
  * HONEST absence of provider-progress fabrication (no progress bars or
  * percentages in the cards — this shell cannot observe playback inside
- * a provider embed), the typed-absent like/save grammar (the fixture
- * source declares neither — never fake controls), and the rerank
- * explainability surface that appears when the session's policy
- * threshold fires (the influence-controls evidence — the full click in
- * J15).
+ * a provider embed), the typed-absent like/save grammar (never fake
+ * controls), and the rerank explainability surface that appears when the
+ * session's policy threshold fires (the influence-controls evidence —
+ * the full click in J15).
+ *
+ * R35b re-encode (M3, production-neutral): the position-pill binding is
+ * the PILL GRAMMAR — "N / M" with the total being the composed page's
+ * own card count (the fixtures boot composes 3; the service-mode
+ * production surface composes its real catalog's 24 — the R34-C sweep
+ * observed "1 / 24" live, evidence/r34c/adjudication-table.md §B; the
+ * R23 production sweep, evidence/r23/production-sweep.md, is the
+ * production truth of record). The advance/return semantics, the typed
+ * absences, and the no-fabricated-progress law hold identically on both
+ * boots.
  */
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
 import { goto } from "../lib/journeys";
 import { parseShorts } from "../lib/state";
+
+/** Parse the position pill's "N / M" grammar (null when malformed). */
+function parsePositionPill(pill: string | null): { readonly position: number; readonly total: number } | null {
+  if (pill === null) return null;
+  const match = pill.match(/^(\d+)\s*\/\s*(\d+)$/);
+  if (match === null) return null;
+  const position = Number.parseInt(match[1] ?? "", 10);
+  const total = Number.parseInt(match[2] ?? "", 10);
+  return Number.isFinite(position) && Number.isFinite(total) ? { position, total } : null;
+}
 
 export const j04Shorts: Journey = {
   id: "J04",
@@ -34,7 +53,17 @@ export const j04Shorts: Journey = {
     // The vertical feed.
     await assert.visible("[data-wfx-surface='shorts']", "the Shorts destination renders the vertical feed surface");
     await assert.visible("[data-wfx-shorts-viewport]", "the feed renders the vertical viewport");
-    await assert.textEquals("[data-wfx-shorts-position]", "1 / 3", "the feed states its position (card 1 of the composed page)");
+    // binds the position-pill grammar: "N / M" — the composed page's own
+    // total (catalog-neutral; the fixtures boot composes 3, the service
+    // surface its real 24 — the pill is the surface's own truth).
+    const initialPill = await browser.tryText("[data-wfx-shorts-position]");
+    const initialPillParsed = parsePositionPill(initialPill);
+    assert.that(
+      "the feed states its position (the pill's N / M grammar — card N of the composed page M)",
+      "a well-formed position pill",
+      initialPill ?? "<none>",
+      initialPillParsed !== null && initialPillParsed.position >= 1 && initialPillParsed.total >= 2,
+    );
 
 
     // The stable current card during presentation.
@@ -66,7 +95,16 @@ export const j04Shorts: Journey = {
     // Forward skip semantics: next moves the feed, back is bounded.
     await browser.clickInteractive("[data-wfx-shorts-next]");
     await browser.settle();
-    await assert.textEquals("[data-wfx-shorts-position]", "2 / 3", "a forward skip advances the feed position");
+    // binds the position-pill grammar: the position ADVANCES (N+1 of the
+    // same composed page — the skip semantics hold whatever the page size).
+    const afterNextPill = await browser.tryText("[data-wfx-shorts-position]");
+    const afterNextParsed = parsePositionPill(afterNextPill);
+    assert.that(
+      "a forward skip advances the feed position (the pill's N advances within the same page)",
+      `position ${initialPillParsed?.position ?? "?"} → ${(initialPillParsed?.position ?? 0) + 1}`,
+      afterNextPill ?? "<none>",
+      afterNextParsed !== null && initialPillParsed !== null && afterNextParsed.position === initialPillParsed.position + 1 && afterNextParsed.total === initialPillParsed.total,
+    );
     const afterNextHtml = await browser.outerHtml("[data-wfx-surface='shorts']");
     const afterNext = parseShorts(afterNextHtml ?? "");
     assert.that(
@@ -77,7 +115,16 @@ export const j04Shorts: Journey = {
     );
     await browser.clickInteractive("[data-wfx-shorts-back]");
     await browser.settle();
-    await assert.textEquals("[data-wfx-shorts-position]", "1 / 3", "the backward navigation returns to the previous card");
+    // binds the position-pill grammar: the backward navigation RETURNS to
+    // the previous position (the bounded back).
+    const afterBackPill = await browser.tryText("[data-wfx-shorts-position]");
+    const afterBackParsed = parsePositionPill(afterBackPill);
+    assert.that(
+      "the backward navigation returns to the previous card",
+      `position back to ${initialPillParsed?.position ?? "?"}`,
+      afterBackPill ?? "<none>",
+      afterBackParsed !== null && initialPillParsed !== null && afterBackParsed.position === initialPillParsed.position,
+    );
 
     // The rerank/influence surface exists in the feed's grammar (the
     // controls that influence future recommendations — exercised fully in J15/J18).

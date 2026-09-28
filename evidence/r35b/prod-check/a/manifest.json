@@ -1,0 +1,312 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "acff71b8b363ba6f85ab7a3e9b08ca7ba3e5a419",
+  "branch": "wfx/r35b/journeys",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-28T13:25:00.336Z",
+    "finishedAt": "2026-09-28T13:26:13.949Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790601900336)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 4,
+    "encoded": 4,
+    "passed": 4,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J04",
+      "title": "Shorts vertical discovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the Shorts destination renders the vertical feed surface",
+          "expected": "[data-wfx-surface='shorts'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed renders the vertical viewport",
+          "expected": "[data-wfx-shorts-viewport] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed states its position (the pill's N / M grammar — card N of the composed page M)",
+          "expected": "a well-formed position pill",
+          "observed": "1 / 24",
+          "pass": true
+        },
+        {
+          "description": "the feed presents a stable current card with its title",
+          "expected": "a current card with a title",
+          "observed": "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+          "pass": true
+        },
+        {
+          "description": "the current card shows no fabricated provider progress (no progress element, no percentage)",
+          "expected": "no progress bars or % text inside the card",
+          "observed": "no fabricated progress",
+          "pass": true
+        },
+        {
+          "description": "like renders only when the source declares the capability (typed absence here)",
+          "expected": "[data-wfx-shorts-action='like'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "save renders only when the source declares the capability (typed absence here)",
+          "expected": "[data-wfx-shorts-action='save'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the share feedback control is present on the current card",
+          "expected": "[data-wfx-shorts-action='share'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "a forward skip advances the feed position (the pill's N advances within the same page)",
+          "expected": "position 1 → 2",
+          "observed": "2 / 24",
+          "pass": true
+        },
+        {
+          "description": "the current card changes on forward skip (the position grammar tracks the card)",
+          "expected": "a new current card title",
+          "observed": "3 Countries With Incredible Natural Beauty 🌍 #Travel #Nature #Shorts",
+          "pass": true
+        },
+        {
+          "description": "the backward navigation returns to the previous card",
+          "expected": "position back to 1",
+          "observed": "1 / 24",
+          "pass": true
+        },
+        {
+          "description": "the feed's forward control is present (the skip semantics)",
+          "expected": "[data-wfx-shorts-next] matches exactly 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed's bounded back control is present",
+          "expected": "[data-wfx-shorts-back] matches exactly 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/a/j04-shorts.png",
+        "evidence/r35b/prod-check/a/j04-shorts-vertical-discovery.snapshot.txt",
+        "evidence/r35b/prod-check/a/j04-shorts-vertical-discovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9666
+    },
+    {
+      "id": "J14",
+      "title": "Source connect / reauthorize / disconnect",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source chooser renders in the sources section (the first-connect surface — both boots)",
+          "expected": "[data-wfx-source-chooser] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chooser carries its typed prerequisite state (the anonymous-session truth)",
+          "expected": "[data-wfx-source-chooser-prerequisite] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the prerequisite offers the sign-in / create-account path (the connect step's honest entry)",
+          "expected": "[data-wfx-source-chooser-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "service",
+          "pass": true
+        },
+        {
+          "description": "the anonymous service-mode read renders zero source cards (the honest empty truth — never a fabricated connector)",
+          "expected": "[data-wfx-source] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no fabricated authorization states render on the anonymous read",
+          "expected": "[data-wfx-source-auth-state] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the sources section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=sources'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=model'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the general section is linked from the settings sections nav",
+          "expected": "[data-wfx-settings-sections] a[href='/settings?section=general'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/a/j14-source-management.png",
+        "evidence/r35b/prod-check/a/j14-source-connect-reauthorize-disconnect.snapshot.txt",
+        "evidence/r35b/prod-check/a/j14-source-connect-reauthorize-disconnect.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2029
+    },
+    {
+      "id": "J15",
+      "title": "Recommendation feedback controls",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the like feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='like'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the save feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='save'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the share feedback control is present (the event-only vocabulary)",
+          "expected": "[data-wfx-shorts-action='share'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no re-rank decision is rendered before the engagement threshold",
+          "expected": "no re-rank note before 5 forward swipes",
+          "observed": "<none>",
+          "pass": true
+        },
+        {
+          "description": "engagement affects future candidate composition (the re-rank decision renders its typed note)",
+          "expected": "a re-rank explainability note",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": true
+        },
+        {
+          "description": "the re-rank note names the composition decision (typed reasons — never a silent swap)",
+          "expected": "a note naming the replacement semantics (replaced/replacement/kept/slot/re-rank/runway)",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/a/j15-recommendation-feedback.png",
+        "evidence/r35b/prod-check/a/j15-recommendation-feedback-controls.snapshot.txt",
+        "evidence/r35b/prod-check/a/j15-recommendation-feedback-controls.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 30006
+    },
+    {
+      "id": "J16",
+      "title": "Anti-tunnel / exploration after a single watched topic",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the composed feed carries more than one distinct item (exploration-capable composition before concentration)",
+          "expected": "multiple distinct cards",
+          "observed": "3 Countries With Incredible Natural Beauty 🌍 #Travel #Nature #Shorts, Aliens: Are We Really Alone? | The Search for Extraterrestrial Life | Full Documentary",
+          "pass": true
+        },
+        {
+          "description": "the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)",
+          "expected": "a kept-composition note (kept/runway/slot)",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": true
+        },
+        {
+          "description": "the feed continues presenting its composed position set after the re-rank",
+          "expected": "a position label",
+          "observed": "7 / 24",
+          "pass": true
+        },
+        {
+          "description": "a current card remains presented (the feed never empties into a tunnel)",
+          "expected": "[data-wfx-shorts-card='current'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r35b/prod-check/a/j16-anti-tunnel.png",
+        "evidence/r35b/prod-check/a/j16-anti-tunnel-exploration-after-a-single-watched-topic.snapshot.txt",
+        "evidence/r35b/prod-check/a/j16-anti-tunnel-exploration-after-a-single-watched-topic.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 30542
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J14",
+      "kind": "local-only",
+      "note": "The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state."
+    },
+    {
+      "journeyId": "J15",
+      "kind": "local-only",
+      "note": "The full reversible feedback vocabulary (More-like-this / Not-interested / creator-source suppression / Already-watched) is R05's service-side policy surface (apps/api /experience/feedback + /experience/policy routes). The web adapter ships the session re-rank explainability + the typed-absent feedback grammar (both encoded).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + apply each feedback control through the API routes, verify the policy composition change, and capture the affected surfaces."
+    },
+    {
+      "journeyId": "J16",
+      "kind": "local-only",
+      "note": "Profile-LEVEL anti-tunnel (a concentrated watch history not permanently dominating the profile) is R05's service-side recommendation policy; the web fixtures session has no persistent profile. The feed-level exploration mechanics (kept runway, multi-item composition) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + a concentrated watch history through /experience/history, then verify the recommendation composition retains exploration (the R05 policy tests' scenario) with captured evidence."
+    }
+  ]
+}

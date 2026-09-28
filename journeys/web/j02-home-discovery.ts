@@ -5,11 +5,14 @@
  * personalized/discovery rows, Shorts entry, source-neutral cards, and
  * a direct way to state current intent."
  *
- * Web-fixture-boot encoding: the start hero (fresh session — no resume
- * entry yet, and Continue Watching is HONESTLY absent rather than
- * fabricated), the For-you + Trending rows, the Shorts rail with its
- * feed entry, source-neutral cards (title/type identity — no source
- * branding on cards), and the search box as the direct intent entry.
+ * Web-fixture-boot encoding (R35b re-encode — the R28-B home
+ * restructure): the discovery composition the home surface now renders
+ * (chip bar + rows immediately; the hero moved to Settings→General with
+ * R28-B and is honestly absent from the landing), Continue Watching
+ * HONESTLY absent on a fresh session (never fabricated), the For-you +
+ * Trending rows, the Shorts rail with its feed entry, source-neutral
+ * cards (title/type identity — no source branding in the primary
+ * identity), and the masthead search box as the direct intent entry.
  */
 
 import { describe } from "./journey-description";
@@ -25,10 +28,11 @@ export const j02HomeDiscovery: Journey = {
     const { assert, browser } = context;
     await goto(context, "/");
 
-    // Hero (fresh session: the START hero — the featured card).
-    await assert.attrEquals("[data-wfx-hero]", "data-wfx-hero", "start", "the hero renders the featured start card on a fresh session");
-    await assert.visible("[data-wfx-hero-play]", "the hero offers the direct play action");
-    await assert.countAtLeast("[data-wfx-hero-title]", 1, "the hero names its title");
+    // The R28-B discovery composition: the chip bar filters the feed
+    // (fresh session — the "all" filter, the unfiltered composition).
+    // binds R28-B home restructure: [data-wfx-chipbar] + the feed root's filter state.
+    await assert.visible("[data-wfx-chipbar]", "the home renders the discovery chip bar (the R28-B composition — content-first, no hero gate)");
+    await assert.attrEquals("[data-wfx-home]", "data-wfx-feed-filter", "all", "the fresh session composes the unfiltered feed (the chip bar starts at all)");
 
     // Continue Watching: honest absence on a fresh session (never a fabricated row).
     await assert.countExactly("[data-wfx-row='continue']", 0, "Continue Watching is honestly absent on a fresh session (no fabricated resume entries)");
@@ -76,11 +80,12 @@ export const j02HomeDiscovery: Journey = {
       titleLine === null || !titleLine.includes("fake-source"),
     );
 
-    // The direct intent entry: the persistent search box.
+    // The direct intent entry: the persistent search box
+    // binds the R29-B masthead: the centered search pill (SearchBox).
     await assert.countAtLeast("[role='search'] input", 1, "the shell exposes the direct intent entry (the search box)");
     await assert.countAtLeast("form[action='/search']", 1, "the intent entry submits to the unified search surface");
 
     await context.screenshot("j02-home-discovery");
-    await describe(context, "hero + For-you/Trending rows + Shorts rail + source-neutral cards + the search intent entry; Continue Watching honestly absent on a fresh session");
+    await describe(context, "the R28-B composition (chip bar + For-you/Trending rows + Shorts rail) with source-neutral cards and the search intent entry; Continue Watching honestly absent on a fresh session");
   },
 };

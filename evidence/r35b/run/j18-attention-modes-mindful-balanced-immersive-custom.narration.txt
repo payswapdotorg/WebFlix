@@ -1,0 +1,1 @@
+- the balanced attention mode's re-rank threshold behaved exactly as policy (no re-rank at 4 swipes, re-rank at 5) with the presentation staying truthful (mode switching is the service-side submission — listed)

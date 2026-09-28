@@ -1,0 +1,1 @@
+- the one-click card path started the browser rung inside the contained, sandboxed, cookie-isolated surface with the no-injection boundary stated

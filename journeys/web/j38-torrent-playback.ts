@@ -31,6 +31,19 @@
  * the fixtures' scripted drive reports the same protocol-free facts
  * through the REAL acquisition store (the loud dev badge), and the
  * adapter binding is the real code path for real swarms.
+ *
+ * R35b re-encode (M3, production-neutral): the torrent-realized-catalog
+ * binding is neutral — the search card is ANY catalog card (the fixtures
+ * boot carries the scripted torrent-realized items; the service-mode
+ * production catalog carries none — the R23 production sweep,
+ * evidence/r23/production-sweep.md, is the production truth of record:
+ * "items with NO torrent realization show the honest Desktop-next-step
+ * acquisition state"). The GROUPING LAW asserts on both boots; the boot's
+ * own loud mode badge ([data-wfx-mode]) decides the per-boot contract —
+ * the fixtures boot runs the full first-class lifecycle walk UNCHANGED;
+ * the service boot asserts the honest typed absences (no fabricated
+ * peer-copy entry, the Desktop-next-step state, the typed read-only
+ * drive refusal). Both branches fail on regression.
  */
 
 import { describe } from "./journey-description";
@@ -46,12 +59,125 @@ export const j38TorrentPlayback: Journey = {
   async run(context): Promise<void> {
     const { assert, browser } = context;
 
-    // THE FIRST-CLASS ENTRY on the item hub (Rain Check — an authorized
-    // browser-capable peer copy whose drive cursor no other journey in a
-    // full battery touches; the walk stays deterministic either way).
-    const itemHref = await itemHrefFromSearch(context, "Rain Check", "Rain Check");
-    assert.that("the search surface offers the peer-copy-capable title", "an item link", itemHref ?? "<absent>", itemHref !== null);
-    await goto(context, itemHref ?? "/");
+    // 0. The catalog-neutral entry: ANY search card's one-click play href
+    //    (the R28-B grammar) + the boot's own loud mode badge (the typed
+    //    branch truth).
+    // binds R28-B one-click play: the search card's id-first /player href.
+    await goto(context, "/search?q=rain");
+    const firstCard = await browser.eval<string | null>(
+      `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '') !== ''); return card === undefined ? null : card.getAttribute('href'); })()`,
+    );
+    assert.that(
+      "the search surface offers a catalog card's one-click play path",
+      "an id-first /player link",
+      firstCard ?? "<absent>",
+      firstCard !== null && firstCard.startsWith("/player?id=wfxitm_"),
+    );
+    // binds the shell's mode badge: [data-wfx-mode] (fixtures | service).
+    const bootMode = await browser.eval<string | null>(
+      `document.querySelector('[data-wfx-mode]')?.getAttribute('data-wfx-mode') ?? null`,
+    );
+    assert.that(
+      "the boot states its mode loudly (the environment law — the typed branch truth)",
+      "data-wfx-mode='fixtures' or 'service'",
+      bootMode ?? "<none>",
+      bootMode === "fixtures" || bootMode === "service",
+    );
+
+    if (bootMode === "fixtures") {
+      await fixturesPeerCopyWalk(context);
+    } else {
+      await serviceModeHonestTruths(context, firstCard ?? "/");
+    }
+
+    await context.screenshot("j38-torrent-playback");
+    await describe(
+      context,
+      bootMode === "fixtures"
+        ? "the authorized peer copy was a FIRST-CLASS way to watch (the fixtures boot's full lifecycle walk)"
+        : "the service boot rendered the grouping law with the honest typed absences (no fabricated peer-copy entry; the Desktop next step; the read-only drive refusal)",
+    );
+  },
+};
+
+/** The service-mode honest truths (the R23 production truth of record):
+ * no fabricated peer-copy entry; the item hub's Desktop-next-step
+ * acquisition state; the typed read-only drive refusal. */
+async function serviceModeHonestTruths(context: import("../lib/journeys").JourneyContext, playerHref: string): Promise<void> {
+  const { assert, browser } = context;
+
+  // THE GROUPING LAW (catalog-neutral): the player's where-to-watch
+  // groups render in the frozen order — the WebFlix source first; the
+  // authorized-peer-copy group carries NO fabricated entry when no
+  // torrent realization exists.
+  // binds the R23-E frozen grouping: [data-wfx-wheretowatch-group].
+  await goto(context, playerHref);
+  const groupOrder = await browser.eval<readonly string[]>(
+    `(() => [...document.querySelectorAll('[data-wfx-wheretowatch-group]')].map((el) => el.getAttribute('data-wfx-wheretowatch-group') ?? ''))()`,
+  );
+  assert.that(
+    "Where to watch groups: the WebFlix source first (the frozen order) — never a fabricated group",
+    "webflix-source first",
+    (groupOrder ?? []).join(" → ") || "<none>",
+    (groupOrder ?? []).length >= 1 && (groupOrder ?? [])[0] === "webflix-source",
+  );
+  assert.that(
+    "the service boot renders NO authorized-peer-copy entry (no torrent realization in the real catalog — never fabricated)",
+    "zero authorized-peer-copy entries",
+    `${await browser.count("[data-wfx-watch-option='authorized-peer-copy']")} entry(ies)`,
+    (await browser.count("[data-wfx-watch-option='authorized-peer-copy']")) === 0,
+  );
+
+  // The item hub's honest Desktop-next-step acquisition state (the R23
+  // production sweep's exact truth).
+  // binds R28-B deep surface: the card kebab's Details link → the item hub.
+  await goto(context, "/search?q=rain");
+  const detailHref = await browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '') !== ''); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+  assert.that(
+    "the search card carries the Details deep path to the item hub",
+    "an /item link",
+    detailHref ?? "<absent>",
+    detailHref !== null,
+  );
+  await goto(context, detailHref ?? "/");
+  await assert.visible(
+    "[data-wfx-acquisition-none]",
+    "the item's offline-copy panel renders its no-session state (no torrent realization)",
+  );
+  await assert.textContains(
+    "[data-wfx-acquisition-elsewhere]",
+    "WebFlix desktop app",
+    "the offline-copy note states the honest Desktop next step (the R23 production-sweep truth)",
+  );
+  // The typed read-only drive refusal (probed live): the service boot's
+  // acquisition transport serves reads only.
+  const driveResponse = await fetch(`${context.baseUrl}/api/acquisition`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ itemId: "wfxitm_probe", action: "acquire" }),
+  });
+  const driveBody = await driveResponse.text();
+  assert.that(
+    "the service boot's acquisition drive answers its typed read-only refusal (never a fake lifecycle)",
+    "the 'web transport serves reads only' refusal",
+    `HTTP ${driveResponse.status}: ${driveBody.slice(0, 160)}`,
+    driveBody.includes("reads only") && driveBody.includes("desktop app"),
+  );
+}
+
+/** The fixtures-boot peer-copy walk (the R23-D/E encoding — unchanged;
+ * the scripted torrent-realized catalog this boot alone carries). */
+async function fixturesPeerCopyWalk(context: import("../lib/journeys").JourneyContext): Promise<void> {
+  const { assert, browser } = context;
+
+  // THE FIRST-CLASS ENTRY on the item hub (Rain Check — an authorized
+  // browser-capable peer copy whose drive cursor no other journey in a
+  // full battery touches; the walk stays deterministic either way).
+  const itemHref = await itemHrefFromSearch(context, "Rain Check", "Rain Check");
+  assert.that("the search surface offers the peer-copy-capable title", "an item link", itemHref ?? "<absent>", itemHref !== null);
+  await goto(context, itemHref ?? "/");
 
     // The frozen grouping: the WebFlix source group BEFORE the
     // authorized-peer-copy group (the R23-C frozen order).
@@ -224,10 +350,8 @@ export const j38TorrentPlayback: Journey = {
       (fallbackReason ?? "").includes("Desktop app's native player") && (fallbackReason ?? "").includes("cannot reach this swarm's peers"),
     );
 
-    await context.screenshot("j38-torrent-playback");
-    await describe(
-      context,
-      "the authorized peer copy was a FIRST-CLASS way to watch: Where to watch grouped it after the WebFlix source with the frozen vocabulary and its own play path, the browser-rung stage played like any other way of watching while the protocol-free lifecycle walked preparing → buffering → playing (92s truthful runway) → pause/resume → background completion → Ready offline → the Library, the adapter truth stayed progressively disclosed behind the WebRTC environment probe, and the ordinary-swarm title answered the honest Desktop next step (the capability truth distinguishing WebTorrent-capable from ordinary torrent availability)",
-    );
-  },
-};
+  await describe(
+    context,
+    "the authorized peer copy was a FIRST-CLASS way to watch: Where to watch grouped it after the WebFlix source with the frozen vocabulary and its own play path, the browser-rung stage played like any other way of watching while the protocol-free lifecycle walked preparing → buffering → playing (92s truthful runway) → pause/resume → background completion → Ready offline → the Library, the adapter truth stayed progressively disclosed behind the WebRTC environment probe, and the ordinary-swarm title answered the honest Desktop next step (the capability truth distinguishing WebTorrent-capable from ordinary torrent availability)",
+  );
+}

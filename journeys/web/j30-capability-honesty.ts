@@ -12,12 +12,32 @@
  * states the adapter identity the runtime booted on, and the
  * unsupported-action grammar (like/save absent notes — J10's law) holds
  * on the playback surface too.
+ *
+ * R35b re-encode: the typed-absent action grammar is read from the ITEM
+ * surface (the R28-B mount — `ActionButtons` rides `ItemDetailSurface`);
+ * the player's action row is the R29-B `WatchActions` split pill, whose
+ * honest unset state (`data-wfx-reaction="none"`) and zero provider-sync
+ * notes the journey asserts on the playback surface.
  */
 
 import { describe } from "./journey-description";
-import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import type { Journey, JourneyContext } from "../lib/journeys";
+import { goto } from "../lib/journeys";
 import { parseActionbar, parseSettings } from "../lib/state";
+
+/** The R28-B deep-surface path: the search card kebab's Details link href
+ * (the /item detail is the card's quiet deep action; the primary link is
+ * the one-click /player href). Reads the DOM's own server-rendered href. */
+async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  cardTitle: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(cardTitle)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
 
 export const j30CapabilityHonesty: Journey = {
   id: "J30",
@@ -61,20 +81,53 @@ export const j30CapabilityHonesty: Journey = {
       descriptor !== null && descriptor.includes("lying bundle cannot boot"),
     );
 
-    // The unsupported-action grammar holds on the playback surface.
-    const itemHref = await itemHrefFromSearch(context, "Harbor", "Harbor Lights");
+    // The unsupported-action grammar: the typed-absent notes render on the
+    // ITEM surface (the R28-B mount); the player half below binds the
+    // R29-B action-row grammar.
+    // binds R28-B deep surface: the search card's kebab Details link → the item hub.
+    const itemHref = await detailHrefFromSearch(context, "Harbor", "Harbor Lights");
     await goto(context, itemHref ?? "/");
+    const itemHtml = await browser.outerHtml("[data-wfx-surface='item']");
+    const itemActionbar = parseActionbar(itemHtml ?? "");
+    assert.that(
+      "the item surface's like/save render their typed absent notes (unsupported never looks like success)",
+      "absent like + save notes",
+      itemActionbar.absent.join(", ") || "<no absent markers>",
+      itemActionbar.absent.includes("like") && itemActionbar.absent.includes("save"),
+    );
+    assert.that(
+      "no settled action state masquerades as provider-confirmed on the item surface",
+      "zero settled action states",
+      itemActionbar.settledStates.length === 0 ? "zero" : `${itemActionbar.settledStates.length} settled`,
+      itemActionbar.settledStates.length === 0,
+    );
+
+    // The playback surface's action row: the R29-B WatchActions grammar.
+    // binds R28-B one-click play: the item hub's play link → the player.
     const playHref = await browser.eval<string | null>(
       `document.querySelector('[data-wfx-item-play]')?.getAttribute('href') ?? null`,
     );
     await goto(context, playHref ?? "/");
     const playerHtml = await browser.outerHtml("[data-wfx-surface='player']");
     const actionbar = parseActionbar(playerHtml ?? "");
+    // binds the R29-B split pill: [data-wfx-action='like'] with its honest
+    // unset reaction state (data-wfx-reaction='none') and NO provider-sync
+    // note (the source declares neither like nor save).
+    const reactionState = await browser.eval<string | null>(
+      `document.querySelector("[data-wfx-action='like']")?.getAttribute('data-wfx-reaction') ?? null`,
+    );
     assert.that(
-      "the playback surface's like/save render their typed absent notes (unsupported never looks like success)",
-      "absent like + save notes",
-      actionbar.absent.join(", ") || "<no absent markers>",
-      actionbar.absent.includes("like") && actionbar.absent.includes("save"),
+      "the playback action row renders its like control in the honest unset state (the local reaction transport — never a provider-confirmed claim)",
+      "data-wfx-reaction='none' on the split pill",
+      reactionState ?? "<none>",
+      reactionState === "none",
+    );
+    const syncNotes = await browser.count("[data-wfx-like-sync]");
+    assert.that(
+      "no provider-sync note renders when the source declares no like capability (never a fabricated 'Synced with the source')",
+      "zero [data-wfx-like-sync] notes",
+      `${syncNotes} note(s)`,
+      syncNotes === 0,
     );
     assert.that(
       "no settled action state masquerades as provider-confirmed on the playback surface",

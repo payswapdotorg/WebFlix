@@ -26,6 +26,14 @@
  * lead's journey against the live deployment; this encoding proves the
  * discoverability paths on the deterministic web-fixture boot (the same
  * product surfaces, the same controls).
+ *
+ * R35b re-encode: tasks 2/3 re-bind to the R28-B/R29-B entries — the
+ * masthead create affordance ([data-wfx-byof-entry], ＋ → Settings→
+ * Sources, where both the source chooser and the BYOF panel live) + the
+ * rail's Settings entry; tasks 4/5/6 re-bind to the Watch surface's
+ * CompactDiscoveryControls band (the R28-B placement: the feed-mode +
+ * Personalize controls moved off Home with the restructure); the item
+ * hub is reached through the card kebab's Details deep path.
  */
 
 import { describe } from "./journey-description";
@@ -78,20 +86,44 @@ export const j34CapabilityDiscoverability: Journey = {
       "the session menu offers the profile & identity settings path (task 1: identity)",
     );
 
-    // Task 2 — source connection: the Home source strip's connect CTA.
+    // Task 2 + Task 3 — source connection + Bring Your Own Feed: the
+    // R28-B/R29-B entry — the masthead's create affordance (＋ → Settings
+    // → Sources, where BOTH the source chooser and the Bring-your-feed
+    // panel live), plus the rail's Settings entry (the primary-nav path).
+    // binds the R29-B masthead: [data-wfx-byof-entry] (the create affordance).
     await assert.visible(
-      "[data-wfx-source-connect-cta]",
-      "Home offers the source-connection CTA in context (task 2: connect a source)",
+      "[data-wfx-byof-entry]",
+      "the masthead's create affordance offers the source-connection + bring-your-feed entry (tasks 2+3: one honest destination — Settings → Sources)",
+    );
+    const byofEntryHref = await browser.eval<string | null>(
+      `document.querySelector('[data-wfx-byof-entry]')?.getAttribute('href') ?? null`,
+    );
+    assert.that(
+      "the create affordance links the sources section (the source chooser + the BYOF panel's home)",
+      "a /settings?section=sources href",
+      byofEntryHref ?? "<none>",
+      byofEntryHref === "/settings?section=sources",
+    );
+    // binds the R29-B/R33-B rail: the You group's Settings entry.
+    const settingsHref = await browser.eval<string | null>(
+      `(() => { const link = [...document.querySelectorAll('nav.wfx-rail a')].find((a) => (a.textContent ?? '').trim() === 'Settings'); return link === undefined ? null : link.getAttribute('href'); })()`,
+    );
+    assert.that(
+      "the primary navigation carries the Settings destination (the source-management path — task 2)",
+      "a rail Settings link",
+      settingsHref ?? "<absent>",
+      settingsHref === "/settings",
     );
 
-    // Task 3 — Bring Your Own Feed: the Home entry.
+    // Task 4 + Tasks 5/6 — feed-mode choice + temporary intent + attention
+    // mode: the R28-B placement — the Watch surface's compact discovery
+    // band (a primary destination reached from Home through the nav).
+    // binds the R28-B compact band: [data-wfx-discovery-compact] on /watch.
+    await goto(context, "/watch");
     await assert.visible(
-      "[data-wfx-byof-cta]",
-      "Home offers the bring-your-feed entry (task 3: BYOF)",
+      "[data-wfx-discovery-compact]",
+      "the Watch surface renders its compact discovery band (the feed-mode + Personalize controls — tasks 4/5/6's in-context home)",
     );
-
-    // Task 4 — feed-mode choice: the Home feed-mode control renders ALL
-    // FOUR frozen modes (discoverable, never hidden).
     for (const mode of ["foryou", "following", "byof", "hybrid"]) {
       await assert.visible(
         `[data-wfx-feed-mode-option='${mode}']`,
@@ -101,6 +133,7 @@ export const j34CapabilityDiscoverability: Journey = {
 
     // Task 5 — temporary intent + Task 6 — attention mode: the
     // Personalize control (a contextual control, not a Settings trip).
+    // binds the R28-B compact band: the PersonalizeControl on /watch.
     await browser.clickInteractive("[data-wfx-personalize-toggle]");
     await assert.visible(
       "[data-wfx-personalize-objective]",
@@ -117,7 +150,9 @@ export const j34CapabilityDiscoverability: Journey = {
       );
     }
 
-    // No stale completion copy on Home (the J35 primitive).
+    // No stale completion copy on Home (the J35 primitive) — read on the
+    // home surface itself.
+    await goto(context, "/");
     const homeText = (await browser.tryText("[data-wfx-surface='home']")) ?? "";
     assert.that(
       "Home carries ZERO stale completion copy (no 'arrives later / ships with R0x' for accepted lanes)",
@@ -127,16 +162,17 @@ export const j34CapabilityDiscoverability: Journey = {
     );
 
     // Tasks 7/9/10/11 — the item decision hub: reached from a HOME CARD
-    // (the normal product path, never a direct URL).
-    await goto(context, "/");
+    // through the R28-B deep-surface path (the card's quiet action row —
+    // the kebab's Details link — never a direct URL).
+    // binds R28-B deep surface: the card kebab's Details link → the item hub.
     const itemHref = await browser.eval<string | null>(
-      `(() => { const link = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith("Asteroid Drift")); return link === undefined ? null : link.getAttribute('href'); })()`,
+      `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith("Asteroid Drift")); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
     );
     assert.that(
-      "the home feed offers a content card (the item path starts from Home)",
-      "an aria-labeled card link",
+      "the home feed offers a content card's Details deep path (the item path starts from Home)",
+      "an /item?id=wfxitm_… Details href",
       itemHref ?? "<none>",
-      itemHref !== null,
+      itemHref !== null && itemHref.startsWith("/item?id=wfxitm_"),
     );
     await goto(context, itemHref ?? "/");
 
