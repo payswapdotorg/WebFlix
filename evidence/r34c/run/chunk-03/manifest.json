@@ -1,0 +1,240 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T20:54:19.997Z",
+    "finishedAt": "2026-09-27T20:55:00.179Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790542459997)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 5,
+    "encoded": 5,
+    "passed": 1,
+    "failed": 4,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J11",
+      "title": "Library / watchlist / history",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)\n  expected: the typed watchlist empty state\n  observed: entries present or no empty state",
+      "assertions": [
+        {
+          "description": "the library destination renders",
+          "expected": "[data-wfx-surface='library'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist section renders",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the history section renders",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section renders (the R14 surface)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)",
+          "expected": "the typed watchlist empty state",
+          "observed": "entries present or no empty state",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-03/j11-failure.png",
+        "evidence/r34c/run/chunk-03/j11-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2591
+    },
+    {
+      "id": "J12",
+      "title": "Cross-device resume",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-03/j12-failure.png",
+        "evidence/r34c/run/chunk-03/j12-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 1990
+    },
+    {
+      "id": "J13",
+      "title": "Account/profile/identity lifecycle",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings session section renders",
+          "expected": "[data-wfx-settings-session] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session states the honest signed-out identity (never a fabricated profile)",
+          "expected": "the signed-out session label",
+          "observed": "Signed out",
+          "pass": true
+        },
+        {
+          "description": "the session states its durability truth (how long the anonymous identity lasts)",
+          "expected": "a session stability statement",
+          "observed": "Session stability: kept for this server process (browser storage is not available)",
+          "pass": true
+        },
+        {
+          "description": "no fabricated profile management UI renders in the fixtures identity state",
+          "expected": "no profile switcher/manage controls",
+          "observed": "no profile UI text",
+          "pass": true
+        },
+        {
+          "description": "the shell session menu states the same signed-out truth",
+          "expected": "text of .wfx-topbar contains \"Signed out\"",
+          "observed": "\"WebFlix\nlive service\nSign in\nW\nSigned out\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-03/j13-identity-lifecycle.png",
+        "evidence/r34c/run/chunk-03/j13-account-profile-identity-lifecycle.snapshot.txt",
+        "evidence/r34c/run/chunk-03/j13-account-profile-identity-lifecycle.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2162
+    },
+    {
+      "id": "J14",
+      "title": "Source connect / reauthorize / disconnect",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the source card renders (the runtime's own sources read)\n  expected: [data-wfx-source='fake-source'] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source card renders (the runtime's own sources read)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-03/j14-failure.png",
+        "evidence/r34c/run/chunk-03/j14-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2091
+    },
+    {
+      "id": "J15",
+      "title": "Recommendation feedback controls",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the re-rank note names the composition decision (typed reasons — never a silent swap)\n  expected: a note naming the replacement semantics\n  observed: applied 16 replacement(s); 8 slot(s) kept",
+      "assertions": [
+        {
+          "description": "the like feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='like'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the save feedback control renders only where the source declares it (typed absence here)",
+          "expected": "[data-wfx-shorts-action='save'] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the share feedback control is present (the event-only vocabulary)",
+          "expected": "[data-wfx-shorts-action='share'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no re-rank decision is rendered before the engagement threshold",
+          "expected": "no re-rank note before 5 forward swipes",
+          "observed": "<none>",
+          "pass": true
+        },
+        {
+          "description": "engagement affects future candidate composition (the re-rank decision renders its typed note)",
+          "expected": "a re-rank explainability note",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": true
+        },
+        {
+          "description": "the re-rank note names the composition decision (typed reasons — never a silent swap)",
+          "expected": "a note naming the replacement semantics",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-03/j15-failure.png",
+        "evidence/r34c/run/chunk-03/j15-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 29967
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J12",
+      "kind": "configuration-limit",
+      "note": "Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes)."
+    },
+    {
+      "journeyId": "J14",
+      "kind": "local-only",
+      "note": "The R17 encoding asserts the scripted source's authorization-state truth (the signed-in card, the Connected chip, the typed action vocabulary; the expiry → reauthorize round trip is J28's encoding). The REAL provider connect/reauthorize/disconnect round trips (a real OAuth dance over the durable connector-account store) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: the service-mode boot (see J28's procedure) + drive /settings sources connect → capability truth → reauthorize → disconnect against the real service routes, capturing each state."
+    },
+    {
+      "journeyId": "J15",
+      "kind": "local-only",
+      "note": "The full reversible feedback vocabulary (More-like-this / Not-interested / creator-source suppression / Already-watched) is R05's service-side policy surface (apps/api /experience/feedback + /experience/policy routes). The web adapter ships the session re-rank explainability + the typed-absent feedback grammar (both encoded).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + apply each feedback control through the API routes, verify the policy composition change, and capture the affected surfaces."
+    }
+  ]
+}

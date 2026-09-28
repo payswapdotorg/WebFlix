@@ -1,0 +1,215 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T20:59:32.947Z",
+    "finishedAt": "2026-09-27T20:59:49.582Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790542772947)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 7,
+    "encoded": 7,
+    "passed": 0,
+    "failed": 7,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J06",
+      "title": "Item detail / availability / realization choice",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the home feed offers the card \"Asteroid Drift\"\n  expected: an aria-labeled card link for \"Asteroid Drift\"\n  observed: no matching card",
+      "assertions": [
+        {
+          "description": "the home feed offers the card \"Asteroid Drift\"",
+          "expected": "an aria-labeled card link for \"Asteroid Drift\"",
+          "observed": "no matching card",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j06-failure.png",
+        "evidence/r34c/rerun/chunk-02/j06-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 3220
+    },
+    {
+      "id": "J07",
+      "title": "Official embed playback",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the Harbor Lights item (the embed-realized catalog item)\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the Harbor Lights item (the embed-realized catalog item)",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j07-failure.png",
+        "evidence/r34c/rerun/chunk-02/j07-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2099
+    },
+    {
+      "id": "J08",
+      "title": "Contained Browser playback",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the browser-realized item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the browser-realized item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j08-failure.png",
+        "evidence/r34c/rerun/chunk-02/j08-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 1994
+    },
+    {
+      "id": "J09",
+      "title": "External playback fallback / return context",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the multi-realization item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the multi-realization item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j09-failure.png",
+        "evidence/r34c/rerun/chunk-02/j09-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2081
+    },
+    {
+      "id": "J10",
+      "title": "Like/save/action synchronization truth",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j10-failure.png",
+        "evidence/r34c/rerun/chunk-02/j10-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 1938
+    },
+    {
+      "id": "J11",
+      "title": "Library / watchlist / history",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)\n  expected: the typed watchlist empty state\n  observed: entries present or no empty state",
+      "assertions": [
+        {
+          "description": "the library destination renders",
+          "expected": "[data-wfx-surface='library'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist section renders",
+          "expected": "[data-wfx-library-watchlist] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the history section renders",
+          "expected": "[data-wfx-library-history] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-and-verified section renders (the R14 surface)",
+          "expected": "[data-wfx-library-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)",
+          "expected": "the typed watchlist empty state",
+          "observed": "entries present or no empty state",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j11-failure.png",
+        "evidence/r34c/rerun/chunk-02/j11-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 1796
+    },
+    {
+      "id": "J12",
+      "title": "Cross-device resume",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-02/j12-failure.png",
+        "evidence/r34c/rerun/chunk-02/j12-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2051
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J09",
+      "kind": "configuration-limit",
+      "note": "The external-rung WIN (the visible external handoff with its return-context link) requires an item whose only realization is external — the fixture catalog carries none (every item resolves embed or browser first). The fallback DECISION trace and the typed failure states are encoded; the handoff itself is not reachable in this configuration.",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration with a source that declares an external-only realization (or a realization whose embed/browser URLs the provider restricts), open its player, and capture the data-wfx-player-mode=\"external\" handoff + the return-context link under evidence/<run>/."
+    },
+    {
+      "journeyId": "J12",
+      "kind": "configuration-limit",
+      "note": "Cross-DEVICE resume continuity requires the server-side identity/profile state (the service-mode boot over the shared profile); the fixtures boot is one anonymous session. Additionally, the Turbopack dev server compiles routes as separate module graphs, so the /api/events watch-state fold does not cross pages in the dev boot (documented in apps/web/src/host/acquisition-fixtures.ts).",
+      "procedure": "LOCAL-ONLY: boot the service-mode configuration (api+web), watch an item on one browser profile, sign in on a second profile with the same identity, and verify Continue Watching/resume under evidence/<run>/ (the single-bundle service boot folds the watch state across routes)."
+    }
+  ]
+}

@@ -1,0 +1,301 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T20:55:04.093Z",
+    "finishedAt": "2026-09-27T20:56:20.416Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790542504093)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 5,
+    "encoded": 5,
+    "passed": 2,
+    "failed": 3,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J16",
+      "title": "Anti-tunnel / exploration after a single watched topic",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)\n  expected: a kept-runway composition note\n  observed: applied 16 replacement(s); 8 slot(s) kept",
+      "assertions": [
+        {
+          "description": "the composed feed carries more than one distinct item (exploration-capable composition before concentration)",
+          "expected": "multiple distinct cards",
+          "observed": "3 Countries With Incredible Natural Beauty 🌍 #Travel #Nature #Shorts, Aliens: Are We Really Alone? | The Search for Extraterrestrial Life | Full Documentary",
+          "pass": true
+        },
+        {
+          "description": "the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)",
+          "expected": "a kept-runway composition note",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-04/j16-failure.png",
+        "evidence/r34c/run/chunk-04/j16-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 31049
+    },
+    {
+      "id": "J17",
+      "title": "Explicit intent: learn / happier / surprise / tonight / friend taste",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: a new intent composes a fresh answer (the intent is replaceable, never sticky in this session)\n  expected: a fresh result set for 'harbor'\n  observed: 0 result cards",
+      "assertions": [
+        {
+          "description": "a stated intent answers the session's candidates (the rain intent composes its results)",
+          "expected": "[data-wfx-search-results] a[data-wfx-card] matches >= 3",
+          "observed": "19 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the stated intent is echoed by the surface (the session's retained intent)",
+          "expected": "the query echo names 'rain'",
+          "observed": "19 results for “rain”",
+          "pass": true
+        },
+        {
+          "description": "a new intent composes a fresh answer (the intent is replaceable, never sticky in this session)",
+          "expected": "a fresh result set for 'harbor'",
+          "observed": "0 result cards",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-04/j17-failure.png",
+        "evidence/r34c/run/chunk-04/j17-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5206
+    },
+    {
+      "id": "J18",
+      "title": "Attention modes: mindful / balanced / immersive / custom",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the balanced policy does NOT re-rank below its threshold (5th swipe) — the mode's behavior is its policy, not silent optimization",
+          "expected": "no re-rank note after 4 forward swipes",
+          "observed": "<none>",
+          "pass": true
+        },
+        {
+          "description": "the balanced policy re-ranks at its threshold (the attention mode's policy behavior is observable)",
+          "expected": "a re-rank decision note at the 5th forward swipe",
+          "observed": "applied 16 replacement(s); 8 slot(s) kept",
+          "pass": true
+        },
+        {
+          "description": "the current card remains stably presented through the policy re-rank",
+          "expected": "[data-wfx-shorts-card='current'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed's position grammar remains truthful after the policy behavior",
+          "expected": "a position label",
+          "observed": "6 / 24",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-04/j18-attention-modes.png",
+        "evidence/r34c/run/chunk-04/j18-attention-modes-mindful-balanced-immersive-custom.snapshot.txt",
+        "evidence/r34c/run/chunk-04/j18-attention-modes-mindful-balanced-immersive-custom.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 29259
+    },
+    {
+      "id": "J19",
+      "title": "WebFlix model / BYOM / local model policy",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the Model & AI section renders",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider registry renders over the completed transport (first-party + BYOM + local truth)",
+          "expected": "[data-wfx-model-providers-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the registry carries at least the first-party provider row",
+          "expected": "[data-wfx-model-providers-list] [data-wfx-model-provider] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the per-task policy truth renders (the honest unset — never a fabricated default)",
+          "expected": "[data-wfx-model-policies-list] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "every frozen ModelTask carries its policy chip (the full task set is visible)",
+          "expected": "[data-wfx-model-policies-list] [data-wfx-model-policy] matches >= 9",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model section names the controls' scope (providers, BYOM, local models, policy truth)",
+          "expected": "the scope named in the section",
+          "observed": "Model & AI\n\nThe truth about which models can run your AI actions — subtitles, translation, transcription, dubbing, and commentary — across first-party, your own providers (BYOM), and local models, with each task's current policy. Provider keys stay sealed; they are never shown or sent to a model. AI actions launch from the tray where you watch — any title or player; local-model execution runs in the Desktop app.\n\nFind a title to transform — the AI action tray lives on every title and player\n\nProviders\nWfx-First-Party\nRuns locally\nAvailable\n\nTasks: recommendation, ranking\n\nTask policies\nRecommendation\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nRanking\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSummary\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTranslation\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTranscription\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nSpeechToText\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nTextToSpeech\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nDubbing\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nCommentary\nNot configured\n\nNo model policy configured for this task yet — the first available provider runs it when you use an AI action.\n\nYour model providers\n\nBring your own model: paste your provider's web address and key — the key is stored encrypted and never shown again. The contextual AI tray (on every title and player) is where you USE AI; this is where you MANAGE which providers WebFlix may use.\n\nAdd your model provider\n\nModel providers belong to your account — sign in or create one to add your own provider.\n\nNo model provider of your own is added yet — WebFlix's built-in local model keeps working, and you can add your own provider anytime.\n\nBuilt-in models\nWfx-First-Party\nBuilt-in\nRuns on this device\n\nWebFlix's built-in model — always available, no setup.\n\nrecommendation\nranking\nOpen models\n\nResearched open models with their honest licenses, tasks, and registration truth — no model authorizes a playback or acquisition action; your policy and choices stay yours.\n\nNetEase Youdao/Confucius4-R2T2\nCode Apache-2.0 · weights NetEase Model Use License Agreement\nlive streaming (low latency)\nCatalog Only\n\nThe live-captions and voice-input route: true streaming with committed output, typically well under a second behind the audio. Serves: speechToText, transcription. Not registered — a catalog row is not a provider until registered.\n\nRegistration is served by the platform's model runtime — this surface carries the registry truth.\n\nOpenMOSS-Team/MOSS-Transcribe-Diarize\nCode Apache-2.0 · weights Apache-2.0\nbatch\nCatalog Only\n\nThe long-form companion: multi-speaker transcription with speaker labels, timestamps, and acoustic-event awareness. Serves: transcription. Not registered — a catalog row is not a provider until registered.\n\nRegistration is served by the platform's model runtime — this surface carries the registry truth.\n\nPrivate local inference\n\nQuery understanding can run privately in your browser — WebGPU when available, the slower in-browser fallback otherwise, remote only under your policy. WebGPU is optional; the chain below is this browser's honest truth.\n\nThis search understanding runs privately in your browser (WebGPU is off, so it uses the slower in-browser fallback) — nothing leaves this device.\n\nPrivacy impact: local-only — nothing leaves this device.",
+          "pass": true
+        },
+        {
+          "description": "the R22-F BYOM management surface renders inside the Model & AI section (the normal-path management panel)",
+          "expected": "[data-wfx-byom-management] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the add-provider entry control renders (discover → configure is a real control, never a hidden API)",
+          "expected": "[data-wfx-byom-action='add'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous state names the sign-in prerequisite honestly (the no-dead-end law)",
+          "expected": "[data-wfx-byom-anonymous-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no placeholder model controls render outside the typed surfaces (BYOM, open-model registration, the local-inference probe — a fixture is never presented as capability)",
+          "expected": "zero interactive controls outside the typed surfaces",
+          "observed": "0 stray controls",
+          "pass": true
+        },
+        {
+          "description": "no fabricated selected-model state renders (the honest unset is named)",
+          "expected": "the policy truth is the honest unset",
+          "observed": "no selected-model lie",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-04/j19-model-policy.png",
+        "evidence/r34c/run/chunk-04/j19-webflix-model-byom-local-model-policy.snapshot.txt",
+        "evidence/r34c/run/chunk-04/j19-webflix-model-byom-local-model-policy.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2402
+    },
+    {
+      "id": "J20",
+      "title": "AI subtitles / translation / transcription / dubbing / commentary",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the home feed offers the card \"Asteroid Drift\"\n  expected: an aria-labeled card link for \"Asteroid Drift\"\n  observed: no matching card",
+      "assertions": [
+        {
+          "description": "the Model & AI section renders (the AI transformation surface's management home)",
+          "expected": "[data-wfx-settings-model] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'transcription' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions transcription",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'subtitles' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions subtitles",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'translation' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions translation",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'dubbing' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions dubbing",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the management home names the 'commentary' transformation (the scope is stated, never hidden)",
+          "expected": "the section text mentions commentary",
+          "observed": "named",
+          "pass": true
+        },
+        {
+          "description": "the home feed offers the card \"Asteroid Drift\"",
+          "expected": "an aria-labeled card link for \"Asteroid Drift\"",
+          "observed": "no matching card",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-04/j20-failure.png",
+        "evidence/r34c/run/chunk-04/j20-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 7237
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J16",
+      "kind": "local-only",
+      "note": "Profile-LEVEL anti-tunnel (a concentrated watch history not permanently dominating the profile) is R05's service-side recommendation policy; the web fixtures session has no persistent profile. The feed-level exploration mechanics (kept runway, multi-item composition) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + a concentrated watch history through /experience/history, then verify the recommendation composition retains exploration (the R05 policy tests' scenario) with captured evidence."
+    },
+    {
+      "journeyId": "J17",
+      "kind": "local-only",
+      "note": "The explicit intent VOCABULARY (learn/happier/surprise/tonight/friend-taste) is the service-side intent submission (apps/api /experience/intents — session-scoped by design). The web session's query-intent mechanics (state/retain/replace, no preference corruption) are encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + submit each intent kind through /experience/intents, verify the session-scoped composition and the untouched long-term policy, and capture the affected feed surfaces."
+    },
+    {
+      "journeyId": "J18",
+      "kind": "local-only",
+      "note": "SWITCHING attention modes (mindful=3-swipe / immersive=none / custom) is the service-side policy submission (apps/api /experience/policy). The web session boots the balanced default; its observable threshold behavior (no re-rank below 5, re-rank at 5) is encoded.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + set each attention mode through /experience/policy, then drive the short feed and capture the mode-specific re-rank behavior (mindful fires at 3 swipes; immersive does not auto re-rank)."
+    },
+    {
+      "journeyId": "J19",
+      "kind": "local-only",
+      "note": "R21-B/R21-C: the web transport implements the R06 reads (model-policy, model-providers, BYOM, transforms) and the Model & AI section renders the REAL provider registry + per-task policy truth over them (the fixtures persona answers the service shapes). The real service-backed policy WRITES and BYOM key bindings run against the configured service (apps/api /experience/model-policy, /model-providers, BYOM routes) — the fixtures boot exercises the shapes deterministically.",
+      "procedure": "LOCAL-ONLY: the service-mode boot + exercise the model-policy/provider routes (BYOM key binding, local-model policy, privacy constraints), capturing the policy surfaces."
+    },
+    {
+      "journeyId": "J20",
+      "kind": "local-only",
+      "note": "R21-E: the AI ACTION TRAY is the web surface of the completed transforms transport (the R21-B/R21-C model-controls seam — the fixtures persona answers the service shapes deterministically): the five frozen actions, the model-class truth, the named preconditions, and the typed queued/cancelled operation states are encoded. The full pipeline's running→succeeded transitions (real progress + result payloads) are the service-side fabric (apps/api /experience/transforms).",
+      "procedure": "LOCAL-ONLY: the service-mode boot + start each transformation operation through the tray (or /experience/transforms), capture the explicit running and completed states with results."
+    }
+  ]
+}
