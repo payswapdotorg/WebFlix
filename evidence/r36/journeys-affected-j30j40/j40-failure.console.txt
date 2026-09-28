@@ -2,16 +2,11 @@
 [log] [HMR] connected
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 [log] [HMR] connected
+[log] [Fast Refresh] rebuilding
+[log] [Fast Refresh] done in 1117ms
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 [log] [HMR] connected
-[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[log] [HMR] connected
-[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[log] [HMR] connected
-[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[log] [HMR] connected
-[info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
-[log] [HMR] connected
+[log] [Fast Refresh] rebuilding
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 [log] [HMR] connected
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
@@ -19,9 +14,7 @@
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 [log] [HMR] connected
 [log] [Fast Refresh] rebuilding
-[log] [Fast Refresh] done in 1408ms
-[log] [Fast Refresh] rebuilding
-[log] [Fast Refresh] done in 710ms
+[log] [Fast Refresh] done in 805ms
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold
 [log] [HMR] connected
 [info] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold

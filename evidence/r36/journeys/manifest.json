@@ -1,17 +1,17 @@
 {
   "schema": "wfx-journey-manifest/1",
-  "commit": "0d125160904b0e5ad3b9bed7a75b4593dbeb8f9c",
+  "commit": "084be571bfdd8e92f998f2853fcbfb27d9988fdf",
   "branch": "wfx/r36/channels",
   "environment": {
     "mode": "web-fixtures",
     "webUrl": "http://localhost:3101",
     "ci": false,
-    "startedAt": "2026-09-28T08:17:51.909Z",
-    "finishedAt": "2026-09-28T08:18:27.402Z",
+    "startedAt": "2026-09-28T08:36:37.472Z",
+    "finishedAt": "2026-09-28T08:37:13.239Z",
     "determinism": [
       "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
       "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
-      "one isolated agent-browser session per run (wfx-journeys-1790583475406)",
+      "one isolated agent-browser session per run (wfx-journeys-1790584602533)",
       "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
       "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
       "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
@@ -21,17 +21,17 @@
   "summary": {
     "total": 1,
     "encoded": 1,
-    "passed": 0,
-    "failed": 1,
+    "passed": 1,
+    "failed": 0,
     "notRun": 0
   },
   "journeys": [
     {
       "id": "J44",
       "title": "Creator channel round trip",
-      "status": "fail",
+      "status": "pass",
       "reason": null,
-      "failure": "journey assertion failed: the channel page's pill renders subscribed on the fresh load (the connector-scoped stored truth — the reload-durability law)\n  expected: data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"\n  observed: \"idle\"",
+      "failure": null,
       "assertions": [
         {
           "description": "the home feed renders",
@@ -306,21 +306,87 @@
         {
           "description": "the channel page's pill renders subscribed on the fresh load (the connector-scoped stored truth — the reload-durability law)",
           "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"",
-          "observed": "\"idle\"",
-          "pass": false
+          "observed": "\"subscribed\"",
+          "pass": true
+        },
+        {
+          "description": "the bell renders once subscribed (the corpus grammar)",
+          "expected": "[data-wfx-channel-bell-button] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the bell's current preference is the default (personalized — no choice recorded yet)",
+          "expected": "data-wfx-channel-bell-preference of [data-wfx-channel-bell-button] is \"personalized\"",
+          "observed": "\"personalized\"",
+          "pass": true
+        },
+        {
+          "description": "the bell menu opens (the dialog family's grammar)",
+          "expected": "[data-wfx-channel-bell-menu] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the all preference option renders",
+          "expected": "[data-wfx-channel-bell-option='all'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the personalized preference option renders",
+          "expected": "[data-wfx-channel-bell-option='personalized'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the none preference option renders",
+          "expected": "[data-wfx-channel-bell-option='none'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the bell menu's honest delivery note names the later-wave truth (never a dead imitation)",
+          "expected": "text of [data-wfx-channel-bell-note] contains \"No notification source is connected\"",
+          "observed": "\"No notification source is connected on this host yet — your preference is recorded and will bind when delivery lands. WebFlix never fabricates notifications.\"",
+          "pass": true
+        },
+        {
+          "description": "the bell's preference datum flips to none (the in-view record)",
+          "expected": "data-wfx-channel-bell-preference of [data-wfx-channel-bell-button] is \"none\"",
+          "observed": "\"none\"",
+          "pass": true
+        },
+        {
+          "description": "the per-channel preference record persists locally (the user's own choice, recorded)",
+          "expected": "a store carrying {\"fake-source\":\"none\"}",
+          "observed": "{\"fake-source\":\"none\"}",
+          "pass": true
+        },
+        {
+          "description": "the bell menu closes on Escape (the dialog family's law)",
+          "expected": "[data-wfx-channel-bell-menu] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel round trip never redirects to a sign-in surface (the anonymous law)",
+          "expected": "the channel page still rendered (no login redirect)",
+          "observed": "http://localhost:3101/channel/fake-source",
+          "pass": true
         }
       ],
       "artifacts": [
-        "evidence/r36/journeys-j44-smoke/j44-channel-home.png",
-        "evidence/r36/journeys-j44-smoke/j44-channel-about.png",
-        "evidence/r36/journeys-j44-smoke/j44-channel-subscribed.png",
-        "evidence/r36/journeys-j44-smoke/j44-library-subscriptions.png",
-        "evidence/r36/journeys-j44-smoke/j44-failure.png",
-        "evidence/r36/journeys-j44-smoke/j44-failure.snapshot.txt",
-        "evidence/r36/journeys-j44-smoke/j44-failure.console.txt"
+        "evidence/r36/journeys/j44-channel-home.png",
+        "evidence/r36/journeys/j44-channel-about.png",
+        "evidence/r36/journeys/j44-channel-subscribed.png",
+        "evidence/r36/journeys/j44-library-subscriptions.png",
+        "evidence/r36/journeys/j44-bell-none.png",
+        "evidence/r36/journeys/j44-creator-channel-round-trip.snapshot.txt",
+        "evidence/r36/journeys/j44-creator-channel-round-trip.narration.txt"
       ],
       "pageErrors": [],
-      "durationMs": 29197
+      "durationMs": 27931
     }
   ],
   "limitations": []

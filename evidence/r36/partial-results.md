@@ -42,4 +42,22 @@ Lane: `wfx/r36/channels` · Base: `main @ 8937bb8` · Repo: /home/z/webflix-r36 
 
 ## Progress log
 
-- [x] Survey complete (the seams above; battery baseline next)
+- [x] Survey complete (the seams above)
+- [x] The channel entity (host/channel-views.ts) — the derivation law + the typed-absence set
+- [x] The channel page route (/channel/[handle]) + ChannelSurface (banner/avatar/tabs/search)
+- [x] The tabs — Home (continue-watching first), Videos (+ the honest sort availability), Shorts (the eligibility split, linking into /shorts), Playlists (the library's scoped named lists, typed-empty), About (the honest truths)
+- [x] The engagement island — the ONE-store Subscribe (the connector-scoped truth + the representative item) + the bell's persisted record
+- [x] The link-in laws — the cards' stretched-link pattern (one a[data-wfx-card] per card intact), the watch ChannelRow, the shorts row
+- [x] The search channel-results section (the honest matching law; empty = absent)
+- [x] The routing presentation-route class + the href law
+- [x] The 32 lane tests — PASS on the lane, FAIL on main (proven on an isolated base worktree)
+- [x] J44 (encoded as J44 — the survey's "J43" collision with the R25-W2 realtime-translation journey documented) — PASS 57 assertions
+- [x] The fix round: the unsubscribe/subscription-read bridge law (the source-key resolution — the R30 reload-durability lesson applied to the channel surface)
+- [x] Guards: install/lint(lane-clean)/typecheck/battery(5287/1/0 vs base 5255/1/0)/contract-check/lane-check/parity-conformance(19/19)/build(exit 0)
+- [x] Affected journeys re-run on BOTH trees — identical verdicts (zero regressions; the failures are the documented stale-grammar debt)
+- [x] Evidence (guards/browser-verification/measured-facts/DIVERGENCES/INDEX)
+- [x] The bundle + the relay (see the completion report)
+
+## The final state
+
+Lane head `084be57`. All gates green. See INDEX.md for the map.

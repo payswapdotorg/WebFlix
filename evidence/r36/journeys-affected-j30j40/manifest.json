@@ -1,0 +1,178 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "084be571bfdd8e92f998f2853fcbfb27d9988fdf",
+  "branch": "wfx/r36/channels",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T08:30:50.415Z",
+    "finishedAt": "2026-09-28T08:31:25.396Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790584258905)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 2,
+    "encoded": 2,
+    "passed": 0,
+    "failed": 2,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the playback surface's like/save render their typed absent notes (unsupported never looks like success)\n  expected: absent like + save notes\n  observed: <no absent markers>",
+      "assertions": [
+        {
+          "description": "the capability truth table renders every platform area",
+          "expected": "[data-wfx-settings-capabilities] li[data-wfx-capability] matches >= 5",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'storage' capability area",
+          "expected": "a row for 'storage'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'contained browser' capability area",
+          "expected": "a row for 'contained browser'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'native media & torrent acquisition' capability area",
+          "expected": "a row for 'native media & torrent acquisition'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'background work' capability area",
+          "expected": "a row for 'background work'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'sharing' capability area",
+          "expected": "a row for 'sharing'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'notifications' capability area",
+          "expected": "a row for 'notifications'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the native-media area declares itself NOT available on Web (the honest unsupported state — never silent, never faked)",
+          "expected": "the native row carries the unsupported chip",
+          "observed": "unsupported chip present",
+          "pass": true
+        },
+        {
+          "description": "the adapter's own descriptor is stated (the truth the runtime booted on)",
+          "expected": "text of [data-wfx-capability-descriptor] contains \"wfx-web-adapter\"",
+          "observed": "\"Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).\"",
+          "pass": true
+        },
+        {
+          "description": "the descriptor states the platform truth and that a lying bundle cannot boot",
+          "expected": "the re-check law stated",
+          "observed": "Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).",
+          "pass": true
+        },
+        {
+          "description": "the playback surface's like/save render their typed absent notes (unsupported never looks like success)",
+          "expected": "absent like + save notes",
+          "observed": "<no absent markers>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r36/journeys-affected-j30j40/j30-failure.png",
+        "evidence/r36/journeys-affected-j30j40/j30-failure.snapshot.txt",
+        "evidence/r36/journeys-affected-j30j40/j30-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 14363
+    },
+    {
+      "id": "J40",
+      "title": "YouTube viewer parity",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the item hub renders (the canonical identity surface)\n  expected: [data-wfx-surface='item'] present in the DOM\n  observed: 0 matching element(s)",
+      "assertions": [
+        {
+          "description": "Home renders (the parity walk's fresh start)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source-neutral cards render (the R24-C Home feed pairing)",
+          "expected": "[data-wfx-card] present in the DOM",
+          "observed": "14 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search box renders (the unified Search pairing)",
+          "expected": "[data-wfx-searchbox] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search suggestions render under the box (the R24-C Search-suggestions pairing)",
+          "expected": "[data-wfx-suggestions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "at least one suggestion row renders (keyboard-navigable)",
+          "expected": "[data-wfx-suggestion] present in the DOM",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the title search offers the item",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_07H9BKDFA21Q6CP0BE4BR2Y6BF&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the item hub renders (the canonical identity surface)",
+          "expected": "[data-wfx-surface='item'] present in the DOM",
+          "observed": "0 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r36/journeys-affected-j30j40/j40-failure.png",
+        "evidence/r36/journeys-affected-j30j40/j40-failure.snapshot.txt",
+        "evidence/r36/journeys-affected-j30j40/j40-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 9151
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J40",
+      "kind": "configuration-limit",
+      "note": "The R24-W2 encoding walks the viewer-parity flow end to end over the fixtures boot: the walk's own watchlist/playlist/queue WRITES answer their typed success at the CONTROLS (the 'Saved' status, the queue-add's outcome state, the write routes' dev-boot bridge resolving the item through the runtime's own search seam), but the cross-PAGE read of those writes (the Library page listing them) is kept apart by the dev boot's per-route module graphs — the same documented doctrine the J12 limitation records for the watch-state fold (the single-bundle production boot shares one runtime instance: the writes are visible there). The Library assertions therefore carry the fresh session's HONEST states (the typed empty states — J11's own law) plus the sections' presence (the pairing laws).",
+      "procedure": "LEAD (the production parity sweep — the J35-class run): deploy the integrated tree (the single-bundle production build), drive the same J40 walk against the deployed boot, and capture the Library showing the walk's own watchlist/playlist writes under evidence/<run>/ (the production runtime is one instance: the writes cross pages)."
+    }
+  ]
+}
