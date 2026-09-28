@@ -64,3 +64,34 @@ export function playerHref(target: ItemRouteTarget, resumePositionMs?: number): 
   }
   return `/player?${params.toString()}`;
 }
+
+// ---------------------------------------------------------------------------
+// R36 — the creator-channel route (the handle law)
+// ---------------------------------------------------------------------------
+
+/**
+ * R36 — THE CHANNEL HANDLE LAW: a channel = a catalog source's creator
+ * identity, and its handle is the SLUGIFIED STABLE CONNECTOR ID (the
+ * identity the sources model itself declares — never a fabricated
+ * "@name" form). The slug grammar: lowercase; every run of characters
+ * outside [a-z0-9] collapses to one "-"; leading/trailing "-" trim. The
+ * handle is PURE and STABLE (the same connectorId always derives the
+ * same handle — links stay durable across sessions and boots).
+ */
+export function channelHandleOf(connectorId: string): string {
+  const slug = connectorId
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug.length > 0 ? slug : "channel";
+}
+
+/**
+ * R36 — the channel page's href for one source identity (the
+ * presentation route `/channel/<handle>` — the /player law: no frozen
+ * SurfaceId, the URL is the destination). Pure — importable from client
+ * components (the same law as the item/player builders above).
+ */
+export function channelHrefOf(connectorId: string): string {
+  return `/channel/${channelHandleOf(connectorId)}`;
+}

@@ -35,6 +35,8 @@ import { useCallback, useState, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
 import { SUBSCRIPTIONS_LIST } from "@/components/player/subscription-list";
+// R36 — the channel link-in (the pure href law — client-importable).
+import { channelHrefOf } from "@/app/href";
 
 /** The shorts channel row's serialized input (server-computed per render). */
 export interface ShortsSubscribeRowProps {
@@ -110,9 +112,19 @@ export function ShortsSubscribeRow(props: ShortsSubscribeRowProps): JSX.Element 
   return (
     <div className="wfx-shortschannel" data-wfx-shorts-channel>
       {/* The identity truth: the sources model's own display name (the
-          honest fallback: the connector id) — never a fabricated @handle. */}
+          honest fallback: the connector id) — never a fabricated @handle.
+          R36 — THE CHANNEL LINK-IN: the name is its own real link to the
+          channel page (the handle law; the additive link — the row's
+          subscribe pill keeps its own real write). */}
       <p className="wfx-shortschannel__name" data-wfx-shorts-channel-name>
-        {props.channelName}
+        <a
+          className="wfx-shortschannel__namelink"
+          href={channelHrefOf(props.connectorId)}
+          aria-label={`Open the channel ${props.channelName}`}
+          data-wfx-shorts-channel-link={props.connectorId}
+        >
+          {props.channelName}
+        </a>
       </p>
       {/* THE SUBSCRIBE PILL (G4-CORPUS.md "THE CHANNEL ROW": the 78x32
           pill) — the REAL subscribe seam, the same write the watch page's

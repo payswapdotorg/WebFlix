@@ -24,6 +24,8 @@
 import { useCallback, useState, type JSX } from "react";
 
 import { Icon } from "@/components/shell/Icon";
+// R36 — the channel link-in (the pure href law — client-importable).
+import { channelHrefOf } from "@/app/href";
 
 /** The channel row's serialized input (server-computed per render). */
 export interface ChannelRowProps {
@@ -95,22 +97,35 @@ export function ChannelRow(props: ChannelRowProps): JSX.Element {
   }, [props.connectorId, props.externalRef, props.itemId, props.title, subscribed]);
 
   const name = props.sourceName !== undefined && props.sourceName.length > 0 ? props.sourceName : props.connectorId;
+  // R36 — THE CHANNEL LINK-IN: the row's identity (avatar + name) is a
+  // real link to the channel page (the handle law) — additive; the
+  // R33-C display-name seam is unchanged, the Subscribe pill keeps its
+  // own real write. The watch channel row is NOT nested in another
+  // anchor — a plain link is the honest form.
+  const channelHref = channelHrefOf(props.connectorId);
   return (
     <div className="wfx-channel" data-wfx-watch-channel>
-      <span className="wfx-channel__avatar" aria-hidden="true">
-        {name.length > 0 ? name[0]!.toUpperCase() : "W"}
-      </span>
-      <span className="wfx-channel__id">
-        <p className="wfx-channel__name" data-wfx-watch-channel-name>
-          {name}
-        </p>
-        {/* The honest sub-count: omitted (the source carries none —
-            never a fabricated number). The meta line is the real
-            way-of-watching truth (the journeys' mode-label contract). */}
-        <p className="wfx-channel__meta" data-wfx-watch-channel-meta data-wfx-player-mode-label>
-          {props.metaLine}
-        </p>
-      </span>
+      <a
+        className="wfx-channel__identlink"
+        href={channelHref}
+        aria-label={`Open the channel ${name}`}
+        data-wfx-watch-channel-link={props.connectorId}
+      >
+        <span className="wfx-channel__avatar" aria-hidden="true">
+          {name.length > 0 ? name[0]!.toUpperCase() : "W"}
+        </span>
+        <span className="wfx-channel__id">
+          <p className="wfx-channel__name" data-wfx-watch-channel-name>
+            {name}
+          </p>
+          {/* The honest sub-count: omitted (the source carries none —
+              never a fabricated number). The meta line is the real
+              way-of-watching truth (the journeys' mode-label contract). */}
+          <p className="wfx-channel__meta" data-wfx-watch-channel-meta data-wfx-player-mode-label>
+            {props.metaLine}
+          </p>
+        </span>
+      </a>
       <button
         type="button"
         className={`wfx-subscribe${subscribed ? " wfx-subscribe--on" : ""}`}

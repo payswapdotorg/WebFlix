@@ -1,0 +1,89 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "68eeea2074e63d6823f5940828af1f89e56c953d",
+  "branch": "wfx/r36/channels",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T10:31:25.361Z",
+    "finishedAt": "2026-09-28T10:31:43.619Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790591489747)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the item page offers Play to the anonymous viewer\n  expected: a play href\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the anonymous viewer lands on Home (no gate, no interstitial)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu states the honest anonymous truth",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session truth names accountless watching (login optional, never a prerequisite)",
+          "expected": "no account is needed to watch public content",
+          "observed": "You are watching in an anonymous session — no account is needed to watch public ",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the public title anonymously",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_4DTB5TT5QMWZN1841AAGDGN7XZ&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the access truth renders: the source's own sign-in is active, so playback works without a WebFlix account (provider truth, distinguished from any WebFlix-account truth)",
+          "expected": "[data-wfx-watch-access=\"provider-authorized\"] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the access sentence names the source's own sign-in (the R23-A independence law)",
+          "expected": "works without a WebFlix account",
+          "observed": "This source's own sign-in is active, so playback works without a WebFlix account.",
+          "pass": true
+        },
+        {
+          "description": "the item page offers Play to the anonymous viewer",
+          "expected": "a play href",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r36/j37-lane-solo/j37-failure.png",
+        "evidence/r36/j37-lane-solo/j37-failure.snapshot.txt",
+        "evidence/r36/j37-lane-solo/j37-failure.console.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 11463
+    }
+  ],
+  "limitations": []
+}

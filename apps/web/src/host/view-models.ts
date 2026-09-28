@@ -59,6 +59,9 @@ import type {
 } from "./intelligence";
 import { WEB_BROWSER_TORRENT_IMPLEMENTATION } from "@/platform/browser-torrent-environment";
 import { canonicalIdFor } from "./web-host";
+// R36 — the channel entity derivation (the search surface's channel
+// results + the honest channel identities over the sources model).
+import { channelResultsFor, type ChannelResultView } from "./channel-views";
 import { sessionQueue, type QueueEntry } from "./queue";
 import { recordPlaybackSession, type ClientPlaybackIntent } from "./playback-bridge";
 import { fixtureAcquisitionDiagnostics, reportAcquisitionFixtures } from "./acquisition-fixtures";
@@ -744,6 +747,13 @@ export interface SearchView {
    * (connectorId → displayName; the honest fallback is the connector id).
    */
   readonly sourceNames: Readonly<Record<string, string>>;
+  /**
+   * R36 — THE CHANNEL RESULTS (the survey's row 18): the channels whose
+   * display name or handle matches the query (the real source set's own
+   * identities — never a fabricated row). EMPTY when no channel matches
+   * (the section is honestly absent, never a fake row).
+   */
+  readonly channels: readonly ChannelResultView[];
 }
 
 /** The compact availability summary of one result card (R21-E, pure). */
@@ -845,6 +855,9 @@ export async function loadSearchView(
       // R33-C (N29) — no search ran; the empty map keeps every channel
       // slot on the connector-id fallback (no fabricated names).
       sourceNames: {},
+      // R36 — no search ran; no channel results either (the honest
+      // absence — never a fabricated row).
+      channels: [],
     };
   }
   // R23-H: the semantic search runs alongside the title search (search
@@ -919,6 +932,10 @@ export async function loadSearchView(
   });
   // R33-C (N29) — the result cards' channel-slot source names (one read).
   const sourceNames = await sourceNamesOf(host);
+  // R36 — THE CHANNEL RESULTS: the display-name/handle matches over the
+  // catalog's real source set (the section renders ABOVE the item
+  // results; no matches ⇒ the empty set — the honest absence).
+  const channels = await channelResultsFor(host, query);
   return {
     mode: host.mode,
     query,
@@ -931,6 +948,7 @@ export async function loadSearchView(
     filters: selection,
     typeCounts,
     sourceNames,
+    channels,
   };
 }
 

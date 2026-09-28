@@ -7627,3 +7627,540 @@ html[data-theme="light"] .wfx-switch__knob {
   line-height: 16px;
   color: var(--wfx-text-faint);
 }
+
+/* =========================================================================
+ * R36 — THE CREATOR-CHANNEL SURFACES (the survey's row 17/18/19)
+ *
+ * The stretched-link law (the card's channel link-in), the channel
+ * page's grammar (banner strip · avatar + name + subscribe + bell · the
+ * tab bar + the channel search), and the search surface's channel
+ * result rows. Every value binds to the corpus token contract (the
+ * parity sheet): the raised surfaces, the dim text family, the chip
+ * geometry, the dialog family's shadow — no off-corpus values.
+ * ========================================================================= */
+
+/* --- THE STRETCHED-LINK LAW (the card's channel link-in) -----------------
+ * YouTube's own DOM grammar: the card visual is a plain element; ONE
+ * play anchor stretches over the lockup (::after, the click area); the
+ * channel link layers ABOVE it (z-index) so its clicks answer the
+ * channel while every other click plays (the one-click law intact). */
+.wfx-cardlock {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.wfx-stretchlink {
+  position: static;
+  display: block;
+  /* The anchor's own box is empty — the ::after IS the click area. */
+}
+
+.wfx-stretchlink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.wfx-stretchlink:focus-visible {
+  outline: none;
+}
+
+.wfx-stretchlink:focus-visible::after {
+  outline: 2px solid var(--wfx-focus);
+  outline-offset: -2px;
+  border-radius: var(--wfx-radius);
+}
+
+/* The channel link: the corpus channel-row typography (14/400 dim,
+ * hover primary) with the additive link grammar (no underline, the
+ * hover color lift — YouTube's own channel-row affordance). */
+.wfx-card__channellink,
+.wfx-result__channellink {
+  position: relative;
+  z-index: 2;
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--wfx-transition);
+}
+
+.wfx-card__channellink:hover,
+.wfx-card__channellink:focus-visible,
+.wfx-result__channellink:hover,
+.wfx-result__channellink:focus-visible {
+  color: var(--wfx-text);
+}
+
+.wfx-result__channellink {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  border-radius: 4px;
+}
+
+/* The hover lift the anchor-card form carried (the lockup's own hover
+ * now drives it — the wide/result cards are plain elements). */
+.wfx-cardlock:hover .wfx-card__channel {
+  color: var(--wfx-text);
+}
+
+/* --- THE CHANNEL PAGE ---------------------------------------------------- */
+
+.wfx-channel__bannerwrap {
+  /* The banner strip: the corpus channel banner's wide band (16:6-ish,
+   * capped height, rounded) — the typed-absence strip carries the
+   * honest sentence in the dim family. */
+  margin: 0 0 1rem;
+  min-height: 100px;
+  max-height: 160px;
+  border-radius: var(--wfx-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-channel__bannerart {
+  position: relative;
+  flex: 1;
+  min-height: 100px;
+  overflow: hidden;
+}
+
+.wfx-channel__bannerimg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.wfx-channel__bannernote,
+.wfx-channel__bannerabsent {
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-channel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 0 0 16px;
+}
+
+.wfx-channel__avatar {
+  /* The corpus channel avatar: 80px circular (the honest monogram —
+   * this host's sources declare no channel photo). */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.wfx-channel__ident {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wfx-channel__name {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 30px;
+  color: var(--wfx-text);
+}
+
+.wfx-channel__meta {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-channeleng {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wfx-channeleng__note,
+.wfx-channelinline__note {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+  flex-basis: 100%;
+}
+
+.wfx-channeleng__note--error,
+.wfx-channelinline__note--error {
+  color: var(--wfx-error);
+}
+
+/* The bell (the persisted per-channel preference record) */
+.wfx-channelbell {
+  position: relative;
+  display: inline-flex;
+}
+
+.wfx-channelbell__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 36px;
+  border: none;
+  border-radius: 18px;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  cursor: pointer;
+  transition: background var(--wfx-transition);
+}
+
+.wfx-channelbell__button:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-channelbell__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  min-width: 280px;
+  padding: 8px 0;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+  box-shadow: var(--wfx-shadow-dialog, 0 0 24px 12px rgba(0, 0, 0, 0.15));
+}
+
+.wfx-channelbell__title {
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--wfx-text);
+}
+
+.wfx-channelbell__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.wfx-channelbell__option:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-channelbell__option--active {
+  font-weight: 500;
+}
+
+.wfx-channelbell__default {
+  font-size: 12px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-channelbell__note {
+  margin: 8px 16px 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--wfx-border, rgba(0, 0, 0, 0.1));
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-faint);
+}
+
+/* The tab bar + the channel search field */
+.wfx-channel__tabsrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  border-bottom: 1px solid var(--wfx-border, rgba(0, 0, 0, 0.1));
+  padding: 0 0 12px;
+}
+
+.wfx-channel__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.wfx-channeltab {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--wfx-text);
+  font-size: 14px;
+  font-weight: 500;
+  transition: background var(--wfx-transition);
+}
+
+.wfx-channeltab:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-channeltab--active {
+  background: var(--wfx-cta-bg);
+  color: var(--wfx-cta-fg);
+}
+
+.wfx-channel__search {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 18px;
+  border: 1px solid var(--wfx-border, rgba(0, 0, 0, 0.1));
+  overflow: hidden;
+}
+
+.wfx-channel__searchinput {
+  min-width: 0;
+  width: 220px;
+  height: 32px;
+  padding: 0 12px;
+  border: none;
+  background: transparent;
+  color: var(--wfx-text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.wfx-channel__searchinput:focus-visible {
+  outline: none;
+}
+
+.wfx-channel__search:focus-within {
+  border-color: var(--wfx-focus);
+}
+
+.wfx-channel__searchbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 32px;
+  border: none;
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text-dim);
+  cursor: pointer;
+}
+
+.wfx-channel__searchbtn:hover {
+  color: var(--wfx-text);
+}
+
+/* The tab sections */
+.wfx-channel__section {
+  padding: 16px 0;
+}
+
+.wfx-channel__about {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 640px;
+}
+
+.wfx-channel__aboutrow {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 12px;
+}
+
+.wfx-channel__aboutrow dt {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--wfx-text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.wfx-channel__aboutrow dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--wfx-text);
+}
+
+/* The channel-search disclosure + the sort notes */
+.wfx-channelsort {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 0 12px;
+}
+
+/* --- THE SEARCH SURFACE'S CHANNEL RESULT ROWS (the survey's row 18) ------ */
+
+.wfx-channelresults {
+  padding: 0 0 16px;
+}
+
+.wfx-channelresults__track {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wfx-channelresult {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--wfx-bg-raised);
+}
+
+.wfx-channelresult__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--wfx-bg-skeleton, var(--wfx-bg-raised));
+  color: var(--wfx-text);
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.wfx-channelresult__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.wfx-channelresult__name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 26px;
+}
+
+.wfx-channelresult__name a {
+  text-decoration: none;
+  color: var(--wfx-text);
+}
+
+.wfx-channelresult__name a:hover {
+  color: var(--wfx-text);
+}
+
+.wfx-channelresult__meta-line {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-channelresult__snippet {
+  margin: 0;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--wfx-text-dim);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-channelresult__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex: none;
+}
+
+.wfx-channelinline {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.wfx-subscribe--unavailable {
+  /* The honest unavailable form: the channel page's own link (never a
+   * dead pill) — the subscribe family's outline variant. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  min-width: 78px;
+  padding: 0 16px;
+  border-radius: 18px;
+  border: 1px solid var(--wfx-border, rgba(0, 0, 0, 0.1));
+  background: transparent;
+  color: var(--wfx-text-dim);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.wfx-subscribe--unavailable:hover {
+  background: var(--wfx-bg-hover);
+  color: var(--wfx-text);
+}
+
+/* The watch channel row's identity link (R36 — the avatar + name link
+ * to the channel page; the row's own geometry unchanged). */
+.wfx-channel__identlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.wfx-channel__identlink:hover .wfx-channel__name,
+.wfx-channel__identlink:focus-visible .wfx-channel__name {
+  color: var(--wfx-text);
+}
+
+/* The shorts channel row's name link (R36 — the link-in; the overlay's
+ * own white-on-video grammar, hover the corpus underline lift). */
+.wfx-shortschannel__namelink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.wfx-shortschannel__namelink:hover,
+.wfx-shortschannel__namelink:focus-visible {
+  text-decoration: underline;
+}
