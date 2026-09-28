@@ -1,0 +1,43 @@
+R34-A — the R24 production acceptance summary (J40 + J42)
+
+Lane wfx/r34a/accept-j40-j42 on main @ 09d0205. The gates below arequoted verbatim from docs/validation/webflix-golden-journeys.md §J40(lines 244–254) and §J42 (lines 282–292), with the plan's R24 completiontruth cross-references. Every verdict cites its artifact underevidence/r34a/. Nothing is synthesized; blocked cells say blocked.
+
+The instruments (three, honestly distinguished)
+The runner's encoded J40 against production — the honest result:FAIL at the suggestions wait (the encoding's fixture-catalog term haszero suggestions on the production catalog; 3 assertions passed first).The encoding is fixtures-boot-bound (its standing record is FAIL on thefixtures boot too — r24-w2/r25-w2). j40-runner/manifest.json.
+The manual J40 production walk — the limitation entry's own LEADprocedure ("drive the same J40 walk against the deployed boot"), 14evidence points, production-reachable content. raw/j40-steps/,screenshots/j40-*.
+The manual J42 walk — the canonical extension path (J42 is thelead-owned journey, deliberately NOT runner-encoded —journeys/report.test.ts asserts ids.has("J42") === false; therunner's --filter J42 refuses the unknown id by design). The walk'sreport follows the manifest's evidence shape:reports/J42-REPORT.md.
+J40 — the acceptance bullets, adjudicated
+#	the J40 gate (verbatim)	verdict	the measured basis
+1	"every exercised viewer-facing YouTube behavior has a WebFlix pairing in docs/validation/youtube-parity-lab.md"	PASS (the manual walk)	27 pairing rows, every one citing its taxonomy row id + the lab classification + its run artifact (PARITY-ADJUDICATION.md Part 1). The runner's encoded journey FAILs on production (LEDGER B1) — recorded, not hidden
+2	"WebFlix-only capabilities encountered during the same journey are contextual and familiar rather than administration-only controls"	PASS (the manual walk)	4 WebFlix-only encounters classified, all contextual (Where-to-watch near Play; the writes in the action row/kebab; the AI tray on the player; the translate honest-absence in the settings cluster) — PARITY-ADJUDICATION.md Part 1 §WebFlix-only encounters
+3	"no dead buttons, stale capability copy or placeholder state"	PASS with findings	No dead button on the exercised path; the four defect-candidates (B2/B3/B4/C2) are read-path/copy-grade divergences recorded with reproduction evidence — none is a dead control, and none was patched in the evidence (LEDGER.md B/C)
+4	"Web/Desktop semantics remain equivalent where the underlying capability exists"	NOT COVERED by this lane's instruments	The Web walk is this lane's scope; the Desktop cross-check is the lead's J42 walk on Desktop (the frozen split). No claim is made here
+J42 — the acceptance bullets, adjudicated
+#	the J42 gate (verbatim)	verdict	the measured basis
+1	"every WebFlix-only capability has a placement decision"	PASS	13/13 placement rows recorded against the taxonomy (PARITY-ADJUDICATION.md Part 2)
+2	"the placement follows the familiar video interaction grammar"	PASS	Verified per row (the action row, the kebab, the settings cluster, the tray, the Where-to-watch selector grammar)
+3	"no feature requires an architecture dashboard"	PASS	The closed surface union holds (machine-checked by the placement contract); the walk never needed a dashboard route
+4	"anonymous public viewing remains frictionless"	PASS	The fresh anonymous walk: no login wall anywhere on the public path (home 100 cards, search, playback, shorts, library); sign-in is an offer, never a gate (j42-step01 + the anonymous J40 walk)
+5	"torrent remains first-class"	PASS (placement) / honest absence (realization)	The authorized-peer-copy group lives in the same Where-to-watch flow with the same language (j42-step03/04 + the source verification); no registered peer copy exists for the walked items on production — the honest typed absence, never a demotion. The scripted-acquisition proof is the J21–J24/J38 lanes' fixtures-boot record
+6	"platform/source capability limits remain honest"	PASS	The typed honest-absence inventory (LEDGER §D): quality/volume truths, translate, search empty states, offline, AI-tray model truths, intelligence feature naming — all quoted verbatim from the live surfaces
+The Shorts depth check (the R33 follow-through) — verdict
+
+The R33 machinery verified live on production: the real embed staged underthe shared presentation law (nocookie + enablejsapi + autoplay + mute), thelive handshake, the unmute round trip (muted true → false, the pillretired), the rail grammar, the keyboard swipe (1 → 2 of 24), the honestcapability absences. The provider's playback broadcast never arrives for thefeed's items in this environment (LEDGER A6) — the stage held its typedstates throughout. SHORTS-DEPTH-CHECK.md.
+
+The YouTube comparison half — verdict
+
+BLOCKED for playback (environmental), COMPOSED for grammar: rick + edredirect to the unusual-traffic wall; zoo's watch page renders its fullviewer-facing grammar (captured + VLM-quoted) but its player staysbot-walled. The comparison rows are composed from zoo's rendered grammaragainst WebFlix's production rendering of the same three items: everygrammar element pairs or records an honest divergence; zero dead imitations.The timing side remains R34-B's lane (its ACCEPTANCE-SUMMARY alreadyadjudicates the five YouTube-relative thresholds as environment-blocked —consistent with this session's fresh evidence). YOUTUBE-COMPARISON.md.
+
+The gates (the packet's own list)
+gate	result
+The runner's J40 + J42 reports	J40: FAIL honestly recorded (manifest + failure artifacts). J42: not runner-encodable by design (the registry's own law) — the manual walk's report follows the manifest shape (reports/J42-REPORT.md)
+The step-by-step screenshots + console/network status	15 screenshots + 14 snapshots + 14 per-step status files (+2 aux: the item-href + L-seek JSON) for J40; 14 screenshots + 12 snapshots + 10 per-step status files for J42; 8 comparison captures + 3 WebFlix sides; zero console errors, zero page errors on every walked step (the non-200 network lines are the typed refusals + the provider walls — itemized in the status files). Counts corrected 2026-09-28 from the relay inventory (the prior row over-stated J40 screenshots/snapshots and under-stated J42 screenshots by transcription error — the artifacts themselves were always present and manifest-sha-verified; see reports/J42-REPORT.md §Artifacts for the byte-identical-captures note).
+The parity adjudication table	PARITY-ADJUDICATION.md (27 J40 pairing rows + 13 J42 placement rows, all citing taxonomy row ids)
+The findings ledger	LEDGER.md — 15 findings, arithmetic explicit (its own id-scheme note): 2 environmental blocks (A5/A6) + 4 defect-candidates (B2/B3/B4/C2) + 4 honest-divergence-class records (B5/B6/C4 + the §D honest-absence inventory as one composite record) + 3 configuration divergences (A4/B1/C3) + 2 integrity records (A1/A2); A3/C1/C5 are positive records, not findings. Cross-references use the ledger's A–D ids (the pre-composition F1–F9 working ids are mapped in the ledger's note; corrected 2026-09-28 — seven F-id references in PARITY-ADJUDICATION/SHORTS-DEPTH-CHECK/YOUTUBE-COMPARISON were dangling before the fix)
+The acceptance summary	this document
+The battery floor	5256/1/0 IDENTICAL (300 files, 33627 expect() calls) — battery-test-summary.txt
+The R24 completion truth (the plan's §"Completion truth"), this lane's contribution
+"J40, J41 and J42 pass on the applicable production-capable adapters" —J40 + J42 now have their production evidence (this lane): J40 passes onthe manual production walk (the encoded journey's production FAIL is thecatalog-binding divergence, recorded); J42 passes all six productionbullets. J41 was R34-B's lane (2 measured PASS / 1 not-covered /5 environment-blocked).
+"all WebFlix-only features have a contextual placement decision" — closedby the 13-row placement table (Web side).
+"no regressions are introduced to anonymous viewing, torrent first-classstatus, BYOF, AI/model controls or Library continuity" — verified on theproduction walk (anonymous frictionless throughout; torrent first-classplacement; BYOF entry + four feed modes; the AI tray's five actions withmodel truths; the Library continuity including the walk's own writes).
+Remaining open (the lead's ledger): the Desktop cross-checks (J40 bullet 4,the Desktop J42 walk); the J34 encoding's Home-surface staleness vs theR28-B restructure (LEDGER C3); the four defect-candidates (B2/B3/B4/C2);the environmental blocks (A5/A6) pending an unblocked environment(re-run-ready: the walk scripts ride evidence/r34a/scripts/).

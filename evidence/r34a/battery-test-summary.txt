@@ -1,0 +1,11 @@
+# R34-A — the battery gate (the no-change law)
+
+Lane wfx/r34a/accept-j40-j42 · base main @ 09d0205 · bun test v1.3.14 (bun 1.3.14).
+
+## The gate
+
+`nice -n 19 ionice -c3 bun test --parallel=1` must answer IDENTICALLY to main's
+floor: 5256 tests / 1 skip / 0 fail (the merge-seam floor; zero source changes
+means zero test changes).
+
+## The result (the run of record)
