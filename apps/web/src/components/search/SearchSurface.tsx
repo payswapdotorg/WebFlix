@@ -15,14 +15,77 @@ import type { JSX } from "react";
 
 import type { SearchView } from "@/host/view-models";
 import type { SemanticSearchView } from "@/host/intelligence";
+import type { ChannelResultView } from "@/host/channel-views";
 import { SectionStatus } from "@/components/home/HomeSurface";
 import { ItemCard } from "@/components/cards/ItemCard";
 import { EmptyState } from "@/components/ui/StateViews";
 import { formatPosition } from "@/components/ui/format";
 import { playerHref } from "@/app/routing";
+import { channelHrefOf } from "@/app/href";
 // R29-B — the REAL filters dialog (N23): the corpus 696px paper dialog,
 // honestly wired (only the filters with a real truth behind them).
 import { SearchFilters } from "@/components/search/SearchFilters";
+// R36 — the channel results' inline Subscribe (the same one-store law).
+import { ChannelInlineSubscribe } from "@/components/channel/ChannelInlineSubscribe";
+
+/**
+ * R36 — THE CHANNEL RESULTS SECTION (the survey's row 18 — the YouTube
+ * grammar): a row of channel result cards ABOVE the item results — the
+ * avatar (the honest monogram), the name (a real link to the channel
+ * page), the honest subscriber truth (the typed absence + the user's
+ * own subscription state — never a fabricated count), the description
+ * snippet (the identity's own honest state), and the INLINE SUBSCRIBE
+ * (the same one-store law — the frozen Subscriptions list). NO channel
+ * matches ⇒ the section is honestly ABSENT (never a fake row).
+ */
+function ChannelResults({ channels }: { readonly channels: readonly ChannelResultView[] }): JSX.Element | null {
+  if (channels.length === 0) return null;
+  return (
+    <section className="wfx-channelresults" aria-label="Channel results" data-wfx-channel-results data-wfx-channel-results-count={channels.length}>
+      {channels.map((channel) => (
+        <div key={channel.identity.connectorId} className="wfx-channelresult" data-wfx-channel-result={channel.identity.handle}>
+          <a
+            className="wfx-channelresult__avatarlink"
+            href={channelHrefOf(channel.identity.connectorId)}
+            aria-label={`Open the channel ${channel.identity.displayName}`}
+            data-wfx-channel-result-link={channel.identity.handle}
+          >
+            <span className="wfx-channelresult__avatar" aria-hidden="true">
+              {channel.identity.avatar.mark}
+            </span>
+          </a>
+          <div className="wfx-channelresult__meta">
+            <p className="wfx-channelresult__name">
+              <a href={channelHrefOf(channel.identity.connectorId)} data-wfx-channel-result-name>
+                {channel.identity.displayName}
+              </a>
+            </p>
+            <p className="wfx-channelresult__meta-line">
+              @{channel.identity.handle}
+              {" · "}
+              {channel.subscribed
+                ? "Subscribed (you)"
+                : channel.identity.subscriberCount.kind === "declared"
+                  ? `${channel.identity.subscriberCount.count} subscribers`
+                  : "Subscriber count not declared by this source"}
+            </p>
+            <p className="wfx-channelresult__snippet" data-wfx-channel-result-snippet>
+              {channel.snippet}
+            </p>
+          </div>
+          <div className="wfx-channelresult__side">
+            <ChannelInlineSubscribe
+              channelName={channel.identity.displayName}
+              channelHref={channelHrefOf(channel.identity.connectorId)}
+              representative={channel.representative}
+              initiallySubscribed={channel.subscribed}
+            />
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
 
 /** The search surface. */
 export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Element {
@@ -63,6 +126,10 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
         <p className="wfx-page-subtitle" data-wfx-search-query>
           Results for “{view.query}”
         </p>
+        {/* R36 — the channel results render ABOVE the item results in
+            EVERY state (a creator match is a real result even when no
+            TITLE matched — the honest composition). */}
+        <ChannelResults channels={view.channels} />
         <SearchFilters query={view.query} filters={view.filters} typeCounts={view.typeCounts} />
         {filtered ? (
           <EmptyState
@@ -128,6 +195,11 @@ export function SearchSurface({ view }: { readonly view: SearchView }): JSX.Elem
           honest TYPE/DURATION groups; the unsupported groups stay
           honestly absent, named inside). */}
       <SearchFilters query={view.query} filters={view.filters} typeCounts={view.typeCounts} />
+      {/* R36 — THE CHANNEL RESULTS (the survey's row 18): the creator
+          matches ABOVE the item results — the YouTube grammar (avatar,
+          name, honest subscriber truth, snippet, inline Subscribe). No
+          matches ⇒ the section is honestly absent (never a fake row). */}
+      <ChannelResults channels={view.channels} />
       {/* R26-W2 — the honest token-composition disclosure (the
           literal-phrase recovery's own sentence — token matches are never
           presented as phrase matches). */}

@@ -49,6 +49,8 @@ import {
   SURFACE_ROUTES,
   itemDetailHref,
   playerHref,
+  channelHandleOf,
+  channelHrefOf,
   type ItemRouteTarget,
 } from "@/app/href";
 
@@ -56,7 +58,9 @@ import {
 // client components; this adapter module pulls the web-host seam and its
 // node:fs dev bridge, which client chunking contexts refuse). The routing
 // adapter re-exports them unchanged for its existing importers.
-export { SURFACE_ROUTES, itemDetailHref, playerHref };
+// R36 — the channel href builders join the re-export set (the pure href
+// law — importable from client components through either entry).
+export { SURFACE_ROUTES, itemDetailHref, playerHref, channelHandleOf, channelHrefOf };
 export type { ItemRouteTarget };
 
 /** The reverse lookup: route path → surface id. */
@@ -154,11 +158,15 @@ export function deriveNavigationState(pathname: string, params: RouteParams): Ro
     // law), and the feed is a library-truth content surface (the stored
     // Subscriptions fold the rail section and the Library list render)
     // — its destination is the rail's Subscriptions section heading,
-    // never a new navigation state.
+    // never a new navigation state. R36 — the creator-channel route
+    // (`/channel/<handle>`) joins the same class: a content destination
+    // over the catalog's own source identities, never a new navigation
+    // state.
     if (
       pathname === "/player" ||
       pathname === "/offline" ||
-      pathname === "/feed/subscriptions"
+      pathname === "/feed/subscriptions" ||
+      pathname.startsWith("/channel/")
     ) {
       return { ok: false, reason: "presentation-route" };
     }

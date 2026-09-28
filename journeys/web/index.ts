@@ -55,6 +55,11 @@ import { j39MediaIntelligence } from "./j39-media-intelligence";
 import { j40YouTubeParity } from "./j40-youtube-parity";
 import { j41PlaybackStartup } from "./j41-playback-startup";
 import { j43RealtimeTranslation } from "./j43-realtime-translation";
+// R36 — the creator-channel round trip (the survey's WAVE R36 journey;
+// encoded as J44 — the survey's "new J43" numbering collided with the
+// R25-W2 realtime-translation J43 already in the catalog at base
+// 8937bb8, so the channel journey takes the next free number).
+import { j44CreatorChannels } from "./j44-creator-channels";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -114,6 +119,11 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // WebFlix bridge the fixtures boot wires (the browser → bridge →
   // provider-double chain, the reconnect laws, the R25-L observations).
   j43RealtimeTranslation,
+  // R36 — J44 (the creator-channel round trip) is encoded over the REAL
+  // channel surfaces the fixtures boot wires (the creator search → the
+  // channel page → the tabs → the ONE-store Subscribe round trip → the
+  // bell's persisted preference record).
+  j44CreatorChannels,
 ];
 
 import type { LimitationRecord } from "../lib/report";
