@@ -1,6 +1,6 @@
 # R36 — INDEX (the lane's evidence map)
 
-Lane: `wfx/r36/channels` · Base: `main @ 8937bb8` · Head: `084be57`
+Lane: `wfx/r36/channels` · Base: `main @ 8937bb8` · Code head: `084be57` · Last substance commit: `7cf97c0` (the final-head re-verification addendum; the relay manifest names the shipping tip)
 Scope: the survey's rows 17/18/10/19 — creator channel pages + tabs +
 subscribe/bell + channel search results (docs/plans/
 2026-09-28-youtube-parity-survey.md, WAVE R36).

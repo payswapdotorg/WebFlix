@@ -61,4 +61,4 @@ Lane: `wfx/r36/channels` · Base: `main @ 8937bb8` · Repo: /home/z/webflix-r36 
 
 ## The final state
 
-Lane head `87926416b40c9e004df4978156f36cecc1981094` (the final worklog commit; the code head `084be57` + the evidence commits). All gates green. See INDEX.md for the map.
+Lane head = the `wfx/r36/channels` tip (the RELAY-MANIFEST.txt header names the exact shipping SHA). The code head `084be57`; the last substance commit `7cf97c0` (the final-head re-verification addendum + the evidence-hygiene fixes). All gates green, re-verified fresh at the shipping head. See INDEX.md for the map.
