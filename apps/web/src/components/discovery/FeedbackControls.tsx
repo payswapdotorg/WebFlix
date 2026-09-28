@@ -16,6 +16,17 @@
  * a failure names its reason (never a fake "feedback saved"), and the
  * recorded chips carry their undo.
  *
+ * R35 (B4) — THE VIEWER-FACING FAILURE ELEMENT: a failing write renders
+ * HONEST VIEWER COPY through `host/feedback-viewer-copy.ts` — the
+ * identity-required class (the anonymous session on the service boot)
+ * names what failed and offers the SIGN-IN RECOVERY PATH (the same
+ * `/settings?section=general` entry the player's progress-scope row
+ * offers); any raw-JSON body (a shape this law never wrote) renders the
+ * honest generic prose instead. The typed detail goes to `console.warn`
+ * (the engineer's evidence — never `error`, the journey gates watch
+ * errors). NEVER a fabricated success: the failure element stays
+ * `role="alert"` and the recorded-set truth stays the route's alone.
+ *
  * The controls render in the server HTML (a client island whose static
  * content is SSR'd — no hydration gate on discoverability); the
  * recorded-set read loads on mount.
@@ -25,6 +36,11 @@ import { useCallback, useEffect, useState, type JSX } from "react";
 
 import { FEEDBACK_CONTROLS } from "@wfx/client-runtime";
 
+import {
+  FEEDBACK_SIGN_IN_HREF,
+  viewerFailureCopyOf,
+} from "@/host/feedback-viewer-copy";
+
 /** One recorded feedback control (the route's record shape). */
 interface FeedbackRecord {
   readonly id: string;
@@ -33,9 +49,73 @@ interface FeedbackRecord {
   readonly createdAt: string;
 }
 
+/**
+ * The typed failure body the route answers (the B4 law's closed shape:
+ * the viewer-safe `error` + the engineer's `detail`).
+ */
+export interface FeedbackFailureBody {
+  readonly error: string;
+  readonly detail?: string;
+}
+
 /** The label of one recorded control (the same frozen vocabulary). */
 function labelOf(kind: string): string {
   return FEEDBACK_CONTROLS.find((control) => control.kind === kind)?.label ?? kind;
+}
+
+/**
+ * R35 (B4) — read one failing response's body through the copy law's
+ * closed shape: the viewer-safe `error` + the engineer's `detail` (the
+ * detail warns to the console — never renders, never `error`: the
+ * journey gates watch errors and a typed refusal is warn-grade truth).
+ * Module-scope pure (no component state).
+ */
+async function failureFromBody(response: Response): Promise<FeedbackFailureBody> {
+  const body = (await response.json().catch(() => null)) as {
+    error?: string;
+    detail?: string;
+  } | null;
+  if (body?.detail !== undefined && body.detail.length > 0) {
+    // eslint-disable-next-line no-console
+    console.warn(`wfx-feedback: ${body.detail}`); // the engineer's evidence channel (the UpdatePrompt precedent)
+  }
+  return {
+    error: typeof body?.error === "string" ? body.error : "the feedback could not be saved",
+    ...(body?.detail !== undefined ? { detail: body.detail } : {}),
+  };
+}
+
+/**
+ * R35 (B4) — THE VIEWER-FACING FAILURE ELEMENT: the honest copy + the
+ * sign-in recovery path. Exported for its own law's test (the same
+ * element the controls render — never a second code path). The raw
+ * typed error NEVER renders here (the copy law maps it); a fabricated
+ * success NEVER renders here (the element is a failure element).
+ */
+export function FeedbackFailure({
+  failure,
+}: {
+  readonly failure: FeedbackFailureBody;
+}): JSX.Element {
+  const { copy, offersSignIn } = viewerFailureCopyOf(failure);
+  return (
+    <p
+      className="wfx-disc__failure"
+      data-wfx-feedback-failure
+      role="alert"
+      {...(offersSignIn ? { "data-wfx-feedback-identity-required": "true" } : {})}
+    >
+      {copy}
+      {offersSignIn ? (
+        <>
+          {" "}
+          <a className="wfx-disc__linkbtn" href={FEEDBACK_SIGN_IN_HREF} data-wfx-feedback-signin>
+            Sign in
+          </a>
+        </>
+      ) : null}
+    </p>
+  );
 }
 
 export function FeedbackControls({
@@ -52,7 +132,7 @@ export function FeedbackControls({
 }): JSX.Element {
   const [records, setRecords] = useState<readonly FeedbackRecord[]>([]);
   const [pending, setPending] = useState<string | null>(null);
-  const [failure, setFailure] = useState<string | null>(null);
+  const [failure, setFailure] = useState<FeedbackFailureBody | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   const read = useCallback(async () => {
@@ -85,13 +165,14 @@ export function FeedbackControls({
           body: JSON.stringify({ kind, target: kindTarget }),
         });
         if (!response.ok) {
-          const errorBody = (await response.json().catch(() => null)) as { error?: string } | null;
-          setFailure(errorBody?.error ?? "the feedback could not be saved");
+          setFailure(await failureFromBody(response));
         } else {
           await read(); // the recorded truth (never a fabricated echo)
         }
       } catch (thrown) {
-        setFailure(thrown instanceof Error ? thrown.message : "the feedback could not be saved");
+        setFailure({
+          error: thrown instanceof Error ? thrown.message : "the feedback could not be saved",
+        });
       } finally {
         setPending(null);
       }
@@ -108,13 +189,12 @@ export function FeedbackControls({
           method: "DELETE",
         });
         if (!response.ok) {
-          const errorBody = (await response.json().catch(() => null)) as { error?: string } | null;
-          setFailure(errorBody?.error ?? "the undo failed");
+          setFailure(await failureFromBody(response));
         } else {
           await read();
         }
       } catch (thrown) {
-        setFailure(thrown instanceof Error ? thrown.message : "the undo failed");
+        setFailure({ error: thrown instanceof Error ? thrown.message : "the undo failed" });
       } finally {
         setPending(null);
       }
@@ -176,11 +256,7 @@ export function FeedbackControls({
           Feedback is immediate and reversible — undoing restores the signal.
         </p>
       ) : null}
-      {failure !== null ? (
-        <p className="wfx-disc__failure" data-wfx-feedback-failure role="alert">
-          {failure}
-        </p>
-      ) : null}
+      {failure !== null ? <FeedbackFailure failure={failure} /> : null}
     </section>
   );
 }

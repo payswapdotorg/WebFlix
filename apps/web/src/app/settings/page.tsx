@@ -36,6 +36,9 @@ import { loadAccountChrome } from "@/host/account-chrome";
 
 import { byofHostBinding, loadByofPanelView } from "@/host/byof/byof-host";
 import { loadFeedModeView, loadPersonalizeView } from "@/host/discoverability";
+// R35 (C2) — the request's carried session-intent objectives (the
+// session-intent cookie; the personalize read merges them).
+import { readRequestSessionIntents } from "@/host/request-session-intents";
 import { syncNavigationToRoute } from "@/app/routing";
 import type { ModelTask } from "@wfx/domain";
 import type {
@@ -102,8 +105,14 @@ export default async function SettingsPage({
         )
       : undefined;
   // R21-D — the general section's recommendation & intent management view
-  // (the Personalize control's detailed-management home).
-  const personalize = section === undefined || section === "general" ? loadPersonalizeView(host) : undefined;
+  // (the Personalize control's detailed-management home). R35 (C2): the
+  // read hydrates the durable intent store and merges the request's
+  // carried session objectives (the session-intent cookie) — the same
+  // law the discovery bundle's read follows.
+  const personalize =
+    section === undefined || section === "general"
+      ? await loadPersonalizeView(host, await readRequestSessionIntents())
+      : undefined;
   // R28-B — the feed-mode CONFIG moved from the home surface to Settings →
   // General ("Your feed"): the home page is now chips + rows immediately
   // (the corpus home anatomy); the mode control keeps its honest home here.

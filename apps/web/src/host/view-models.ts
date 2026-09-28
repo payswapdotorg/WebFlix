@@ -248,6 +248,111 @@ export function joinedItemsSnapshot(): readonly {
 }
 
 // ---------------------------------------------------------------------------
+// R35 — the stored-library read (the reload-durability read-path law)
+// ---------------------------------------------------------------------------
+
+/**
+ * R35 — THE STORED-LIBRARY READ: the server's stored profile library, read
+ * BEFORE any per-instance runtime fold is folded into a view (the R30
+ * reload-durability law, lifted from the watch page's shell — where it
+ * closed the R29 sweep's divergence #1 — to every read path that folds a
+ * library truth; the R34-A ledger's B2/B3 rows are this class on the
+ * service-mode boot: each page render is a cold runtime whose local fold
+ * is empty while the STORED truth carries the write).
+ *
+ * Answers `null` when the server read fails (the honest degradation: the
+ * caller's local fold answers — the same law the read model's error
+ * sections follow, never a fake empty, never a fabricated row).
+ */
+export async function readStoredLibrary(
+  host: WebRuntimeHost,
+): Promise<readonly LibraryEntry[] | null> {
+  try {
+    const storedRead = await host.serverPort.readProfileLibrary();
+    if (storedRead.ok) return storedRead.value;
+  } catch {
+    // The typed transport failure: the local fold answers (the callers'
+    // documented degradation — the same truth the pre-R30 shells rendered).
+  }
+  return null;
+}
+
+/**
+ * The stored row's list name (the runtime's own save writes `metadata.list`;
+ * the default watchlist's "Saved" when absent — one law with the engine's
+ * `DEFAULT_WATCHLIST_NAME` derivation).
+ */
+export function storedRowListName(entry: LibraryEntry): string {
+  const list = (entry.metadata as Record<string, unknown> | undefined)?.list;
+  return typeof list === "string" && list.length > 0 ? list : "Saved";
+}
+
+/**
+ * R35 (B2) — the item's WATCHLIST MEMBERSHIP TRUTH from the stored rows,
+ * joined by the item's SOURCE identity (the durable key the stored rows
+ * carry — `connectorId` + `externalRef` — never the per-process canonical
+ * mint, which cannot cross a fresh load's runtime). The stored read WINS
+ * when it answers; the local fold answers only when it fails — the R30
+ * law verbatim (the pill's state is ALWAYS the stored truth, never
+ * fabricated, never optimistic-only).
+ */
+export async function storedWatchlistSavedOf(
+  host: WebRuntimeHost,
+  item: {
+    readonly connectorId: string;
+    readonly externalRef: string;
+    readonly itemId: string;
+  },
+): Promise<boolean> {
+  const stored = await readStoredLibrary(host);
+  if (stored !== null) {
+    return stored.some(
+      (entry) =>
+        entry.connectorId === item.connectorId && entry.externalRef === item.externalRef,
+    );
+  }
+  return host.runtime.libraryOps.entries().some((entry) => entry.itemId === item.itemId);
+}
+
+/**
+ * R35 (B3) — resolve the STORED rows' source realizations into this
+ * process's item join: each stored row carries the durable source identity
+ * (`connectorId` + `externalRef` + `title`); a fresh service-mode instance
+ * never ran the searches that teach the join map, so rows the source still
+ * serves answered "unavailable" behind the §9 notice (the R34-A ledger's
+ * B3: "the Library read cannot resolve the item's source realization in
+ * its own instance"). Each row resolves through the runtime's OWN search
+ * seam, matched by the source key — the same bridge law `/api/library`'s
+ * item resolution follows — and the registry's idempotent source-key law
+ * makes the search's canonical id the SAME id the read model's
+ * registration produced, so the join lands under the entry's own key.
+ *
+ * A row the source no longer serves (the search finds no matching source
+ * key) stays honestly unjoined — the §9 notice keeps its truth; a row
+ * without a usable identity never resolves (never a fabricated link).
+ */
+async function resolveStoredRealizations(host: WebRuntimeHost): Promise<void> {
+  const stored = await readStoredLibrary(host);
+  if (stored === null) return; // the honest degradation: the joins stay as-is
+  for (const row of stored) {
+    if (typeof row?.externalRef !== "string" || row.externalRef.length === 0) continue;
+    if (typeof row.title !== "string" || row.title.trim().length === 0) continue;
+    try {
+      const model = await host.runtime.search({ query: row.title });
+      const hit = model.hits.find(
+        (candidate) =>
+          candidate.result.connectorId === row.connectorId &&
+          candidate.result.externalRef === row.externalRef,
+      );
+      if (hit !== undefined) learnHits([hit]);
+    } catch {
+      // The resolution failed for this row: it stays honestly unjoined
+      // (the §9 notice's own truth — never a fabricated resolution).
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Card views
 // ---------------------------------------------------------------------------
 
@@ -992,8 +1097,21 @@ export async function loadDetailView(
           },
     related: cardsFromModel(trending).filter((card) => card.itemId !== itemId),
     acquisition: acquisitionBlockOf(host, itemId),
-    // R24-W2 - the watchlist membership truth (the runtime's own read).
-    watchlistSaved: host.runtime.libraryOps.entries().some((entry) => entry.itemId === itemId),
+    // R35 (B2) — the watchlist membership truth: the STORED library read,
+    // joined by the item's SOURCE identity (the durable key), BEFORE the
+    // per-instance runtime fold is consulted — the same R30
+    // reload-durability law the watch page's Save pill and the Library
+    // page's read model follow. On the service-mode boot (each page render
+    // a cold runtime) the pre-R35 fold-only read answered "not saved"
+    // after a successful save + reload (the R34-A ledger's B2: the
+    // Library's read saw the write; the item page's read did not). The
+    // stored read wins when it answers; the local fold answers only when
+    // it fails (never fabricated, never optimistic-only).
+    watchlistSaved: await storedWatchlistSavedOf(host, {
+      connectorId: metadata.connectorId,
+      externalRef: metadata.externalRef,
+      itemId,
+    }),
     // R21-E: the decision hub's capability views load alongside (a typed
     // failure in either answers its own honest section state — the page
     // renders, never a blank).
@@ -1313,31 +1431,23 @@ export async function loadPlayerViewShell(
   // path was real and durable server-side, but a fresh watch-page load
   // rendered the Subscribe pill idle because the read consulted only the
   // client runtime's per-load map. The pill's state is ALWAYS the stored
-  // truth — never fabricated, never optimistic-only.
+  // truth — never fabricated, never optimistic-only. R35: the read itself
+  // is the shared `readStoredLibrary` seam (the same law now serves the
+  // item hub's B2 read and the Library's B3 resolution — one law, every
+  // read path).
   //
   // The honest degradation mirrors the read model's own law (a failing
   // server read keeps the LOCAL session state rendering): on a typed
   // failure the local fold answers — the same truth the pre-R30 shell
   // rendered, never a fabricated claim.
-  let storedLibrary: readonly LibraryEntry[] | null = null;
-  try {
-    const storedRead = await host.serverPort.readProfileLibrary();
-    if (storedRead.ok) storedLibrary = storedRead.value;
-  } catch {
-    storedLibrary = null; // the typed/local fallback below answers
-  }
+  const storedLibrary = await readStoredLibrary(host);
   const localWatchlist = host.runtime.libraryOps.entries();
-  /** The stored row's list (the engine's own save writes `metadata.list`; "Saved" when absent). */
-  const storedRowList = (entry: LibraryEntry): string => {
-    const list = (entry.metadata as Record<string, unknown> | undefined)?.list;
-    return typeof list === "string" && list.length > 0 ? list : "Saved";
-  };
   const savedInStored = (listName: string): boolean =>
     storedLibrary?.some(
       (entry) =>
         entry.connectorId === input.connectorId &&
         entry.externalRef === input.externalRef &&
-        storedRowList(entry) === listName,
+        storedRowListName(entry) === listName,
     ) === true;
   const savedInLocal = (listName: string): boolean =>
     localWatchlist.some((entry) => entry.itemId === input.itemId && entry.listName === listName);
@@ -1960,7 +2070,7 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
     }));
   // R24-W2 — the watchlist entry views (the playlists projection's source:
   // the same canonical-keyed entries, grouped by their list name).
-  const watchlistEntries: WatchlistEntryView[] = model.watchlist.entries.map((entry) => ({
+  let watchlistEntries: WatchlistEntryView[] = model.watchlist.entries.map((entry) => ({
     itemId: entry.itemId,
     title: entry.title,
     listName: entry.listName,
@@ -1969,6 +2079,40 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
     ...(entry.detail !== undefined ? { detail: entry.detail } : {}),
     joined: joinedItemOf(entry.itemId),
   }));
+  let historyEntries: HistoryEntryView[] = model.history.entries.map((entry) => ({
+    itemId: entry.itemId,
+    title: entry.title,
+    positionMs: entry.watch.lastPositionMs,
+    completionRatio: entry.watch.completionRatio,
+    status: entry.watch.status,
+    lastWatchedAt: entry.watch.lastWatchedAt,
+    joined: joinedItemOf(entry.itemId),
+  }));
+  // R35 (B3) — THE STORED ROWS' SOURCE-REALIZATION RESOLUTION: on a fresh
+  // process (the service-mode read: every page render is a cold runtime)
+  // this join map never ran the searches that teach it, so rows the
+  // source still serves answered "unavailable" behind the §9 notice (the
+  // R34-A ledger's B3 — the write landed, the Library's own read could
+  // not resolve it). When any watchlist/history entry is unresolved, the
+  // STORED rows' source realizations resolve through the runtime's own
+  // search seam (`resolveStoredRealizations` — the /api/library bridge
+  // law), and the entries re-join against the taught map. A row the
+  // source no longer serves stays honestly unjoined — the §9 notice
+  // keeps its truth (never a fabricated link).
+  if (
+    watchlistEntries.some((entry) => entry.joined === null) ||
+    historyEntries.some((entry) => entry.joined === null)
+  ) {
+    await resolveStoredRealizations(host);
+    watchlistEntries = watchlistEntries.map((entry) => ({
+      ...entry,
+      joined: joinedItemOf(entry.itemId),
+    }));
+    historyEntries = historyEntries.map((entry) => ({
+      ...entry,
+      joined: joinedItemOf(entry.itemId),
+    }));
+  }
   // The playlists: the NAMED lists (the default "Saved" list stays the
   // Watchlist section; every other list name renders as its own playlist).
   const playlistLists = new Map<string, WatchlistEntryView[]>();
@@ -1995,15 +2139,7 @@ export async function loadLibraryView(host: WebRuntimeHost): Promise<LibraryView
         model.history.status.state === "ready"
           ? { state: "ready" }
           : { state: "error", errorDetail: model.history.status.errorDetail ?? "the history read failed" },
-      entries: model.history.entries.map((entry) => ({
-        itemId: entry.itemId,
-        title: entry.title,
-        positionMs: entry.watch.lastPositionMs,
-        completionRatio: entry.watch.completionRatio,
-        status: entry.watch.status,
-        lastWatchedAt: entry.watch.lastWatchedAt,
-        joined: joinedItemOf(entry.itemId),
-      })),
+      entries: historyEntries,
     },
     offline: { entries: offlineEntries },
     playlists: {
