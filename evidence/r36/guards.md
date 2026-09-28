@@ -36,3 +36,39 @@ and the lane clears it with exactly its own 32 tests added (5255 + 32 = 5287)
 and zero regressions. (The 5256 vs 5255 delta at base is the harness's own
 test-count drift between the R34-C record and this tree's `bun test` discovery —
 not this lane's doing; both counts were re-measured here on identical bases.)
+
+## Re-verification at the final head (the shipping-head proof)
+
+The commits after the code head `084be57` touch evidence only, and the full
+guard set was re-run fresh at the final head before the relay — every number
+identical:
+
+| Guard | Result at the final head |
+|---|---|
+| install | `bun install --frozen-lockfile` — "Checked 338 installs across 353 packages (no changes)" |
+| typecheck | exit 0, zero diagnostics (root + journeys) |
+| contract-check | OK — 12 frozen blocks in sync, 7 extension types present |
+| lane-check | OK — 955 files, no cross-lane private imports |
+| parity-conformance | 19 pass / 0 fail (366 expect() calls) — CONFORMANT |
+| lint (lane-clean) | `bunx eslint` on all 17 lane-touched TS/TSX files — 0 errors, 0 warnings |
+| battery | **5287 pass / 1 skip / 0 fail** (33777 expect() calls, 301 files, 230.29s) — identical to the recorded run |
+| build | exit 0 — `/channel/[handle]` in the route table as ƒ (Dynamic) |
+| J44 (fresh scratch re-run) | PASS — 57 assertions, 7 artifacts, the manifest's own commit field = the final head (run into a scratch dir, not committed — the committed `journeys/` record at `084be57` remains the evidence of record; this run proves reproducibility at the shipping head) |
+| J37 solo (fresh, committed) | FAIL — 7 assertions, 3 artifacts, at exactly the base's stale-grammar assertion ("the item page offers Play") — the flake attribution's solo run, now committed at `evidence/r36/j37-lane-solo/` |
+
+**A display-artifact note for future readers:** the route segment directory
+`[handle]` renders as `andle]` in some tool outputs (a `[h`-prefix eating
+artifact). The tree's true name was proven by raw bytes (`od -c`:
+`[ h a n d l e ]`) and by the build's own route table (`ƒ /channel/[handle]`).
+No directory is misnamed; the mangled form appears only in rendered output,
+never on disk.
+
+**Evidence-hygiene corrections made by this addendum's commit:** the three
+`web-dev-server.log` files (plus the new solo run's) under `evidence/r36/`
+are gitignored by the repo's global `*.log` rule — zero `.log` files are
+tracked under `evidence/` in the whole repo history — so they are
+relay-carried companions, not bundle cargo; the manifest records this. The
+INDEX rows for `journeys-j44-smoke/` and `battery-baseline-main.log`
+described pruned/never-committed artifacts and were corrected. The J37 solo
+attribution run was re-executed at the final head and committed — the
+browser-verification citation now points at shipped artifacts.

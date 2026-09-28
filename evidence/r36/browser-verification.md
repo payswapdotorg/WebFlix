@@ -74,9 +74,12 @@ touches) passes unchanged, and every FAIL fails identically at base.
 
 **The flake note (recorded honestly):** the lane's FIRST combined run recorded
 J37 failing two assertions earlier (at the access-truth step, 61s — a poll
-timeout signature). The attribution runs: J37 SOLO on the lane
-(`evidence/r36/j37-lane-solo/`) fails at exactly the base's assertion with
-identical counts (7 assertions, 3 artifacts), and the combined filter's re-run
+timeout signature). The attribution runs: J37 SOLO on the lane fails at
+exactly the base's assertion with identical counts (7 assertions, 3
+artifacts) — this solo run was re-executed at the final head and committed
+(`evidence/r36/j37-lane-solo/`: FAIL, 7 assertions, 3 artifacts, the same
+stale-grammar failure — the citation now points at shipped artifacts) — and
+the combined filter's re-run
 reproduces the base behavior byte-identically — the one-off earlier failure was
 run-order flake in a single session (the D17 journey-flakiness class the
 R28 matrix already records for the dev boot), not a lane regression. The

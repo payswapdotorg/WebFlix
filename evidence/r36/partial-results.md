@@ -57,6 +57,7 @@ Lane: `wfx/r36/channels` · Base: `main @ 8937bb8` · Repo: /home/z/webflix-r36 
 - [x] Affected journeys re-run on BOTH trees — identical verdicts (zero regressions; the failures are the documented stale-grammar debt)
 - [x] Evidence (guards/browser-verification/measured-facts/DIVERGENCES/INDEX)
 - [x] The bundle + the relay (see the completion report)
+- [x] The final-head re-verification + the evidence-hygiene fixes (the guards addendum — every guard re-run fresh at the shipping head, every number identical; the J37 solo attribution re-executed + committed; the INDEX's two stale rows corrected; the relay-only log policy documented)
 
 ## The final state
 

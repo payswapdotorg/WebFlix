@@ -15,8 +15,9 @@ subscribe/bell + channel search results (docs/plans/
 | `journeys/` | J44's committed run: manifest.json (commit 084be57, the determinism record), summary.md, 5 screenshots + the snapshot + narration artifacts |
 | `journeys-affected/` | The J01–J37 affected re-run on the lane (summary + manifest) |
 | `journeys-affected-j30j40/` | The J30/J40 affected re-run on the lane |
-| `journeys-j44-smoke/` | The J44 smoke runs during encoding (superseded by `journeys/` — kept for the fix-round trail) |
-| `battery-baseline-main.log` | The first base-battery attempt's log (the sandbox's background-process limit truncated it; the honest record — the completed base measurement lives in the isolated-worktree run recorded in guards.md) |
+| `j37-lane-solo/` | The J37 flake attribution's solo run — re-executed at the final head and committed: FAIL at exactly the base's assertion (7 assertions, 3 artifacts — the stale-grammar debt, not a lane regression) |
+| ~~`journeys-j44-smoke/`~~ | NOT IN THE TREE — the J44 smoke runs during encoding, superseded by `journeys/` and pruned in the evidence commit `1209971`; the trail lives in the git history at `084be57`. (This row previously described the pruned files as kept — corrected by the final-head re-verification addendum in `guards.md`.) |
+| ~~`battery-baseline-main.log`~~ | NOT RETAINED — the first base-battery attempt was truncated by the sandbox's background-process limit and the log was never committed; the completed base measurement (the isolated-worktree run, `guards.md` row 1) is the record. (This row previously described the file as present — corrected by the final-head re-verification addendum in `guards.md`.) |
 
 ## The lane's code (the review map)
 
@@ -42,3 +43,8 @@ subscribe/bell + channel search results (docs/plans/
 NONE. Zero shared-package changes (the lane-check proves it: 955 files, no
 cross-lane private imports; the channel entity derives entirely from the
 web app's own seams — the sources model, the item join, the library folds).
+
+**The relay's log policy:** the `web-dev-server.log` files under
+`evidence/r36/` are gitignored (the repo's global `*.log` rule — zero
+`.log` files tracked under `evidence/` in the whole history); they ride the
+RELAY only, not the bundle, and the manifest header says so.
