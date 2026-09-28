@@ -49,3 +49,8 @@ export * from "./reference";
 // modules stay under their own directory with the SDK's laws enforced by
 // BaseConnector exactly as for the reference implementation.
 export * from "./youtube";
+// R37 — the live designation + the archived live-chat log artifact: the
+// live-item vocabulary (the same one-additive-line barrel growth the
+// WFX-054 precedent records). Pure derivations over the shared item
+// metadata bag + the committed replay artifact — no frozen surface touched.
+export * from "./live";

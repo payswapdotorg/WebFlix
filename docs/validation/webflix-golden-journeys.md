@@ -362,3 +362,42 @@ three (the same J01-precedent procedure) is the recorded follow-up.
 The evidence of record for the re-encode: evidence/r35b/ (the grammar
 survey plan.md, the full-suite run manifest, the production-boot
 verification, the honesty proof, the guards, the battery summary).
+
+## J45 — Live watch + live chat (R37, 2026-09-28)
+
+**Additive record.** The R37 lane (`wfx/r37/live`, the survey's WAVE R37)
+encodes the live-video + live-chat journeys the survey's §1 rows 20/21
+define:
+
+- **J45 — Live watch + live chat** (`journeys/web/j45-live-watch-chat.ts`):
+  the `/live` browse (the red-dot LIVE badges, the source-reported viewer
+  figure, the typed-absence count where no figure is declared, the
+  archived-VOD rail's replay truth) → the watch-page LIVE MODE (the
+  honest unbound stage, the no-scrub live-edge truth, the channel row) →
+  the CURRENT LIVE CHAT over the real WebFlix bridge (`ws://localhost:3104`
+  → the deterministic dev chat double — the browser never reaches a
+  provider): the member/moderator/verified badges, the emoji bodies, the
+  moderator's PINNED message (the transport's own pin event), the
+  transport-carried viewer count with its provenance, SLOW MODE (the
+  declared 5s interval + the typed refusal with the wait on a too-fast
+  second send), the emoji insert row, and the viewer's own echoing
+  message (the accountless chat — the R23 law holds throughout).
+- **J46 — Chat replay scrub** (`journeys/web/j46-chat-replay-scrub.ts`):
+  the archived live VOD's watch mode (the "was live" badge, the duration,
+  the committed-log truth sentence, the past-tense slow-mode fact, the
+  honest absence of any current chat) → THE PLAYHEAD BINDING: scrub →
+  the chat window follows (the 0:20 window, the 1:40 window — the
+  specific entry offsets assert the move), the archived pin stands from
+  its own offset, the viewer's own archived message is honestly marked →
+  play → the clock advances and the messages arrive in TIME ORDER (the
+  arrival count's disclosure — the committed log, never a stream).
+
+The honest limitation (recorded in each journey's header, the J43
+precedent): the chat content and the viewer figures are the dev
+double's committed deterministic script — the transport, the typed wire,
+the slow-mode enforcement, and the pin/viewer events are the REAL
+machinery; a live provider's chat is the service-mode lane.
+
+The evidence of record for the pair: `evidence/r37/` (the plan, the
+guards battery, the honesty proof with the committed transcript, the
+journey manifests).

@@ -798,3 +798,223 @@ export function getByofFixturesRuntime(): Promise<ByofFixturesRuntime> {
   globals[BYOF_GLOBAL_KEY] = boot;
   return boot;
 }
+
+// ===========================================================================
+// R37 — THE LIVE FIXTURE ENTRIES (the fixtures boot's live-reporting
+// source double) — A CLEARLY DELIMITED ADDITIVE SECTION.
+//
+// Everything above this line is the pre-R37 BYOF fixtures runtime, untouched.
+// Everything below is the R37 lane's fixture truth: the LIVE item entries
+// the /live browse reads, and the ARCHIVED LIVE VOD with its COMMITTED
+// CHAT LOG. PURE DATA + PURE READERS — no PGlite, no service wiring, no
+// boot; importing this section alone costs nothing but the data.
+//
+// THE DESIGNATION LAW (the task packet): an item is live, or is an
+// archived live VOD, because its CONNECTOR METADATA says so. These entries
+// model exactly what a live-reporting source declares, carrying the SAME
+// metadata vocabulary the connector layer binds (the `liveState` /
+// `liveStartedAt` / `liveEndedAt` / `liveViewerCount` keys +
+// `liveDesignationOf` — @wfx/connectors). The surfaces derive through
+// that one derivation, never guessing: the /live rail and the watch live
+// mode call `liveDesignationOf` over these entries like over any real
+// connector row.
+//
+// THE HONEST-TRANSPORT LAW (R28, binding): the viewer counts here are the
+// DEV DOUBLE's own scripted figures (the fixtures' modeled source-report)
+// — the same loud labeling discipline the dev realtime provider uses
+// (host/realtime/dev-realtime-provider.ts). They are deterministic
+// committed numbers, never a claimed live-provider measurement.
+//
+// THE SPLIT (the task's own law): the CURRENT live chat's script is the
+// TRANSPORT double's (host/livechat/livechat-dev-double.ts — a stream is
+// the transport's business); the ARCHIVED chat is COMMITTED DATA (the
+// log artifact below, timed to the VOD's media timeline — "committed
+// data, not a stream capture").
+// ===========================================================================
+
+import type { PlaybackRealization } from "@wfx/domain";
+import {
+  LIVE_ENDED_AT_METADATA_KEY,
+  LIVE_STARTED_AT_METADATA_KEY,
+  LIVE_STATE_METADATA_KEY,
+  LIVE_VIEWER_COUNT_METADATA_KEY,
+  liveDesignationOf,
+  parseLiveChatLog,
+  type LiveChatLog,
+  type LiveDesignation,
+} from "@wfx/connectors";
+
+/**
+ * The live entries belong to the fixtures' OWN source identity (the same
+ * `fake-source` connector the fixture catalog's items answer to —
+ * packages/experience fixtures.ts), so the channel grammar composes: the
+ * /live cards' channel slots resolve through the sources model the same
+ * way every other card's do, and link the R36 channel page.
+ */
+export const LIVE_FIXTURE_CONNECTOR_ID = "fake-source";
+
+/**
+ * One live fixture entry — the item identity + the presentation facts +
+ * the live metadata (the same vocabulary a live-reporting connector
+ * projects; the derivation consumes it through `liveDesignationOf`).
+ */
+export interface LiveFixtureEntry {
+  readonly externalRef: string;
+  readonly title: string;
+  readonly canonicalType: "video";
+  readonly durationMs?: number;
+  readonly orientation: "horizontal";
+  readonly availability: "available";
+  /** The contained embed realization (the reserved-TLD determinism law: fixture URLs never resolve; surfaces assert the DOM grammar). */
+  readonly realizations: readonly PlaybackRealization[];
+  /**
+   * The committed ARCHIVED chat log (archived-live-vods only; validated
+   * through the connector-layer parser at the read boundary — never a
+   * trusted cast).
+   */
+  readonly chatLog?: unknown;
+  readonly metadata: Record<string, unknown>;
+}
+
+/** The fixtures' first live broadcast (the scripted J45 item). */
+export const LIVE_FIXTURE_BROADCAST_REF = "fake:live-1";
+
+/** The fixtures' second live stream (the typed-absence viewer-count proof: no figure declared). */
+export const LIVE_FIXTURE_SECOND_STREAM_REF = "fake:live-2";
+
+/** The fixtures' archived live VOD (the committed chat log; the scripted J46 item). */
+export const LIVE_FIXTURE_ARCHIVED_VOD_REF = "fake:live-vod-1";
+
+/**
+ * The archived broadcast's COMMITTED CHAT LOG (the replay's data of
+ * record — deterministic committed data over the VOD's 13-minute
+ * timeline). The script exercises the chat grammar: the moderator's
+ * welcome + rules pin, the member-badge authors, the verified creator's
+ * own messages, emojis in the bodies, the viewer's own archived message,
+ * and the session's archived facts (the 5s slow mode that was active,
+ * the pin that stood at the end).
+ */
+const ARCHIVED_VOD_CHAT_LOG: unknown = {
+  kind: "live-chat-log",
+  version: 1,
+  slowModeMs: 5_000,
+  pinnedOffsetMs: 44_000,
+  entries: [
+    { offsetMs: 1_000, author: "AuroraNights", authorBadges: ["verified-creator"], body: "Welcome to the aurora watch — we go live to the ridge in a minute 🌌" },
+    { offsetMs: 5_000, author: "selenite", authorBadges: ["member"], body: "member here since the first broadcast ✨" },
+    { offsetMs: 11_000, author: "quietSky", authorBadges: [], body: "the sky map overlay is such a nice touch" },
+    { offsetMs: 18_000, author: "mod_ana", authorBadges: ["moderator"], body: "Reminder: keep it kind — slow mode (5s) is on for the night 💚" },
+    { offsetMs: 26_000, author: "lensLass", authorBadges: [], body: "is the 300mm the one you used last week?" },
+    { offsetMs: 33_000, author: "AuroraNights", authorBadges: ["verified-creator"], body: "yes! the 300mm f/4 — the ridge shot needs the reach" },
+    { offsetMs: 41_000, author: "nightowl_4", authorBadges: ["member"], body: "first aurora stream, this is magical 🌠" },
+    { offsetMs: 44_000, author: "mod_ana", authorBadges: ["moderator"], body: "📌 Pinned: tonight's shot list is in the description — timestamps included!" },
+    { offsetMs: 52_000, author: "me", authorBadges: [], body: "the chat replay of this moment is going to be great", you: true },
+    { offsetMs: 63_000, author: "polaris_jim", authorBadges: ["member"], body: "KP index is climbing 🤞" },
+    { offsetMs: 74_000, author: "quietSky", authorBadges: [], body: "green arc starting on the horizon!!" },
+    { offsetMs: 88_000, author: "selenite", authorBadges: ["member"], body: "corona is peaking, unreal 😭" },
+    { offsetMs: 101_000, author: "AuroraNights", authorBadges: ["verified-creator"], body: "the ridge is LIT — stay with me for the timelapse 🎥" },
+    { offsetMs: 116_000, author: "nightowl_4", authorBadges: ["member"], body: "best stream I have ever watched 🌙" },
+    { offsetMs: 129_000, author: "mod_ana", authorBadges: ["moderator"], body: "that's a wrap on the live — the VOD + this chat stay right here. Goodnight! 🌃" },
+  ],
+};
+
+/** The deterministic fixture embed URL of one live entry (the reserved-TLD law). */
+function liveFixtureEmbedUrl(externalRef: string): string {
+  return `https://fixture.invalid/live/${encodeURIComponent(externalRef)}`;
+}
+
+/** One embed realization in the FIXTURE_CATALOG grammar (the same shape, the same reserved TLD). */
+function liveFixtureEmbedRealization(externalRef: string): PlaybackRealization {
+  return {
+    mode: "embed",
+    connectorId: LIVE_FIXTURE_CONNECTOR_ID,
+    externalRef,
+    url: liveFixtureEmbedUrl(externalRef),
+    capabilities: ["playEmbed"],
+  };
+}
+
+/**
+ * THE LIVE FIXTURE ENTRIES (deterministic order; the /live rail's truth).
+ * Three entries: two live broadcasts (one with the double's reported
+ * viewer figure, one without — the typed-absence proof) and one archived
+ * live VOD with the committed chat log.
+ */
+export const LIVE_FIXTURE_ENTRIES: readonly LiveFixtureEntry[] = [
+  {
+    externalRef: LIVE_FIXTURE_BROADCAST_REF,
+    title: "Signal Bloom — the fixture live broadcast",
+    canonicalType: "video",
+    orientation: "horizontal",
+    availability: "available",
+    realizations: [liveFixtureEmbedRealization(LIVE_FIXTURE_BROADCAST_REF)],
+    metadata: {
+      [LIVE_STATE_METADATA_KEY]: "live",
+      [LIVE_STARTED_AT_METADATA_KEY]: "2026-09-28T18:00:00.000Z",
+      // The dev double's scripted reported figure (the honest-provenance
+      // law: the source's own report is the only number a surface renders).
+      [LIVE_VIEWER_COUNT_METADATA_KEY]: 1247,
+    },
+  },
+  {
+    externalRef: LIVE_FIXTURE_SECOND_STREAM_REF,
+    title: "Harbor Lights Live — the fixture second stream",
+    canonicalType: "video",
+    orientation: "horizontal",
+    availability: "available",
+    realizations: [liveFixtureEmbedRealization(LIVE_FIXTURE_SECOND_STREAM_REF)],
+    metadata: {
+      [LIVE_STATE_METADATA_KEY]: "live",
+      [LIVE_STARTED_AT_METADATA_KEY]: "2026-09-28T17:42:00.000Z",
+      // NO viewer figure declared: the rail renders the typed absence for
+      // this entry — never a fabricated count (the honest-transport law's
+      // own proof entry).
+    },
+  },
+  {
+    externalRef: LIVE_FIXTURE_ARCHIVED_VOD_REF,
+    title: "Aurora Nights — the archived live broadcast",
+    canonicalType: "video",
+    durationMs: 780_000,
+    orientation: "horizontal",
+    availability: "available",
+    realizations: [liveFixtureEmbedRealization(LIVE_FIXTURE_ARCHIVED_VOD_REF)],
+    chatLog: ARCHIVED_VOD_CHAT_LOG,
+    metadata: {
+      [LIVE_STATE_METADATA_KEY]: "archived-live-vod",
+      [LIVE_STARTED_AT_METADATA_KEY]: "2026-09-27T09:00:00.000Z",
+      [LIVE_ENDED_AT_METADATA_KEY]: "2026-09-27T09:13:00.000Z",
+    },
+  },
+];
+
+/**
+ * The fixtures boot's loud disclosure sentence (the dev-double badge the
+ * live surfaces render — the R25 dev-realtime-provider labeling law).
+ */
+export const LIVE_FIXTURES_BADGE =
+  "the fixtures' scripted live entries (the dev double of a live-reporting source — deterministic committed data, never a live provider measurement)";
+
+/** Read one fixture entry's live designation (the ONE derivation — the surfaces never guess). */
+export function liveFixtureDesignationOf(entry: LiveFixtureEntry): LiveDesignation {
+  return liveDesignationOf({ metadata: entry.metadata });
+}
+
+/**
+ * Read one fixture entry by external ref (or `null` — the honest
+ * not-found; the watch live mode's typed state consumes it).
+ */
+export function liveFixtureEntryOf(externalRef: string): LiveFixtureEntry | null {
+  return LIVE_FIXTURE_ENTRIES.find((entry) => entry.externalRef === externalRef) ?? null;
+}
+
+/**
+ * Read the archived VOD's COMMITTED CHAT LOG through the connector-layer
+ * parser (the boundary validation law — a malformed artifact answers
+ * `null` and the surface renders the typed absence, never a partial log).
+ */
+export function liveFixtureChatLogOf(externalRef: string): LiveChatLog | null {
+  const entry = liveFixtureEntryOf(externalRef);
+  if (entry === null || entry.chatLog === undefined) return null;
+  return parseLiveChatLog(entry.chatLog);
+}
