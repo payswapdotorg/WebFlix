@@ -1,0 +1,1 @@
+- vertical feed with position grammar, stable current card, bounded forward/back, honest absent like/save, share control, and no fabricated provider progress

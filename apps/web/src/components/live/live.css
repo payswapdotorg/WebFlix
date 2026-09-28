@@ -1,0 +1,468 @@
+/*
+ * @wfx/app-web — R37 — THE LIVE SURFACE STYLES (the /live rail, the
+ * watch live mode, the live chat, and the chat replay).
+ *
+ * Co-located with the live components (the lane's owned surface): the
+ * App Router serves global CSS from any component import — the same
+ * token vocabulary globals.css declares (--wfx-*), extended with the
+ * live grammar's own classes. The corpus red (#f03 — the measured
+ * youtube.com live red, design-tokens.md) carries the LIVE badge and
+ * the live dot; color is ALWAYS paired with the label text.
+ */
+
+/* ---------------------------------------------------------------------------
+ * The LIVE badge (the red-dot grammar — a real live claim, never decoration)
+ * ------------------------------------------------------------------------- */
+
+.wfx-livebadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: var(--wfx-radius-xs);
+  background: var(--wfx-accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.wfx-livebadge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fff;
+  flex: 0 0 auto;
+}
+
+/* The "was live" badge (the archived VOD — the ended truth, never red). */
+.wfx-livedone {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: var(--wfx-radius-xs);
+  background: var(--wfx-pill-bg);
+  color: var(--wfx-pill-fg);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+/* The viewer-count pill (the source-reported figure + its unit). */
+.wfx-liveviewers {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--wfx-text-dim);
+  line-height: 1.3;
+}
+
+.wfx-liveviewers--absent {
+  font-size: 12px;
+  color: var(--wfx-text-faint);
+  font-style: italic;
+}
+
+/* ---------------------------------------------------------------------------
+ * The /live rail (the live cards' own lockup)
+ * ------------------------------------------------------------------------- */
+
+.wfx-live-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+a.wfx-livecard {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  color: var(--wfx-text);
+  border-radius: var(--wfx-radius-md);
+  padding: 8px;
+  transition: background var(--wfx-transition);
+}
+
+a.wfx-livecard:hover,
+a.wfx-livecard:focus-visible {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-livecard__art {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--wfx-radius-sm);
+  background: linear-gradient(135deg, var(--wfx-surface) 0%, var(--wfx-surface-2) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.wfx-livecard__monogram {
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-livecard__badges {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.wfx-livecard__duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+}
+
+.wfx-livecard__title {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wfx-livecard__channel {
+  margin: 0;
+  font-size: 13px;
+  color: var(--wfx-text-dim);
+}
+
+/* ---------------------------------------------------------------------------
+ * The watch live mode (the stage + chat columns)
+ * ------------------------------------------------------------------------- */
+
+.wfx-livewatch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .wfx-livewatch {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.wfx-livewatch__stage {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wfx-livewatch__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--wfx-radius-md);
+  overflow: hidden;
+  background: #000;
+}
+
+.wfx-livewatch__frame iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.wfx-livewatch__chrome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wfx-livewatch__noscrub {
+  margin: 0;
+  font-size: 13px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-livewatch__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.wfx-livewatch__channel {
+  margin: 0;
+  font-size: 14px;
+  color: var(--wfx-text-dim);
+}
+
+a.wfx-livewatch__channellink {
+  color: var(--wfx-text-dim);
+  text-decoration: none;
+}
+
+a.wfx-livewatch__channellink:hover,
+a.wfx-livewatch__channellink:focus-visible {
+  color: var(--wfx-text);
+}
+
+/* ---------------------------------------------------------------------------
+ * The live chat (the current-chat column)
+ * ------------------------------------------------------------------------- */
+
+.wfx-livechat {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--wfx-border-strong);
+  border-radius: var(--wfx-radius-md);
+  background: var(--wfx-surface);
+  min-height: 420px;
+  max-height: 640px;
+}
+
+.wfx-livechat__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 12px 8px;
+  border-bottom: 1px solid var(--wfx-border-strong);
+}
+
+.wfx-livechat__title {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.wfx-livechat__list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wfx-livechat__entry {
+  font-size: 13px;
+  line-height: 18px;
+  word-break: break-word;
+}
+
+.wfx-livechat__author {
+  font-weight: 500;
+  margin-right: 4px;
+}
+
+.wfx-livechat__entry--you .wfx-livechat__author {
+  color: var(--wfx-accent);
+}
+
+.wfx-livechat__badge {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 0 4px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  vertical-align: 1px;
+}
+
+.wfx-livechat__badge--member {
+  background: var(--wfx-accent-soft);
+  color: var(--wfx-accent);
+  border: 1px solid var(--wfx-accent);
+}
+
+.wfx-livechat__badge--moderator {
+  background: rgba(62, 166, 255, 0.16);
+  color: #3ea6ff;
+  border: 1px solid #3ea6ff;
+}
+
+.wfx-livechat__badge--verified {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--wfx-text-dim);
+  border: 1px solid var(--wfx-border);
+}
+
+.wfx-livechat__pinned {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--wfx-border-strong);
+  background: var(--wfx-bg-raised);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-livechat__pinned-label {
+  font-weight: 700;
+  color: var(--wfx-text);
+  white-space: nowrap;
+}
+
+.wfx-livechat__composer {
+  border-top: 1px solid var(--wfx-border-strong);
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wfx-livechat__slowmode {
+  font-size: 11px;
+  color: var(--wfx-text-faint);
+}
+
+.wfx-livechat__row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.wfx-livechat__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: var(--wfx-bg);
+  color: var(--wfx-text);
+  border: 1px solid var(--wfx-border-strong);
+  border-radius: var(--wfx-radius-sm);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.wfx-livechat__input:focus-visible {
+  outline: 2px solid var(--wfx-accent);
+  outline-offset: 1px;
+}
+
+.wfx-livechat__send {
+  flex: 0 0 auto;
+  background: var(--wfx-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--wfx-radius-sm);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wfx-livechat__send:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.wfx-livechat__emojis {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.wfx-livechat__emoji {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.wfx-livechat__emoji:hover,
+.wfx-livechat__emoji:focus-visible {
+  border-color: var(--wfx-border);
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-livechat__refusal {
+  margin: 0;
+  font-size: 12px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-livechat__double {
+  margin: 0;
+  font-size: 11px;
+  color: var(--wfx-text-faint);
+  font-style: italic;
+}
+
+.wfx-livechat__state {
+  padding: 16px 12px;
+  font-size: 13px;
+  color: var(--wfx-text-dim);
+  line-height: 18px;
+}
+
+/* ---------------------------------------------------------------------------
+ * The chat replay (the archived VOD's committed-log column)
+ * ------------------------------------------------------------------------- */
+
+.wfx-chatreplay__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--wfx-border-strong);
+  flex-wrap: wrap;
+}
+
+.wfx-chatreplay__clock {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--wfx-text-dim);
+}
+
+.wfx-chatreplay__scrub {
+  flex: 1 1 120px;
+  min-width: 100px;
+  accent-color: var(--wfx-accent);
+}
+
+.wfx-chatreplay__play {
+  background: var(--wfx-bg-raised);
+  color: var(--wfx-text);
+  border: 1px solid var(--wfx-border-strong);
+  border-radius: var(--wfx-radius-sm);
+  padding: 4px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.wfx-chatreplay__play:hover {
+  background: var(--wfx-bg-hover);
+}
+
+.wfx-chatreplay__truth {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--wfx-text-faint);
+  border-bottom: 1px solid var(--wfx-border-strong);
+}
+
+.wfx-chatreplay__facts {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 11px;
+  color: var(--wfx-text-faint);
+  border-bottom: 1px solid var(--wfx-border-strong);
+}

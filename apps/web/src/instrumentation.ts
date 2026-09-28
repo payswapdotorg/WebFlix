@@ -23,6 +23,10 @@
  * A failed boot is caught and recorded as the honest absent state —
  * never a crash of the web host itself (base playback is never touched
  * by translation machinery — §R25-L's frozen law).
+ *
+ * R37 (additive): the hook ALSO boots the LIVE-CHAT bridge (the R25-D
+ * mini-service pattern's second resident — port 3104) alongside the
+ * realtime bridge, under its own env gate + failure path.
  */
 
 export async function register(): Promise<void> {
@@ -36,5 +40,15 @@ export async function register(): Promise<void> {
   } catch {
     // The honest absent state is realtime-boot's own failure path; a
     // thrown boot never takes the web host down.
+  }
+  // R37 — the live-chat bridge boots ALONGSIDE the realtime bridge (the
+  // same instrumentation hook, its own dynamic import + its own failure
+  // path — a failed livechat boot never touches the realtime bridge or
+  // the web host; the surfaces render the honest typed unavailability).
+  try {
+    const { ensureLiveChatBridgeBooted } = await import("./host/livechat/livechat-boot");
+    await ensureLiveChatBridgeBooted();
+  } catch {
+    // The honest absent state is livechat-boot's own failure path.
   }
 }

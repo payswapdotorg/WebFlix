@@ -1,0 +1,227 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "37effa325c5060e14afda7e07db5b7eb61e45d9e",
+  "branch": "wfx/r37/live",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-09-28T18:53:10.607Z",
+    "finishedAt": "2026-09-28T18:53:37.990Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790621595177)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J45",
+      "title": "Live watch + live chat",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the live browse renders its title",
+          "expected": "[data-wfx-live-title] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "every live card carries the red-dot LIVE badge",
+          "expected": "[data-wfx-live-badge] matches >= 2",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the loud fixtures disclosure renders (the dev double, never mistaken for a live provider)",
+          "expected": "[data-wfx-live-disclosure] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the first live card's viewer count is the source-reported figure (honest backing)",
+          "expected": "the declared figure 1247",
+          "observed": "1247",
+          "pass": true
+        },
+        {
+          "description": "the second live stream's viewer count is the typed absence (never a fabricated number)",
+          "expected": "the absent state",
+          "observed": "absent",
+          "pass": true
+        },
+        {
+          "description": "the archived live broadcasts rail renders",
+          "expected": "[data-wfx-archive-rail] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the archived rail names the chat-replay truth",
+          "expected": "text of [data-wfx-archive-note] contains \"chat replays with the playback position\"",
+          "observed": "\"Ended streams kept as videos — their live chat replays with the playback position.\"",
+          "pass": true
+        },
+        {
+          "description": "the live chat transport's serving truth is disclosed on the rail",
+          "expected": "text of [data-wfx-live-bridge-truth] contains \"serving on port 3104\"",
+          "observed": "\"The live chat transport is serving on port 3104.\"",
+          "pass": true
+        },
+        {
+          "description": "the watch page renders the LIVE mode for a live item",
+          "expected": "data-wfx-livewatch-state of [data-wfx-livewatch] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the red-dot LIVE badge renders on the watch page",
+          "expected": "[data-wfx-live-badge] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch page's viewer count is the source-reported figure",
+          "expected": "text of [data-wfx-live-viewers] contains \"1,247 watching\"",
+          "observed": "\"1,247 watching\"",
+          "pass": true
+        },
+        {
+          "description": "the live-edge truth sentence renders",
+          "expected": "[data-wfx-live-noscrub] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the no-scrub truth states why there is no seek control",
+          "expected": "text of [data-wfx-live-noscrub] contains \"seeking is unavailable on a live stream\"",
+          "observed": "\"You are watching the live edge — seeking is unavailable on a live stream.\"",
+          "pass": true
+        },
+        {
+          "description": "no seek control renders on the live edge (the honest absence, not a dead control)",
+          "expected": "zero scrub controls",
+          "observed": "0 scrub controls",
+          "pass": true
+        },
+        {
+          "description": "the channel row renders (the source identity)",
+          "expected": "[data-wfx-livewatch-channel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel row names the source (the sources model's displayName)",
+          "expected": "text of [data-wfx-livewatch-channel] contains \"Fake Source\"",
+          "observed": "\"Fake Source (TEST FIXTURE — never production)\"",
+          "pass": true
+        },
+        {
+          "description": "the live stage discloses its unbound truth (never a fabricated player)",
+          "expected": "data-wfx-live-stage of [data-wfx-live-stage] is \"unbound\"",
+          "observed": "\"unbound\"",
+          "pass": true
+        },
+        {
+          "description": "the live chat joins the stream over the WebFlix bridge",
+          "expected": "data-wfx-livechat-state of [data-wfx-livechat] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the chat's bridge URL is the WebFlix livechat bridge (never a provider endpoint)",
+          "expected": "the WebFlix bridge origin",
+          "observed": "ws://localhost:3104",
+          "pass": true
+        },
+        {
+          "description": "the member badge renders (the source-declared vocabulary)",
+          "expected": "[data-wfx-livechat-badge='member'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the moderator badge renders",
+          "expected": "[data-wfx-livechat-badge='moderator'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the verified-creator badge renders",
+          "expected": "[data-wfx-livechat-badge='verified-creator'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chat bodies carry the emoji grammar verbatim",
+          "expected": "an emoji-bearing body",
+          "observed": "Welcome to Signal Bloom live! The stream starts now 🌸",
+          "pass": true
+        },
+        {
+          "description": "the moderator's pinned message renders in the pinned bar (the transport's pin event)",
+          "expected": "text of [data-wfx-livechat-pinned] contains \"Rules: be kind\"",
+          "observed": "\"Pinned\nmod_ana: 📌 Rules: be kind, no spoilers, slow mode (5s) is on. Enjoy the bloom!\"",
+          "pass": true
+        },
+        {
+          "description": "the chat declares the slow-mode interval (the transport's own fact)",
+          "expected": "text of [data-wfx-livechat-slowmode] contains \"Slow mode: 5s\"",
+          "observed": "\"Slow mode: 5s between messages.\"",
+          "pass": true
+        },
+        {
+          "description": "the viewer count is the transport-carried figure (the double's reported report, provenance labeled)",
+          "expected": ">= the join figure 1247",
+          "observed": "1247",
+          "pass": true
+        },
+        {
+          "description": "the chat panel carries the loud dev-double badge",
+          "expected": "text of [data-wfx-livechat-double] contains \"deterministic dev live-chat double\"",
+          "observed": "\"the deterministic dev live-chat double (the fixtures' scripted chat — committed deterministic content and reported figures, never a live provider).\"",
+          "pass": true
+        },
+        {
+          "description": "the viewer's own message echoes with the honest self-identity",
+          "expected": "a you-entry with the sent text",
+          "observed": "youhello from the journey🌸",
+          "pass": true
+        },
+        {
+          "description": "the too-fast second send answers the typed slow-mode refusal (the real transport behavior)",
+          "expected": "the slow-mode refusal with the wait",
+          "observed": "slow mode is on (5s between messages) — send again in a moment Your message is n",
+          "pass": true
+        },
+        {
+          "description": "no login gate appeared anywhere in the live walk (the accountless chat — the R23 law)",
+          "expected": "the anonymous session chatted on currently live fixture media",
+          "observed": "no login wall observed",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r37/journeys-j45/j45-live-watch-chat.png",
+        "evidence/r37/journeys-j45/j45-live-watch-live-chat.snapshot.txt",
+        "evidence/r37/journeys-j45/j45-live-watch-live-chat.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 19660
+    }
+  ],
+  "limitations": []
+}

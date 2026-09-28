@@ -60,6 +60,12 @@ import { j43RealtimeTranslation } from "./j43-realtime-translation";
 // R25-W2 realtime-translation J43 already in the catalog at base
 // 8937bb8, so the channel journey takes the next free number).
 import { j44CreatorChannels } from "./j44-creator-channels";
+// R37 — the live surfaces' journeys (the survey's WAVE R37 pair; encoded
+// as J45/J46 — the survey's "new J44/J45" numbering collided with the
+// R36 creator-channel J44 already in the catalog, the same collision
+// resolution R36 itself recorded for its own J43/J44 renumbering).
+import { j45LiveWatchChat } from "./j45-live-watch-chat";
+import { j46ChatReplayScrub } from "./j46-chat-replay-scrub";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -124,6 +130,13 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // channel page → the tabs → the ONE-store Subscribe round trip → the
   // bell's persisted preference record).
   j44CreatorChannels,
+  // R37 — J45 (the live watch + chat round trip) + J46 (the chat replay
+  // scrub) are encoded over the REAL live surfaces the fixtures boot
+  // wires (the /live rail → the watch live mode → the current live chat
+  // over the real WebFlix bridge + the archived VOD's committed-log
+  // replay timed to the playhead).
+  j45LiveWatchChat,
+  j46ChatReplayScrub,
 ];
 
 import type { LimitationRecord } from "../lib/report";
