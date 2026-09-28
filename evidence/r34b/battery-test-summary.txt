@@ -1,0 +1,28 @@
+# R34-B — the no-battery-change gate (bun test on wfx/r34b/accept-j41 @ 09d0205, working tree = main + untracked evidence only)
+# run: nice -n 19 ionice -c3 bun test --parallel=1 (bun test v1.3.14), 2026-09-27T21:5xZ-22:2xZ, duration 273.49s
+# full log sha256 (retained at /tmp/r34b-battery2.log during the run; 745303 bytes):
+16dbc0dcb1d4e237e41aafee6d94e638856071813340b1251b165421ec0238c2  /tmp/r34b-battery2.log
+
+---- log head (the banner) ----
+bun test v1.3.14 (0d9b296a) 1x PARALLEL
+
+tests/governance.test.ts:
+
+---- log tail (the result) ----
+1 tests skipped:
+(skip) R11 — the webtorrent evaluation skip honesty > webtorrent native prebuilt unavailable in this environment (reason recorded)
+
+ 5255 pass
+ 1 skip
+ 0 fail
+ 33627 expect() calls
+Ran 5256 tests across 300 files. [273.49s]
+
+---- skip reason ----
+5888:1 tests skipped:
+5889-(skip) R11 — the webtorrent evaluation skip honesty > webtorrent native prebuilt unavailable in this environment (reason recorded)
+5890-
+
+NOTE: the FIRST attempt (2026-09-27T22:08Z, /tmp/r34b-battery.log, 40 bytes) died silently after the banner —
+the same silent-death symptom the prior session recorded (suspected OOM under the parallel battery);
+re-run under nice/ionice completed in full. Recorded honestly; no result was taken from the dead run.
