@@ -51,3 +51,17 @@ the 16:26Z chat's dead-in-place slot released 19:41Z). R38-B re-dispatched
 fresh 19:44Z under this container's standing 16:52Z claim (chat 271c6d81,
 prompt VERIFIED) — the original 16:52Z send died in the crunch window (no
 chat record ever landed under this account).
+
+Lead-A addendum 20:05Z: the R37 redo-descendant's clean-room differential
+review is COMPLETE and fully green at lane head 5b578a0 (base 37effa3):
+battery 5356/5355/1/0 (34018 expect(), 310 files) — exactly the reported
++59 lane tests over the 5297/1/0 base, zero regressions; typecheck clean;
+contract-check OK (12 blocks, 7 extension types); lane-check OK (983
+files); J45 PASS 30 + J46 PASS 21 (the lane journeys, fresh-head re-run);
+J03 PASS 6 + J44 PASS 57 (the composability spot-checks). The delivery is
+MERGE-READY and remains HELD per the R37 work-preservation claim above —
+lead-B's revival outcome or the ~23:30Z lapse, whichever comes first.
+Wave-2 status from the steel container: r38a third-dispatch chat 3cc258fa
+GENERATING (the 19:31-19:36 sends were DOM-only phantoms — absent-from-list,
+the send-during-crunch wedge class; capacity recovered by 19:44); r38b chat
+271c6d81 GENERATING under the standing 16:52Z claim.
