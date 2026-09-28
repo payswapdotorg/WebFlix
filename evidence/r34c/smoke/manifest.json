@@ -1,0 +1,52 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T20:48:37.636Z",
+    "finishedAt": "2026-09-27T20:48:42.985Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790542117636)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J02",
+      "title": "Home discovery / hero / rows / intent entry",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the hero renders the featured start card on a fresh session\n  expected: data-wfx-hero of [data-wfx-hero] is \"start\"\n  observed: <attribute absent>",
+      "assertions": [
+        {
+          "description": "the hero renders the featured start card on a fresh session",
+          "expected": "data-wfx-hero of [data-wfx-hero] is \"start\"",
+          "observed": "<attribute absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/smoke/j02-failure.png",
+        "evidence/r34c/smoke/j02-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2987
+    }
+  ],
+  "limitations": []
+}

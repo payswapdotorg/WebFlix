@@ -1,0 +1,1554 @@
+{
+  "schema": "webflix-journey-consolidated-manifest/1",
+  "generator": "evidence/r34c/run/consolidate-manifests.py — a MECHANICAL merge of the runner's own manifests (run/chunk-01..08, rerun/chunk-01..08, local-baseline/full..full5). No hand-edited verdicts. Deterministic output.",
+  "provenance": {
+    "branch": "wfx/r34c/accept-regression",
+    "tree": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b (main @ the R33-A merge — post-R33)",
+    "productionTarget": "https://webflix-steel.vercel.app",
+    "localBaselineTarget": "http://localhost:3101",
+    "localBaselineRole": "adjudication support ONLY — the tree-level grammar-drift separation; never a substitute verdict (the PRODUCTION LAW)",
+    "sweeps": {
+      "runOfRecord": [
+        {
+          "chunk": "chunk-01",
+          "journeys": [
+            "J01",
+            "J02",
+            "J03",
+            "J04",
+            "J05"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:53:12.709Z",
+            "2026-09-27T20:53:57.094Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 1,
+            "failed": 4,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-02",
+          "journeys": [
+            "J06",
+            "J07",
+            "J08",
+            "J09",
+            "J10"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:54:01.954Z",
+            "2026-09-27T20:54:14.461Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 0,
+            "failed": 5,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-03",
+          "journeys": [
+            "J11",
+            "J12",
+            "J13",
+            "J14",
+            "J15"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:54:19.997Z",
+            "2026-09-27T20:55:00.179Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 1,
+            "failed": 4,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-04",
+          "journeys": [
+            "J16",
+            "J17",
+            "J18",
+            "J19",
+            "J20"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:55:04.093Z",
+            "2026-09-27T20:56:20.416Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 2,
+            "failed": 3,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-05",
+          "journeys": [
+            "J21",
+            "J22",
+            "J23",
+            "J24",
+            "J25",
+            "J26"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:56:26.801Z",
+            "2026-09-27T20:56:47.835Z"
+          ],
+          "summary": {
+            "total": 6,
+            "encoded": 6,
+            "passed": 0,
+            "failed": 6,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-06",
+          "journeys": [
+            "J27",
+            "J28",
+            "J29",
+            "J30",
+            "J31"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:56:51.526Z",
+            "2026-09-27T20:57:11.373Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 0,
+            "failed": 5,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-07",
+          "journeys": [
+            "J32",
+            "J33",
+            "J34",
+            "J36"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:57:14.992Z",
+            "2026-09-27T20:57:30.282Z"
+          ],
+          "summary": {
+            "total": 4,
+            "encoded": 4,
+            "passed": 0,
+            "failed": 4,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-08",
+          "journeys": [
+            "J37",
+            "J38",
+            "J39"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:57:34.406Z",
+            "2026-09-27T20:57:47.534Z"
+          ],
+          "summary": {
+            "total": 3,
+            "encoded": 3,
+            "passed": 0,
+            "failed": 3,
+            "notRun": 0
+          }
+        }
+      ],
+      "flakyRerun": [
+        {
+          "chunk": "chunk-01",
+          "journeys": [
+            "J01",
+            "J02",
+            "J04",
+            "J05"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:58:53.721Z",
+            "2026-09-27T20:59:29.578Z"
+          ],
+          "summary": {
+            "total": 4,
+            "encoded": 4,
+            "passed": 0,
+            "failed": 4,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-02",
+          "journeys": [
+            "J06",
+            "J07",
+            "J08",
+            "J09",
+            "J10",
+            "J11",
+            "J12"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:59:32.947Z",
+            "2026-09-27T20:59:49.582Z"
+          ],
+          "summary": {
+            "total": 7,
+            "encoded": 7,
+            "passed": 0,
+            "failed": 7,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-03",
+          "journeys": [
+            "J14",
+            "J15",
+            "J16",
+            "J17",
+            "J20"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T20:59:53.064Z",
+            "2026-09-27T21:01:08.228Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 0,
+            "failed": 5,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-05",
+          "journeys": [
+            "J21",
+            "J22",
+            "J23",
+            "J24",
+            "J25",
+            "J26"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T21:01:53.347Z",
+            "2026-09-27T21:02:10.972Z"
+          ],
+          "summary": {
+            "total": 6,
+            "encoded": 6,
+            "passed": 0,
+            "failed": 6,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-06",
+          "journeys": [
+            "J27",
+            "J28",
+            "J29",
+            "J30",
+            "J31"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T21:02:13.992Z",
+            "2026-09-27T21:02:43.379Z"
+          ],
+          "summary": {
+            "total": 5,
+            "encoded": 5,
+            "passed": 0,
+            "failed": 5,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-07",
+          "journeys": [
+            "J32",
+            "J33",
+            "J34",
+            "J36"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T21:02:46.636Z",
+            "2026-09-27T21:03:24.461Z"
+          ],
+          "summary": {
+            "total": 4,
+            "encoded": 4,
+            "passed": 0,
+            "failed": 4,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "chunk-08",
+          "journeys": [
+            "J37",
+            "J38",
+            "J39"
+          ],
+          "webUrl": "https://webflix-steel.vercel.app",
+          "window": [
+            "2026-09-27T21:03:27.527Z",
+            "2026-09-27T21:03:38.610Z"
+          ],
+          "summary": {
+            "total": 3,
+            "encoded": 3,
+            "passed": 0,
+            "failed": 3,
+            "notRun": 0
+          }
+        }
+      ],
+      "localBaseline": [
+        {
+          "chunk": "full",
+          "journeys": [
+            "J01",
+            "J02",
+            "J03",
+            "J04",
+            "J05",
+            "J06",
+            "J07",
+            "J08",
+            "J09",
+            "J10",
+            "J11",
+            "J12",
+            "J13"
+          ],
+          "webUrl": "http://localhost:3101",
+          "window": [
+            "2026-09-27T21:06:20.118Z",
+            "2026-09-27T21:07:56.812Z"
+          ],
+          "summary": {
+            "total": 13,
+            "encoded": 13,
+            "passed": 4,
+            "failed": 9,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "full2",
+          "journeys": [
+            "J14",
+            "J15",
+            "J16",
+            "J17",
+            "J18",
+            "J19",
+            "J20"
+          ],
+          "webUrl": "http://localhost:3101",
+          "window": [
+            "2026-09-27T21:08:24.073Z",
+            "2026-09-27T21:09:14.271Z"
+          ],
+          "summary": {
+            "total": 7,
+            "encoded": 7,
+            "passed": 5,
+            "failed": 2,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "full3",
+          "journeys": [
+            "J21",
+            "J22",
+            "J23",
+            "J24",
+            "J25",
+            "J26",
+            "J27",
+            "J28"
+          ],
+          "webUrl": "http://localhost:3101",
+          "window": [
+            "2026-09-27T21:09:17.940Z",
+            "2026-09-27T21:10:00.950Z"
+          ],
+          "summary": {
+            "total": 8,
+            "encoded": 8,
+            "passed": 0,
+            "failed": 8,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "full4",
+          "journeys": [
+            "J29",
+            "J30",
+            "J31",
+            "J32",
+            "J33",
+            "J34"
+          ],
+          "webUrl": "http://localhost:3101",
+          "window": [
+            "2026-09-27T21:10:12.105Z",
+            "2026-09-27T21:11:08.221Z"
+          ],
+          "summary": {
+            "total": 6,
+            "encoded": 6,
+            "passed": 1,
+            "failed": 5,
+            "notRun": 0
+          }
+        },
+        {
+          "chunk": "full5",
+          "journeys": [
+            "J36",
+            "J37",
+            "J38",
+            "J39"
+          ],
+          "webUrl": "http://localhost:3101",
+          "window": [
+            "2026-09-27T21:12:44.724Z",
+            "2026-09-27T21:14:14.629Z"
+          ],
+          "summary": {
+            "total": 4,
+            "encoded": 4,
+            "passed": 1,
+            "failed": 3,
+            "notRun": 0
+          }
+        }
+      ]
+    }
+  },
+  "totals": {
+    "runOfRecord": {
+      "total": 38,
+      "passed": 4,
+      "failed": 34,
+      "notRun": 0
+    },
+    "flakyRerun": {
+      "reRun": 34,
+      "verdictIdentical": 34,
+      "verdictFlakes": 0,
+      "flakyJourneys": [],
+      "failureModeIdentical": 33,
+      "failureModeDivergent": [
+        "J36"
+      ]
+    },
+    "localBaseline": {
+      "total": 38,
+      "passed": 11,
+      "failed": 27,
+      "notRun": 0
+    }
+  },
+  "mechanicalChecks": {
+    "totalsMatchEveryChunkManifestSummary": true,
+    "rerunCoversExactlyTheNonPassSet": true,
+    "allVerdictsStableOnRerun": true,
+    "failureModeDivergences": [
+      "J36"
+    ],
+    "catalogOrderPreserved_J01_to_J39_minus_J35": true,
+    "productionTargetIsTheFrozenLaw": true
+  },
+  "crossSweepSeparation": {
+    "passOnProduction": [
+      "J03",
+      "J13",
+      "J18",
+      "J19"
+    ],
+    "failsBothBoots": [
+      "J01",
+      "J02",
+      "J05",
+      "J06",
+      "J07",
+      "J08",
+      "J09",
+      "J10",
+      "J12",
+      "J17",
+      "J20",
+      "J21",
+      "J22",
+      "J23",
+      "J24",
+      "J25",
+      "J26",
+      "J27",
+      "J28",
+      "J29",
+      "J30",
+      "J31",
+      "J32",
+      "J34",
+      "J36",
+      "J37",
+      "J39"
+    ],
+    "productionOnlyFailures": [
+      "J04",
+      "J11",
+      "J14",
+      "J15",
+      "J16",
+      "J33",
+      "J38"
+    ]
+  },
+  "journeys": [
+    {
+      "id": "J01",
+      "title": "First launch / profile selection / onboarding",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "durationMs": 9795,
+        "firstFailure": "journey assertion failed: the navigation landmarks expose every product surface twice (desktop + mobile)\n  expected: nav a matches exactly 12\n  observed: 13 matching element(s)"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the navigation landmarks expose every product surface twice (desktop + mobile)\n  expected: nav a matches exactly 12\n  observed: 13 matching element(s)"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the navigation landmarks expose every product surface twice (desktop + mobile)\n  expected: nav a matches exactly 12\n  observed: 13 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J02",
+      "title": "Home discovery / hero / rows / intent entry",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 2303,
+        "firstFailure": "journey assertion failed: the hero renders the featured start card on a fresh session\n  expected: data-wfx-hero of [data-wfx-hero] is \"start\"\n  observed: <attribute absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the hero renders the featured start card on a fresh session\n  expected: data-wfx-hero of [data-wfx-hero] is \"start\"\n  observed: <attribute absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "firstFailure": "journey assertion failed: the hero renders the featured start card on a fresh session\n  expected: data-wfx-hero of [data-wfx-hero] is \"start\"\n  observed: <attribute absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J03",
+      "title": "Long-form Watch browsing",
+      "runOfRecord": {
+        "status": "pass",
+        "chunk": "chunk-01",
+        "assertionsPassed": 6,
+        "assertionsTotal": 6,
+        "durationMs": 2072,
+        "firstFailure": null
+      },
+      "rerun": null,
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full",
+        "assertionsPassed": 6,
+        "assertionsTotal": 6,
+        "firstFailure": null
+      },
+      "separation": "pass-on-production"
+    },
+    {
+      "id": "J04",
+      "title": "Shorts vertical discovery",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "assertionsPassed": 2,
+        "assertionsTotal": 3,
+        "durationMs": 26135,
+        "firstFailure": "journey assertion failed: the feed states its position (card 1 of the composed page)\n  expected: text of [data-wfx-shorts-position] is exactly \"1 / 3\"\n  observed: \"1 / 24\""
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the feed states its position (card 1 of the composed page)\n  expected: text of [data-wfx-shorts-position] is exactly \"1 / 3\"\n  observed: \"1 / 24\""
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full",
+        "assertionsPassed": 13,
+        "assertionsTotal": 13,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J05",
+      "title": "Unified search",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "assertionsPassed": 2,
+        "assertionsTotal": 3,
+        "durationMs": 2858,
+        "firstFailure": "journey assertion failed: the unified search joins the whole catalog (3 canonical rain titles across types)\n  expected: 3 canonical result cards\n  observed: 19 result cards"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-01",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the unified search joins the whole catalog (3 canonical rain titles across types)\n  expected: 3 canonical result cards\n  observed: 19 result cards"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 3,
+        "assertionsTotal": 4,
+        "firstFailure": "journey assertion failed: every result links the canonical item detail\n  expected: 3 cards all linking /item?id=wfxitm_…\n  observed: 0 of 3"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J06",
+      "title": "Item detail / availability / realization choice",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 3124,
+        "firstFailure": "journey assertion failed: the home feed offers the card \"Asteroid Drift\"\n  expected: an aria-labeled card link for \"Asteroid Drift\"\n  observed: no matching card"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the home feed offers the card \"Asteroid Drift\"\n  expected: an aria-labeled card link for \"Asteroid Drift\"\n  observed: no matching card"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "firstFailure": "journey assertion failed: the item detail surface renders\n  expected: [data-wfx-surface='item'] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J07",
+      "title": "Official embed playback",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 2040,
+        "firstFailure": "journey assertion failed: the search surface offers the Harbor Lights item (the embed-realized catalog item)\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the Harbor Lights item (the embed-realized catalog item)\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the detail page offers playback\n  expected: a play href\n  observed: <absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J08",
+      "title": "Contained Browser playback",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 2007,
+        "firstFailure": "journey assertion failed: the search surface offers the browser-realized item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the browser-realized item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the detail page offers playback\n  expected: a play href\n  observed: <absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J09",
+      "title": "External playback fallback / return context",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 2028,
+        "firstFailure": "journey assertion failed: the search surface offers the multi-realization item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the multi-realization item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the player renders the Media Surface precedence trace (the fallback decision surface)\n  expected: [data-wfx-precedence-trace] matches exactly 1\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J10",
+      "title": "Like/save/action synchronization truth",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 1921,
+        "firstFailure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: like renders its typed absent state when the source declares it unsupported\n  expected: data-wfx-action-absent='like'\n  observed: <no absent markers>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J11",
+      "title": "Library / watchlist / history",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "assertionsPassed": 4,
+        "assertionsTotal": 5,
+        "durationMs": 2591,
+        "firstFailure": "journey assertion failed: the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)\n  expected: the typed watchlist empty state\n  observed: entries present or no empty state"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the watchlist is honestly empty on a fresh session (typed empty state, never fabricated saves)\n  expected: the typed watchlist empty state\n  observed: entries present or no empty state"
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full",
+        "assertionsPassed": 11,
+        "assertionsTotal": 11,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J12",
+      "title": "Cross-device resume",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 1990,
+        "firstFailure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-02",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the detail page offers playback\n  expected: a play href\n  observed: <absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J13",
+      "title": "Account/profile/identity lifecycle",
+      "runOfRecord": {
+        "status": "pass",
+        "chunk": "chunk-03",
+        "assertionsPassed": 5,
+        "assertionsTotal": 5,
+        "durationMs": 2162,
+        "firstFailure": null
+      },
+      "rerun": null,
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full",
+        "assertionsPassed": 5,
+        "assertionsTotal": 5,
+        "firstFailure": null
+      },
+      "separation": "pass-on-production"
+    },
+    {
+      "id": "J14",
+      "title": "Source connect / reauthorize / disconnect",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "durationMs": 2091,
+        "firstFailure": "journey assertion failed: the source card renders (the runtime's own sources read)\n  expected: [data-wfx-source='fake-source'] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the source card renders (the runtime's own sources read)\n  expected: [data-wfx-source='fake-source'] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full2",
+        "assertionsPassed": 11,
+        "assertionsTotal": 11,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J15",
+      "title": "Recommendation feedback controls",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "assertionsPassed": 5,
+        "assertionsTotal": 6,
+        "durationMs": 29967,
+        "firstFailure": "journey assertion failed: the re-rank note names the composition decision (typed reasons — never a silent swap)\n  expected: a note naming the replacement semantics\n  observed: applied 16 replacement(s); 8 slot(s) kept"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the re-rank note names the composition decision (typed reasons — never a silent swap)\n  expected: a note naming the replacement semantics\n  observed: applied 16 replacement(s); 8 slot(s) kept"
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full2",
+        "assertionsPassed": 6,
+        "assertionsTotal": 6,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J16",
+      "title": "Anti-tunnel / exploration after a single watched topic",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-04",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "durationMs": 31049,
+        "firstFailure": "journey assertion failed: the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)\n  expected: a kept-runway composition note\n  observed: applied 16 replacement(s); 8 slot(s) kept"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the re-rank after concentrated engagement keeps the feed's runway (anti-tunnel: the plan never collapses to the watched topic)\n  expected: a kept-runway composition note\n  observed: applied 16 replacement(s); 8 slot(s) kept"
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full2",
+        "assertionsPassed": 4,
+        "assertionsTotal": 4,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J17",
+      "title": "Explicit intent: learn / happier / surprise / tonight / friend taste",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-04",
+        "assertionsPassed": 2,
+        "assertionsTotal": 3,
+        "durationMs": 5206,
+        "firstFailure": "journey assertion failed: a new intent composes a fresh answer (the intent is replaceable, never sticky in this session)\n  expected: a fresh result set for 'harbor'\n  observed: 0 result cards"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: a new intent composes a fresh answer (the intent is replaceable, never sticky in this session)\n  expected: a fresh result set for 'harbor'\n  observed: 0 result cards"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full2",
+        "assertionsPassed": 4,
+        "assertionsTotal": 5,
+        "firstFailure": "journey assertion failed: the home composition renders after the session intents (no corrupted feed)\n  expected: [data-wfx-hero] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J18",
+      "title": "Attention modes: mindful / balanced / immersive / custom",
+      "runOfRecord": {
+        "status": "pass",
+        "chunk": "chunk-04",
+        "assertionsPassed": 4,
+        "assertionsTotal": 4,
+        "durationMs": 29259,
+        "firstFailure": null
+      },
+      "rerun": null,
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full2",
+        "assertionsPassed": 4,
+        "assertionsTotal": 4,
+        "firstFailure": null
+      },
+      "separation": "pass-on-production"
+    },
+    {
+      "id": "J19",
+      "title": "WebFlix model / BYOM / local model policy",
+      "runOfRecord": {
+        "status": "pass",
+        "chunk": "chunk-04",
+        "assertionsPassed": 11,
+        "assertionsTotal": 11,
+        "durationMs": 2402,
+        "firstFailure": null
+      },
+      "rerun": null,
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full2",
+        "assertionsPassed": 11,
+        "assertionsTotal": 11,
+        "firstFailure": null
+      },
+      "separation": "pass-on-production"
+    },
+    {
+      "id": "J20",
+      "title": "AI subtitles / translation / transcription / dubbing / commentary",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-04",
+        "assertionsPassed": 6,
+        "assertionsTotal": 7,
+        "durationMs": 7237,
+        "firstFailure": "journey assertion failed: the home feed offers the card \"Asteroid Drift\"\n  expected: an aria-labeled card link for \"Asteroid Drift\"\n  observed: no matching card"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-03",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the home feed offers the card \"Asteroid Drift\"\n  expected: an aria-labeled card link for \"Asteroid Drift\"\n  observed: no matching card"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full2",
+        "assertionsPassed": 16,
+        "assertionsTotal": 17,
+        "firstFailure": "journey assertion failed: the player carries the same AI action tray (transforming what is playing — the primary discovery surface)\n  expected: [data-wfx-ai-tray-surface='player'] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J21",
+      "title": "Authorized torrent acquisition (web limited-status surface)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 2341,
+        "firstFailure": "journey assertion failed: the search surface offers the scripted authorized acquisition item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the scripted authorized acquisition item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the acquisition's authorized source basis is recorded (the gated diagnostics carry the provenance)\n  expected: the provenance line (authorized source, user-owned basis)\n  observed: <none>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J22",
+      "title": "Torrent metadata and file selection (web limited-status surface)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 4856,
+        "firstFailure": "journey assertion failed: the scripted acquisition is in its preparing phase (the deterministic run order from J21)\n  expected: the preparing state\n  observed: <none>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the scripted acquisition is in its preparing phase (the deterministic run order from J21)\n  expected: the preparing state\n  observed: <none>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "firstFailure": "journey assertion failed: the scripted acquisition is in its preparing phase (the deterministic run order from J21)\n  expected: the preparing state\n  observed: <none>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J23",
+      "title": "Torrent playback before full completion (web status surface)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "assertionsPassed": 0,
+        "assertionsTotal": 0,
+        "durationMs": 4311,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 0,
+        "assertionsTotal": 0,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J24",
+      "title": "Torrent background completion (web status surface)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "assertionsPassed": 0,
+        "assertionsTotal": 0,
+        "durationMs": 4628,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 0,
+        "assertionsTotal": 0,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='advance']\n✗ Element not found: [data-wfx-acquisition-action='advance']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J25",
+      "title": "Torrent interruption / restart / resume (web status surface)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 1785,
+        "firstFailure": "journey assertion failed: the search surface offers the interrupted-acquisition item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the interrupted-acquisition item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the acquisition panel renders the \"failed\" lifecycle state\n  expected: data-wfx-acquisition-state of [data-wfx-acquisition] is \"failed\"\n  observed: <attribute absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J26",
+      "title": "Verified local asset appears in Library (web status/read surface)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "durationMs": 1634,
+        "firstFailure": "journey assertion failed: the offline-and-verified section lists the earned offline copies (the seed's verified Harbor Lights + the J24-earned Asteroid Drift)\n  expected: 2 offline entries\n  observed: 0 entries"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-05",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the offline-and-verified section lists the earned offline copies (the seed's verified Harbor Lights + the J24-earned Asteroid Drift)\n  expected: 2 offline entries\n  observed: 0 entries"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the offline-and-verified section lists the earned offline copies (the seed's verified Harbor Lights + the J24-earned Asteroid Drift)\n  expected: 2 offline entries\n  observed: 1 entries"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "assertionsPassed": 2,
+        "assertionsTotal": 3,
+        "durationMs": 3447,
+        "firstFailure": "journey assertion failed: the search surface offers an unscripted item (no acquisition session)\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers an unscripted item (no acquisition session)\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 3,
+        "assertionsTotal": 4,
+        "firstFailure": "journey assertion failed: the offline-copy panel renders its no-session state\n  expected: [data-wfx-acquisition-none] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 1451,
+        "firstFailure": "journey assertion failed: the search surface offers the item while the source is signed in\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the item while the source is signed in\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full3",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the item page offers its play decision while the source is signed in\n  expected: a player link\n  observed: <absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J29",
+      "title": "Network loss / playback recovery",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "assertionsPassed": 9,
+        "assertionsTotal": 10,
+        "durationMs": 4140,
+        "firstFailure": "journey assertion failed: the search surface offers the network-loss item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the network-loss item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full4",
+        "assertionsPassed": 10,
+        "assertionsTotal": 10,
+        "firstFailure": "harness/browser failure: agent-browser command failed (1): scrollintoview [data-wfx-acquisition-action='acquire']\n✗ Element not found: [data-wfx-acquisition-action='acquire']. Verify the selector, role, or name is correct and the element exists in the DOM."
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "assertionsPassed": 10,
+        "assertionsTotal": 11,
+        "durationMs": 7932,
+        "firstFailure": "journey assertion failed: the playback surface's like/save render their typed absent notes (unsupported never looks like success)\n  expected: absent like + save notes\n  observed: <no absent markers>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the playback surface's like/save render their typed absent notes (unsupported never looks like success)\n  expected: absent like + save notes\n  observed: <no absent markers>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full4",
+        "assertionsPassed": 10,
+        "assertionsTotal": 11,
+        "firstFailure": "journey assertion failed: the playback surface's like/save render their typed absent notes (unsupported never looks like success)\n  expected: absent like + save notes\n  observed: <no absent markers>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J31",
+      "title": "Cross-platform Web/Desktop parity (web-side anchors)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 1452,
+        "firstFailure": "journey assertion failed: the search surface anchors the canonical item\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-06",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface anchors the canonical item\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full4",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the item detail surface carries the SAME canonical identity the search card linked\n  expected: the detail carries wfxitm_7TM0B6JZAQNYTTAQA7NRFSYKX3\n  observed: <none>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J32",
+      "title": "Source-neutral identity: same item, multiple realizations",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 2244,
+        "firstFailure": "journey assertion failed: the search card links the CANONICAL identity (id-first, not source-first)\n  expected: an /item?id=wfxitm_… link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search card links the CANONICAL identity (id-first, not source-first)\n  expected: an /item?id=wfxitm_… link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full4",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "firstFailure": "journey assertion failed: the search card links the CANONICAL identity (id-first, not source-first)\n  expected: an /item?id=wfxitm_… link\n  observed: /player?id=wfxitm_7TM0B6JZAQNYTTAQA7NRFSYKX3&connector=fake-source&ref=fake%3Amovie-1&title=Asteroid+Drift&type=movie&duration=7200000"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J33",
+      "title": "Bring Your Own Feed: import, preview, confirm, sync, provenance",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 507,
+        "firstFailure": "journey assertion failed: the BYOF drive state resets to pristine before the journey (determinism)\n  expected: HTTP 200 from the dev-reset drive\n  observed: HTTP 400"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the BYOF drive state resets to pristine before the journey (determinism)\n  expected: HTTP 200 from the dev-reset drive\n  observed: HTTP 400"
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full4",
+        "assertionsPassed": 62,
+        "assertionsTotal": 62,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J34",
+      "title": "Capability discoverability from normal product surfaces",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "assertionsPassed": 2,
+        "assertionsTotal": 3,
+        "durationMs": 3108,
+        "firstFailure": "journey assertion failed: Home offers the source-connection CTA in context (task 2: connect a source)\n  expected: [data-wfx-source-connect-cta] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: Home offers the source-connection CTA in context (task 2: connect a source)\n  expected: [data-wfx-source-connect-cta] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full4",
+        "assertionsPassed": 2,
+        "assertionsTotal": 3,
+        "firstFailure": "journey assertion failed: Home offers the source-connection CTA in context (task 2: connect a source)\n  expected: [data-wfx-source-connect-cta] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J36",
+      "title": "Major user journey completion / no dead-end discovery",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "assertionsPassed": 16,
+        "assertionsTotal": 17,
+        "durationMs": 7964,
+        "firstFailure": "journey assertion failed: the feed-import source card renders (the choose-source step of the import journey)\n  expected: [data-wfx-byof-source='youtube'] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-07",
+        "verdictIdentical": true,
+        "failureModeIdentical": false,
+        "firstFailure": "harness/browser failure: agent-browser command failed (-1): wait [data-wfx-session-signed-in]\n✗ Wait timed out after 25000ms\n\nproc: timed out after 20000ms"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full5",
+        "assertionsPassed": 21,
+        "assertionsTotal": 22,
+        "firstFailure": "journey assertion failed: the feed-mode choices render on the live surface (For you / Following / Your imported feed / Blend)\n  expected: [data-wfx-feed-mode-option] present in the DOM\n  observed: 0 matching element(s)"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-08",
+        "assertionsPassed": 3,
+        "assertionsTotal": 4,
+        "durationMs": 4262,
+        "firstFailure": "journey assertion failed: the search surface offers the public title anonymously\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-08",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the public title anonymously\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full5",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "firstFailure": "journey assertion failed: the session menu states the honest anonymous truth\n  expected: text of [data-wfx-session-label] contains \"Signed out\"\n  observed: <element absent>"
+      },
+      "separation": "fails-both-boots"
+    },
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (web: browser-capable + honest fallbacks)",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-08",
+        "assertionsPassed": 0,
+        "assertionsTotal": 1,
+        "durationMs": 3668,
+        "firstFailure": "journey assertion failed: the search surface offers the peer-copy-capable title\n  expected: an item link\n  observed: <absent>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-08",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the search surface offers the peer-copy-capable title\n  expected: an item link\n  observed: <absent>"
+      },
+      "localBaseline": {
+        "status": "pass",
+        "chunk": "full5",
+        "assertionsPassed": 42,
+        "assertionsTotal": 42,
+        "firstFailure": null
+      },
+      "separation": "production-only-failure"
+    },
+    {
+      "id": "J39",
+      "title": "Multimodal media intelligence / semantic moment discovery",
+      "runOfRecord": {
+        "status": "fail",
+        "chunk": "chunk-08",
+        "assertionsPassed": 1,
+        "assertionsTotal": 2,
+        "durationMs": 3779,
+        "firstFailure": "journey assertion failed: the meaning result finds the space documentary by what it IS (not its name)\n  expected: Deep Field Diary\n  observed: <none>"
+      },
+      "rerun": {
+        "status": "fail",
+        "chunk": "chunk-08",
+        "verdictIdentical": true,
+        "failureModeIdentical": true,
+        "firstFailure": "journey assertion failed: the meaning result finds the space documentary by what it IS (not its name)\n  expected: Deep Field Diary\n  observed: <none>"
+      },
+      "localBaseline": {
+        "status": "fail",
+        "chunk": "full5",
+        "assertionsPassed": 28,
+        "assertionsTotal": 29,
+        "firstFailure": "journey assertion failed: the multimodal intelligence walk ran entirely without a WebFlix account (the R23-K anonymous AI boundary)\n  expected: text of [data-wfx-session-label] contains \"Signed out\"\n  observed: <element absent>"
+      },
+      "separation": "fails-both-boots"
+    }
+  ],
+  "classificationReference": "adjudication-table.md is the HUMAN adjudication of record over these mechanical verdicts: 32 STALE-GRAMMAR (26 tree-level §A + 6 production-only §B) + 2 ENVIRONMENTAL (J11, J39) + 0 REGRESSION = the 34 non-pass verdicts. J36's re-run failure-mode divergence (a browser-harness wait timeout, recorded in totals.flakyRerun) does not change its stable FAIL verdict; the run-of-record failure is the adjudicated basis."
+}

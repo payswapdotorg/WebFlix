@@ -1,0 +1,145 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T20:58:53.721Z",
+    "finishedAt": "2026-09-27T20:59:29.578Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790542733721)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 4,
+    "encoded": 4,
+    "passed": 0,
+    "failed": 4,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J01",
+      "title": "First launch / profile selection / onboarding",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the navigation landmarks expose every product surface twice (desktop + mobile)\n  expected: nav a matches exactly 12\n  observed: 13 matching element(s)",
+      "assertions": [
+        {
+          "description": "the shell renders its two navigation landmarks (desktop rail + mobile bar)",
+          "expected": "nav matches exactly 2",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the navigation landmarks expose every product surface twice (desktop + mobile)",
+          "expected": "nav a matches exactly 12",
+          "observed": "13 matching element(s)",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-01/j01-failure.png",
+        "evidence/r34c/rerun/chunk-01/j01-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2484
+    },
+    {
+      "id": "J02",
+      "title": "Home discovery / hero / rows / intent entry",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the hero renders the featured start card on a fresh session\n  expected: data-wfx-hero of [data-wfx-hero] is \"start\"\n  observed: <attribute absent>",
+      "assertions": [
+        {
+          "description": "the hero renders the featured start card on a fresh session",
+          "expected": "data-wfx-hero of [data-wfx-hero] is \"start\"",
+          "observed": "<attribute absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-01/j02-failure.png",
+        "evidence/r34c/rerun/chunk-01/j02-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2752
+    },
+    {
+      "id": "J04",
+      "title": "Shorts vertical discovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the feed states its position (card 1 of the composed page)\n  expected: text of [data-wfx-shorts-position] is exactly \"1 / 3\"\n  observed: \"1 / 24\"",
+      "assertions": [
+        {
+          "description": "the Shorts destination renders the vertical feed surface",
+          "expected": "[data-wfx-surface='shorts'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed renders the vertical viewport",
+          "expected": "[data-wfx-shorts-viewport] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feed states its position (card 1 of the composed page)",
+          "expected": "text of [data-wfx-shorts-position] is exactly \"1 / 3\"",
+          "observed": "\"1 / 24\"",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-01/j04-failure.png",
+        "evidence/r34c/rerun/chunk-01/j04-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 26257
+    },
+    {
+      "id": "J05",
+      "title": "Unified search",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the unified search joins the whole catalog (3 canonical rain titles across types)\n  expected: 3 canonical result cards\n  observed: 19 result cards",
+      "assertions": [
+        {
+          "description": "the search surface renders the results state",
+          "expected": "data-wfx-search-state=\"results\"",
+          "observed": "results",
+          "pass": true
+        },
+        {
+          "description": "the query is echoed with its result count",
+          "expected": "the query echo names the results",
+          "observed": "19 results for “rain”",
+          "pass": true
+        },
+        {
+          "description": "the unified search joins the whole catalog (3 canonical rain titles across types)",
+          "expected": "3 canonical result cards",
+          "observed": "19 result cards",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-01/j05-failure.png",
+        "evidence/r34c/rerun/chunk-01/j05-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2834
+    }
+  ],
+  "limitations": []
+}

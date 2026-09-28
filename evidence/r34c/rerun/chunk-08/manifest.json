@@ -1,0 +1,125 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T21:03:27.527Z",
+    "finishedAt": "2026-09-27T21:03:38.610Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790543007527)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 3,
+    "encoded": 3,
+    "passed": 0,
+    "failed": 3,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the public title anonymously\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the anonymous viewer lands on Home (no gate, no interstitial)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu states the honest anonymous truth",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session truth names accountless watching (login optional, never a prerequisite)",
+          "expected": "no account is needed to watch public content",
+          "observed": "You are watching in an anonymous session — no account is needed to watch public ",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the public title anonymously",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-08/j37-failure.png",
+        "evidence/r34c/rerun/chunk-08/j37-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4148
+    },
+    {
+      "id": "J38",
+      "title": "First-class torrent playback (web: browser-capable + honest fallbacks)",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the peer-copy-capable title\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the peer-copy-capable title",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-08/j38-failure.png",
+        "evidence/r34c/rerun/chunk-08/j38-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2814
+    },
+    {
+      "id": "J39",
+      "title": "Multimodal media intelligence / semantic moment discovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the meaning result finds the space documentary by what it IS (not its name)\n  expected: Deep Field Diary\n  observed: <none>",
+      "assertions": [
+        {
+          "description": "the search surface offers matches by meaning (the multimodal lane)",
+          "expected": "[data-wfx-semantic-search] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the meaning result finds the space documentary by what it IS (not its name)",
+          "expected": "Deep Field Diary",
+          "observed": "<none>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/rerun/chunk-08/j39-failure.png",
+        "evidence/r34c/rerun/chunk-08/j39-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 2833
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J38",
+      "kind": "configuration-limit",
+      "note": "The R23-W2 web encoding drives the FIRST-CLASS peer-copy surfaces end to end over the fixtures' scripted acquisition feed (the same protocol-free facts through the REAL acquisition store the J21-J26 chain validates), the honest Desktop next step for ordinary swarms, and the adapter/WebRTC environment truth behind progressive disclosure. A REAL WebRTC swarm — live hybrid peers streaming bytes into the browser video element through the R23-D adapter — requires a reachable swarm the sandbox does not have; the adapter binding (webtorrent@3.0.21 browser build, lazy-loaded) is the real code path for that environment.",
+      "procedure": "LOCAL-ONLY (the WebRTC-capable scenario): serve a .torrent whose swarm includes WebRTC-capable peers (a WebTorrent hybrid client seeding legally-owned content) over a reachable wss tracker, register the authorized copy on the source, open its player, and capture the live streaming + the verified-asset landing under evidence/<run>/; the Desktop native path is Worker 3's J38 procedure."
+    }
+  ]
+}

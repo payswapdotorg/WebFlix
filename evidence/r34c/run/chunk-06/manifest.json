@@ -1,0 +1,281 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "09d02055f72a41927bc20fca8bbbfe5dd8cfeb1b",
+  "branch": "wfx/r34c/accept-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-09-27T20:56:51.526Z",
+    "finishedAt": "2026-09-27T20:57:11.373Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790542611526)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 5,
+    "encoded": 5,
+    "passed": 0,
+    "failed": 5,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers an unscripted item (no acquisition session)\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the settings capability table declares the native media area (the truth table is complete)",
+          "expected": "the native media & torrent acquisition row",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the web adapter declares native media NOT available on Web (capability honesty, never a fake native path)",
+          "expected": "the native row renders the Not-available-on-Web chip",
+          "observed": "declared not available",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers an unscripted item (no acquisition session)",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-06/j27-failure.png",
+        "evidence/r34c/run/chunk-06/j27-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 3447
+    },
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the item while the source is signed in\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface offers the item while the source is signed in",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-06/j28-failure.png",
+        "evidence/r34c/run/chunk-06/j28-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 1451
+    },
+    {
+      "id": "J29",
+      "title": "Network loss / playback recovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the network-loss item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the offline route renders its self-contained state",
+          "expected": "[data-wfx-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state is announced (role=status)",
+          "expected": "[data-wfx-offline-state] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state says you're offline and the watch progress is safe (specific, honest)",
+          "expected": "the offline + safe-progress truth",
+          "observed": "You're offline\n\nWebFlix needs a connection to load your feeds. Your watch progress is safe — everything you watched while online is already recorded.\n\nTry again",
+          "pass": true
+        },
+        {
+          "description": "the offline state offers its retry action (recoverable)",
+          "expected": "[data-wfx-offline-retry] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline retry control is wired to a real handler",
+          "expected": "a retry handler present",
+          "observed": "wired",
+          "pass": true
+        },
+        {
+          "description": "an unresolvable playback renders its typed failure (never a silent success)",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure is specific (names what failed)",
+          "expected": "text of [data-wfx-error] contains \"Playback could not start\"",
+          "observed": "\"Playback could not start\n\nunavailable: client-runtime failure (unavailable): no valid playback realization could be resolved — source 'fake-source' offers no playback realization for this item: unresolvable: no playback mode could be realized for item 'wfxitm_00000000000000000000000099' | native: rejected — no native realization present | embed: rejected — no embed realization present | browser: rejected — no browser realization present | external: rejected — no external realization present\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure offers its recovery path back to the item",
+          "expected": "[data-wfx-surface='player'] a[href*='/item?'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no provider frame renders for a failed session (never a fake stage)",
+          "expected": "[data-wfx-player-frame] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the network-loss item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-06/j29-failure.png",
+        "evidence/r34c/run/chunk-06/j29-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4140
+    },
+    {
+      "id": "J30",
+      "title": "Unsupported capability honesty",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the playback surface's like/save render their typed absent notes (unsupported never looks like success)\n  expected: absent like + save notes\n  observed: <no absent markers>",
+      "assertions": [
+        {
+          "description": "the capability truth table renders every platform area",
+          "expected": "[data-wfx-settings-capabilities] li[data-wfx-capability] matches >= 5",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'storage' capability area",
+          "expected": "a row for 'storage'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'contained browser' capability area",
+          "expected": "a row for 'contained browser'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'native media & torrent acquisition' capability area",
+          "expected": "a row for 'native media & torrent acquisition'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'background work' capability area",
+          "expected": "a row for 'background work'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'sharing' capability area",
+          "expected": "a row for 'sharing'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the truth table covers the 'notifications' capability area",
+          "expected": "a row for 'notifications'",
+          "observed": "storage, contained browser, native media & torrent acquisition, background work, sharing, notifications",
+          "pass": true
+        },
+        {
+          "description": "the native-media area declares itself NOT available on Web (the honest unsupported state — never silent, never faked)",
+          "expected": "the native row carries the unsupported chip",
+          "observed": "unsupported chip present",
+          "pass": true
+        },
+        {
+          "description": "the adapter's own descriptor is stated (the truth the runtime booted on)",
+          "expected": "text of [data-wfx-capability-descriptor] contains \"wfx-web-adapter\"",
+          "observed": "\"Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).\"",
+          "pass": true
+        },
+        {
+          "description": "the descriptor states the platform truth and that a lying bundle cannot boot",
+          "expected": "the re-check law stated",
+          "observed": "Adapter wfx-web-adapter v0.1.0 on platform 'web' — the runtime booted on this declaration and re-checks it (a lying bundle cannot boot).",
+          "pass": true
+        },
+        {
+          "description": "the playback surface's like/save render their typed absent notes (unsupported never looks like success)",
+          "expected": "absent like + save notes",
+          "observed": "<no absent markers>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-06/j30-failure.png",
+        "evidence/r34c/run/chunk-06/j30-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 7932
+    },
+    {
+      "id": "J31",
+      "title": "Cross-platform Web/Desktop parity (web-side anchors)",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface anchors the canonical item\n  expected: an item link\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the search surface anchors the canonical item",
+          "expected": "an item link",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r34c/run/chunk-06/j31-failure.png",
+        "evidence/r34c/run/chunk-06/j31-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 1452
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J28",
+      "kind": "local-only",
+      "note": "The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    },
+    {
+      "journeyId": "J27",
+      "kind": "desktop-procedure",
+      "note": "Native local media playback (the local range gateway + verified asset replay) is the Desktop path. The web encodes the constrained capability truth (settings table + the desktop-elsewhere note).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): play a verified offline asset from the Library through the native media engine, capture the playback + replay states."
+    },
+    {
+      "journeyId": "J31",
+      "kind": "configuration-limit",
+      "note": "The parity COMPARISON (Web vs Desktop semantically equivalent outcomes) requires both adapters running against the same server-side state. The web-side parity anchors (canonical identity, library state, intent, session state) are encoded; the desktop-side comparison is the lead's procedure.",
+      "procedure": "LEAD (the parity run): boot the service-mode api+web and the Desktop adapter against the SAME profile state, run the parity anchor set on both (item identity, library sections, intent composition), and capture both adapters' evidence side by side under evidence/<run>/."
+    }
+  ]
+}
