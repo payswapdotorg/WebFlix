@@ -11,7 +11,14 @@ Date: 2026-10-02 · Lane: `work/wfx-deploy-w3-regression` · Base: main @ `fbbef
 | `b023820` | The strengthened journey suite (J49 NEW + J40/J41/J43 re-encodes + J36 wait hardening) + the DEPLOYMENT.md accuracy pass |
 | `a3743fa` | The r39 evidence packet (the suite's 46/46 GREEN run + the deployment-surface proofs) |
 
-Pushed: `work/wfx-deploy-w3-regression` → origin (no PR, no merge — TL-owned).
+Push: **UNRESOLVED — the push credential provided in the work order is a literal
+placeholder** (`__PAT_PLACEHOLDER__` — GitHub rejects it: "Invalid username or token"),
+and no other credential exists in this environment (no credential helper, no stored PAT,
+no ambient auth). The branch is complete and committed LOCALLY at `10e97c9` (4 commits,
+all gates green, all evidence committed); the TL needs to either supply a real push
+credential or harvest the branch from this workstation's git truth. No PR opened, no
+merge attempted (TL-owned). No credential was committed to any file or history (the
+placeholder was used only as a push URL argument, never written to disk).
 
 ## 2. Changed files (all inside the lane's ownership: `journeys/**`, `apps/web/DEPLOYMENT.md`, `evidence/r39/**`, `docs/work-items/WFX-DEPLOY-W3*.md`)
 
