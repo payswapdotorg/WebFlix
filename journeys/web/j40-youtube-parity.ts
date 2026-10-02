@@ -36,7 +36,7 @@
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, detailHrefFromSearch } from "../lib/journeys";
+import { goto, detailHrefFromSearch, revealPlayerChrome } from "../lib/journeys";
 
 export const j40YouTubeParity: Journey = {
   id: "J40",
@@ -128,7 +128,11 @@ export const j40YouTubeParity: Journey = {
     await assert.visible("[data-wfx-chrome-settings]", "the settings cluster (speed/quality/captions truths)");
     await assert.visible("[data-wfx-chrome-keyboard]", "the keyboard-shortcut sheet (T)");
     // The settings disclosure opens: the speed steps + the per-rung
-    // truths render (progressive disclosure, one obvious primary).
+    // truths render (progressive disclosure, one obvious primary). The
+    // reveal step first (the idle-cover law — the chrome bar is
+    // pointer-events:none while idle; the gesture + poll make the
+    // open-click deterministic).
+    await revealPlayerChrome(context, "[data-wfx-chrome-settings] > summary");
     await browser.clickInteractive("[data-wfx-chrome-settings] > summary");
     await assert.visible("[data-wfx-chrome-speed]", "the speed steps render in the settings panel");
     await assert.visible("[data-wfx-chrome-quality]", "the quality truth row renders (the honest per-rung sentence)");
@@ -136,7 +140,11 @@ export const j40YouTubeParity: Journey = {
       "[data-wfx-chrome-volume-truth]",
       "the provider rung's volume truth renders (realization-exposed, never a fabricated control)",
     );
-    // The speed step applies (a real control — the choice takes).
+    // The speed step applies (a real control — the choice takes). The
+    // reveal step first (a control inside the chrome — the same
+    // idle-cover law; the eval-opened panel path carries no focus-within
+    // hold, so the reveal is never assumed).
+    await revealPlayerChrome(context, "[data-wfx-chrome-speed-step='1.5']");
     await browser.clickInteractive("[data-wfx-chrome-speed-step='1.5']");
     await browser.settle();
 
@@ -144,6 +152,9 @@ export const j40YouTubeParity: Journey = {
     // the runtime's acceptance IS position evidence: the readout moves
     // only on acceptance).
     const positionBefore = await browser.tryText("[data-wfx-chrome-position]");
+    // The reveal step first (the idle-cover law — same as every chrome
+    // control click in this journey).
+    await revealPlayerChrome(context, "[data-wfx-chrome]");
     await browser.clickInteractive("[data-wfx-chrome]");
     await browser.press("l");
     await browser.settle(800);

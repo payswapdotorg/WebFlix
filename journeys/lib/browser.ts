@@ -176,6 +176,22 @@ export class Browser {
     await this.exec(["click", selector]);
   }
 
+  /**
+   * Hover an element — a REAL pointer move (the CLI dispatches the actual
+   * mouse-move input at the element, firing the page's own mousemove/
+   * mouseover/enter chain). The user-gesture path: used by the chrome
+   * reveal step ({@link revealPlayerChrome}) to wake an idle player
+   * chrome over an embed through the W1-D2 always-interactive strip.
+   */
+  async hover(selector: string): Promise<void> {
+    await this.exec(["hover", selector]);
+  }
+
+  /** Scroll an element into the viewport (the click precondition). */
+  async scrollIntoView(selector: string): Promise<void> {
+    await this.exec(["scrollintoview", selector]);
+  }
+
   /** Click an element by accessible name (role/text locators). */
   async clickRole(role: string, name: string): Promise<void> {
     await this.exec(["find", "role", role, "click", "--name", name]);
@@ -405,7 +421,7 @@ export class Browser {
    * click. Every client-island control in a journey goes through here.
    */
   async clickInteractive(selector: string): Promise<void> {
-    await this.exec(["scrollintoview", selector]);
+    await this.scrollIntoView(selector);
     await this.waitForInteractive(selector);
     await this.exec(["click", selector]);
   }
