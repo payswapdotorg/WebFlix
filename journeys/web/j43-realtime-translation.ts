@@ -56,7 +56,7 @@
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, detailHrefFromSearch } from "../lib/journeys";
+import { goto, detailHrefFromSearch, revealPlayerChrome } from "../lib/journeys";
 
 /** The observed telemetry record's shape (the product's own observation). */
 interface RealtimeTelemetryRecord {
@@ -156,6 +156,12 @@ export const j43RealtimeTranslation: Journey = {
       "[data-wfx-translate-target='es']",
       "the Translate row offers Spanish (the → [target language] control)",
     );
+    // The reveal step first (the idle-cover law: the translate target is
+    // a control INSIDE the player chrome, and this panel was opened via
+    // the DOM seam — no click, no focus-within hold — so the chrome may
+    // be idle/faded with the whole bar pointer-events:none; the gesture +
+    // actionability poll make the click deterministic).
+    await revealPlayerChrome(context, "[data-wfx-translate-target='es']");
     await browser.clickInteractive("[data-wfx-translate-target='es']");
     // The session binds + the stream starts (the markers are the product's
     // own observation — the J40/J41 discipline).
