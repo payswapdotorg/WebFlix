@@ -2,7 +2,7 @@
 
 **Branch:** `work/wfx-deploy-w2-host` (from `main` @ `fbbef9b244887ef3f38e7bddf1b72cff3e6f6ae4`, the wind-down ledger with R37 + R38-B merged — verified before work began)
 
-**HEAD SHA:** `84a079a` (this report is committed at HEAD; see commit list)
+**HEAD SHA:** the branch tip — 3 commits on top of baseline `fbbef9b` (work order `1ad6284` → report `84a079a` → report addendum `df01271`; `git log --oneline main..work/wfx-deploy-w2-host` is the canonical truth — the TL harvests from git)
 
 **Date:** 2026-10-02
 
@@ -18,6 +18,7 @@
 |---|---|
 | `1ad6284` | WFX-DEPLOY-W2: work order committed verbatim (docs/work-items/WFX-DEPLOY-W2.md, dated 2026-10-02) — host/playback/service-integration lane, baseline fbbef9b verified |
 | `84a079a` | WFX-DEPLOY-W2-REPORT.md — the completion report (gates were run at `1ad6284`, i.e. with the identical tree; the report commit adds docs only) |
+| `df01271` | report addendum — push status recorded honestly (credential-blocked) + gates-table provenance |
 
 ## 2. Changed-file list
 
