@@ -1,0 +1,300 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b0238206a348c5740396d09fd27ffef3997a7b7b",
+  "branch": "work/wfx-deploy-w3-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-10-02T10:45:11.980Z",
+    "finishedAt": "2026-10-02T10:45:41.890Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790937919875)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J49",
+      "title": "Deployment release surface (health / offline / PWA / critical path)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the home surface renders (the release landing)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shell nav links Home",
+          "expected": "nav a[href='/'] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shell nav links the Shorts feed",
+          "expected": "nav a[href='/shorts'] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shell nav links the Library",
+          "expected": "nav a[href='/library'] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shell nav links Settings (the You group)",
+          "expected": "nav a[href='/settings'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shell nav links the Subscriptions feed surface",
+          "expected": "nav a[href='/feed/subscriptions'] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shell nav links the offline surface",
+          "expected": "nav a[href='/offline'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "/api/health answers HTTP 200 (deterministic, dependency-free)",
+          "expected": "status 200",
+          "observed": "status 200",
+          "pass": true
+        },
+        {
+          "description": "/api/health answers application/json",
+          "expected": "content-type application/json",
+          "observed": "application/json",
+          "pass": true
+        },
+        {
+          "description": "/api/health answers the frozen contract body",
+          "expected": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}",
+          "observed": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}",
+          "pass": true
+        },
+        {
+          "description": "the offline route renders (the one deliberately-static route)",
+          "expected": "[data-wfx-offline] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the honest offline state renders (the StateViews grammar)",
+          "expected": "[data-wfx-offline-state] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline state names the offline truth",
+          "expected": "text of [data-wfx-offline-state] contains \"You're offline\"",
+          "observed": "\"You're offline\n\nWebFlix needs a connection to load your feeds. Your watch progress is safe — everything you watched while online is already recorded.\n\nTry again\"",
+          "pass": true
+        },
+        {
+          "description": "the offline state reassures about progress (never a lie about data)",
+          "expected": "text of [data-wfx-offline-state] contains \"watch progress is safe\"",
+          "observed": "\"You're offline\n\nWebFlix needs a connection to load your feeds. Your watch progress is safe — everything you watched while online is already recorded.\n\nTry again\"",
+          "pass": true
+        },
+        {
+          "description": "the Try again button renders (the retry affordance)",
+          "expected": "[data-wfx-offline-retry] matches exactly 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline route renders NO shell rail (self-contained — zero configuration)",
+          "expected": "nav.wfx-rail absent from the DOM",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline route renders NO bottom nav (no host boot chrome)",
+          "expected": "nav.wfx-bottomnav absent from the DOM",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline route carries NO feed content (stale-feed behavior is not offline behavior)",
+          "expected": "[data-wfx-card] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline route carries NO browse rows (the honest offline state, never a cached feed)",
+          "expected": "[data-wfx-row] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the served /offline HTML carries its inline critical CSS (zero-network render)",
+          "expected": "an inline <style> block",
+          "observed": "23201 chars of HTML",
+          "pass": true
+        },
+        {
+          "description": "the served /offline HTML carries the inline retry script (zero-network retry)",
+          "expected": "an inline <script> with the retry wiring",
+          "observed": "23201 chars of HTML",
+          "pass": true
+        },
+        {
+          "description": "the Try again click ACTUALLY re-attempts navigation (location.reload() — the page reloaded, the marker is gone)",
+          "expected": "the pre-click window marker absent after the click (a reload happened)",
+          "observed": "the marker is gone (reloaded)",
+          "pass": true
+        },
+        {
+          "description": "the retry keeps the offline URL (the SW fallback contract: the URL bar keeps the original destination)",
+          "expected": "the URL still names /offline",
+          "observed": "http://localhost:3101/offline",
+          "pass": true
+        },
+        {
+          "description": "the offline state renders again after the retry (the honest state, not an error page)",
+          "expected": "[data-wfx-offline-state] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the web app manifest is served (200)",
+          "expected": "status 200",
+          "observed": "status 200",
+          "pass": true
+        },
+        {
+          "description": "the manifest answers the manifest media type",
+          "expected": "content-type application/manifest+json",
+          "observed": "application/manifest+json",
+          "pass": true
+        },
+        {
+          "description": "the manifest names the app (WebFlix) and declares the standalone display",
+          "expected": "name \"WebFlix\" + display \"standalone\" + start_url \"/\"",
+          "observed": "WebFlix / standalone / /",
+          "pass": true
+        },
+        {
+          "description": "the manifest declares the two 1024×1024 icons (any + maskable)",
+          "expected": "2 icons: 1024x1024 any + 1024x1024 maskable",
+          "observed": "1024x1024/any, 1024x1024/maskable",
+          "pass": true
+        },
+        {
+          "description": "the served HTML links the manifest (the installable wiring)",
+          "expected": "<link rel=\"manifest\" href=\"/manifest.webmanifest\">",
+          "observed": "176571 chars of HTML",
+          "pass": true
+        },
+        {
+          "description": "/sw.js is served (the hand-written worker, zero dependencies)",
+          "expected": "status 200 + a JavaScript content type",
+          "observed": "status 200 (application/javascript; charset=UTF-8)",
+          "pass": true
+        },
+        {
+          "description": "the fixtures dev boot registers NO service worker (the production-only registration law)",
+          "expected": "zero SW registrations",
+          "observed": "0 registration(s)",
+          "pass": true
+        },
+        {
+          "description": "the install affordance is ABSENT in the fixtures boot (service-mode-only mounting — no fake prompts)",
+          "expected": "[data-wfx-install] absent from the DOM",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the update affordance is ABSENT in the fixtures boot (the service-mode SW surface)",
+          "expected": "[data-wfx-update] absent from the DOM",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the search form submission lands on the search surface",
+          "expected": "[data-wfx-surface='search'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the submitted query rides the URL (the form's GET action)",
+          "expected": "the URL carries ?q=rain",
+          "observed": "http://localhost:3101/search?q=rain",
+          "pass": true
+        },
+        {
+          "description": "the submitted query answers the results state",
+          "expected": "data-wfx-search-state=\"results\"",
+          "observed": "results",
+          "pass": true
+        },
+        {
+          "description": "the results state renders canonical result cards",
+          "expected": "[data-wfx-search-results] a[data-wfx-card] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the result card's primary link is the one-click play path (the R28-B grammar)",
+          "expected": "an id-first /player href",
+          "observed": "/player?id=wfxitm_64QMN8RMG5R5XJ2P6H498D9WG8&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "opening a search result lands in the player (the one-click open)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playback stage renders (the contained surface)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player's stage declares its honest resolution mode (embed/browser — never fake playback)",
+          "expected": "a data-wfx-player-mode of embed or browser",
+          "observed": "embed",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j49/j49-deployment-release-surface.png",
+        "evidence/r39/chunks/j49/j49-deployment-release-surface-health-offline-pwa-critical-path.snapshot.txt",
+        "evidence/r39/chunks/j49/j49-deployment-release-surface-health-offline-pwa-critical-path.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 18155
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J49",
+      "kind": "configuration-limit",
+      "note": "The WFX-DEPLOY-W3 encoding covers the deployment critical path the fixtures boot can exercise: the shell nav, the search form-submit path into a result, the player's honest resolution mode, the /api/health frozen contract, the /offline zero-configuration render with its PROVEN retry re-attempt, the PWA asset laws (manifest served + linked + standalone + the 1024 icons; sw.js served), and the fixtures-boot registration/mounting laws (NO service worker, NO install chrome in dev). The internal API route table's failure laws (actions/events 400s, shorts 200/502) are machine-tested by apps/web/tests/adapter-api-routes.test.ts and verified live by the lane's committed HTTP probe evidence (the r39 packet) — not journey-encoded. The PRODUCTION-only PWA behaviors — the service worker actually REGISTERING (the production-build NODE_ENV guard), the SW's offline FALLBACK serving /offline at the original navigation URL, the real beforeinstallprompt install flow, and the waiting-worker update flow — cannot be exercised in the fixtures dev boot (the documented WFX-057 law: registration is production-build + service-mode only; fixtures never register).",
+      "procedure": "LOCAL-ONLY (the WFX-057 production-start procedure, recorded in apps/web/DEPLOYMENT.md 'How to verify install'): build the production bundle (bun run build in apps/web), boot it in service mode (WFX_API_BASE=<a reachable Experience API base> bun run start), and drive the production surfaces in a real browser — manifest 200 application/manifest+json, sw.js 200 no-store, the SW registered → activated → controlling, the offline fallback (stop the server → navigate → the SW serves /offline at the original URL; Try again recovers when the server returns), and the update flow (bump CACHE_VERSION → waiting worker → Update available → one reload). The final production install check on the deployed URL belongs to the lead's deployed-preview verification."
+    }
+  ]
+}

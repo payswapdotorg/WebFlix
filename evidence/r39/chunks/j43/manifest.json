@@ -1,0 +1,282 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b0238206a348c5740396d09fd27ffef3997a7b7b",
+  "branch": "work/wfx-deploy-w3-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-10-02T10:39:50.275Z",
+    "finishedAt": "2026-10-02T10:40:40.338Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790937595904)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J43",
+      "title": "Realtime translation",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the realtime-translation media is discoverable through search (the Details deep path)",
+          "expected": "an /item?id=wfxitm_… Details href",
+          "observed": "/item?id=wfxitm_59HHXGCHVD17XQRAEJZ27T5M91&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "Deep Field Diary: the one obvious primary play action renders",
+          "expected": "[data-wfx-item-play] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider-contained rung marks live translation unavailable (never a bypass)",
+          "expected": "data-wfx-translate-row-state of [data-wfx-translate-row] is \"restricted-realization\"",
+          "observed": "\"restricted-realization\"",
+          "pass": true
+        },
+        {
+          "description": "the restricted view names the honest alternatives (the transcript + the AI text translation + the peer copy)",
+          "expected": "[data-wfx-translate-alternatives] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playback phase truth renders (playback independent of translation)",
+          "expected": "[data-wfx-player-phase] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Where-to-watch row offers the authorized peer copy (the full-fidelity live lane)",
+          "expected": "[data-wfx-watch-switch='authorized-peer-copy'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the peer-copy rung (WebFlix owns the media path) offers the realtime translation lane",
+          "expected": "data-wfx-translate-row-state of [data-wfx-translate-row] is \"ready\"",
+          "observed": "\"ready\"",
+          "pass": true
+        },
+        {
+          "description": "the Translate row offers Spanish (the → [target language] control)",
+          "expected": "[data-wfx-translate-target='es'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the realtime session created (the browser → WebFlix bridge → provider chain)",
+          "expected": "the session-created marker",
+          "observed": "[\"session-start-requested\",\"session-bound\",\"session-created\"]",
+          "pass": true
+        },
+        {
+          "description": "the experience island renders the live session state",
+          "expected": "data-wfx-realtime-state of [data-wfx-translate-experience] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the aligned bilingual transcript view renders (never a replacement of the transcript artifact)",
+          "expected": "[data-wfx-bilingual-transcript] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the original transcript surface remains available (the source is never replaced)",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the live caption overlay renders the bilingual lines",
+          "expected": "the source + the translation lines",
+          "observed": "{\"source\":\"Speaker 1: The observatory wakes an hour befor\",\"translation\":\"…\"}",
+          "pass": true
+        },
+        {
+          "description": "the speaker change renders with the simple, contextual label (Speaker 2)",
+          "expected": "a Speaker 2 segment row",
+          "observed": "4",
+          "pass": true
+        },
+        {
+          "description": "the optional translated speech arrives (the real PCM chunk marker)",
+          "expected": "the first-translated-audio-chunk marker",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the translated-speech cluster renders its chunk truth",
+          "expected": "[data-wfx-translate-audio-chunks] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Original audio control renders (the mode is the user's choice)",
+          "expected": "[data-wfx-translate-audio='original'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provider network drop surfaces as the typed recoverable error (the stream continues)",
+          "expected": "the recoverable-error marker",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the provider reconnect recovers the session (the domain reconnect operation)",
+          "expected": "the reconnected marker",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the network interruption reconnects through the resume token (the continuity window)",
+          "expected": "the client-disconnected → reconnected pair",
+          "observed": "reconnected → client-disconnected → reconnected",
+          "pass": true
+        },
+        {
+          "description": "base playback continues unchanged through the translation events (never blocked, never stopped)",
+          "expected": "the phase truth unchanged (buffering)",
+          "observed": "buffering",
+          "pass": true
+        },
+        {
+          "description": "the bridge URL in the client record is the WebFlix bridge (no provider endpoint reaches the browser)",
+          "expected": "the WebFlix bridge origin",
+          "observed": "ws://localhost:3102",
+          "pass": true
+        },
+        {
+          "description": "the measured driftMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "2200ms",
+          "pass": true
+        },
+        {
+          "description": "the measured firstSourceTranscriptDeltaMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "455ms",
+          "pass": true
+        },
+        {
+          "description": "the measured firstTranslatedSpeechChunkMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "14270ms",
+          "pass": true
+        },
+        {
+          "description": "the measured firstTranslatedTextDeltaMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "2756ms",
+          "pass": true
+        },
+        {
+          "description": "the measured providerReportedLagMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "2200ms",
+          "pass": true
+        },
+        {
+          "description": "the measured reconnectTimeMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "1205ms",
+          "pass": true
+        },
+        {
+          "description": "the measured stableSegmentMs is a positive finite observation (never a fabricated number)",
+          "expected": "> 0 and finite",
+          "observed": "3355ms",
+          "pass": true
+        },
+        {
+          "description": "the stable segment observed (the first committed translation)",
+          "expected": "a positive measurement",
+          "observed": "3355ms",
+          "pass": true
+        },
+        {
+          "description": "the reconnect time observed (the R25-L reconnect metric)",
+          "expected": "a positive finite measurement",
+          "observed": "1205ms",
+          "pass": true
+        },
+        {
+          "description": "the drift observed (the source/translation lag — measured, with the provider-reported figure recorded alongside)",
+          "expected": "a positive finite measurement",
+          "observed": "2200ms (provider-reported 2200)",
+          "pass": true
+        },
+        {
+          "description": "the optional sign-in sentence renders (durable preferences — the optional upgrade, never a gate)",
+          "expected": "[data-wfx-translate-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no login gate appeared anywhere in the translation walk (the R23/R25-J accountless law)",
+          "expected": "the anonymous session translated currently playable public media",
+          "observed": "no login wall observed",
+          "pass": true
+        },
+        {
+          "description": "the typed fallback surface names what remains (original captions + playback untouched)",
+          "expected": "[data-wfx-translate-fallback] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the original captions remain available after the translation failure",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "playback continues after the translation failure (the §R25-L frozen law)",
+          "expected": "the phase truth unchanged (buffering)",
+          "observed": "buffering",
+          "pass": true
+        },
+        {
+          "description": "the ended sessions' telemetry retained on the bridge seam (the raw observations readable back)",
+          "expected": "the bridge's telemetry with the ended records",
+          "observed": "1 ended, 2 client records",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j43/j43-realtime-translation.png",
+        "evidence/r39/chunks/j43/j43-realtime-translation.snapshot.txt",
+        "evidence/r39/chunks/j43/j43-realtime-translation.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 41847
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J43",
+      "kind": "configuration-limit",
+      "note": "The R25-W2 encoding drives the FULL J43 walk over the fixtures boot's REAL realtime composition: the browser WebSocket → the WebFlix bridge (ws on 3102, started by the dev boot's instrumentation) → the provider session seam (the frozen R25-A domain port) with the deterministic dev provider double behind it (a REAL second WebSocket hop on 3103 — the scripted bilingual media scripts, the real PCM16 translated-speech chunks, the scripted provider drop + the scripted client network blip). The TRANSPORT, the reconnect/resume machinery, the continuity, the cost-policy verdicts (the shared Model-Fabric policy engine), and the R25-L instrumentation are all the real production wiring of this configuration. The provider-side LATENCY figures are the dev double's MODELED profile (the plan's frozen research numbers — the ~2.3s reported lag), honestly recorded as such in the metrics (the provider-reported figure rides alongside the measured one); the LIVE Qwen endpoint's end-to-end latency/cost benchmark — real credentials, real audio, the production Vercel WebSocket deployment — is the lead's R25-L procedure, and the bridge's service-mode deployment (the Vercel function transport) is the lead's R25 deployment verification.",
+      "procedure": "LEAD (the live-provider benchmark): provision the provider credentials server-side (never in the client), register the realtime adapter through Model Fabric, deploy the bridge on the WebSocket-capable function transport, run the same J43 walk + the r25 web latency harness (apps/web/scripts/r25-web-latency.ts --base-url) against the deployed service, and record the measured R25-L numbers (first source/translation deltas, first speech chunk, stable segment, reconnect, drift) with the live provider's provenance under evidence/r25-lab/."
+    }
+  ]
+}

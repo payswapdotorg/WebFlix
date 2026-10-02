@@ -1,0 +1,106 @@
+=== WFX-DEPLOY-W3 live API route-table probes (fixtures boot, 2026-10-02T10:19:17Z) ===
+
+--- GET /api/health (the deployment probe) ---
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Fri, 02 Oct 2026 10:19:17 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"ok":true,"service":"webflix-web","version":"0.1.0"}
+
+--- POST /api/actions malformed body (caller-misuse law -> 400) ---
+HTTP/1.1 400 Bad Request
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Fri, 02 Oct 2026 10:19:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"body: expected JSON"}
+
+--- POST /api/actions wrong type (-> 400) ---
+HTTP/1.1 400 Bad Request
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Fri, 02 Oct 2026 10:19:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"connectorId: expected a non-empty string"}
+
+--- POST /api/events closed-vocabulary violation: type=start (-> 400 with the reason) ---
+HTTP/1.1 400 Bad Request
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Fri, 02 Oct 2026 10:19:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"error":"type: expected one of progress | complete | skip — 'start' is emitted by the runtime's playback controller on first play, 'like'/'save' settle through the action route, and 'share' is the external/social actions lane (R15)"}
+
+--- POST /api/events valid progress report (-> 200 ok) ---
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Fri, 02 Oct 2026 10:19:18 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"ok":true}
+
+--- GET /api/shorts (fresh page -> 200) ---
+HTTP/1.1 200 OK
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+content-type: application/json
+Date: Fri, 02 Oct 2026 10:19:19 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+Transfer-Encoding: chunked
+
+{"page":{"surface":"short","userId":"wfx-anonymous","sessionId":"6VBWQNV52H5X1CB7CV8EP5B9FT","cards":[{"position":0,"candidate":{"itemId":"wfxitm_5QJH5CV1JDCB9EMW5ZG1TRCT8S","realization":{"connectorId":"fake-source","externalRef":"fake:short-1","capabilities":[],"availability":"unknown"},"features":{"canonicalType":"short","canonicalTitle":"Neon Rain","durationMs":45000,"orientation":"vertical"}},"modelScore":null,"confidence":null,"explanations":[],"dominantObjective":null,"positionReasons":["feed position 0"]},{"position":1,"candidate":{"itemId":"wfxitm_45KKGSJY3HZ8FXVS1TVSMBG7BR","realization":{"connectorId":"fake-source","externalRef":"fake:short-2","capabilities":[],"availability":"unknown"},"features":{"canonicalType":"video","canonicalTitle":"Midnight Scoop","durationMs":90000,"orientation":"vertical"}},"modelScore":null,"confidence":null,"explanations":[],"dominantObjective":null,"positionReasons":["feed position 1"]},{"position":2,"candidate":{"itemId":"wfxitm_4YCGHVC5DS8MVW137QCQNFC4J9","realization":{"connectorId":"fake-source","externalRef":"fake:short-3","capabilities":[],"availability":"unknown"},"features":{"canonicalType":"short","canonicalTitle":"Rain Check","durationMs":30000,"orientation":"vertical"}},"modelScore":null,"confidence":null,"explanations":[],"dominantObjective":null,"positionReasons":["feed position 2"]}]}}
+
+--- GET /offline headers (static route) ---
+HTTP/1.1 200 OK
+Vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch, Accept-Encoding
+Cache-Control: no-cache, must-revalidate
+X-Powered-By: Next.js
+Content-Type: text/html; charset=utf-8
+Date: Fri, 02 Oct 2026 10:19:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+--- GET /manifest.webmanifest ---
+HTTP/1.1 200 OK
+Accept-Ranges: bytes
+Cache-Control: public, max-age=0
+Last-Modified: Fri, 02 Oct 2026 09:23:52 GMT
+ETag: W/"296-1a0fbed5db9"
+Content-Type: application/manifest+json
+Content-Length: 662
+Vary: Accept-Encoding
+Date: Fri, 02 Oct 2026 10:19:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
+
+--- GET /sw.js ---
+HTTP/1.1 200 OK
+Cache-Control: no-store
+Accept-Ranges: bytes
+Last-Modified: Fri, 02 Oct 2026 09:23:52 GMT
+ETag: W/"1955-1a0fbed5db9"
+Content-Type: application/javascript; charset=UTF-8
+Content-Length: 6485
+Vary: Accept-Encoding
+Date: Fri, 02 Oct 2026 10:19:20 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
