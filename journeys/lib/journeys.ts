@@ -103,6 +103,24 @@ export async function itemHrefFromSearch(
   );
 }
 
+/**
+ * The ITEM-DETAIL href for one title, read from the SEARCH surface's own
+ * card kebab (the R28-B deep-surface path: the card's primary link is the
+ * one-click /player href; the quiet action row's Details link
+ * [data-wfx-card-details] carries the /item URL). The DOM's own href is
+ * the truthful source — never a hardcoded id.
+ */
+export async function detailHrefFromSearch(
+  context: JourneyContext,
+  query: string,
+  title: string,
+): Promise<string | null> {
+  await goto(context, `/search?q=${encodeURIComponent(query)}`);
+  return context.browser.eval<string | null>(
+    `(() => { const card = [...document.querySelectorAll('a[data-wfx-card]')].find((a) => (a.getAttribute('aria-label') ?? '').startsWith(${JSON.stringify(title)})); if (card === undefined) return null; const wrap = card.closest('[data-wfx-cardwrap]') ?? card.parentElement; const details = wrap === null ? null : wrap.querySelector('details[data-wfx-card-actions]'); return details === null ? null : (details.querySelector('[data-wfx-card-details]')?.getAttribute('href') ?? null); })()`,
+  );
+}
+
 /** The player href of the item page currently open (the Play button's own link). */
 export async function playerHrefFromItem(context: JourneyContext): Promise<string | null> {
   return context.browser.eval<string | null>(

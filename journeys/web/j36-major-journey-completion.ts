@@ -124,9 +124,12 @@ export const j36MajorJourneyCompletion: Journey = {
     await browser.fill("#wfx-session-password", "dev-password-1");
     await browser.clickInteractive("[data-wfx-session-action='register']");
     // The register success RELOADS the page (no optimistic state — the
-    // component's own law); the navigation-safe wait polls through the
-    // reload before the assertions read the fresh DOM.
-    await browser.waitSelector("[data-wfx-session-signed-in]", 20_000);
+    // component's own law). WFX-DEPLOY-W3 hardening: a raw `wait
+    // selector` polls ONE page context and goes stale when the reload
+    // lands mid-poll (the documented pollTextContains race); the
+    // navigation-safe poll evaluates FRESH per attempt, so the reload
+    // costs one null observation instead of a false timeout.
+    await browser.pollEvalTruthy("document.querySelector('[data-wfx-session-signed-in]') !== null", 20_000);
     await assert.visible(
       "[data-wfx-session-signed-in]",
       "the register round trip completes into the authenticated state (auto-login continuity — the account exists and the session is live)",
@@ -385,7 +388,10 @@ export const j36MajorJourneyCompletion: Journey = {
     // remove also reloads (the honest refresh law) — poll through it for
     // the honest empty state.
     await browser.clickInteractive("[data-wfx-byom-action='remove']");
-    await browser.waitSelector("[data-wfx-byom-empty]", 20_000);
+    // The remove also reloads (the honest refresh law) — poll through it
+    // the navigation-safe way (fresh evaluations per attempt — the
+    // WFX-DEPLOY-W3 hardening of the reload race).
+    await browser.pollEvalTruthy("document.querySelector('[data-wfx-byom-empty]') !== null", 20_000);
     await assert.visible(
       "[data-wfx-byom-empty]",
       "after removal the honest empty state renders (the remove completed — WebFlix's built-in model takes over)",
@@ -401,8 +407,11 @@ export const j36MajorJourneyCompletion: Journey = {
     );
     await browser.clickInteractive("[data-wfx-session-action='logout']");
     // The logout success also reloads (the same no-optimism law) — poll
-    // through the reload for the honest anonymous state.
-    await browser.waitSelector("[data-wfx-session-signed-out]", 20_000);
+    // through the reload for the honest anonymous state the
+    // navigation-safe way (fresh evaluations per attempt; the raw wait
+    // timed out deterministically in the WFX-DEPLOY-W3 baseline when the
+    // reload landed mid-poll — the documented class, hardened here).
+    await browser.pollEvalTruthy("document.querySelector('[data-wfx-session-signed-out]') !== null", 20_000);
     await assert.visible(
       "[data-wfx-session-signed-out]",
       "the sign-out completes into the honest anonymous state (no fabricated profile, no stale session)",

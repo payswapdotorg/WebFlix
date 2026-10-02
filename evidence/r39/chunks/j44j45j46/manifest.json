@@ -1,0 +1,731 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b0238206a348c5740396d09fd27ffef3997a7b7b",
+  "branch": "work/wfx-deploy-w3-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-10-02T10:40:43.577Z",
+    "finishedAt": "2026-10-02T10:41:50.181Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790937649113)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 3,
+    "encoded": 3,
+    "passed": 3,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J44",
+      "title": "Creator channel round trip",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the home feed renders",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the creator-name search surfaces the channel result row",
+          "expected": "[data-wfx-channel-result='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel row carries the sources model's own display name (the R33-C seam)",
+          "expected": "text of [data-wfx-channel-result='fake-source'] contains \"Fake Source (TEST FIXTURE — never production)\"",
+          "observed": "\"F\n\nFake Source (TEST FIXTURE — never production)\n\n@fake-source · Subscriber count not declared by this source\n\nThis source declares no channel description — WebFlix does not write one for it.\n\nSubscribe\"",
+          "pass": true
+        },
+        {
+          "description": "the channel row's subscriber slot is the typed absence (never a fabricated count)",
+          "expected": "text of [data-wfx-channel-result='fake-source'] contains \"Subscriber count not declared by this source\"",
+          "observed": "\"F\n\nFake Source (TEST FIXTURE — never production)\n\n@fake-source · Subscriber count not declared by this source\n\nThis source declares no channel description — WebFlix does not write one for it.\n\nSubscribe\"",
+          "pass": true
+        },
+        {
+          "description": "the channel row carries the real inline Subscribe (the one-store law)",
+          "expected": "[data-wfx-channel-result='fake-source'] [data-wfx-channel-inline-subscribe] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel row links to the channel page (the handle law's route)",
+          "expected": "/channel/fake-source",
+          "observed": "/channel/fake-source",
+          "pass": true
+        },
+        {
+          "description": "the channel page renders",
+          "expected": "[data-wfx-surface='channel'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the banner renders its typed absence (the source declares no banner — never a fabricated image)",
+          "expected": "[data-wfx-channel-banner='absent'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the banner absence names its truth honestly",
+          "expected": "text of [data-wfx-channel-banner-absent] contains \"does not fabricate\"",
+          "observed": "\"This source declares no channel banner — WebFlix does not fabricate one.\"",
+          "pass": true
+        },
+        {
+          "description": "the channel avatar renders (the honest monogram)",
+          "expected": "[data-wfx-channel-avatar] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel name is the sources model's own display name (the R33-C seam)",
+          "expected": "text of [data-wfx-channel-name] contains \"Fake Source (TEST FIXTURE — never production)\"",
+          "observed": "\"Fake Source (TEST FIXTURE — never production)\"",
+          "pass": true
+        },
+        {
+          "description": "the meta line carries the honest @handle (the slugified stable connector id)",
+          "expected": "text of [data-wfx-channel-meta] contains \"@fake-source\"",
+          "observed": "\"@fake-source · This source declares no subscriber count — WebFlix never fabricates one. · 6 videos\"",
+          "pass": true
+        },
+        {
+          "description": "the meta line's subscriber slot is the typed absence (never a fabricated number)",
+          "expected": "text of [data-wfx-channel-meta] contains \"declares no subscriber count\"",
+          "observed": "\"@fake-source · This source declares no subscriber count — WebFlix never fabricates one. · 6 videos\"",
+          "pass": true
+        },
+        {
+          "description": "the tab bar renders",
+          "expected": "[data-wfx-channel-tabs] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the home tab renders",
+          "expected": "[data-wfx-channel-tab='home'] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the videos tab renders",
+          "expected": "[data-wfx-channel-tab='videos'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the shorts tab renders",
+          "expected": "[data-wfx-channel-tab='shorts'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the playlists tab renders",
+          "expected": "[data-wfx-channel-tab='playlists'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the about tab renders",
+          "expected": "[data-wfx-channel-tab='about'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel search field renders",
+          "expected": "[data-wfx-channel-search-input] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel's home tab carries the channel's real items (the discovery-derived feed)",
+          "expected": "[data-wfx-channel-items] [data-wfx-card-title] matches >= 8",
+          "observed": "9 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Videos tab renders",
+          "expected": "[data-wfx-channel-videos] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Videos tab carries exactly the 6 long-form items (the short-form eligibility split)",
+          "expected": "[data-wfx-channel-videos] [data-wfx-card-title] matches exactly 6",
+          "observed": "6 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Videos tab's sort options are honestly absent (the fixtures declare no dates/counts — the SearchFilters law)",
+          "expected": "text of [data-wfx-channel-sort-note] contains \"declares no publish dates or view counts\"",
+          "observed": "\"This source declares no publish dates or view counts for these items — the channel's own feed order is shown, and sort options appear only when the source declares the data they sort by.\"",
+          "pass": true
+        },
+        {
+          "description": "no dead sort chip renders (an option without real backing never renders)",
+          "expected": "[data-wfx-channel-sort-chip] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts tab renders",
+          "expected": "[data-wfx-channel-shorts] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Shorts tab carries exactly the 3 short-form items (the same eligibility the shorts feed applies)",
+          "expected": "[data-wfx-channel-shorts] [data-wfx-card-title] matches exactly 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel's shorts link into the shorts queue (the real /shorts surface)",
+          "expected": "[data-wfx-channel-shorts] a[data-wfx-card] matches >= 1",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Playlists tab renders",
+          "expected": "[data-wfx-channel-playlists] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Playlists tab renders the typed-empty state (the library carries no named list for this channel — never a fabricated playlist)",
+          "expected": "text of [data-wfx-channel-playlists] contains \"No playlists for this channel yet\"",
+          "observed": "\"No playlists for this channel yet\n\nYour library's named lists land here the moment you save one of this channel's items into them — the same lists the Library page renders (WebFlix does not fabricate playlists).\"",
+          "pass": true
+        },
+        {
+          "description": "the About tab renders",
+          "expected": "[data-wfx-channel-about] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the About description is the typed absence (the source declares none)",
+          "expected": "text of [data-wfx-channel-about-description] contains \"declares no channel description\"",
+          "observed": "\"This source declares no channel description — WebFlix does not write one for it.\"",
+          "pass": true
+        },
+        {
+          "description": "the About subscriber-count row carries the honest absence sentence",
+          "expected": "text of [data-wfx-channel-about-subs] contains \"never fabricates\"",
+          "observed": "\"This source declares no subscriber count — WebFlix never fabricates one.\"",
+          "pass": true
+        },
+        {
+          "description": "the About section carries the source's own connection date (the honest phrasing — never a fabricated 'Joined' claim)",
+          "expected": "text of [data-wfx-channel-about-joined] contains \"connection date\"",
+          "observed": "\"Sep 18, 2026 (this source's own connection date — never a fabricated \"Joined\" claim)\"",
+          "pass": true
+        },
+        {
+          "description": "the connected-since row names what its date is (the source's own authorization truth)",
+          "expected": "text of [data-wfx-channel-about-joined] contains \"never a fabricated\"",
+          "observed": "\"Sep 18, 2026 (this source's own connection date — never a fabricated \"Joined\" claim)\"",
+          "pass": true
+        },
+        {
+          "description": "the About content row carries the derived video count (real — from the channel's own items)",
+          "expected": "text of [data-wfx-channel-about-content] contains \"6 videos\"",
+          "observed": "\"6 videos · 3 shorts · 0 playlists in your library — counts derived from this channel's own surfaced items (never fabricated).\"",
+          "pass": true
+        },
+        {
+          "description": "the About content row carries the derived shorts count (real — from the channel's own items)",
+          "expected": "text of [data-wfx-channel-about-content] contains \"3 shorts\"",
+          "observed": "\"6 videos · 3 shorts · 0 playlists in your library — counts derived from this channel's own surfaced items (never fabricated).\"",
+          "pass": true
+        },
+        {
+          "description": "the in-channel search answers with the honest filtered disclosure",
+          "expected": "[data-wfx-channel-search-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the disclosure names the filtered query",
+          "expected": "text of [data-wfx-channel-search-note] contains \"rain\"",
+          "observed": "\"3 matches for “rain” in this channel. Clear\"",
+          "pass": true
+        },
+        {
+          "description": "the in-channel search filters to the 3 title matches (the containment law)",
+          "expected": "[data-wfx-channel-items] [data-wfx-card-title] matches exactly 3",
+          "observed": "3 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the disclosure offers the clear path back to the full channel",
+          "expected": "text of [data-wfx-channel-search-note] contains \"Clear\"",
+          "observed": "\"3 matches for “rain” in this channel. Clear\"",
+          "pass": true
+        },
+        {
+          "description": "the Subscribe pill starts idle (the honest unsubscribed truth)",
+          "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"idle\"",
+          "observed": "\"idle\"",
+          "pass": true
+        },
+        {
+          "description": "the pill flips to subscribed (the real write landed)",
+          "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"",
+          "observed": "\"subscribed\"",
+          "pass": true
+        },
+        {
+          "description": "the Library's playlists section renders the Subscriptions list (the frozen name — one store)",
+          "expected": "[data-wfx-library-playlist='Subscriptions'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Subscriptions list carries the channel's subscribed entry (the real write's durable row)",
+          "expected": "[data-wfx-library-playlist='Subscriptions'] [data-wfx-watchlist-entry] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel page's pill renders subscribed on the fresh load (the connector-scoped stored truth — the reload-durability law)",
+          "expected": "data-wfx-channel-subscribe-state of [data-wfx-channel-subscribe] is \"subscribed\"",
+          "observed": "\"subscribed\"",
+          "pass": true
+        },
+        {
+          "description": "the bell renders once subscribed (the corpus grammar)",
+          "expected": "[data-wfx-channel-bell-button] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the bell's current preference is the default (personalized — no choice recorded yet)",
+          "expected": "data-wfx-channel-bell-preference of [data-wfx-channel-bell-button] is \"personalized\"",
+          "observed": "\"personalized\"",
+          "pass": true
+        },
+        {
+          "description": "the bell menu opens (the dialog family's grammar)",
+          "expected": "[data-wfx-channel-bell-menu] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the all preference option renders",
+          "expected": "[data-wfx-channel-bell-option='all'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the personalized preference option renders",
+          "expected": "[data-wfx-channel-bell-option='personalized'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the none preference option renders",
+          "expected": "[data-wfx-channel-bell-option='none'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the bell menu's honest delivery note names the later-wave truth (never a dead imitation)",
+          "expected": "text of [data-wfx-channel-bell-note] contains \"No notification source is connected\"",
+          "observed": "\"No notification source is connected on this host yet — your preference is recorded and will bind when delivery lands. WebFlix never fabricates notifications.\"",
+          "pass": true
+        },
+        {
+          "description": "the bell's preference datum flips to none (the in-view record)",
+          "expected": "data-wfx-channel-bell-preference of [data-wfx-channel-bell-button] is \"none\"",
+          "observed": "\"none\"",
+          "pass": true
+        },
+        {
+          "description": "the per-channel preference record persists locally (the user's own choice, recorded)",
+          "expected": "a store carrying {\"fake-source\":\"none\"}",
+          "observed": "{\"fake-source\":\"none\"}",
+          "pass": true
+        },
+        {
+          "description": "the bell menu closes on Escape (the dialog family's law)",
+          "expected": "[data-wfx-channel-bell-menu] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel round trip never redirects to a sign-in surface (the anonymous law)",
+          "expected": "the channel page still rendered (no login redirect)",
+          "observed": "http://localhost:3101/channel/fake-source",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j44j45j46/j44-channel-home.png",
+        "evidence/r39/chunks/j44j45j46/j44-channel-about.png",
+        "evidence/r39/chunks/j44j45j46/j44-channel-subscribed.png",
+        "evidence/r39/chunks/j44j45j46/j44-library-subscriptions.png",
+        "evidence/r39/chunks/j44j45j46/j44-bell-none.png",
+        "evidence/r39/chunks/j44j45j46/j44-creator-channel-round-trip.snapshot.txt",
+        "evidence/r39/chunks/j44j45j46/j44-creator-channel-round-trip.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 32498
+    },
+    {
+      "id": "J45",
+      "title": "Live watch + live chat",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the live browse renders its title",
+          "expected": "[data-wfx-live-title] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "every live card carries the red-dot LIVE badge",
+          "expected": "[data-wfx-live-badge] matches >= 2",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the loud fixtures disclosure renders (the dev double, never mistaken for a live provider)",
+          "expected": "[data-wfx-live-disclosure] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the first live card's viewer count is the source-reported figure (honest backing)",
+          "expected": "the declared figure 1247",
+          "observed": "1247",
+          "pass": true
+        },
+        {
+          "description": "the second live stream's viewer count is the typed absence (never a fabricated number)",
+          "expected": "the absent state",
+          "observed": "absent",
+          "pass": true
+        },
+        {
+          "description": "the archived live broadcasts rail renders",
+          "expected": "[data-wfx-archive-rail] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the archived rail names the chat-replay truth",
+          "expected": "text of [data-wfx-archive-note] contains \"chat replays with the playback position\"",
+          "observed": "\"Ended streams kept as videos — their live chat replays with the playback position.\"",
+          "pass": true
+        },
+        {
+          "description": "the live chat transport's serving truth is disclosed on the rail",
+          "expected": "text of [data-wfx-live-bridge-truth] contains \"serving on port 3104\"",
+          "observed": "\"The live chat transport is serving on port 3104.\"",
+          "pass": true
+        },
+        {
+          "description": "the watch page renders the LIVE mode for a live item",
+          "expected": "data-wfx-livewatch-state of [data-wfx-livewatch] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the red-dot LIVE badge renders on the watch page",
+          "expected": "[data-wfx-live-badge] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the watch page's viewer count is the source-reported figure",
+          "expected": "text of [data-wfx-live-viewers] contains \"1,247 watching\"",
+          "observed": "\"1,247 watching\"",
+          "pass": true
+        },
+        {
+          "description": "the live-edge truth sentence renders",
+          "expected": "[data-wfx-live-noscrub] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the no-scrub truth states why there is no seek control",
+          "expected": "text of [data-wfx-live-noscrub] contains \"seeking is unavailable on a live stream\"",
+          "observed": "\"You are watching the live edge — seeking is unavailable on a live stream.\"",
+          "pass": true
+        },
+        {
+          "description": "no seek control renders on the live edge (the honest absence, not a dead control)",
+          "expected": "zero scrub controls",
+          "observed": "0 scrub controls",
+          "pass": true
+        },
+        {
+          "description": "the channel row renders (the source identity)",
+          "expected": "[data-wfx-livewatch-channel] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the channel row names the source (the sources model's displayName)",
+          "expected": "text of [data-wfx-livewatch-channel] contains \"Fake Source\"",
+          "observed": "\"Fake Source (TEST FIXTURE — never production)\"",
+          "pass": true
+        },
+        {
+          "description": "the live stage discloses its unbound truth (never a fabricated player)",
+          "expected": "data-wfx-live-stage of [data-wfx-live-stage] is \"unbound\"",
+          "observed": "\"unbound\"",
+          "pass": true
+        },
+        {
+          "description": "the live chat joins the stream over the WebFlix bridge",
+          "expected": "data-wfx-livechat-state of [data-wfx-livechat] is \"live\"",
+          "observed": "\"live\"",
+          "pass": true
+        },
+        {
+          "description": "the chat's bridge URL is the WebFlix livechat bridge (never a provider endpoint)",
+          "expected": "the WebFlix bridge origin",
+          "observed": "ws://localhost:3104",
+          "pass": true
+        },
+        {
+          "description": "the member badge renders (the source-declared vocabulary)",
+          "expected": "[data-wfx-livechat-badge='member'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the moderator badge renders",
+          "expected": "[data-wfx-livechat-badge='moderator'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the verified-creator badge renders",
+          "expected": "[data-wfx-livechat-badge='verified-creator'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chat bodies carry the emoji grammar verbatim",
+          "expected": "an emoji-bearing body",
+          "observed": "Welcome to Signal Bloom live! The stream starts now 🌸",
+          "pass": true
+        },
+        {
+          "description": "the moderator's pinned message renders in the pinned bar (the transport's pin event)",
+          "expected": "text of [data-wfx-livechat-pinned] contains \"Rules: be kind\"",
+          "observed": "\"Pinned\nmod_ana: 📌 Rules: be kind, no spoilers, slow mode (5s) is on. Enjoy the bloom!\"",
+          "pass": true
+        },
+        {
+          "description": "the chat declares the slow-mode interval (the transport's own fact)",
+          "expected": "text of [data-wfx-livechat-slowmode] contains \"Slow mode: 5s\"",
+          "observed": "\"Slow mode: 5s between messages.\"",
+          "pass": true
+        },
+        {
+          "description": "the viewer count is the transport-carried figure (the double's reported report, provenance labeled)",
+          "expected": ">= the join figure 1247",
+          "observed": "1247",
+          "pass": true
+        },
+        {
+          "description": "the chat panel carries the loud dev-double badge",
+          "expected": "text of [data-wfx-livechat-double] contains \"deterministic dev live-chat double\"",
+          "observed": "\"the deterministic dev live-chat double (the fixtures' scripted chat — committed deterministic content and reported figures, never a live provider).\"",
+          "pass": true
+        },
+        {
+          "description": "the viewer's own message echoes with the honest self-identity",
+          "expected": "a you-entry with the sent text",
+          "observed": "youhello from the journey🌸",
+          "pass": true
+        },
+        {
+          "description": "the too-fast second send answers the typed slow-mode refusal (the real transport behavior)",
+          "expected": "the slow-mode refusal with the wait",
+          "observed": "slow mode is on (5s between messages) — send again in a moment Your message is n",
+          "pass": true
+        },
+        {
+          "description": "no login gate appeared anywhere in the live walk (the accountless chat — the R23 law)",
+          "expected": "the anonymous session chatted on currently live fixture media",
+          "observed": "no login wall observed",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j44j45j46/j45-live-watch-chat.png",
+        "evidence/r39/chunks/j44j45j46/j45-live-watch-live-chat.snapshot.txt",
+        "evidence/r39/chunks/j44j45j46/j45-live-watch-live-chat.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 19976
+    },
+    {
+      "id": "J46",
+      "title": "Chat replay scrub",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the watch page renders the ARCHIVED-LIVE-VOD mode for an ended broadcast",
+          "expected": "data-wfx-livewatch-state of [data-wfx-livewatch] is \"archived-live-vod\"",
+          "observed": "\"archived-live-vod\"",
+          "pass": true
+        },
+        {
+          "description": "the 'was live' badge renders (the ended truth, never red)",
+          "expected": "[data-wfx-livedone-badge] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the archived VOD carries its duration (it scrubs like any video)",
+          "expected": "text of [data-wfx-archive-duration] contains \"13:00\"",
+          "observed": "\"13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the chat replay panel renders",
+          "expected": "[data-wfx-chatreplay] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the replay truth names the committed log (never a live stream)",
+          "expected": "text of [data-wfx-chatreplay-truth] contains \"committed log, never a live stream\"",
+          "observed": "\"Chat replay — the archived live chat, timed to the video position (a committed log, never a live stream).\"",
+          "pass": true
+        },
+        {
+          "description": "the archived slow-mode fact renders in the past tense (a recorded session fact)",
+          "expected": "text of [data-wfx-chatreplay-facts] contains \"Slow mode (5s) was on during this stream\"",
+          "observed": "\"Slow mode (5s) was on during this stream. 15 archived messages.\"",
+          "pass": true
+        },
+        {
+          "description": "the committed log's size is disclosed",
+          "expected": "text of [data-wfx-chatreplay-facts] contains \"15 archived messages\"",
+          "observed": "\"Slow mode (5s) was on during this stream. 15 archived messages.\"",
+          "pass": true
+        },
+        {
+          "description": "no live-chat surface renders on an archived broadcast (the ended stream never streams a current chat)",
+          "expected": "zero live-chat panels",
+          "observed": "0",
+          "pass": true
+        },
+        {
+          "description": "the replay clock starts at the video's start",
+          "expected": "text of [data-wfx-chatreplay-clock] is exactly \"0:00 / 13:00\"",
+          "observed": "\"0:00 / 13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the clock follows the scrub",
+          "expected": "text of [data-wfx-chatreplay-clock] is exactly \"0:20 / 13:00\"",
+          "observed": "\"0:20 / 13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the window at 0:20 holds exactly the entries the playhead passed (1s/5s/11s/18s — the 26s+ ones absent)",
+          "expected": "offsets 1000, 5000, 11000, 18000",
+          "observed": "1000, 5000, 11000, 18000",
+          "pass": true
+        },
+        {
+          "description": "nothing is pinned at 0:20 (the pin stands from its own 44s offset)",
+          "expected": "no pinned bar",
+          "observed": "no pinned bar",
+          "pass": true
+        },
+        {
+          "description": "the clock follows the second scrub",
+          "expected": "text of [data-wfx-chatreplay-clock] is exactly \"1:40 / 13:00\"",
+          "observed": "\"1:40 / 13:00\"",
+          "pass": true
+        },
+        {
+          "description": "the window at 1:40 moved with the playhead (the 74s/88s entries; the pre-70s ones gone)",
+          "expected": "offsets 74000, 88000",
+          "observed": "74000, 88000",
+          "pass": true
+        },
+        {
+          "description": "the archived pinned message renders past its own offset",
+          "expected": "[data-wfx-chatreplay-pinned] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the moderator's archived pin is the pinned message (the log's own pin)",
+          "expected": "text of [data-wfx-chatreplay-pinned] contains \"Pinned: tonight's shot list\"",
+          "observed": "\"Pinned\nmod_ana: 📌 Pinned: tonight's shot list is in the description — timestamps included!\"",
+          "pass": true
+        },
+        {
+          "description": "the viewer's own archived message renders with the honest self-identity",
+          "expected": "[data-wfx-chatreplay-entry-you] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the replay starts paused (the surface's own control)",
+          "expected": "data-wfx-chatreplay-state of [data-wfx-chatreplay] is \"paused\"",
+          "observed": "\"paused\"",
+          "pass": true
+        },
+        {
+          "description": "play starts the replay clock",
+          "expected": "data-wfx-chatreplay-state of [data-wfx-chatreplay] is \"playing\"",
+          "observed": "\"playing\"",
+          "pass": true
+        },
+        {
+          "description": "the replay clock advances past 1:00 (the messages arrive in time order as it moves)",
+          "expected": "a clock beyond 1:00",
+          "observed": "1:01 / 13:00",
+          "pass": true
+        },
+        {
+          "description": "the arrival count discloses the time-ordered flow (never a stream)",
+          "expected": "text of [data-wfx-chatreplay-facts] contains \"replayed so far\"",
+          "observed": "\"Slow mode (5s) was on during this stream. 15 archived messages — 12 replayed so far.\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j44j45j46/j46-chat-replay-scrub.png",
+        "evidence/r39/chunks/j44j45j46/j46-chat-replay-scrub.snapshot.txt",
+        "evidence/r39/chunks/j44j45j46/j46-chat-replay-scrub.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 6224
+    }
+  ],
+  "limitations": []
+}

@@ -36,7 +36,7 @@
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import { goto, detailHrefFromSearch } from "../lib/journeys";
 
 export const j40YouTubeParity: Journey = {
   id: "J40",
@@ -70,42 +70,48 @@ export const j40YouTubeParity: Journey = {
       "at least one suggestion row renders (keyboard-navigable)",
     );
 
-    // OPEN VIDEO: the search result's item link → the item hub.
-    const itemHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    // OPEN VIDEO: the search result's card → the R28-B deep-surface
+    // path. The card's PRIMARY link is the one-click /player href; the
+    // item hub (the canonical identity surface) is the kebab's Details
+    // deep action — the walk reads THAT href from the DOM (the same
+    // href-reading law J06 follows).
+    const itemHref = await detailHrefFromSearch(context, "Deep Field", "Deep Field Diary");
     assert.that(
-      "the title search offers the item",
-      "an item link",
+      "the title search offers the item's Details deep path (the R28-B card grammar)",
+      "an /item?id=wfxitm_… Details href",
       itemHref ?? "<absent>",
-      itemHref !== null,
+      itemHref !== null && itemHref.startsWith("/item?id=wfxitm_"),
     );
     await goto(context, itemHref ?? "/");
     await assert.visible("[data-wfx-surface='item']", "the item hub renders (the canonical identity surface)");
-    // QUEUE: add THIS title to the session queue from the item hub (the
-    // queue row's own control — the R24-C Queue pairing), then confirm
-    // the control's own outcome state BEFORE navigating.
-    await assert.visible("[data-wfx-queue-add]", "the queue-add control renders on the item hub");
-    await browser.clickInteractive("[data-wfx-queue-add-btn]");
-    await browser.settle(600);
-    const addOutcome = await browser.tryAttr("[data-wfx-queue-add-btn]", "data-wfx-queue-added");
-    assert.that(
-      "the item hub's queue-add control confirms the add (the pairing's own outcome state)",
-      "data-wfx-queue-added=true",
-      addOutcome ?? "<absent>",
-      addOutcome === "true",
-    );
-
-    // THE ONE OBVIOUS PLAY ACTION: the primary Play (the R24-E
-    // qualitative law — supported content presents one obvious primary
-    // play action; the play-intent recorder records the real click).
+    // QUEUE: add THIS title to the session queue from the PLAYER's watch
+    // kebab (the queue row's own control — the R24-C Queue pairing; the
+    // R28-B+ placement: the queue-add rides the player's kebab menu),
+    // then confirm the control's own outcome state BEFORE navigating.
+    // The play-intent recorder's listener must be live before the click
+    // (the J41 law — a pre-hydration click never bridges onto the trace).
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const ready = await browser.eval<boolean>(`window.__wfxPlayIntentReady === true`);
       if (ready) break;
       await browser.settle(250);
     }
     await browser.clickInteractive("[data-wfx-item-play]");
-    // The play click is a FULL PAGE NAVIGATION (the plain <a> href) —
-    // wait for the player route to render before asserting.
     await browser.waitSelector("[data-wfx-surface='player']", 30_000);
+    await browser.clickInteractive("[data-wfx-watch-kebab] > summary");
+    await assert.visible("[data-wfx-queue-add-btn]", "the queue-add control renders in the player's watch kebab");
+    await browser.clickInteractive("[data-wfx-queue-add-btn]");
+    await browser.settle(600);
+    const addOutcome = await browser.tryAttr("[data-wfx-queue-add-btn]", "data-wfx-queue-added");
+    assert.that(
+      "the player's queue-add control confirms the add (the pairing's own outcome state)",
+      "data-wfx-queue-added=true",
+      addOutcome ?? "<absent>",
+      addOutcome === "true",
+    );
+
+    // THE ONE OBVIOUS PLAY ACTION landed here: the play click navigated
+    // the player (asserted below — the R28-B one-click grammar: the
+    // hub's primary Play IS the one obvious primary play action).
     await assert.visible(
       "[data-wfx-surface='player']",
       "the play click lands in the player (the one obvious primary play action)",
@@ -181,10 +187,16 @@ export const j40YouTubeParity: Journey = {
     );
     await browser.eval(`void (window.__wfxQueueCheck = undefined)`);
 
-    // WATCHLIST: the WebFlix-native save (the durable canonical write).
+    // WATCHLIST: the WebFlix-native save (the durable canonical write) —
+    // the player's row-variant Save pill (the R29-B grammar).
     await browser.clickInteractive("[data-wfx-watchlist-toggle]");
     await browser.pollTextContains("[data-wfx-watchlist-status]", "Saved", 30_000);
-    // PLAYLIST: the save-to-playlist round trip (the named list).
+    // PLAYLIST: the save-to-playlist round trip (the named list) — the
+    // R28-B+ placement: the playlist affordance rides the ITEM HUB's
+    // standard WatchlistSave (offerPlaylist — the only surface that
+    // offers the named-list write), so the walk returns to the hub.
+    await goto(context, itemHref ?? "/");
+    await assert.visible("[data-wfx-watchlist-playlist-toggle]", "the hub's playlist affordance renders (the named-list write)");
     await browser.clickInteractive("[data-wfx-watchlist-playlist-toggle]");
     await browser.settle();
     await assert.visible("[data-wfx-watchlist-playlist-form]", "the playlist form renders (the named-list write)");
@@ -224,6 +236,7 @@ export const j40YouTubeParity: Journey = {
       if (ready) break;
       await browser.settle(250);
     }
+    await assert.visible("[data-wfx-item-play]", "the item hub's primary Play renders (the one obvious play action)");
     await browser.clickInteractive("[data-wfx-item-play]");
     await browser.waitSelector("[data-wfx-surface='player']", 30_000);
     await assert.visible("[data-wfx-feedback-controls]", "the player's feedback controls render (the parity seam)");

@@ -49,7 +49,7 @@
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import { goto, detailHrefFromSearch } from "../lib/journeys";
 
 /** One benchmark title's web-side walk (the assertable pair set). */
 interface StartupWalk {
@@ -73,14 +73,18 @@ export const j41PlaybackStartup: Journey = {
     const { assert, browser } = context;
 
     for (const benchmark of BENCHMARK_TITLES) {
-      // ---- THE REAL USER FLOW: search → item hub → the primary Play.
+      // ---- THE REAL USER FLOW: search → the item hub (the R28-B
+      // deep-surface Details path) → the primary Play. The card's
+      // primary link is the one-click /player href; the hub is the
+      // kebab's Details deep action — the play-click origin stays the
+      // hub's Play (the measured path's law).
       await goto(context, `/search?q=${encodeURIComponent(benchmark.searchQuery)}`);
-      const itemHref = await itemHrefFromSearch(context, benchmark.searchQuery, benchmark.titleFragment);
+      const itemHref = await detailHrefFromSearch(context, benchmark.searchQuery, benchmark.titleFragment);
       assert.that(
-        `the benchmark title '${benchmark.titleFragment}' is discoverable through search`,
-        "an item link",
+        `the benchmark title '${benchmark.titleFragment}' is discoverable through search (the Details deep path)`,
+        "an /item?id=wfxitm_… Details href",
         itemHref ?? "<absent>",
-        itemHref !== null,
+        itemHref !== null && itemHref.startsWith("/item?id=wfxitm_"),
       );
       await goto(context, itemHref ?? "/");
       await assert.visible(
@@ -298,7 +302,7 @@ export const j41PlaybackStartup: Journey = {
     // ---- THE REALIZATION-SWITCH MEASUREMENT (the Where-to-watch
     // switch: Deep Field Diary's peer copy — the request/confirm pair).
     await goto(context, "/search?q=Deep%20Field");
-    const diaryHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    const diaryHref = await detailHrefFromSearch(context, "Deep Field", "Deep Field Diary");
     await goto(context, diaryHref ?? "/");
     await assert.visible(
       "[data-wfx-watch-switch='authorized-peer-copy']",
