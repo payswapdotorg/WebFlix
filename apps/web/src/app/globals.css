@@ -5399,6 +5399,7 @@ html[data-theme="light"] .wfx-subscribe {
   pointer-events: auto;
 }
 
+
 .wfx-chrome__scrub {
   display: flex;
   align-items: center;
@@ -6713,6 +6714,10 @@ html[data-theme="light"] .wfx-switch__knob {
   font: inherit;
   font-size: 12px;
   line-height: 16px;
+  /* W1-D1 — pure text: the click passes through to the play layer beneath
+   * (the gated preview keeps the one-click-play law — never a swallowed
+   * gesture under an informational pill). */
+  pointer-events: none;
 }
 
 .wfx-hoverpreview__unmute {
