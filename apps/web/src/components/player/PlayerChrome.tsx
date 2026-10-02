@@ -1461,6 +1461,17 @@ export function PlayerChrome(props: PlayerChromeProps): JSX.Element {
           setCaptionsOn((current) => !current);
         }}
       />
+      {/* W1-D2 — THE WAKE STRIP: over a provider embed the parent window
+          receives NO mousemove while the pointer is inside the iframe, so
+          an idle chrome could never be revealed from over the video (the
+          controls faded at ~3s and stayed unreachable until the pointer
+          left the stage). This always-interactive sliver at the stage's
+          bottom edge answers the natural gesture — moving toward where
+          the controls live — with a parent-document pointer event, which
+          the window mousemove path turns into the reveal. Interactive
+          ONLY while idle (the CSS seam), so it never covers the bar's
+          buttons once they are visible. */}
+      <span className="wfx-chrome__wake" aria-hidden="true" data-wfx-chrome-wake />
     </div>
   );
 }

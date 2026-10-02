@@ -35,6 +35,12 @@
  *   read the hover preview uses), and the honest not-embeddable truth
  *   when they do not;
  * - the copy is the REAL clipboard (with the typed fallback truth).
+ *
+ * W1-D3 — THE PANEL/TRIGGER SPLIT: the panel itself (`SharePanel`) is
+ * exported so surfaces with their OWN trigger grammar (the short feed's
+ * G4 rail share cell) open the IDENTICAL share experience — the R28-B
+ * unification law: sharing works the same everywhere. `ShareControl`
+ * remains the pill/menu/row trigger + panel composition.
  */
 
 import { useCallback, useEffect, useRef, useState, type JSX } from "react";
@@ -204,16 +210,43 @@ function embedCodeOf(url: string, title: string): string {
   return `<iframe width="560" height="315" src="${url}" title="${title.replace(/"/g, "&quot;")}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
 }
 
+/**
+ * W1-D3 — the client-side resolve cache (one honest /api/preview read per
+ * source identity per page life — the same seam law the hover preview's
+ * `previewTruth` map keeps; the panel's remounts never re-fetch).
+ */
+const shareEmbedTruth = new Map<string, string | null>();
+
+/**
+ * W1-D3 — the unified share panel, extracted from ShareControl so surfaces
+ * with their own trigger grammar open the IDENTICAL share experience (the
+ * R28-B unification law). Mounts only while open; the owner's `onClose`
+ * answers the Esc/scrim/X paths.
+ */
+export interface SharePanelProps {
+  /** Close the panel (the owner's open state — every close path calls it). */
+  readonly onClose: () => void;
+  /** The canonical WebFlix link (the fallback share target). */
+  readonly canonicalHref: string;
+  /** The canonical link's plain-language name (what the copy carries). */
+  readonly title: string;
+  /** The source's own URL, when one exists (the realization's embed/watch URL). */
+  readonly sourceUrl?: string;
+  /** The source's id (the label of the source link). */
+  readonly sourceId?: string;
+  /** The card's target fields (the lazy resolve for the share short link). */
+  readonly connectorId?: string;
+  readonly externalRef?: string;
+}
+
 /** The unified share panel (the corpus dialog + the honest backing). */
-export function ShareControl(props: ShareControlProps): JSX.Element {
-  const [open, setOpen] = useState(false);
+export function SharePanel(props: SharePanelProps): JSX.Element {
   const [embedView, setEmbedView] = useState(false);
   const [startAt, setStartAt] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [embedUrl, setEmbedUrl] = useState<string | null>(
     props.sourceUrl !== undefined ? props.sourceUrl : null,
   );
-  const [embedResolved, setEmbedResolved] = useState(props.sourceUrl !== undefined);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -249,39 +282,47 @@ export function ShareControl(props: ShareControlProps): JSX.Element {
     }, 3000);
   }, []);
 
-  /** Open the panel (+ resolve the embed truth lazily when the card must). */
+  /** Resolve the embed truth lazily (mounting IS opening — the panel only
+   *      exists while open; the cache keeps it one read per identity). */
   const connectorId = props.connectorId;
   const externalRef = props.externalRef;
-  const openPanel = useCallback((): void => {
-    setOpen(true);
-    setEmbedView(false);
-    if (!embedResolved && connectorId !== undefined && externalRef !== undefined) {
-      void (async (): Promise<void> => {
-        try {
-          const params = new URLSearchParams({ connectorId, ref: externalRef });
-          const response = await fetch(`/api/preview?${params.toString()}`);
-          const body = (await response.json()) as { previewable?: boolean; url?: string };
-          if (body.previewable === true && typeof body.url === "string") {
-            setEmbedUrl(body.url);
-          }
-        } catch {
-          // The honest fallback stays: the canonical link (never a guess).
-        }
-        setEmbedResolved(true);
-      })();
+  useEffect(() => {
+    if (props.sourceUrl !== undefined) return;
+    if (connectorId === undefined || externalRef === undefined) return;
+    const cacheKey = `${connectorId}:${externalRef}`;
+    if (shareEmbedTruth.has(cacheKey)) {
+      const cached = shareEmbedTruth.get(cacheKey) ?? null;
+      if (cached !== null) setEmbedUrl(cached);
+      return;
     }
-  }, [embedResolved, connectorId, externalRef]);
+    let cancelled = false;
+    void (async (): Promise<void> => {
+      let resolved: string | null = null;
+      try {
+        const params = new URLSearchParams({ connectorId, ref: externalRef });
+        const response = await fetch(`/api/preview?${params.toString()}`);
+        const body = (await response.json()) as { previewable?: boolean; url?: string };
+        if (body.previewable === true && typeof body.url === "string") {
+          resolved = body.url;
+        }
+      } catch {
+        // The honest fallback stays: the canonical link (never a guess).
+      }
+      shareEmbedTruth.set(cacheKey, resolved);
+      if (!cancelled && resolved !== null) setEmbedUrl(resolved);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [props.sourceUrl, connectorId, externalRef]);
 
-  /** Close (the Esc + scrim + X paths). */
+  /** Close (the Esc + scrim + X paths — the owner's state). */
   const close = useCallback((): void => {
-    setOpen(false);
-    setEmbedView(false);
-    setStartAt(false);
-  }, []);
+    props.onClose();
+  }, [props]);
 
   // Esc closes the open panel (the dialog grammar's keyboard path).
   useEffect(() => {
-    if (!open) return;
     const onKey = (event: KeyboardEvent): void => {
       if (event.key === "Escape") close();
     };
@@ -289,7 +330,7 @@ export function ShareControl(props: ShareControlProps): JSX.Element {
     return () => {
       window.removeEventListener("keydown", onKey);
     };
-  }, [open, close]);
+  }, [close]);
 
   /** Copy the link (the REAL clipboard with the typed fallback truth). */
   const copyLink = useCallback(
@@ -307,6 +348,192 @@ export function ShareControl(props: ShareControlProps): JSX.Element {
   /** Scroll the tiles strip (the Previous/Next arrows). */
   const scrollTiles = useCallback((direction: -1 | 1): void => {
     trackRef.current?.scrollBy({ left: direction * 220, behavior: "smooth" });
+  }, []);
+
+  return (
+    <>
+      <div className="wfx-share__scrim" data-wfx-share-scrim onClick={close}>
+        {/* The corpus dialog: 470×337, r12, the dialog shadow, Share + X. */}
+        <div
+          ref={panelRef}
+          className="wfx-share__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Share"
+          data-wfx-share-panel
+          onClick={(event) => {
+            event.stopPropagation();
+          }}
+        >
+          <div className="wfx-share__header">
+            <h2 className="wfx-share__title">Share</h2>
+            <button
+              type="button"
+              className="wfx-share__close"
+              aria-label="Cancel"
+              onClick={close}
+              data-wfx-share-close
+            >
+              <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" style={{ display: "block" }}>
+                <path d="M5 5l14 14M19 5 5 19" />
+              </svg>
+            </button>
+          </div>
+          {embedView ? (
+            /* The Embed view: the provider's documented embed code (or the
+                honest not-embeddable truth), with its own Copy. */
+            <div className="wfx-share__embedview" data-wfx-share-embed>
+              {embedUrl !== null ? (
+                <>
+                  <code className="wfx-share__code" data-wfx-share-embed-code>
+                    {embedCodeOf(embedUrl, props.title)}
+                  </code>
+                  <div className="wfx-share__copyrow">
+                    <button
+                      type="button"
+                      className="wfx-share__copy"
+                      onClick={() => void copyLink(embedCodeOf(embedUrl, props.title))}
+                      data-wfx-share-embed-copy
+                    >
+                      Copy
+                    </button>
+                    <button
+                      type="button"
+                      className="wfx-share__linkbutton"
+                      onClick={() => {
+                        setEmbedView(false);
+                      }}
+                    >
+                      Done
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="wfx-share__truth" data-wfx-share-embed-absent>
+                    This source provides no embeddable player for {props.title} — there is no
+                    embed code to share (never a fabricated one).
+                  </p>
+                  <button
+                    type="button"
+                    className="wfx-share__linkbutton"
+                    onClick={() => {
+                      setEmbedView(false);
+                    }}
+                  >
+                    Done
+                  </button>
+                </>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* The target row: the measured tiles, scrollable, with arrows. */}
+              <div className="wfx-share__targets">
+                <button
+                  type="button"
+                  className="wfx-share__arrow"
+                  aria-label="Previous share targets"
+                  onClick={() => scrollTiles(-1)}
+                  data-wfx-share-arrow="prev"
+                >
+                  <Icon name="arrowLeft" size={20} />
+                </button>
+                <div className="wfx-share__track" ref={trackRef} data-wfx-share-targets>
+                  {SHARE_TARGETS.map((target) => (
+                    <button
+                      key={target.id}
+                      type="button"
+                      className="wfx-share__target"
+                      data-wfx-share-target={target.id}
+                      onClick={() => {
+                        if (target.id === "embed") {
+                          setEmbedView(true);
+                          return;
+                        }
+                        target.open(shareLink, props.title);
+                      }}
+                    >
+                      <span className="wfx-share__targetglyph">
+                        <Icon name={target.icon} size={28} />
+                      </span>
+                      <span className="wfx-share__targetlabel">{target.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className="wfx-share__arrow"
+                  aria-label="Next share targets"
+                  onClick={() => scrollTiles(1)}
+                  data-wfx-share-arrow="next"
+                >
+                  <Icon name="arrowRight" size={20} />
+                </button>
+              </div>
+              {/* The link field + the Copy pill (64×40 r20). */}
+              <div className="wfx-share__linkrow">
+                <label className="wfx-share__field">
+                  <span className="wfx-sr-only">Share link</span>
+                  <input
+                    type="text"
+                    readOnly
+                    value={shareLink}
+                    data-wfx-share-link
+                    onFocus={(event) => {
+                      event.currentTarget.select();
+                    }}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="wfx-share__copy"
+                  onClick={() => void copyLink(shareLink)}
+                  data-wfx-share-copy
+                >
+                  Copy
+                </button>
+              </div>
+              {/* Start-at: the timestamp checkbox appending ?t= to the link. */}
+              <label className="wfx-share__startat">
+                <input
+                  type="checkbox"
+                  checked={startAt}
+                  onChange={(event) => {
+                    setStartAt(event.currentTarget.checked);
+                  }}
+                  data-wfx-share-startat
+                />
+                <span>
+                  Start at{" "}
+                  {startAtSeconds > 0 ? formatTimestamp(startAtSeconds) : "0:00"}
+                </span>
+              </label>
+            </>
+          )}
+        </div>
+      </div>
+      {/* The toast (the corpus's "Link copied to clipboard" snackbar). */}
+      {toast !== null ? (
+        <p className="wfx-share__toast" role="status" data-wfx-share-toast>
+          {toast}
+        </p>
+      ) : null}
+    </>
+  );
+}
+
+/** The unified share trigger + panel (the pill/menu/row entry points). */
+export function ShareControl(props: ShareControlProps): JSX.Element {
+  const [open, setOpen] = useState(false);
+
+  const openPanel = useCallback((): void => {
+    setOpen(true);
+  }, []);
+
+  /** Close (the panel's own Esc + scrim + X paths call back into this). */
+  const close = useCallback((): void => {
+    setOpen(false);
   }, []);
 
   const triggerClass =
@@ -333,173 +560,15 @@ export function ShareControl(props: ShareControlProps): JSX.Element {
         <span>Share</span>
       </button>
       {open ? (
-        <div className="wfx-share__scrim" data-wfx-share-scrim onClick={close}>
-          {/* The corpus dialog: 470×337, r12, the dialog shadow, Share + X. */}
-          <div
-            ref={panelRef}
-            className="wfx-share__panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Share"
-            data-wfx-share-panel
-            onClick={(event) => {
-              event.stopPropagation();
-            }}
-          >
-            <div className="wfx-share__header">
-              <h2 className="wfx-share__title">Share</h2>
-              <button
-                type="button"
-                className="wfx-share__close"
-                aria-label="Cancel"
-                onClick={close}
-                data-wfx-share-close
-              >
-                <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" style={{ display: "block" }}>
-                  <path d="M5 5l14 14M19 5 5 19" />
-                </svg>
-              </button>
-            </div>
-            {embedView ? (
-              /* The Embed view: the provider's documented embed code (or the
-                  honest not-embeddable truth), with its own Copy. */
-              <div className="wfx-share__embedview" data-wfx-share-embed>
-                {embedUrl !== null ? (
-                  <>
-                    <code className="wfx-share__code" data-wfx-share-embed-code>
-                      {embedCodeOf(embedUrl, props.title)}
-                    </code>
-                    <div className="wfx-share__copyrow">
-                      <button
-                        type="button"
-                        className="wfx-share__copy"
-                        onClick={() => void copyLink(embedCodeOf(embedUrl, props.title))}
-                        data-wfx-share-embed-copy
-                      >
-                        Copy
-                      </button>
-                      <button
-                        type="button"
-                        className="wfx-share__linkbutton"
-                        onClick={() => {
-                          setEmbedView(false);
-                        }}
-                      >
-                        Done
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <p className="wfx-share__truth" data-wfx-share-embed-absent>
-                      This source provides no embeddable player for {props.title} — there is no
-                      embed code to share (never a fabricated one).
-                    </p>
-                    <button
-                      type="button"
-                      className="wfx-share__linkbutton"
-                      onClick={() => {
-                        setEmbedView(false);
-                      }}
-                    >
-                      Done
-                    </button>
-                  </>
-                )}
-              </div>
-            ) : (
-              <>
-                {/* The target row: the measured tiles, scrollable, with arrows. */}
-                <div className="wfx-share__targets">
-                  <button
-                    type="button"
-                    className="wfx-share__arrow"
-                    aria-label="Previous share targets"
-                    onClick={() => scrollTiles(-1)}
-                    data-wfx-share-arrow="prev"
-                  >
-                    <Icon name="arrowLeft" size={20} />
-                  </button>
-                  <div className="wfx-share__track" ref={trackRef} data-wfx-share-targets>
-                    {SHARE_TARGETS.map((target) => (
-                      <button
-                        key={target.id}
-                        type="button"
-                        className="wfx-share__target"
-                        data-wfx-share-target={target.id}
-                        onClick={() => {
-                          if (target.id === "embed") {
-                            setEmbedView(true);
-                            return;
-                          }
-                          target.open(shareLink, props.title);
-                        }}
-                      >
-                        <span className="wfx-share__targetglyph">
-                          <Icon name={target.icon} size={28} />
-                        </span>
-                        <span className="wfx-share__targetlabel">{target.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    className="wfx-share__arrow"
-                    aria-label="Next share targets"
-                    onClick={() => scrollTiles(1)}
-                    data-wfx-share-arrow="next"
-                  >
-                    <Icon name="arrowRight" size={20} />
-                  </button>
-                </div>
-                {/* The link field + the Copy pill (64×40 r20). */}
-                <div className="wfx-share__linkrow">
-                  <label className="wfx-share__field">
-                    <span className="wfx-sr-only">Share link</span>
-                    <input
-                      type="text"
-                      readOnly
-                      value={shareLink}
-                      data-wfx-share-link
-                      onFocus={(event) => {
-                        event.currentTarget.select();
-                      }}
-                    />
-                  </label>
-                  <button
-                    type="button"
-                    className="wfx-share__copy"
-                    onClick={() => void copyLink(shareLink)}
-                    data-wfx-share-copy
-                  >
-                    Copy
-                  </button>
-                </div>
-                {/* Start-at: the timestamp checkbox appending ?t= to the link. */}
-                <label className="wfx-share__startat">
-                  <input
-                    type="checkbox"
-                    checked={startAt}
-                    onChange={(event) => {
-                      setStartAt(event.currentTarget.checked);
-                    }}
-                    data-wfx-share-startat
-                  />
-                  <span>
-                    Start at{" "}
-                    {startAtSeconds > 0 ? formatTimestamp(startAtSeconds) : "0:00"}
-                  </span>
-                </label>
-              </>
-            )}
-          </div>
-        </div>
-      ) : null}
-      {/* The toast (the corpus's "Link copied to clipboard" snackbar). */}
-      {toast !== null ? (
-        <p className="wfx-share__toast" role="status" data-wfx-share-toast>
-          {toast}
-        </p>
+        <SharePanel
+          onClose={close}
+          canonicalHref={props.canonicalHref}
+          title={props.title}
+          {...(props.sourceUrl !== undefined ? { sourceUrl: props.sourceUrl } : {})}
+          {...(props.sourceId !== undefined ? { sourceId: props.sourceId } : {})}
+          {...(props.connectorId !== undefined ? { connectorId: props.connectorId } : {})}
+          {...(props.externalRef !== undefined ? { externalRef: props.externalRef } : {})}
+        />
       ) : null}
     </>
   );

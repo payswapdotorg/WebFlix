@@ -187,7 +187,9 @@ export function HoverPreviewLayer(): JSX.Element | null {
       {preview.status === "not-previewable" ? (
         /* The honest gated state: the card's static artwork stays visible
             (the corpus: the preview never blanks the card) — a small pill
-            names the capability truth, never a fake. */
+            names the capability truth, never a fake. pointer-events: none
+            (the CSS seam): the pill is pure text — the click beneath it
+            answers the play layer, never a swallowed gesture. */
         <p className="wfx-hoverpreview__gate" data-wfx-hover-preview-reason>
           {preview.reason ?? "This source provides no previewable media."}
         </p>
@@ -269,7 +271,23 @@ export function HoverPreviewLayer(): JSX.Element | null {
             />
           </span>
         </>
-      ) : null}
+      ) : (
+        /* W1-D1 — THE NON-STREAMING CLICK LAYER: while the resolve is in
+            flight (`resolving`) the layer already covers the thumbnail
+            with pointer-events: auto, and in the gated state it does so
+            permanently — without this layer those clicks hit the layer
+            root and died (the one-click-play law broken exactly when the
+            user waited for the preview). The same play gesture answers in
+            EVERY open state; the gate pill above stays readable and
+            non-interactive (its own pointer-events: none). */
+        <button
+          type="button"
+          className="wfx-hoverpreview__clicklayer"
+          aria-label={`Open ${preview.title} in the player`}
+          onClick={openPlay}
+          data-wfx-hover-preview-open
+        />
+      )}
     </div>
   );
 }
