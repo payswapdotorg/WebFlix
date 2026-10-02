@@ -21,9 +21,12 @@
  *   clobbered; a superseded plan cannot misfit).
  * - Events: a forward swipe past an unwatched card emits the frozen `skip`
  *   event (the app layer's one documented decision); a BACKWARD swipe
- *   emits NOTHING (no frozen navigation event — honest absence). Share is
- *   event-only. Like/save go through the ACTION route — the engagement
- *   mirror fires when the source confirms, never before.
+ *   emits NOTHING (no frozen navigation event — honest absence). Share
+ *   opens the UNIFIED R28-B share panel (W1-D3 — the same share
+ *   experience every other surface opens; the share engagement event's
+ *   sink is the R15 external/social lane, not this shell). Like/save go
+ *   through the ACTION route — the engagement mirror fires when the
+ *   source confirms, never before.
  * - Honesty: NO progress ticking — this shell cannot observe real playback
  *   inside a provider embed, so it never fabricates percentages. Absent
  *   like/save capabilities render no control (typed absence — the tree
@@ -101,6 +104,11 @@ import { ShortsSubscribeRow, type ShortsSubscribeRowProps } from "@/components/s
 // R33-A — the media stage (the real provider embed, full-bleed, joined as
 // the card's first child — the seam law's minimal growth).
 import { ShortsMediaStage, type ShortsMediaStageProps } from "@/components/shorts/ShortsMediaStage";
+// W1-D3 — the unified share panel (the R28-B unification law: sharing
+// works the same everywhere — the short rail's share cell opens the SAME
+// panel the player/item/card surfaces open, never an event-only dead end).
+import { SharePanel } from "@/components/player/ShareControl";
+import { playerHref } from "@/app/href";
 
 // ---------------------------------------------------------------------------
 // R32 — the session channel truths (the G4 rail's identity joins)
@@ -609,6 +617,15 @@ export function ShortsFeed({
     seedSubscribedKeys(payload),
   );
 
+  // W1-D3 — the unified share panel's open state (the current card's share
+  // target while non-null; the panel owns its own internals).
+  const [sharePanel, setSharePanel] = useState<{
+    readonly title: string;
+    readonly canonicalHref: string;
+    readonly connectorId?: string;
+    readonly externalRef?: string;
+  } | null>(null);
+
   const [session, dispatch] = useReducer(shortsSessionReducer, payload, (boot) => ({
     view: presenter.initial(boot.page, {
       userId: boot.userId,
@@ -742,18 +759,32 @@ export function ShortsFeed({
       if (current === null) return;
       const nowMs = realNow();
       if (action === "share") {
-        // Share is EVENT-ONLY (no frozen UserAction type — typed absence).
-        const stack = session.view.stack;
-        if (stack === null) return;
-        const [shareEvent] = shortFeedEvents(stack, {
-          stamp: {
-            userId: session.userId,
-            sessionId: session.sessionId,
-            occurredAt: new Date(nowMs).toISOString(),
-          },
-          action: { kind: "share", itemId: current.item.id },
+        // W1-D3 — Share opens the UNIFIED panel (the R28-B law — the same
+        // share experience the player, the item hub, and the card kebab
+        // open; the operator's #4 was exactly this inconsistency). The
+        // former event-only path POSTed a `share` EntertainmentEvent to
+        // /api/events, whose frozen vocabulary is progress|complete|skip —
+        // every share answered 400 and rendered "Watch state was NOT
+        // recorded", a dead button with a dishonest message. The share
+        // ENGAGEMENT event's sink is the R15 external/social actions lane
+        // (no web-adapter sink exists yet — HANDOFF, never a broken POST).
+        const realization = realizationIndexRef.current.get(current.item.id);
+        setSharePanel({
+          title: current.overlay.title,
+          canonicalHref:
+            realization !== undefined
+              ? playerHref({
+                  itemId: current.item.id,
+                  connectorId: realization.connectorId,
+                  externalRef: realization.externalRef,
+                  title: current.overlay.title,
+                  canonicalType: "short",
+                })
+              : `/player?id=${encodeURIComponent(current.item.id)}`,
+          ...(realization !== undefined
+            ? { connectorId: realization.connectorId, externalRef: realization.externalRef }
+            : {}),
         });
-        if (shareEvent !== undefined) await emitEvent(shareEvent);
         return;
       }
       const affordance = action === "like" ? current.affordances.like : current.affordances.save;
@@ -1188,6 +1219,19 @@ export function ShortsFeed({
         <p className="wfx-shorts__hint" data-wfx-shorts-rerank>
           {session.rerankNotes[session.rerankNotes.length - 1]}
         </p>
+      ) : null}
+      {/* W1-D3 — the unified share panel (the current card's share target;
+          the SAME R28-B panel every other surface opens). */}
+      {sharePanel !== null ? (
+        <SharePanel
+          onClose={() => {
+            setSharePanel(null);
+          }}
+          canonicalHref={sharePanel.canonicalHref}
+          title={sharePanel.title}
+          {...(sharePanel.connectorId !== undefined ? { connectorId: sharePanel.connectorId } : {})}
+          {...(sharePanel.externalRef !== undefined ? { externalRef: sharePanel.externalRef } : {})}
+        />
       ) : null}
     </div>
   );
