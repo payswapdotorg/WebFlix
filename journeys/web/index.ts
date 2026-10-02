@@ -72,6 +72,13 @@ import { j46ChatReplayScrub } from "./j46-chat-replay-scrub";
 // R37's live lane, now merged ahead — the next free catalog number
 // after them is J48).
 import { j48StudioEditCustomize } from "./j48-studio-edit-customize";
+// WFX-DEPLOY-W3 — the deployment release surface (the browser-regression/
+// release-surface lane's journey: the release golden set's deployment
+// critical path — shell nav, the search form-submit path, the player's
+// resolution honesty, the /api/health contract, the /offline render +
+// honest retry, the PWA laws of the fixtures boot, and the internal API
+// route table's failure laws).
+import { j49DeploymentReleaseSurface } from "./j49-deployment-release-surface";
 
 /** The encoded journeys in catalog order. */
 export const WEB_JOURNEYS: readonly Journey[] = [
@@ -149,6 +156,12 @@ export const WEB_JOURNEYS: readonly Journey[] = [
   // round trip over the ONE comments store → the honest analytics map →
   // the customization round trip through the domain-graph seam).
   j48StudioEditCustomize,
+  // WFX-DEPLOY-W3 — J49 (the deployment release surface) is encoded over
+  // the fixtures boot's REAL deployment-facing surfaces (the shell nav,
+  // the search form path, the player resolution truth, /api/health, the
+  // self-contained /offline + its retry, the PWA assets + the dev-boot
+  // registration/mounting laws, and the internal API failure laws).
+  j49DeploymentReleaseSurface,
 ];
 
 import type { LimitationRecord } from "../lib/report";
@@ -290,6 +303,12 @@ export const JOURNEY_LIMITATIONS: readonly LimitationRecord[] = [
     kind: "configuration-limit",
     note: "The R25-W2 encoding drives the FULL J43 walk over the fixtures boot's REAL realtime composition: the browser WebSocket → the WebFlix bridge (ws on 3102, started by the dev boot's instrumentation) → the provider session seam (the frozen R25-A domain port) with the deterministic dev provider double behind it (a REAL second WebSocket hop on 3103 — the scripted bilingual media scripts, the real PCM16 translated-speech chunks, the scripted provider drop + the scripted client network blip). The TRANSPORT, the reconnect/resume machinery, the continuity, the cost-policy verdicts (the shared Model-Fabric policy engine), and the R25-L instrumentation are all the real production wiring of this configuration. The provider-side LATENCY figures are the dev double's MODELED profile (the plan's frozen research numbers — the ~2.3s reported lag), honestly recorded as such in the metrics (the provider-reported figure rides alongside the measured one); the LIVE Qwen endpoint's end-to-end latency/cost benchmark — real credentials, real audio, the production Vercel WebSocket deployment — is the lead's R25-L procedure, and the bridge's service-mode deployment (the Vercel function transport) is the lead's R25 deployment verification.",
     procedure: "LEAD (the live-provider benchmark): provision the provider credentials server-side (never in the client), register the realtime adapter through Model Fabric, deploy the bridge on the WebSocket-capable function transport, run the same J43 walk + the r25 web latency harness (apps/web/scripts/r25-web-latency.ts --base-url) against the deployed service, and record the measured R25-L numbers (first source/translation deltas, first speech chunk, stable segment, reconnect, drift) with the live provider's provenance under evidence/r25-lab/.",
+  },
+  {
+    journeyId: "J49",
+    kind: "configuration-limit",
+    note: "The WFX-DEPLOY-W3 encoding covers the deployment critical path the fixtures boot can exercise: the shell nav, the search form-submit path into a result, the player's honest resolution mode, the /api/health frozen contract, the /offline zero-configuration render with its PROVEN retry re-attempt, the PWA asset laws (manifest served + linked + standalone + the 1024 icons; sw.js served), and the fixtures-boot registration/mounting laws (NO service worker, NO install chrome in dev). The internal API route table's failure laws (actions/events 400s, shorts 200/502) are machine-tested by apps/web/tests/adapter-api-routes.test.ts and verified live by the lane's committed HTTP probe evidence (the r39 packet) — not journey-encoded. The PRODUCTION-only PWA behaviors — the service worker actually REGISTERING (the production-build NODE_ENV guard), the SW's offline FALLBACK serving /offline at the original navigation URL, the real beforeinstallprompt install flow, and the waiting-worker update flow — cannot be exercised in the fixtures dev boot (the documented WFX-057 law: registration is production-build + service-mode only; fixtures never register).",
+    procedure: "LOCAL-ONLY (the WFX-057 production-start procedure, recorded in apps/web/DEPLOYMENT.md 'How to verify install'): build the production bundle (bun run build in apps/web), boot it in service mode (WFX_API_BASE=<a reachable Experience API base> bun run start), and drive the production surfaces in a real browser — manifest 200 application/manifest+json, sw.js 200 no-store, the SW registered → activated → controlling, the offline fallback (stop the server → navigate → the SW serves /offline at the original URL; Try again recovers when the server returns), and the update flow (bump CACHE_VERSION → waiting worker → Update available → one reload). The final production install check on the deployed URL belongs to the lead's deployed-preview verification.",
   },
   {
     journeyId: "J40",

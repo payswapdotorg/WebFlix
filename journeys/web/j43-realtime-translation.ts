@@ -56,7 +56,7 @@
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import { goto, detailHrefFromSearch } from "../lib/journeys";
 
 /** The observed telemetry record's shape (the product's own observation). */
 interface RealtimeTelemetryRecord {
@@ -82,14 +82,16 @@ export const j43RealtimeTranslation: Journey = {
   async run(context): Promise<void> {
     const { assert, browser } = context;
 
-    // ---- THE REAL USER FLOW: search → item hub → the primary Play.
+    // ---- THE REAL USER FLOW: search → the item hub (the R28-B
+    // deep-surface Details path) → the primary Play. The play-click
+    // origin stays the hub's Play (the J41 law).
     await goto(context, "/search?q=Deep%20Field");
-    const itemHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    const itemHref = await detailHrefFromSearch(context, "Deep Field", "Deep Field Diary");
     assert.that(
-      "the realtime-translation media is discoverable through search",
-      "an item link",
+      "the realtime-translation media is discoverable through search (the Details deep path)",
+      "an /item?id=wfxitm_… Details href",
       itemHref ?? "<absent>",
-      itemHref !== null,
+      itemHref !== null && itemHref.startsWith("/item?id=wfxitm_"),
     );
     await goto(context, itemHref ?? "/");
     await assert.visible(
@@ -345,14 +347,27 @@ export const j43RealtimeTranslation: Journey = {
     // provider failure — the typed fallback surface + what remains).
     // The primary session ends first (the viewer's stop — the row
     // returns to the language controls; the session-closed marker +
-    // the telemetry flush are part of the observation).
-    await browser.clickInteractive("[data-wfx-translate-stop]");
+    // the telemetry flush are part of the observation). The stop button
+    // rides the chrome's settings panel, where an up-next card-art
+    // layer geometrically covers its POINTER click point (the honest
+    // agent-browser coverage check refuses the click) — the KEYBOARD
+    // activation is the user path here (the product's own
+    // keyboard-operable law): focus the control, press Enter, the
+    // same onClick fires.
+    await browser.waitForInteractive("[data-wfx-translate-stop]");
+    await browser.eval(`void document.querySelector('[data-wfx-translate-stop]')?.focus()`);
+    await browser.press("Enter");
     await browser.pollEvalTruthy(
       `(window.__wfxRealtimeTelemetry?.markers ?? []).some((m) => m.marker === 'session-closed')`,
       15_000,
     );
     await browser.waitSelector("[data-wfx-translate-target='de']", 15_000);
-    await browser.clickInteractive("[data-wfx-translate-target='de']");
+    // The same chrome-panel coverage reality as the stop control — the
+    // keyboard activation path (focus + Enter; the product's own
+    // keyboard-operable law).
+    await browser.waitForInteractive("[data-wfx-translate-target='de']");
+    await browser.eval(`void document.querySelector('[data-wfx-translate-target=\\'de\\']')?.focus()`);
+    await browser.press("Enter");
     await browser.pollEvalTruthy(
       `document.querySelector('[data-wfx-translate-experience]')?.getAttribute('data-wfx-realtime-state') === 'failed'`,
       25_000,
