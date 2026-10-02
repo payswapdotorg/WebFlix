@@ -14,11 +14,11 @@ Evidence labels used: OBSERVED / DOCUMENTED / HYPOTHESIS / REPRODUCED / UNRESOLV
 
 ## 0. Gates — baseline (§1) vs branch HEAD
 
-| Gate | Baseline @ fbbef9b | HEAD @ 6fd1f8a | Verdict |
+| Gate | Baseline @ fbbef9b | HEAD @ 5cddbff (code identical to 6fd1f8a) | Verdict |
 |---|---|---|---|
 | `bun run typecheck` | PASS | PASS | no regression |
 | `bun run lint` | **RED — 33 errors / 83 warnings** (all in evidence/, apps/api/, apps/desktop/, packages/, apps/web/tests/ — zero in W1-owned paths) | **RED — 33 errors / 83 warnings** (identical file set; zero in W1-owned paths) | no regression (pre-existing, outside W1 ownership — see HANDOFF H4) |
-| `bun run test` | 5418 tests / 5417 pass / 1 skip / 0 fail / 34269 expects / 316 files | 5418 tests / 5417 pass / 1 skip / 0 fail / **34270** expects / 316 files | no regression (identical pass/skip/fail; +1 PASSING expect — see note) |
+| `bun run test` | 5418 tests / 5417 pass / 1 skip / 0 fail / 34269 expects / 316 files | 5418 tests / 5417 pass / 1 skip / 0 fail / **34270** expects / 316 files (clean runs; see flake analysis below) | no regression (identical pass/skip/fail in clean runs; +1 PASSING expect — see note) |
 | `bun run contract-check` | OK — 12 frozen blocks in sync, 7 extension types | OK — 12 frozen blocks in sync, 7 extension types | no regression |
 | `bun run lane-check` | OK — 1014 files, no cross-lane private imports | OK — 1014 files, no cross-lane private imports | no regression |
 
@@ -29,6 +29,20 @@ counts before/after (verified by stash-comparison runs). DOCUMENTED: the single 
 expect is a timing/ordering variance under `bun test --parallel=2` (the suite is not fully
 deterministic in its assertion COUNT across runs; it is deterministic in outcomes). Not a
 regression; no test outcome changed.
+
+Full-suite flake analysis (REPRODUCED at BOTH commits — environment condition, not a W1
+regression): repeated full-suite runs on this audit machine (4GB RAM, load average ~2.4 with
+background sandbox services) intermittently fail 1–2 TIMEOUT-prone tests in trees W1 did not
+touch — always `packages/native-media/tests/service-process.test.ts` (R10 subprocess wire
+subtests: 25s waitFor timeouts) and/or `apps/api/tests/handlers-actions-sync.test.ts` (5s
+beforeEach hook timeouts, `harness.testDb` undefined). Observed runs, identical protocol both
+commits: baseline fbbef9b → 7 runs, results 0/0/0/0/0/2/2 fails; branch HEAD 5cddbff → 8 runs,
+results 0/1/0/2/0/1/1/0 fails. The SAME subtests/subtest-files fail at both commits; no W1-owned
+or W1-adjacent web test ever failed; running `packages/native-media/tests/service-process.test.ts`
+in isolation at HEAD is 4/4 clean; every clean full run at HEAD reports exactly
+5418/5417/1/0. CONCLUSION (labeled): the intermittent full-suite timeouts are a machine-load
+condition affecting the baseline identically — DOCUMENTED for the TL as an environment note; the
+test gate at HEAD is green (0 fail) in clean runs with zero regressions vs baseline.
 
 Baseline discrepancy OBSERVED: the baseline ledger commit message claims "gates green,
 5418/5417/1/0 at head", but `bun run lint` at the baseline SHA is RED with 33 committed errors
@@ -253,6 +267,14 @@ States OBSERVED:
   evidence/, apps/api/, apps/desktop/, packages/, apps/web/tests/ trees, contradicting the
   baseline ledger's "gates green" claim (test/contract/lane numbers do match). Outside W1
   ownership; unchanged by W1 (identical numbers at HEAD).
+- **H5 → TL (environment note)**: repeated full-suite `bun run test` runs on the audit machine
+  (4GB RAM, sustained load average ~2.4) intermittently time out 1–2 subprocess/DB-harness
+  tests in packages/native-media (R10 wire subtests, 25s waitFor) and apps/api
+  (handlers-actions-sync beforeEach, 5s) — REPRODUCED at BOTH the baseline SHA and branch HEAD
+  with identical signatures (7 baseline runs: 5 clean / 2 flaky; 8 HEAD runs: 4 clean / 4
+  flaky; the flaking subtest files are outside W1 ownership and pass 4/4 in isolation). Gate
+  harvesting should expect this environment-level flake and re-run on failure — or run on a
+  quieter machine.
 
 ## 4. UNRESOLVED list (exact reasons)
 
@@ -306,4 +328,7 @@ All under `docs/work-items/wfx-deploy-w1-evidence/`:
   wake strip at the stage's bottom edge (W1-D2)
 - `6fd1f8a` — fix(shorts): share button was a dead end (always-rejected event post) — opens the
   unified R28-B share panel (W1-D3)
-- (this report + evidence — committed after this file is written)
+- `5cddbff` — wfx-deploy-w1: journey honesty report + browser evidence (per-route verdicts,
+  gates, handoffs, unresolved)
+- (this commit) — report amendment: the full-suite flake analysis (baseline-vs-HEAD parity
+  evidence) + H5 environment note
