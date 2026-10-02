@@ -2,9 +2,11 @@
 
 **Branch:** `work/wfx-deploy-w2-host` (from `main` @ `fbbef9b244887ef3f38e7bddf1b72cff3e6f6ae4`, the wind-down ledger with R37 + R38-B merged — verified before work began)
 
-**HEAD SHA:** `1ad6284` (this report is committed at HEAD; see commit list)
+**HEAD SHA:** `84a079a` (this report is committed at HEAD; see commit list)
 
 **Date:** 2026-10-02
+
+**Push status: UNRESOLVED (credential-blocked, not work-blocked).** The work order's push credential was delivered as the literal unfilled placeholder `__PAT_PLACEHOLDER__` — no usable token exists in the environment (no credential helper, no `GITHUB_*`/`GH_*`/token env vars, no `~/.git-credentials`, no `gh` CLI; a plain `git push -u origin work/wfx-deploy-w2-host` fails `could not read Username for 'https://github.com'`). Both commits exist locally on the branch and are harvestable the moment a real PAT is supplied (push URL shape per §0 of the work order; the credential must never be committed — verified: the only credential-shaped string in this branch's history is the placeholder literal itself, part of the verbatim work order). All verification work §2–§5 is COMPLETE and independent of the push.
 
 **Mission recap:** guarantee the host's service-mode truth — boot law, remote transport, playback resolution, failure honesty — against the REAL deployed Experience API (`https://webflix-api.vercel.app`, LIVE), with the production Vercel web app (`https://webflix-steel.vercel.app`, STALE — predates R38-B) used only as an additional real-service REFERENCE. All checks below ran against THIS branch's local boots.
 
@@ -15,7 +17,7 @@
 | SHA | Subject |
 |---|---|
 | `1ad6284` | WFX-DEPLOY-W2: work order committed verbatim (docs/work-items/WFX-DEPLOY-W2.md, dated 2026-10-02) — host/playback/service-integration lane, baseline fbbef9b verified |
-| (this commit) | WFX-DEPLOY-W2-REPORT.md — the completion report |
+| `84a079a` | WFX-DEPLOY-W2-REPORT.md — the completion report (gates were run at `1ad6284`, i.e. with the identical tree; the report commit adds docs only) |
 
 ## 2. Changed-file list
 
@@ -75,9 +77,9 @@ Live-catalog limit (honest): 19/19 probed items offer `[embed, external]` only �
 
 ---
 
-## 5. Gates table (actual numbers, branch HEAD `1ad6284`)
+## 5. Gates table (actual numbers; run at `1ad6284` — the source tree at HEAD `84a079a` is IDENTICAL, the report commit is docs-only)
 
-| Gate | Baseline `fbbef9b` (recorded §1) | HEAD `1ad6284` | Regression? |
+| Gate | Baseline `fbbef9b` (recorded §1) | `1ad6284` (identical tree at HEAD) | Regression? |
 |---|---|---|---|
 | `bun run typecheck` | clean, exit 0 | clean, exit 0 | none |
 | `bun run lint` | 116 problems (33 errors / 83 warnings), exit 1 — **pre-existing at baseline; every error file outside this lane's ownership** (`apps/api`, `apps/desktop`, `apps/web/tests`, `evidence/`, `packages/`) | 116 problems (33 / 83), exit 1; **0 problems in `apps/web/src/host/**` + `apps/web/src/platform/**`** | none (identical; reported, not patched — another lane's tree) |
@@ -111,7 +113,7 @@ Deploy note (TL-relevant): a Vercel deployment from post-R38-B `main` needs NO e
 
 ## 8. UNRESOLVED list
 
-None. Every deliverable §2–§5 check is VERIFIED-REPRODUCED (or machine-VERIFIED with the coverage limit honestly named — verdict #15, which is a property of the deployed catalog, not a code defect). No check is HYPOTHESIS-only; no failure was papered over.
+1. **Branch push (credential-blocked).** See the push-status note at the top of this report: the delivered push credential is an unfilled placeholder; no usable token exists in this environment. The branch — both commits, all git truth — is local and ready; the push completes the moment a real PAT is provided to this worker (or the TL harvests the branch directly from this machine). Nothing else is unresolved: every deliverable §2–§5 check is VERIFIED-REPRODUCED (or machine-VERIFIED with the coverage limit honestly named — verdict #15, a property of the deployed catalog, not a code defect); no check is HYPOTHESIS-only; no failure was papered over.
 
 ## 9. Reproduction pointers (local artifacts, outside the repo)
 
