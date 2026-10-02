@@ -126,7 +126,7 @@ describe("R35 (C2) — the session intent reflects on a FRESH instance's page re
 
     // ── phase A: the intent write (the ledger's J42 step06 flow — the
     //    POST answered 200; the SAME-instance read-back worked) ──
-    const hostA = await bootHost();
+    const _hostA = await bootHost();
     const posted = await post(postPersonalize, { kind: "intent", objective });
     expect(posted.status).toBe(200);
     const bodyA = (await posted.json()) as { intents?: { objective: string }[] };

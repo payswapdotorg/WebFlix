@@ -135,3 +135,17 @@ recorded honestly (never fabricated, never patched over). The follow-up ledger:
 the journey-suite re-encoding work item (32 specs), the R34-A defect-candidates
 (B2/B3/B4/C2), the unblocked-environment J41 re-run, and the standing J39
 revalidation lane.
+
+## WFX-DEPLOY — Deployment Release lanes (2026-10-02, the operator's Final TL Handoff)
+
+The three-lane deployment release over baseline `fbbef9b` (wind-down ledger):
+the current WebFlix app deployed and browser-verified test-ready. TL-coordinated
+(dispatched from inside the replay); station-reviewed per lane; merged to
+`wfx/deploy-integration`.
+
+| ID | Work item | Owner | Outcome |
+|---|---|---|---|
+| WFX-DEPLOY-W1 | Web UX / journeys lane (`apps/web/src/app/**`, `apps/web/src/components/**`) | Worker 1 | DELIVERED @ `1d5064e` — per-route audit (7 routes × mobile+desktop, agent-browser evidence committed); 3 dead-end defects FIXED (D1 card-preview dead click, D2 player-chrome wake strip over embeds, D3 shorts share dead-end → the unified R28-B share panel); station review APPROVED (scope clean; typecheck/lint/battery = baseline EXACT) |
+| WFX-DEPLOY-W2 | Host / playback / service integration lane (`apps/web/src/host/**`, `apps/web/src/platform/**`) | Worker 2 | DELIVERED @ `ab1220b` — verification-only lane, zero source changes: 22 checks VERIFIED-REPRODUCED (boot law machine 9/9 + behavioral; live-service transport 26/26 incl. the 10s timeout measured at 10001ms; playback honesty REPRODUCED — real embed iframe / visible external handoff / typed failures, 0 fake video elements; production postures incl. the env-free build + the typed no-env 500 + the fixture+prod crime); 4 HANDOFFs recorded; station review APPROVED |
+| WFX-DEPLOY-W3 | Browser regression / release surface lane (`apps/web/tests/**`, `journeys/**`, `apps/web/DEPLOYMENT.md`) | Worker 3 | DELIVERED @ `63c8862` (+ J41 integration-delta fixup) — the strengthened journey suite 46/46 PASS / 957 assertions (the 4 baseline failures FIXED; J49 deployment-release-surface NEW: health contract, /offline zero-config render + honest retry, PWA asset laws, critical path); the DEPLOYMENT.md accuracy pass (route inventory, PWA rows, the R07 transport-drift correction from W2's HANDOFF-1); the r39 evidence packet (manifest + per-journey screenshots/snapshots/logs); station review APPROVED |
+| WFX-DEPLOY-INT | TL integration: merge + the R29-escalated lint-debt closure | TL | `wfx/deploy-integration` — W1+W2+W3 merged (disjoint trees, zero conflicts); eslint evidence/** scoped out (archived recon packets — never build inputs; the R29 ledger's escalated debt CLOSED); the r35-c2 unused-var fixed (the last error — lint GREEN: 0 errors); typecheck CLEAN; battery 5418/5417/1/0 EXACT; contract-check OK; lane-check OK (1014 files); production build exit 0; station journey sweep: the 9 release-critical/W1-surface journeys 6 PASS at the station (J36 station-blocked by the documented live-estate OOM class — CI's journeys job owns the full-suite run; J41 integration-delta defect → the W3 fixup loop per the handoff's defect law) |
