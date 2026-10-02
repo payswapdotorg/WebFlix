@@ -5399,6 +5399,29 @@ html[data-theme="light"] .wfx-subscribe {
   pointer-events: auto;
 }
 
+/* W1-D2 — THE WAKE STRIP: the one sliver of the idle chrome that stays
+ * interactive. The reveal listens on window mousemove, but a provider
+ * embed (an iframe) swallows pointer events — once the pointer is over
+ * the video, the parent window sees nothing and the faded controls
+ * cannot be woken from over the stage. This transparent strip hugs the
+ * stage's bottom edge (where the controls live): a pointer event there
+ * fires in THIS document and bubbles to the window listener, which
+ * reveals the chrome (the strip then goes inert so it never blocks the
+ * buttons it sits beneath). */
+.wfx-chrome__wake {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 14px;
+  pointer-events: none;
+  background: transparent;
+}
+
+.wfx-chrome[data-wfx-chrome-idle="true"] .wfx-chrome__wake {
+  pointer-events: auto;
+}
+
 
 .wfx-chrome__scrub {
   display: flex;
