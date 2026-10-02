@@ -1,6 +1,6 @@
 # WebFlix Web Host — Deployment Guide (WFX-050; WFX-051 experience shell; WFX-057 installable surfaces)
 
-**Status:** canonical deployment contract for `apps/web` (the Next.js web host), written for WFX-056 (Vercel deployment lane). The app is a standard Next.js App Router application — no custom bundler plugins, no exotic output. Everything below is exact.
+**Status:** canonical deployment contract for `apps/web` (the Next.js web host), written for WFX-056 (Vercel deployment lane); route/API/island inventory corrected by WFX-DEPLOY-W3 (2026-10-02) against the R38-B tree. The app is a standard Next.js App Router application — no custom bundler plugins, no exotic output. Everything below is exact.
 
 ## What this app is (and is not)
 
@@ -13,16 +13,22 @@ Pages (every page `force-dynamic` server components except where noted; every pa
 
 | Route | Surface | Notes |
 |---|---|---|
-| `/` | Home | Hero (resume-or-start) + continue-watching + For you / Trending rows + shorts rail. |
+| `/` | Home | Chip bar + For you / Trending rows + Shorts rail (the R28-B composition; the hero moved to Settings→General) + continue row when watch state exists. |
 | `/watch` | Long-form browse (WFX-027 mode) | Continue row first, then composed browse rows. |
 | `/shorts` | Short feed (WFX-028 mode) | Server-composed boot payload + the client vertical stack island. |
-| `/search` | Search | `?q=<query>` → both surfaces browsed (watch first) → results grid. |
-| `/item` | Content detail | `?connector=&ref=&title=` → connector metadata + capabilities + related. |
+| `/search` | Search | `?q=<query>` → both surfaces browsed (watch first) → results grid + the suggestion lanes. |
+| `/item` | Content detail | `?id=&connector=&ref=&title=` → canonical identity + connector metadata + capabilities + related + the primary Play. |
 | `/player` | Player | Starts a REAL playback session; renders the resolved Media Surface mode (embed iframe / visible browser panel / visible external handoff — never fake playback). |
+| `/channel/[handle]` | Creator channel (R36) | Channel home/about with the ONE-store Subscribe round trip. |
+| `/live` | Live browse (R37) | The live rail; watch-page live mode with live chat over the WS seam. |
+| `/library` | Library (R30-B) | Watchlist / History / Playlists sections + subscriptions row. |
+| `/feed/subscriptions` | Subscriptions feed (R31) | The rail's Subscriptions destination in both sign-in states. |
+| `/settings` | Settings | `?section=` → sources / general / model sections (session controls, source chooser, model & AI). |
+| `/studio` + `/studio/{video,comments,analytics,customization}` | Creator studio (R38-B) | Content list (drafts/scheduled/published), details editor, honest analytics, comments moderation, channel customization. |
 | `/offline` | Offline shell (WFX-057) | **Static** (the one non-dynamic route, by design): the honest offline state + retry. No host boot, no env read, inline critical CSS + inline retry script — renders with zero configuration and zero network. |
 | `/_not-found` | Static | Next default. |
 
-Internal API routes (same-origin; the client islands' bridges):
+Internal API routes (same-origin; the client islands' bridges — every route below exists in `src/app/api/`):
 
 | Route | Method | Purpose | Failure law |
 |---|---|---|---|
@@ -30,8 +36,25 @@ Internal API routes (same-origin; the client islands' bridges):
 | `/api/actions` | POST | Like/save through the actions use-case; answers the frozen `ActionReceipt` verbatim. | Malformed body → 400; port violation → 502. |
 | `/api/events` | POST | Watch-state/engagement reports (progress/complete/skip/share only — a CLOSED vocabulary; `start` and `like`/`save` are use-case-emitted and rejected here with the reason). | Sink rejection → 502 — a lost watch-state event is never a silent success. |
 | `/api/shorts` | GET | Fresh projected OS short page for the short feed's re-rank loop. | Load failure → 502. |
+| `/api/acquisition` | GET/POST | The acquisition views fold + the scripted drive (R14; the honest protocol-free status surface). | Typed states; never fabricated progress. |
+| `/api/auth/login` · `/register` · `/logout` · `/session` · `/select-profile` | POST/POST/POST/GET/PUT | The account chrome's real paths (R21-B): service mode proxies the Experience API with the httpOnly `wfx_session` cookie; fixtures mode drives the loud dev persona. | Typed failures answer honestly; the cookie clears on logout even when the transport call fails. |
+| `/api/byof` | GET/POST | The BYOF panel state + import drive (R20). | Typed states with the reauthorization gap + recovery. |
+| `/api/capabilities` | GET | The capability-availability report's typed bridge (R26-W1). | Typed absence, never a claimed capability. |
+| `/api/feed-mode` | GET/POST | The Home/Watch/Shorts feed-mode control's bridge (R21-D). | Typed; the presentation-mode store is the one owner. |
+| `/api/feedback` | GET/POST/DELETE | The item/player feedback controls (the J15 vocabulary, R21-E). | Typed states. |
+| `/api/intelligence` | GET | Media-intelligence reads (`?q=` semantic/moment search, R23-F/G/H). | Typed degrade. |
+| `/api/library` | POST | The watch-later row's real backing (the WebFlix-native watchlist save, R24-W2). | Typed states. |
+| `/api/model/byom/bind` · `/unbind` · `/api/model/open-models` | POST/POST/GET | The BYOM bind/unbind round trip + the local-model catalog (R22-F; no key material ever rendered). | Typed; key material never reaches a response body. |
+| `/api/personalize` | GET/POST | The Personalize control's intent + policy seams (R21-D). | Typed. |
+| `/api/playback` | GET/POST | The player chrome's transport commands + state reads (R24-W2 + R26-W2). | Typed command states. |
+| `/api/preview` | GET | The hover preview's honest capability-truth read (R28-B). | No preview without declared capability. |
+| `/api/queue` | GET/POST | The session queue store (ordering only, R24-W2). | Typed. |
+| `/api/search/suggest` | GET | Source-neutral suggestions under the search box (R24-W2). | Degrades to the plain form. |
+| `/api/shorts-session` | POST | The shorts stage's playback-session mint (R33-A). | Typed. |
+| `/api/sources` | GET/POST | The sources model + the scripted source-auth drive (R17). | Typed; the honest transport absence in service mode. |
+| `/api/transform` | GET/POST | The AI action tray's model-controls bridge (R21-E). | Typed queued/cancelled states. |
 
-Client JS is limited to five small islands (`ShortsFeed`, `ActionButtons`, `WatchStateReporter`, and the WFX-057 PWA islands `InstallPrompt` + `UpdatePrompt`, mounted by `AppShell` in service mode) — everything else is server-rendered; the search box and avatar menu are plain HTML (form + `details`).
+Client JS is a set of small islands mounted inside the server-rendered surfaces — the shell islands (SearchBox with its suggestion seam, AccountMenu, ThemeToggle, GuideToggle, MastheadBell, MiniplayerDock, SettingsGear, the WFX-057 PWA islands `InstallPrompt` + `UpdatePrompt` mounted by `AppShell` in service mode only, PlayIntentRecorder), the card/player/shorts/studio/live/settings islands — everything else is server-rendered (56 client components at this writing; the PWA islands never mount in the fixtures boot).
 
 ## Vercel project settings (for WFX-056)
 
@@ -139,9 +162,9 @@ WebFlix is an installable PWA: a normal user can install it from the production 
 
 | Piece | File | What it is |
 |---|---|---|
-| Web app manifest | `public/manifest.webmanifest` | name/short_name "WebFlix", `start_url "/"`, `scope "/"`, `display "standalone"`, `background_color` + `theme_color` `#0b0a10` (both = `--wfx-bg` in `globals.css`; the topbar paints `rgba(11,10,16,0.92)` over exactly that base). Icons: the two lead-provided PNGs declared **1024×1024 `any`/`maskable`** — their TRUE dimensions (IHDR-parsed; `tests/pwa-manifest.test.ts` proves declared == actual). |
+| Web app manifest | `public/manifest.webmanifest` | name/short_name "WebFlix", `start_url "/"`, `scope "/"`, `display "standalone"`, `background_color` + `theme_color` `#0f0f0f` (both = `--wfx-bg` in `globals.css`; the topbar paints `var(--wfx-bg)` over exactly that base). Icons: the two lead-provided PNGs declared **1024×1024 `any`/`maskable`** — their TRUE dimensions (IHDR-parsed; `tests/pwa-manifest.test.ts` proves declared == actual). |
 | Identity assets | `public/icon-main.png`, `public/icon-maskable.png` | 1024×1024 PNGs (rounded-square mark + wordmark; edge-to-edge maskable). `public/favicon.svg` is the tiny hand-written SVG favicon carrying the same rose-gradient play mark (`--wfx-accent` → `--wfx-accent-strong`). |
-| Layout wiring | `src/app/layout.tsx` | `manifest` link (served `application/manifest+json`), SVG favicon, `apple-touch-icon` (icon-main 1024), `appleWebApp` (capable / black status bar / title — Next 16 emits `mobile-web-app-capable` — the modern unprefixed equivalent of `apple-mobile-web-app-capable` — plus `apple-mobile-web-app-title` and `apple-mobile-web-app-status-bar-style`; verified in the served HTML), `viewport.themeColor` (`#0b0a10`), plus a before-interactive script that stashes `beforeinstallprompt` the moment the browser fires it (the event can precede hydration; the island claims the REAL deferred prompt — never a fabricated one). |
+| Layout wiring | `src/app/layout.tsx` | `manifest` link (served `application/manifest+json`), SVG favicon, `apple-touch-icon` (icon-main 1024), `appleWebApp` (capable / black status bar / title — Next 16 emits `mobile-web-app-capable` — the modern unprefixed equivalent of `apple-mobile-web-app-capable` — plus `apple-mobile-web-app-title` and `apple-mobile-web-app-status-bar-style`; verified in the served HTML), the theme-color meta (`<meta name="theme-color" data-wfx-theme-color>` — R29-B: it follows the BOOT theme, `#ffffff` light / `#0f0f0f` dark, set before first paint by the same seam that sets `data-theme`; the Appearance rows keep it in sync live), plus a before-interactive script that stashes `beforeinstallprompt` the moment the browser fires it (the event can precede hydration; the island claims the REAL deferred prompt — never a fabricated one). |
 | Service worker | `public/sw.js` | Hand-written, zero dependencies. Versioned cache (`wfx-static-v1`; activation deletes every other cache). **Strategy:** same-origin GET **navigations → network-first**, offline fallback = the precached `/offline` shell (never a stale dynamic page — no fake cached feed); `/_next/static/*` → **stale-while-revalidate** (content-hashed; cached on first fetch — hashed names are not statically knowable, nothing is precached that the file cannot name truthfully); **everything else passes through**, and `/api/*` is NEVER intercepted or cached (the honesty law — offline API calls fail visibly). `Cache-Control: no-store` on `/sw.js` via `next.config.ts` headers keeps update checks prompt. |
 | Offline route | `src/app/offline/page.tsx` | The honest offline state (StateViews grammar): "You're offline — WebFlix needs a connection to load your feeds. Your watch progress is safe." + a **Try again** button (`location.reload()` — the SW serves this page as a navigation FALLBACK, so the URL bar still shows the original destination and reload re-attempts it). **No host boot, no env read** — machine-tested under a poisoned environment. **Static route by design** (the one non-dynamic route): it is the build-time-known URL the SW precaches at install; a successful online visit to `/offline` refreshes the precached copy. The page carries inline critical CSS + the inline retry script, so it renders styled and retries even with zero network AND zero warm caches. |
 | Install affordance | `src/components/shell/InstallPrompt.tsx` (+ `pwa-logic.ts`) | Client island mounted by `AppShell` **in service mode only**. Chrome/Edge desktop + Android: a REAL `beforeinstallprompt` drives a subtle corner card (Install / Not now; 44px `.wfx-btn` targets, `aria-live="polite"` region, keyboard operable). "Not now" is remembered in `localStorage` (storage failures fail open); dismissing the NATIVE prompt hides the offer for the session only. `appinstalled` → brief confirmation, then hidden. **Safari iOS** (never fires the event): the honest "Share → Add to Home Screen" instruction sheet — only when not already standalone (display-mode media queries + `navigator.standalone` + UA hints incl. the iPadOS touch heuristic). **No fake prompts anywhere else** (desktop Safari/Firefox render nothing). |

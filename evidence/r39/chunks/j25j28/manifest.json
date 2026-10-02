@@ -1,0 +1,374 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "b0238206a348c5740396d09fd27ffef3997a7b7b",
+  "branch": "work/wfx-deploy-w3-regression",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-10-02T10:30:38.387Z",
+    "finishedAt": "2026-10-02T10:31:18.954Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1790937044689)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 3,
+    "encoded": 3,
+    "passed": 3,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J25",
+      "title": "Torrent interruption / restart / resume (web status surface)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search card offers the interrupted-acquisition item's Details deep path",
+          "expected": "an /item link",
+          "observed": "/item?id=wfxitm_1CYX9JNPTXTFX598N8X05QC1W5&connector=fake-source&ref=fake%3Avideo-3&title=Desert+Rain+Doc&type=video&duration=2400000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"failed\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"failed\"",
+          "observed": "\"failed\"",
+          "pass": true
+        },
+        {
+          "description": "the \"failed\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"The download source had a problem. You can try again.\"",
+          "observed": "The download source had a problem. You can try again.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Couldn't finish",
+          "pass": true
+        },
+        {
+          "description": "the failure renders its typed cause",
+          "expected": "data-wfx-acquisition-failure of [data-wfx-acquisition-failure] is \"source-problem\"",
+          "observed": "\"source-problem\"",
+          "pass": true
+        },
+        {
+          "description": "the failure is marked recoverable (typed truth)",
+          "expected": "data-wfx-acquisition-recoverable of [data-wfx-acquisition-failure] is \"true\"",
+          "observed": "\"true\"",
+          "pass": true
+        },
+        {
+          "description": "the recoverable failure states the retry truth",
+          "expected": "text of [data-wfx-acquisition-failure] contains \"You can try again.\"",
+          "observed": "\"You can try again.\"",
+          "pass": true
+        },
+        {
+          "description": "the failed state offers its typed retry action",
+          "expected": "[data-wfx-acquisition-action='retry'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failed state offers its typed dismiss action",
+          "expected": "[data-wfx-acquisition-action='dismiss'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"preparing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"preparing\"",
+          "observed": "\"preparing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"preparing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finding the details for this title.\"",
+          "observed": "Finding the details for this title.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Preparing",
+          "pass": true
+        },
+        {
+          "description": "the search card offers the resumed-session item's Details deep path",
+          "expected": "an /item link",
+          "observed": "/item?id=wfxitm_0JQRD80T3TP23PSWXC48MA2AT8&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the acquisition panel renders the \"completing\" lifecycle state",
+          "expected": "data-wfx-acquisition-state of [data-wfx-acquisition] is \"completing\"",
+          "observed": "\"completing\"",
+          "pass": true
+        },
+        {
+          "description": "the \"completing\" state's detail sentence is the honest user vocabulary",
+          "expected": "\"Finishing the offline copy in the background. Resuming where it left off — 55% already saved.\"",
+          "observed": "Finishing the offline copy in the background. Resuming where it left off — 55% already saved.",
+          "pass": true
+        },
+        {
+          "description": "the state label renders (the badge vocabulary)",
+          "expected": "a label",
+          "observed": "Completing",
+          "pass": true
+        },
+        {
+          "description": "the resumed session carries its Resuming badge (never presented as a fresh start)",
+          "expected": "text of [data-wfx-acquisition-resuming] is exactly \"Resuming\"",
+          "observed": "\"Resuming\"",
+          "pass": true
+        },
+        {
+          "description": "the resumed session states its truthful retained+progressed transfer (62% — not reset, not falsely complete)",
+          "expected": "text of [data-wfx-acquisition-percent] is exactly \"62%\"",
+          "observed": "\"62%\"",
+          "pass": true
+        },
+        {
+          "description": "the interrupted session does NOT claim completion (the honest in-progress truth)",
+          "expected": "an in-progress state (not ready-offline)",
+          "observed": "completing",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j25j28/j25-interruption-recovery.png",
+        "evidence/r39/chunks/j25j28/j25-torrent-interruption-restart-resume-web-status-surface.snapshot.txt",
+        "evidence/r39/chunks/j25j28/j25-torrent-interruption-restart-resume-web-status-surface.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13133
+    },
+    {
+      "id": "J27",
+      "title": "Native local media playback (web constrained truth)",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the settings capability table declares the native media area (the truth table is complete)",
+          "expected": "the native media & torrent acquisition row",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the web adapter declares native media NOT available on Web (capability honesty, never a fake native path)",
+          "expected": "the native row renders the Not-available-on-Web chip",
+          "observed": "declared not available",
+          "pass": true
+        },
+        {
+          "description": "the search card offers an unscripted item's Details deep path (no acquisition session)",
+          "expected": "an /item link",
+          "observed": "/item?id=wfxitm_1NRT3F3GKQKME725BGN4QS249N&connector=fake-source&ref=fake%3Ashort-1&title=Neon+Rain&type=short&duration=45000",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy panel renders its no-session state",
+          "expected": "[data-wfx-acquisition-none] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the offline-copy note states where native acquisition runs (the honest desktop truth)",
+          "expected": "text of [data-wfx-acquisition-elsewhere] contains \"WebFlix desktop app\"",
+          "observed": "\"You can make this title available offline in the WebFlix desktop app — it downloads and verifies a copy you can watch without a connection.\"",
+          "pass": true
+        },
+        {
+          "description": "no acquisition lifecycle state is fabricated for the web (the constrained truth)",
+          "expected": "[data-wfx-acquisition-state] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j25j28/j27-native-playback.png",
+        "evidence/r39/chunks/j25j28/j27-native-local-media-playback-web-constrained-truth.snapshot.txt",
+        "evidence/r39/chunks/j25j28/j27-native-local-media-playback-web-constrained-truth.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 4829
+    },
+    {
+      "id": "J28",
+      "title": "Provider credential expiry/recovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the search surface offers the item's one-click player link while the source is signed in",
+          "expected": "an id-first /player link (the R28-B play decision)",
+          "observed": "/player?id=wfxitm_79YBJSBB5J2SS564M2QABH5ZKJ&connector=fake-source&ref=fake%3Aseries-1&title=Harbor+Lights&type=series",
+          "pass": true
+        },
+        {
+          "description": "the settings sources section renders",
+          "expected": "[data-wfx-settings-sources] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the scripted source's card renders (the fixtures' own source truth)",
+          "expected": "[data-wfx-source='fake-source'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the source states its signed-in truth (never a fabricated state)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the signed-in source renders its Connected chip",
+          "expected": "the chip label (case-insensitive)",
+          "observed": "Connected",
+          "pass": true
+        },
+        {
+          "description": "no expired marker renders while signed in",
+          "expected": "[data-wfx-source-expired] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired credential renders its OWN named state (never a silent fallback)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"expired\"",
+          "observed": "\"expired\"",
+          "pass": true
+        },
+        {
+          "description": "the expired state carries its explicit marker",
+          "expected": "[data-wfx-source-expired] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired source renders its named Sign-in-expired chip",
+          "expected": "the expired chip label (case-insensitive)",
+          "observed": "Sign-In Expired",
+          "pass": true
+        },
+        {
+          "description": "the expired state states its recovery path",
+          "expected": "text of [data-wfx-source-recovery-detail] contains \"reconnect to restore this source\"",
+          "observed": "\"The stored sign-in expired — reconnect to restore this source.\"",
+          "pass": true
+        },
+        {
+          "description": "the availability note names the expired authorization",
+          "expected": "text of [data-wfx-source-notes] contains \"The stored authorization expired\"",
+          "observed": "\"The stored authorization expired — reconnect to restore this source.\"",
+          "pass": true
+        },
+        {
+          "description": "the expired state offers its typed reauthorize (reconnect) action",
+          "expected": "[data-wfx-source-action='reauthorize'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the expired credential renders the player's typed failure",
+          "expected": "[data-wfx-error] matches >= 1",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the failure kind is the typed unauthorized (the classified credential)",
+          "expected": "text of [data-wfx-error] contains \"unauthorized\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure NAMES the expired credential (the honest classified state)",
+          "expected": "text of [data-wfx-error] contains \"authorization for this source expired\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure states its re-auth recovery path",
+          "expected": "text of [data-wfx-error] contains \"reconnect\"",
+          "observed": "\"Playback could not start\n\nunauthorized: client-runtime failure (unauthorized): resolve: the stored authorization for this source expired — every read is refused until it is reconnected (the source's sign-in expired — reconnect the source to restore it)\n\nView details\"",
+          "pass": true
+        },
+        {
+          "description": "the failure offers its recovery path back to the item",
+          "expected": "[data-wfx-surface='player'] a[href*='/item?'] matches >= 1",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no provider frame renders for an expired credential (never a fake stage)",
+          "expected": "[data-wfx-player-frame] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the reauthorized source is signed in again (the recovery completed)",
+          "expected": "data-wfx-source-auth-state of [data-wfx-source='fake-source'] is \"signedIn\"",
+          "observed": "\"signedIn\"",
+          "pass": true
+        },
+        {
+          "description": "the expired marker is gone after recovery",
+          "expected": "[data-wfx-source-expired] matches exactly 0",
+          "observed": "0 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the recovered source resolves playback again (the read recovered)",
+          "expected": "a resolved playback mode (not failed)",
+          "observed": "embed",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r39/chunks/j25j28/j28-credential-expiry.png",
+        "evidence/r39/chunks/j25j28/j28-provider-credential-expiry-recovery.snapshot.txt",
+        "evidence/r39/chunks/j25j28/j28-provider-credential-expiry-recovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 13467
+    }
+  ],
+  "limitations": [
+    {
+      "journeyId": "J28",
+      "kind": "local-only",
+      "note": "The R17 encoding covers the credential-expiry LIFECYCLE over the fixtures' scripted source-auth feed (expiry → the named expired state → the typed unauthorized read → reauthorize → recovery — the same browser-validation pattern as J21-J26's scripted acquisitions). The REAL provider OAuth round trips (a real consent dance, real token exchange, a real expiry) are the service-side source-management lane and remain local-only.",
+      "procedure": "LOCAL-ONLY: boot apps/api over a PostgreSQL database (DATABASE_URL + APP_ENCRYPTION_KEY), boot apps/web in service mode (WFX_API_BASE), drive the /sources connect flow with a stub-OAuth connector (the apps/api test boots' SourceAuthWiring pattern), let the token expire, observe the typed unauthorized degradation in the web surfaces, reauthorize, and capture screenshots per state under evidence/<run>/ — then run this runner with --base-url against that service boot."
+    },
+    {
+      "journeyId": "J25",
+      "kind": "desktop-procedure",
+      "note": "Native interruption/restart with persistent session recovery (crash-safe journals, piece-map reuse) is the Desktop path. The web encodes the recoverable-failure/retry/resuming-status grammar.",
+      "procedure": "DESKTOP (journeys/desktop/README.md): interrupt an in-progress acquisition (kill the engine), restart the app, capture the resumed-not-fresh evidence (retained progress, no false completion), then complete it."
+    },
+    {
+      "journeyId": "J27",
+      "kind": "desktop-procedure",
+      "note": "Native local media playback (the local range gateway + verified asset replay) is the Desktop path. The web encodes the constrained capability truth (settings table + the desktop-elsewhere note).",
+      "procedure": "DESKTOP (journeys/desktop/README.md): play a verified offline asset from the Library through the native media engine, capture the playback + replay states."
+    }
+  ]
+}

@@ -134,7 +134,7 @@ describe("journeys — the encoded catalog's integrity", () => {
     expect(ids).toEqual(sorted);
   });
 
-  it("the encoded set is J01–J34 + J36–J41 + J43–J46 + J48 (45 journeys — R17 encoded J28 over the scripted source-auth feed; R20-E encoded J33 over the real BYOF composition; R21-F encoded J34 over the discoverability walk; R22-G encoded J36 over the completion sweep; R23-W2 encoded J37 anonymous viewing, J38 first-class torrent web-side, and J39 multimodal intelligence; R24-W2 encoded J40 the viewer-parity walk and J41 the playback-startup benchmark; R25-W2 encoded J43 the realtime-translation walk over the real WebFlix bridge; R36 encoded J44 the creator-channel round trip — the survey's WAVE R36 journey, numbered J44 because the survey's \"new J43\" collided with the R25-W2 realtime-translation J43 already in the catalog; R37 encoded J45 the live watch + live-chat round trip and J46 the chat replay scrub — the survey's WAVE R37 pair, numbered J45/J46 because the survey's \"new J44/J45\" collided with the R36 creator-channel J44 already in the catalog, the same resolution R36 itself recorded; R38-B encoded J48 the studio edit + customize round trip — the survey's WAVE R38 studio journey, numbered J48 because the survey's \"J47\" belongs to the R38-A upload lane and J45/J46 to R37's live lane; J35 is the lead's live-production sweep, never encoded; J42 is the WebFlix extension-parity journey the lead owns)", () => {
+  it("the encoded set is J01–J34 + J36–J41 + J43–J46 + J48–J49 (46 journeys — R17 encoded J28 over the scripted source-auth feed; R20-E encoded J33 over the real BYOF composition; R21-F encoded J34 over the discoverability walk; R22-G encoded J36 over the completion sweep; R23-W2 encoded J37 anonymous viewing, J38 first-class torrent web-side, and J39 multimodal intelligence; R24-W2 encoded J40 the viewer-parity walk and J41 the playback-startup benchmark; R25-W2 encoded J43 the realtime-translation walk over the real WebFlix bridge; R36 encoded J44 the creator-channel round trip — the survey's WAVE R36 journey, numbered J44 because the survey's \"new J43\" collided with the R25-W2 realtime-translation J43 already in the catalog; R37 encoded J45 the live watch + live-chat round trip and J46 the chat replay scrub — the survey's WAVE R37 pair, numbered J45/J46 because the survey's \"new J44/J45\" collided with the R36 creator-channel J44 already in the catalog, the same resolution R36 itself recorded; R38-B encoded J48 the studio edit + customize round trip — the survey's WAVE R38 studio journey, numbered J48 because the survey's \"J47\" belongs to the R38-A upload lane and J45/J46 to R37's live lane; WFX-DEPLOY-W3 encoded J49 the deployment release surface (the browser-regression/release-surface lane's critical-path journey); J35 is the lead's live-production sweep, never encoded; J42 is the WebFlix extension-parity journey the lead owns)", () => {
     const ids = new Set(WEB_JOURNEYS.map((journey) => journey.id));
     for (let number = 1; number <= 34; number += 1) {
       expect(ids.has(`J${String(number).padStart(2, "0")}`)).toBe(true);
@@ -150,9 +150,10 @@ describe("journeys — the encoded catalog's integrity", () => {
     expect(ids.has("J45")).toBe(true);
     expect(ids.has("J46")).toBe(true);
     expect(ids.has("J48")).toBe(true);
+    expect(ids.has("J49")).toBe(true);
     expect(ids.has("J35")).toBe(false);
     expect(ids.has("J42")).toBe(false);
-    expect(WEB_JOURNEYS).toHaveLength(45);
+    expect(WEB_JOURNEYS).toHaveLength(46);
   });
 
   it("every encoded journey is ci-feasible (the CI set is the whole encoded set)", () => {

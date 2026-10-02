@@ -1,0 +1,4 @@
+- heading "This site can’t be reached" [level=1, ref=e339]
+- link "Checking the proxy and the firewall" [ref=e341]
+- button "Reload" [ref=e340]
+- button "Details" [ref=e338]

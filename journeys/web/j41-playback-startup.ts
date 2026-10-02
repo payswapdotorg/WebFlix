@@ -49,7 +49,7 @@
 
 import { describe } from "./journey-description";
 import type { Journey } from "../lib/journeys";
-import { goto, itemHrefFromSearch } from "../lib/journeys";
+import { goto, detailHrefFromSearch, revealPlayerChrome } from "../lib/journeys";
 
 /** One benchmark title's web-side walk (the assertable pair set). */
 interface StartupWalk {
@@ -73,14 +73,18 @@ export const j41PlaybackStartup: Journey = {
     const { assert, browser } = context;
 
     for (const benchmark of BENCHMARK_TITLES) {
-      // ---- THE REAL USER FLOW: search → item hub → the primary Play.
+      // ---- THE REAL USER FLOW: search → the item hub (the R28-B
+      // deep-surface Details path) → the primary Play. The card's
+      // primary link is the one-click /player href; the hub is the
+      // kebab's Details deep action — the play-click origin stays the
+      // hub's Play (the measured path's law).
       await goto(context, `/search?q=${encodeURIComponent(benchmark.searchQuery)}`);
-      const itemHref = await itemHrefFromSearch(context, benchmark.searchQuery, benchmark.titleFragment);
+      const itemHref = await detailHrefFromSearch(context, benchmark.searchQuery, benchmark.titleFragment);
       assert.that(
-        `the benchmark title '${benchmark.titleFragment}' is discoverable through search`,
-        "an item link",
+        `the benchmark title '${benchmark.titleFragment}' is discoverable through search (the Details deep path)`,
+        "an /item?id=wfxitm_… Details href",
         itemHref ?? "<absent>",
-        itemHref !== null,
+        itemHref !== null && itemHref.startsWith("/item?id=wfxitm_"),
       );
       await goto(context, itemHref ?? "/");
       await assert.visible(
@@ -228,7 +232,12 @@ export const j41PlaybackStartup: Journey = {
       // ---- THE SEEK PAIR (the J keyboard seek through the real route).
       // The confirm marker rides the async command round trip — a bounded
       // poll (the R24-W2 play-click hardening pattern), never a single
-      // fixed-settle read (which races on loaded boxes).
+      // fixed-settle read (which races on loaded boxes). The chrome click
+      // first goes through the reveal step (the idle-cover law: an idle
+      // chrome is pointer-events:none — over an embed the bar is covered
+      // by the iframe and the click can never land; the wake gesture +
+      // the actionability poll make this deterministic).
+      await revealPlayerChrome(context, "[data-wfx-chrome]");
       await browser.clickInteractive("[data-wfx-chrome]");
       await browser.press("j");
       let seekConfirmed = false;
@@ -248,7 +257,12 @@ export const j41PlaybackStartup: Journey = {
       );
 
       // ---- THE CONTROL PAIR (the transport's play/pause round trip).
-      // Same bounded-poll hardening as the seek pair.
+      // Same bounded-poll hardening as the seek pair. The reveal step
+      // first (the WFX-DEPLOY defect: over the embed benchmark title the
+      // idle chrome's play control is covered by the provider iframe —
+      // the wake-strip gesture reveals, the poll proves the control is
+      // the hit target, THEN the click lands).
+      await revealPlayerChrome(context, "[data-wfx-chrome-play]");
       await browser.clickInteractive("[data-wfx-chrome-play]");
       let controlConfirmed = false;
       try {
@@ -298,7 +312,7 @@ export const j41PlaybackStartup: Journey = {
     // ---- THE REALIZATION-SWITCH MEASUREMENT (the Where-to-watch
     // switch: Deep Field Diary's peer copy — the request/confirm pair).
     await goto(context, "/search?q=Deep%20Field");
-    const diaryHref = await itemHrefFromSearch(context, "Deep Field", "Deep Field Diary");
+    const diaryHref = await detailHrefFromSearch(context, "Deep Field", "Deep Field Diary");
     await goto(context, diaryHref ?? "/");
     await assert.visible(
       "[data-wfx-watch-switch='authorized-peer-copy']",
