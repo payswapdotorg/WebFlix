@@ -1,0 +1,897 @@
+{
+  "lane": "WFX-R23R — the R23 current-production revalidation",
+  "date": "2026-10-03",
+  "baseline": "main @ 7703890fd185c7f76d1b6d68d46632ad7f301ea0",
+  "branch": "work/wfx-r23-reval",
+  "production": {
+    "web": "https://webflix-steel.vercel.app",
+    "api": "https://webflix-api.vercel.app"
+  },
+  "method": "the journeys runner (bun journeys/runner.ts) against the running production surfaces in single-journey chunks (the memory law); every non-pass verdict re-run (zero verdict flakes); the drift fixes re-proven on BOTH boots",
+  "verdictMatrix": [
+    {
+      "check": "Matrix 1 — J39 media intelligence (the STANDING revalidation target)",
+      "asEncoded": "STALE-GRAMMAR (FAIL at the meaning-result assertion — the deployed transport answers its typed unavailable; chunks a + a2, zero flakes)",
+      "afterReencode": "PASS — 26 assertions × 2 stable runs (chunks d2 + d3); the honest typed truths asserted as checks",
+      "fixturesBoot": "PASS — 30 assertions (chunk f; the original walk unchanged)",
+      "finding": "evidence/r41/j39-transport-answer.md — the transport's exact production answer recorded verbatim"
+    },
+    {
+      "check": "Matrix 2 — J37 anonymous playback / no-login-wall regression",
+      "asEncoded": "STALE-GRAMMAR (FAIL at the fixtures-only title binding — chunks b + b2, zero flakes; the no-login-wall core assertions passed)",
+      "afterReencode": "PASS — 18 assertions × 2 stable runs (chunks e + e2)",
+      "fixturesBoot": "PASS — 18 assertions (chunk g; the original walk unchanged)",
+      "finding": "the no-login-wall law machine-checked on production: anonymous home, one-click play, no redirect, session-scoped progress, resume seam, realization switch"
+    },
+    {
+      "check": "Matrix 3 — J38 torrent first-class realization regression",
+      "asEncoded": "PASS — 8 assertions × 2 stable runs (chunks c + c2; the R35b production-neutral service branch)",
+      "afterReencode": "unchanged (no drift — the encoding was already production-neutral)",
+      "fixturesBoot": "PASS — 44 assertions (chunk h; the full first-class lifecycle walk)",
+      "finding": "the grouping law (webflix-source first), zero fabricated peer-copy entries, the honest Desktop-next-step state, the typed read-only drive refusal"
+    },
+    {
+      "check": "Matrix 4 — Web/API deployment parity",
+      "asEncoded": "PASS — 5/5 checks × 2 stable runs (parity-record-run1 + run2; byte-identical health digests)",
+      "afterReencode": "unchanged (a probe, not a journey)",
+      "fixturesBoot": "n/a (production-only probe)",
+      "finding": "health contracts byte-exact on both hosts; the identity-header law; the intelligence chain agrees across the split runtime; the search round trip 19/19 cards same-order"
+    }
+  ],
+  "chunks": [
+    {
+      "chunk": "chunk-a-j39",
+      "note": "the AS-ENCODED first pass vs production (the honest verdict before any drift fix)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T08:56:07.320Z",
+        "finishedAt": "2026-10-03T08:56:15.441Z"
+      },
+      "journeys": [
+        {
+          "id": "J39",
+          "verdict": "FAIL",
+          "assertions": 2,
+          "passedAssertions": 1,
+          "firstFailingAssertion": "journey assertion failed: the meaning result finds the space documentary by what it IS (not its name)\n  expected: Deep Field Diary\n  observed: <none>",
+          "artifacts": [
+            "evidence/r41/chunk-a-j39/j39-failure.png",
+            "evidence/r41/chunk-a-j39/j39-failure.snapshot.txt"
+          ],
+          "durationMs": 5491
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-a2-j39-rerun",
+      "note": "the zero-flake re-run of chunk-a (identical verdict + first-failing assertion)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T08:56:56.250Z",
+        "finishedAt": "2026-10-03T08:57:00.707Z"
+      },
+      "journeys": [
+        {
+          "id": "J39",
+          "verdict": "FAIL",
+          "assertions": 2,
+          "passedAssertions": 1,
+          "firstFailingAssertion": "journey assertion failed: the meaning result finds the space documentary by what it IS (not its name)\n  expected: Deep Field Diary\n  observed: <none>",
+          "artifacts": [
+            "evidence/r41/chunk-a2-j39-rerun/j39-failure.png",
+            "evidence/r41/chunk-a2-j39-rerun/j39-failure.snapshot.txt"
+          ],
+          "durationMs": 3183
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-b-j37",
+      "note": "the AS-ENCODED first pass vs production (the honest verdict before any drift fix)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T08:56:21.153Z",
+        "finishedAt": "2026-10-03T08:56:27.595Z"
+      },
+      "journeys": [
+        {
+          "id": "J37",
+          "verdict": "FAIL",
+          "assertions": 4,
+          "passedAssertions": 3,
+          "firstFailingAssertion": "journey assertion failed: the search surface offers the public title's one-click play path anonymously\n  expected: an id-first /player link (the R28-B play decision — no gate, no extra hop)\n  observed: <absent>",
+          "artifacts": [
+            "evidence/r41/chunk-b-j37/j37-failure.png",
+            "evidence/r41/chunk-b-j37/j37-failure.snapshot.txt"
+          ],
+          "durationMs": 5156
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-b2-j37-rerun",
+      "note": "the zero-flake re-run of chunk-b (identical verdict + first-failing assertion)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T08:57:00.747Z",
+        "finishedAt": "2026-10-03T08:57:07.039Z"
+      },
+      "journeys": [
+        {
+          "id": "J37",
+          "verdict": "FAIL",
+          "assertions": 4,
+          "passedAssertions": 3,
+          "firstFailingAssertion": "journey assertion failed: the search surface offers the public title's one-click play path anonymously\n  expected: an id-first /player link (the R28-B play decision — no gate, no extra hop)\n  observed: <absent>",
+          "artifacts": [
+            "evidence/r41/chunk-b2-j37-rerun/j37-failure.png",
+            "evidence/r41/chunk-b2-j37-rerun/j37-failure.snapshot.txt"
+          ],
+          "durationMs": 4898
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-c-j38",
+      "note": "J38 vs production as-encoded (the R35b production-neutral service branch)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T08:56:33.990Z",
+        "finishedAt": "2026-10-03T08:56:46.506Z"
+      },
+      "journeys": [
+        {
+          "id": "J38",
+          "verdict": "PASS",
+          "assertions": 8,
+          "passedAssertions": 8,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-c-j38/j38-torrent-playback.png",
+            "evidence/r41/chunk-c-j38/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.snapshot.txt",
+            "evidence/r41/chunk-c-j38/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
+          ],
+          "durationMs": 11249
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-c2-j38-prod-stability",
+      "note": "the stability re-run of chunk-c (verdict of record)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T09:15:07.948Z",
+        "finishedAt": "2026-10-03T09:15:21.082Z"
+      },
+      "journeys": [
+        {
+          "id": "J38",
+          "verdict": "PASS",
+          "assertions": 8,
+          "passedAssertions": 8,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-c2-j38-prod-stability/j38-torrent-playback.png",
+            "evidence/r41/chunk-c2-j38-prod-stability/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.snapshot.txt",
+            "evidence/r41/chunk-c2-j38-prod-stability/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
+          ],
+          "durationMs": 11671
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-d-j39-reencoded",
+      "note": "the WFX-R23R re-encode run 1 (failed on the live-captions closed-details text read — the encoding fix that followed is documented)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T09:09:11.147Z",
+        "finishedAt": "2026-10-03T09:09:31.382Z"
+      },
+      "journeys": [
+        {
+          "id": "J39",
+          "verdict": "FAIL",
+          "assertions": 21,
+          "passedAssertions": 20,
+          "firstFailingAssertion": "journey assertion failed: the legal-audio gate states its no-bypass law verbatim\n  expected: …there is no bypass, by design).\n  observed: Live captions",
+          "artifacts": [
+            "evidence/r41/chunk-d-j39-reencoded/j39-failure.png",
+            "evidence/r41/chunk-d-j39-reencoded/j39-failure.snapshot.txt"
+          ],
+          "durationMs": 18800
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-d2-j39-reencoded-run2",
+      "note": "the re-encoded J39 vs production — the verdict of record (run 1 after the disclosure-open fix)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T09:10:53.232Z",
+        "finishedAt": "2026-10-03T09:11:13.434Z"
+      },
+      "journeys": [
+        {
+          "id": "J39",
+          "verdict": "PASS",
+          "assertions": 26,
+          "passedAssertions": 26,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-d2-j39-reencoded-run2/j39-media-intelligence.png",
+            "evidence/r41/chunk-d2-j39-reencoded-run2/j39-multimodal-media-intelligence-semantic-moment-discovery.snapshot.txt",
+            "evidence/r41/chunk-d2-j39-reencoded-run2/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
+          ],
+          "durationMs": 18847
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-d3-j39-prod-stability",
+      "note": "the stability re-run of chunk-d2 (verdict of record, zero flakes)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T09:14:22.690Z",
+        "finishedAt": "2026-10-03T09:14:46.808Z"
+      },
+      "journeys": [
+        {
+          "id": "J39",
+          "verdict": "PASS",
+          "assertions": 26,
+          "passedAssertions": 26,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-d3-j39-prod-stability/j39-media-intelligence.png",
+            "evidence/r41/chunk-d3-j39-prod-stability/j39-multimodal-media-intelligence-semantic-moment-discovery.snapshot.txt",
+            "evidence/r41/chunk-d3-j39-prod-stability/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
+          ],
+          "durationMs": 22735
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-e-j37-reencoded",
+      "note": "the re-encoded J37 vs production — the verdict of record",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T09:11:19.545Z",
+        "finishedAt": "2026-10-03T09:11:40.483Z"
+      },
+      "journeys": [
+        {
+          "id": "J37",
+          "verdict": "PASS",
+          "assertions": 18,
+          "passedAssertions": 18,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-e-j37-reencoded/j37-anonymous-viewing.png",
+            "evidence/r41/chunk-e-j37-reencoded/j37-anonymous-public-viewing-without-webflix-login.snapshot.txt",
+            "evidence/r41/chunk-e-j37-reencoded/j37-anonymous-public-viewing-without-webflix-login.narration.txt"
+          ],
+          "durationMs": 19441
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-e2-j37-prod-stability",
+      "note": "the stability re-run of chunk-e (verdict of record, zero flakes)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "https://webflix-steel.vercel.app",
+      "window": {
+        "startedAt": "2026-10-03T09:14:46.853Z",
+        "finishedAt": "2026-10-03T09:15:07.906Z"
+      },
+      "journeys": [
+        {
+          "id": "J37",
+          "verdict": "PASS",
+          "assertions": 18,
+          "passedAssertions": 18,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-e2-j37-prod-stability/j37-anonymous-viewing.png",
+            "evidence/r41/chunk-e2-j37-prod-stability/j37-anonymous-public-viewing-without-webflix-login.snapshot.txt",
+            "evidence/r41/chunk-e2-j37-prod-stability/j37-anonymous-public-viewing-without-webflix-login.narration.txt"
+          ],
+          "durationMs": 19457
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-f-j39-fixtures",
+      "note": "the fixtures-boot regression check (the original walk unchanged and green after the re-encode)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "http://localhost:3101",
+      "window": {
+        "startedAt": "2026-10-03T09:11:49.359Z",
+        "finishedAt": "2026-10-03T09:12:31.142Z"
+      },
+      "journeys": [
+        {
+          "id": "J39",
+          "verdict": "PASS",
+          "assertions": 30,
+          "passedAssertions": 30,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-f-j39-fixtures/j39-media-intelligence.png",
+            "evidence/r41/chunk-f-j39-fixtures/j39-multimodal-media-intelligence-semantic-moment-discovery.snapshot.txt",
+            "evidence/r41/chunk-f-j39-fixtures/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
+          ],
+          "durationMs": 31652
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-g-j37-fixtures",
+      "note": "the fixtures-boot regression check (the original walk unchanged and green after the re-encode)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "http://localhost:3101",
+      "window": {
+        "startedAt": "2026-10-03T09:12:36.481Z",
+        "finishedAt": "2026-10-03T09:13:07.089Z"
+      },
+      "journeys": [
+        {
+          "id": "J37",
+          "verdict": "PASS",
+          "assertions": 18,
+          "passedAssertions": 18,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-g-j37-fixtures/j37-anonymous-viewing.png",
+            "evidence/r41/chunk-g-j37-fixtures/j37-anonymous-public-viewing-without-webflix-login.snapshot.txt",
+            "evidence/r41/chunk-g-j37-fixtures/j37-anonymous-public-viewing-without-webflix-login.narration.txt"
+          ],
+          "durationMs": 22055
+        }
+      ]
+    },
+    {
+      "chunk": "chunk-h-j38-fixtures",
+      "note": "the fixtures-boot regression check (the full first-class peer-copy lifecycle walk)",
+      "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+      "target": "http://localhost:3101",
+      "window": {
+        "startedAt": "2026-10-03T09:13:24.398Z",
+        "finishedAt": "2026-10-03T09:14:14.917Z"
+      },
+      "journeys": [
+        {
+          "id": "J38",
+          "verdict": "PASS",
+          "assertions": 44,
+          "passedAssertions": 44,
+          "firstFailingAssertion": null,
+          "artifacts": [
+            "evidence/r41/chunk-h-j38-fixtures/j38-torrent-playback.png",
+            "evidence/r41/chunk-h-j38-fixtures/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.snapshot.txt",
+            "evidence/r41/chunk-h-j38-fixtures/j38-first-class-torrent-playback-web-browser-capable-honest-fallbacks.narration.txt"
+          ],
+          "durationMs": 42907
+        }
+      ]
+    }
+  ],
+  "parity": {
+    "run1": {
+      "verdict": "PASS",
+      "capturedAt": "2026-10-03T09:02:25.633Z",
+      "checks": [
+        {
+          "id": "health-web",
+          "verdict": "PASS",
+          "expected": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}",
+          "identity": {
+            "url": "https://webflix-steel.vercel.app/api/health",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::xtrkk-1791018145664-66f8b46d5255",
+              "x-matched-path": "/api/health",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:02:25 GMT"
+            },
+            "bodyBytes": 53,
+            "bodySha256": "24dc242037b4667dfc0a19a417ffaf943179526f4691bdbe9099cf82aefc44f9",
+            "bodyText": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}"
+          }
+        },
+        {
+          "id": "health-api",
+          "verdict": "PASS",
+          "expected": "{\"ok\":true,\"service\":\"webflix-api\",\"version\":\"0.1.0\"}",
+          "identity": {
+            "url": "https://webflix-api.vercel.app/api/health",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::626vh-1791018145913-826527a026d0",
+              "x-matched-path": "/api/health",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:02:26 GMT"
+            },
+            "bodyBytes": 53,
+            "bodySha256": "c31735a2882e43496faa0d7316d40038c0f6eda2052bf6a56ea60057701bd6fa",
+            "bodyText": "{\"ok\":true,\"service\":\"webflix-api\",\"version\":\"0.1.0\"}"
+          }
+        },
+        {
+          "id": "api-identity-header-law",
+          "verdict": "PASS",
+          "expected": "HTTP 400 naming the absent x-wfx-user-id identity header",
+          "identity": {
+            "url": "https://webflix-api.vercel.app/experience/search?query=rain",
+            "status": 400,
+            "statusText": "Bad Request",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::626vh-1791018146155-a9bf2dcbaef9",
+              "x-matched-path": "/experience/search",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:02:26 GMT"
+            },
+            "bodyBytes": 133,
+            "bodySha256": "0e462c1c7b0496bd724e845f626c8a329cb3893b27190573a23375f1f79da2f3",
+            "bodyText": "{\"error\":\"invalid-request\",\"detail\":\"x-wfx-user-id: required identity header is absent (identity travels as headers, never in URLs)\"}"
+          }
+        },
+        {
+          "id": "intelligence-chain",
+          "verdict": "PASS",
+          "expected": "web /api/intelligence projects the API /experience/intelligence wire (both meaningSearchAvailable:false, same empty meaning/moments)",
+          "webIdentity": {
+            "url": "https://webflix-steel.vercel.app/api/intelligence?q=a%20space%20documentary%20about%20telescopes%20and%20galaxies",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::xtrkk-1791018146398-3c040880b1cd",
+              "x-matched-path": "/api/intelligence",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:02:26 GMT"
+            },
+            "bodyBytes": 142,
+            "bodySha256": "f3341b8619341870b9a54c3ba65a97179dcc308592cc13d843163764b293c0a2",
+            "bodyText": "{\"mode\":\"service\",\"kind\":\"semantic-search\",\"view\":{\"status\":\"ready\",\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}"
+          },
+          "apiIdentity": {
+            "url": "https://webflix-api.vercel.app/experience/intelligence?q=a%20space%20documentary%20about%20telescopes%20and%20galaxies",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::d9z5n-1791018146721-83a71f3eea3d",
+              "x-matched-path": "/experience/intelligence",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:02:26 GMT"
+            },
+            "bodyBytes": 100,
+            "bodySha256": "149aa39e7dc3ef79b52f9dfc546f542ccab92137efffea0572a2d3f5f9669a09",
+            "bodyText": "{\"kind\":\"served\",\"value\":{\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}"
+          }
+        },
+        {
+          "id": "search-round-trip",
+          "verdict": "PASS",
+          "expected": "the web host's rendered /search cards are the API's /experience/search answer (same refs, same order, non-zero)",
+          "apiIdentity": {
+            "url": "https://webflix-api.vercel.app/experience/search?query=rain",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::d9z5n-1791018146960-5e4794c79a4d",
+              "x-matched-path": "/experience/search",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:02:27 GMT"
+            },
+            "bodyBytes": 5643,
+            "bodySha256": "76d19d54fb90cb6374d6195ad88759be7fe216a0e301316724f8c6449847b1d3",
+            "bodyText": "<5643 bytes, 19 items>"
+          },
+          "apiRefs": [
+            "3uyGhtARP4M",
+            "HOmzTwFuR0A",
+            "2XUnQ_c8500",
+            "EJ_GlSh8bec",
+            "sfn3lnBolFo",
+            "4QBB0phhhaE",
+            "DYFDc0dpc5g",
+            "9biNQf9byGM",
+            "H-IPPiLvN9Q",
+            "MYS0KCOQ-SI",
+            "Dfm2rB-nQ9Y",
+            "oH_pVgW5fEw",
+            "mPZkdNFkNps",
+            "JZ7Tw-FfopI",
+            "yDVBGy5bWx8",
+            "rpvXij-J3yU",
+            "Kl2v9ydanrI",
+            "v1zAYXKn4Ow",
+            "8rTTEMdMh8Q"
+          ],
+          "apiTitles": [
+            "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+            "Best thunder sound for sleep #thunder #rain #sleep",
+            "Caught In Heavy Rain Storm!😱",
+            "Embrace the tranquility of a rainy day in a Japanese village 🌧️🏯 #Serenity #Japan #explorepage",
+            "Goodbye Insomnia with Heavy Rain & Thunder Growls on a Stale Tin Roof in Foggy Murky Forest at Night",
+            "Heavy Rain and Thunder Sounds for sleep, study or relaxation  - Rain sounds on the Roof"
+          ],
+          "webRender": {
+            "mode": "service",
+            "cardCount": 19,
+            "refs": [
+              "3uyGhtARP4M",
+              "HOmzTwFuR0A",
+              "2XUnQ_c8500",
+              "EJ_GlSh8bec",
+              "sfn3lnBolFo",
+              "4QBB0phhhaE",
+              "DYFDc0dpc5g",
+              "9biNQf9byGM",
+              "H-IPPiLvN9Q",
+              "MYS0KCOQ-SI",
+              "Dfm2rB-nQ9Y",
+              "oH_pVgW5fEw",
+              "mPZkdNFkNps",
+              "JZ7Tw-FfopI",
+              "yDVBGy5bWx8",
+              "rpvXij-J3yU",
+              "Kl2v9ydanrI",
+              "v1zAYXKn4Ow",
+              "8rTTEMdMh8Q"
+            ],
+            "titles": [
+              "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #",
+              "Best thunder sound for sleep #thunder #rain #sleep (short)",
+              "Caught In Heavy Rain Storm!😱 (short)",
+              "Embrace the tranquility of a rainy day in a Japanese village 🌧️🏯 #Serenity #Ja",
+              "Goodbye Insomnia with Heavy Rain & Thunder Growls on a Stale Tin Roof in Foggy M",
+              "Heavy Rain and Thunder Sounds for sleep, study or relaxation  - Rain sounds on t",
+              "Inside the Wettest City on the Planet (Rains Every Day) (video, 48:06)",
+              "Lofi Rain & Night Vibes 🌙 Chill Beats for Relaxation & Focus | Cozy Ambience (s",
+              "Lofi Rain 🌧️ 1 Hour | Cozy Night Ambience for Study, Relax & Sleep (short)",
+              "Lofi Rain 🌧️ Rain Lofi for Study & Relax (short)",
+              "No Ads Rain Sounds for Sleeping - ASMR Rain and Thunder Sounds For Sleeping, Rel",
+              "Rain Bombs | Full Documentary | NOVA | PBS (video, 53:54)",
+              "Rain Sound On Window with Thunder SoundsㅣHeavy Rain for Sleep, Study and Relaxat",
+              "Rainy Lo-fi Study Café 📖 1 Hour Chill Lo-fi No Mid Ads to help you focus 🎧 Stu",
+              "Rainy Night Lofi ☕ Cozy Beats for Study, Work & Relax - Sleepy Train Window in t",
+              "Relaxing Lofi Music with Rain Sounds 🌧️ Cozy Ambience for Study, Sleep, Focus &",
+              "Thunderstorm with Heavy rain sounds for Sleep, Study and Relaxation - The Hideou",
+              "World Extremes - \"Living in the Rain: The Story of Mawsynram!\" (short)",
+              "🔴 Heavy Rain and Thunder Sounds for Sleeping - Black Screen | Perfect Thunderst"
+            ]
+          },
+          "agreement": {
+            "webCardCount": 19,
+            "apiItemCount": 19,
+            "overlapCount": 19,
+            "sameOrder": true
+          }
+        }
+      ]
+    },
+    "run2": {
+      "verdict": "PASS",
+      "capturedAt": "2026-10-03T09:15:29.442Z",
+      "checks": [
+        {
+          "id": "health-web",
+          "verdict": "PASS",
+          "expected": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}",
+          "identity": {
+            "url": "https://webflix-steel.vercel.app/api/health",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::q4qpq-1791018929463-c3509ef6fb21",
+              "x-matched-path": "/api/health",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:15:29 GMT"
+            },
+            "bodyBytes": 53,
+            "bodySha256": "24dc242037b4667dfc0a19a417ffaf943179526f4691bdbe9099cf82aefc44f9",
+            "bodyText": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}"
+          }
+        },
+        {
+          "id": "health-api",
+          "verdict": "PASS",
+          "expected": "{\"ok\":true,\"service\":\"webflix-api\",\"version\":\"0.1.0\"}",
+          "identity": {
+            "url": "https://webflix-api.vercel.app/api/health",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::dqgd8-1791018929725-729ea3d886f3",
+              "x-matched-path": "/api/health",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:15:29 GMT"
+            },
+            "bodyBytes": 53,
+            "bodySha256": "c31735a2882e43496faa0d7316d40038c0f6eda2052bf6a56ea60057701bd6fa",
+            "bodyText": "{\"ok\":true,\"service\":\"webflix-api\",\"version\":\"0.1.0\"}"
+          }
+        },
+        {
+          "id": "api-identity-header-law",
+          "verdict": "PASS",
+          "expected": "HTTP 400 naming the absent x-wfx-user-id identity header",
+          "identity": {
+            "url": "https://webflix-api.vercel.app/experience/search?query=rain",
+            "status": 400,
+            "statusText": "Bad Request",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::dqgd8-1791018929954-4396d0a886a4",
+              "x-matched-path": "/experience/search",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+            },
+            "bodyBytes": 133,
+            "bodySha256": "0e462c1c7b0496bd724e845f626c8a329cb3893b27190573a23375f1f79da2f3",
+            "bodyText": "{\"error\":\"invalid-request\",\"detail\":\"x-wfx-user-id: required identity header is absent (identity travels as headers, never in URLs)\"}"
+          }
+        },
+        {
+          "id": "intelligence-chain",
+          "verdict": "PASS",
+          "expected": "web /api/intelligence projects the API /experience/intelligence wire (both meaningSearchAvailable:false, same empty meaning/moments)",
+          "webIdentity": {
+            "url": "https://webflix-steel.vercel.app/api/intelligence?q=a%20space%20documentary%20about%20telescopes%20and%20galaxies",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::85hsg-1791018930180-91827e812d92",
+              "x-matched-path": "/api/intelligence",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+            },
+            "bodyBytes": 142,
+            "bodySha256": "f3341b8619341870b9a54c3ba65a97179dcc308592cc13d843163764b293c0a2",
+            "bodyText": "{\"mode\":\"service\",\"kind\":\"semantic-search\",\"view\":{\"status\":\"ready\",\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}"
+          },
+          "apiIdentity": {
+            "url": "https://webflix-api.vercel.app/experience/intelligence?q=a%20space%20documentary%20about%20telescopes%20and%20galaxies",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::jh6fp-1791018930521-1f9dd42fa765",
+              "x-matched-path": "/experience/intelligence",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+            },
+            "bodyBytes": 100,
+            "bodySha256": "149aa39e7dc3ef79b52f9dfc546f542ccab92137efffea0572a2d3f5f9669a09",
+            "bodyText": "{\"kind\":\"served\",\"value\":{\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}"
+          }
+        },
+        {
+          "id": "search-round-trip",
+          "verdict": "PASS",
+          "expected": "the web host's rendered /search cards are the API's /experience/search answer (same refs, same order, non-zero)",
+          "apiIdentity": {
+            "url": "https://webflix-api.vercel.app/experience/search?query=rain",
+            "status": 200,
+            "statusText": "OK",
+            "headers": {
+              "content-type": "application/json",
+              "cache-control": "public, max-age=0, must-revalidate",
+              "age": "0",
+              "server": "Vercel",
+              "x-vercel-cache": "MISS",
+              "x-vercel-id": "hkg1::iad1::jh6fp-1791018930759-6ea6873eb949",
+              "x-matched-path": "/experience/search",
+              "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+              "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+            },
+            "bodyBytes": 5643,
+            "bodySha256": "76d19d54fb90cb6374d6195ad88759be7fe216a0e301316724f8c6449847b1d3",
+            "bodyText": "<5643 bytes, 19 items>"
+          },
+          "apiRefs": [
+            "3uyGhtARP4M",
+            "HOmzTwFuR0A",
+            "2XUnQ_c8500",
+            "EJ_GlSh8bec",
+            "sfn3lnBolFo",
+            "4QBB0phhhaE",
+            "DYFDc0dpc5g",
+            "9biNQf9byGM",
+            "H-IPPiLvN9Q",
+            "MYS0KCOQ-SI",
+            "Dfm2rB-nQ9Y",
+            "oH_pVgW5fEw",
+            "mPZkdNFkNps",
+            "JZ7Tw-FfopI",
+            "yDVBGy5bWx8",
+            "rpvXij-J3yU",
+            "Kl2v9ydanrI",
+            "v1zAYXKn4Ow",
+            "8rTTEMdMh8Q"
+          ],
+          "apiTitles": [
+            "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+            "Best thunder sound for sleep #thunder #rain #sleep",
+            "Caught In Heavy Rain Storm!😱",
+            "Embrace the tranquility of a rainy day in a Japanese village 🌧️🏯 #Serenity #Japan #explorepage",
+            "Goodbye Insomnia with Heavy Rain & Thunder Growls on a Stale Tin Roof in Foggy Murky Forest at Night",
+            "Heavy Rain and Thunder Sounds for sleep, study or relaxation  - Rain sounds on the Roof"
+          ],
+          "webRender": {
+            "mode": "service",
+            "cardCount": 19,
+            "refs": [
+              "3uyGhtARP4M",
+              "HOmzTwFuR0A",
+              "2XUnQ_c8500",
+              "EJ_GlSh8bec",
+              "sfn3lnBolFo",
+              "4QBB0phhhaE",
+              "DYFDc0dpc5g",
+              "9biNQf9byGM",
+              "H-IPPiLvN9Q",
+              "MYS0KCOQ-SI",
+              "Dfm2rB-nQ9Y",
+              "oH_pVgW5fEw",
+              "mPZkdNFkNps",
+              "JZ7Tw-FfopI",
+              "yDVBGy5bWx8",
+              "rpvXij-J3yU",
+              "Kl2v9ydanrI",
+              "v1zAYXKn4Ow",
+              "8rTTEMdMh8Q"
+            ],
+            "titles": [
+              "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #",
+              "Best thunder sound for sleep #thunder #rain #sleep (short)",
+              "Caught In Heavy Rain Storm!😱 (short)",
+              "Embrace the tranquility of a rainy day in a Japanese village 🌧️🏯 #Serenity #Ja",
+              "Goodbye Insomnia with Heavy Rain & Thunder Growls on a Stale Tin Roof in Foggy M",
+              "Heavy Rain and Thunder Sounds for sleep, study or relaxation  - Rain sounds on t",
+              "Inside the Wettest City on the Planet (Rains Every Day) (video, 48:06)",
+              "Lofi Rain & Night Vibes 🌙 Chill Beats for Relaxation & Focus | Cozy Ambience (s",
+              "Lofi Rain 🌧️ 1 Hour | Cozy Night Ambience for Study, Relax & Sleep (short)",
+              "Lofi Rain 🌧️ Rain Lofi for Study & Relax (short)",
+              "No Ads Rain Sounds for Sleeping - ASMR Rain and Thunder Sounds For Sleeping, Rel",
+              "Rain Bombs | Full Documentary | NOVA | PBS (video, 53:54)",
+              "Rain Sound On Window with Thunder SoundsㅣHeavy Rain for Sleep, Study and Relaxat",
+              "Rainy Lo-fi Study Café 📖 1 Hour Chill Lo-fi No Mid Ads to help you focus 🎧 Stu",
+              "Rainy Night Lofi ☕ Cozy Beats for Study, Work & Relax - Sleepy Train Window in t",
+              "Relaxing Lofi Music with Rain Sounds 🌧️ Cozy Ambience for Study, Sleep, Focus &",
+              "Thunderstorm with Heavy rain sounds for Sleep, Study and Relaxation - The Hideou",
+              "World Extremes - \"Living in the Rain: The Story of Mawsynram!\" (short)",
+              "🔴 Heavy Rain and Thunder Sounds for Sleeping - Black Screen | Perfect Thunderst"
+            ]
+          },
+          "agreement": {
+            "webCardCount": 19,
+            "apiItemCount": 19,
+            "overlapCount": 19,
+            "sameOrder": true
+          }
+        }
+      ]
+    },
+    "stability": "stable"
+  },
+  "honestVerdictLaw": {
+    "reRunsOfNonPass": [
+      "chunk-a (J39 as-encoded FAIL) → chunk-a2: identical verdict, identical first-failing assertion",
+      "chunk-b (J37 as-encoded FAIL) → chunk-b2: identical verdict, identical first-failing assertion",
+      "chunk-d (J39 re-encode run 1 FAIL — the live-captions closed-details text read) → the disclosure-open encoding fix → chunk-d2 PASS → chunk-d3 PASS (stable)"
+    ],
+    "zeroVerdictFlakes": true,
+    "labels": [
+      "OBSERVED",
+      "DOCUMENTED",
+      "HYPOTHESIS",
+      "REPRODUCED",
+      "UNRESOLVED"
+    ]
+  },
+  "driftFixes": [
+    {
+      "file": "journeys/web/j37-anonymous-viewing.ts",
+      "drift": "the fixtures-only catalog binding (\"Deep Field Diary\") + the provider-authorized-only access-truth vocabulary — both pre-date the split-runtime service catalog evolution",
+      "fix": "the mode-badge branch (the J38 R35b precedent): the service boot binds catalog-neutrally and asserts the R23-A law over either honest access vocabulary; the fixtures walk unchanged"
+    },
+    {
+      "file": "journeys/web/j39-media-intelligence.ts",
+      "drift": "the fixtures intelligence-feed bindings (the \"Deep Field Diary\" meaning result, transcript/chapters/moments, the scripted R2T2 registration round trip) — the deployed transport answers its honest typed unavailable state",
+      "fix": "the mode-badge branch: the service boot asserts the honest typed truths as checks (the no-fabrication sentence, the transport's HTTP answer, the per-feature prerequisite truth, the model-authority boundary verbatim, the R2T2 license truth, the reads-only registration refusal, the anonymous boundary); the fixtures walk unchanged"
+    }
+  ],
+  "artifacts": {
+    "manifest": "evidence/r41/manifest.json (this file)",
+    "index": "evidence/r41/INDEX.md",
+    "j39TransportAnswer": "evidence/r41/j39-transport-answer.md",
+    "parity": [
+      "evidence/r41/parity/probe-parity.ts",
+      "evidence/r41/parity/parity-record-run1.json",
+      "evidence/r41/parity/parity-record-run2.json"
+    ],
+    "probes": "evidence/r41/probes/",
+    "chunks": [
+      "evidence/r41/chunk-a-j39/",
+      "evidence/r41/chunk-a2-j39-rerun/",
+      "evidence/r41/chunk-b-j37/",
+      "evidence/r41/chunk-b2-j37-rerun/",
+      "evidence/r41/chunk-c-j38/",
+      "evidence/r41/chunk-c2-j38-prod-stability/",
+      "evidence/r41/chunk-d-j39-reencoded/",
+      "evidence/r41/chunk-d2-j39-reencoded-run2/",
+      "evidence/r41/chunk-d3-j39-prod-stability/",
+      "evidence/r41/chunk-e-j37-reencoded/",
+      "evidence/r41/chunk-e2-j37-prod-stability/",
+      "evidence/r41/chunk-f-j39-fixtures/",
+      "evidence/r41/chunk-g-j37-fixtures/",
+      "evidence/r41/chunk-h-j38-fixtures/"
+    ]
+  }
+}

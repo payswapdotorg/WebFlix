@@ -1,0 +1,155 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+  "branch": "work/wfx-r23-reval",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-10-03T09:14:46.853Z",
+    "finishedAt": "2026-10-03T09:15:07.906Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1791018886853)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the anonymous viewer lands on Home (no gate, no interstitial)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu states the honest anonymous truth",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session truth names accountless watching (login optional, never a prerequisite)",
+          "expected": "no account is needed to watch public content",
+          "observed": "You are watching in an anonymous session — no account is needed to watch public ",
+          "pass": true
+        },
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "service",
+          "pass": true
+        },
+        {
+          "description": "the deployed catalog offers a public title's one-click play path anonymously (catalog-neutral — the R28-B grammar law)",
+          "expected": "an id-first /player link (the R28-B play decision — no gate, no extra hop)",
+          "observed": "/player?id=wfxitm_697J0HQ2190CBNABTQE90HETKB&connector=wfx-experience-service&ref=ZR1HI21eSM0&title=8+Hours+Of+Space+%26+Our+Extraordinary+Universe+%7C+BBC+Earth+Science&type=video&duration=29371000",
+          "pass": true
+        },
+        {
+          "description": "the access truth renders (the source's own truth — provider-auth or public, distinguished from any WebFlix-account truth)",
+          "expected": "[data-wfx-watch-access] present in the DOM",
+          "observed": "2 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the access sentence names accountless watching (the R23-A independence law — provider/public truth, never a WebFlix-account requirement)",
+          "expected": "works without a WebFlix account | Public — plays for everyone, no account needed.",
+          "observed": "public :: Public — plays for everyone, no account needed.",
+          "pass": true
+        },
+        {
+          "description": "the player renders for the anonymous viewer (no wall)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the public embed stage engages (playback actually starts — not a gate)",
+          "expected": "[data-wfx-player-frame] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "no redirect away from the player happened (no login wall, no settings redirect)",
+          "expected": "the /player route",
+          "observed": "/player",
+          "pass": true
+        },
+        {
+          "description": "the player states the session-scoped progress truth (honestly session-local)",
+          "expected": "[data-wfx-player-progress-scope='session-local'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the progress-scope sentence keeps watching accountless (sign-in optional)",
+          "expected": "kept for this session / never requires it",
+          "observed": "Watching without an account — your place is kept for this session on this device. Sign in any time to keep it everywhere",
+          "pass": true
+        },
+        {
+          "description": "sign-in remains available but optional (a link, never a wall)",
+          "expected": "[data-wfx-player-progress-signin] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session continues watching at the carried position",
+          "expected": "text of [data-wfx-player-resume] is exactly \"Resumed at 1:00\"",
+          "observed": "\"Resumed at 1:00\"",
+          "pass": true
+        },
+        {
+          "description": "the realization switch is offered on the anonymous player (public playback controls)",
+          "expected": "a switch href",
+          "observed": "/player?id=wfxitm_697J0HQ2190CBNABTQE90HETKB&connector=wfx-experience-service&ref=ZR1HI21eSM0&title=8+Hours+Of+Space+%26+Our+Extraordinary+Universe+%7C+BBC+Earth+Science&type=video&duration=29371000&mode=embed",
+          "pass": true
+        },
+        {
+          "description": "the switched realization still plays anonymously (the session continues)",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the anonymous viewer browses Watch (no gate)",
+          "expected": "[data-wfx-surface='watch'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "returning Home keeps the anonymous session (the journey continues)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r41/chunk-e2-j37-prod-stability/j37-anonymous-viewing.png",
+        "evidence/r41/chunk-e2-j37-prod-stability/j37-anonymous-public-viewing-without-webflix-login.snapshot.txt",
+        "evidence/r41/chunk-e2-j37-prod-stability/j37-anonymous-public-viewing-without-webflix-login.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 19457
+    }
+  ],
+  "limitations": []
+}

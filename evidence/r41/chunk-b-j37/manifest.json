@@ -1,0 +1,70 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+  "branch": "work/wfx-r23-reval",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-10-03T08:56:21.153Z",
+    "finishedAt": "2026-10-03T08:56:27.595Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1791017781153)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J37",
+      "title": "Anonymous public viewing without WebFlix login",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the search surface offers the public title's one-click play path anonymously\n  expected: an id-first /player link (the R28-B play decision — no gate, no extra hop)\n  observed: <absent>",
+      "assertions": [
+        {
+          "description": "the anonymous viewer lands on Home (no gate, no interstitial)",
+          "expected": "[data-wfx-surface='home'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the session menu states the honest anonymous truth",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        },
+        {
+          "description": "the anonymous session truth names accountless watching (login optional, never a prerequisite)",
+          "expected": "no account is needed to watch public content",
+          "observed": "You are watching in an anonymous session — no account is needed to watch public ",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the public title's one-click play path anonymously",
+          "expected": "an id-first /player link (the R28-B play decision — no gate, no extra hop)",
+          "observed": "<absent>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r41/chunk-b-j37/j37-failure.png",
+        "evidence/r41/chunk-b-j37/j37-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5156
+    }
+  ],
+  "limitations": []
+}

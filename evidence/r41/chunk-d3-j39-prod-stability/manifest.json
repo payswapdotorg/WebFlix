@@ -1,0 +1,203 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+  "branch": "work/wfx-r23-reval",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-10-03T09:14:22.690Z",
+    "finishedAt": "2026-10-03T09:14:46.808Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1791018862690)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J39",
+      "title": "Multimodal media intelligence / semantic moment discovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "service",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers the matches-by-meaning lane (the multimodal lane renders)",
+          "expected": "[data-wfx-semantic-search] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the semantic lane answers its honest typed state on the deployed transport (ready + no matches — never fabricated)",
+          "expected": "data-wfx-semantic-state='no-matches'",
+          "observed": "no-matches",
+          "pass": true
+        },
+        {
+          "description": "the no-matches state states the no-fabrication law verbatim",
+          "expected": "…WebFlix does not fabricate semantic results.",
+          "observed": "Nothing matches “a space documentary about telescopes and galaxies” by meaning or moment yet — WebFlix does not fabricate semantic results.",
+          "pass": true
+        },
+        {
+          "description": "the deployed intelligence transport answers its typed semantic-unavailable state (mode=service, meaningSearchAvailable=false — the honest never-approximated truth)",
+          "expected": "HTTP 200 · {\"mode\":\"service\",…\"meaningSearchAvailable\":false}",
+          "observed": "HTTP 200: {\"mode\":\"service\",\"kind\":\"semantic-search\",\"view\":{\"status\":\"ready\",\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}",
+          "pass": true
+        },
+        {
+          "description": "the show-me-the-part-where query answers the same honest typed state (the moment lane never fabricated)",
+          "expected": "data-wfx-semantic-state='no-matches'",
+          "observed": "no-matches",
+          "pass": true
+        },
+        {
+          "description": "no fabricated moment jump path renders on the deployed transport (zero moment-jump entries)",
+          "expected": "0 moment jumps",
+          "observed": "0 moment jumps",
+          "pass": true
+        },
+        {
+          "description": "the deployed catalog offers a real title's item surface",
+          "expected": "an /item link",
+          "observed": "/item?id=wfxitm_697J0HQ2190CBNABTQE90HETKB&connector=wfx-experience-service&ref=ZR1HI21eSM0&title=8+Hours+Of+Space+%26+Our+Extraordinary+Universe+%7C+BBC+Earth+Science&type=video&duration=29371000",
+          "pass": true
+        },
+        {
+          "description": "the item hub carries its intelligence surface (the honest deployed truth)",
+          "expected": "[data-wfx-intelligence] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the per-feature availability truth renders (the R23-H honesty law — prerequisites named, never a silent downgrade)",
+          "expected": "[data-wfx-intelligence-features] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the feature truth names the missing derived artifacts per feature (search-by-meaning needs its embeddings — the honest prerequisite sentences)",
+          "expected": "Search by meaning — needs transcript-text-embedding…",
+          "observed": "What this supportsSearch by meaning — needs transcript-text-embedding, semantic-video-embedding for this titleFind the exact moment — needs transcript-segments ",
+          "pass": true
+        },
+        {
+          "description": "no fabricated transcript/chapters/moments render for a title without derived artifacts (zero disclosures)",
+          "expected": "0 transcript disclosures",
+          "observed": "0 transcript disclosures",
+          "pass": true
+        },
+        {
+          "description": "the provenance block renders (where the intelligence came from)",
+          "expected": "[data-wfx-intelligence-provenance] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the deployed provenance names its signal source honestly (source-provided metadata — never a fabricated model run)",
+          "expected": "source-media by source-provided",
+          "observed": "Where this came fromsource-media by source-provided at 100% confidence.Models generate these signals; your recommendations and choices stay yours — no model authorizes a playback or acquisition action",
+          "pass": true
+        },
+        {
+          "description": "the model-authority boundary renders on the deployed surface",
+          "expected": "[data-wfx-intelligence-provenance-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the model-authority boundary sentence renders verbatim (no model authorizes a playback or acquisition action)",
+          "expected": "…no model authorizes a playback or acquisition action.",
+          "observed": "Models generate these signals; your recommendations and choices stay yours — no model authorizes a playback or acquisition action.",
+          "pass": true
+        },
+        {
+          "description": "the AI tray offers the translation action with its language choice on the deployed surface",
+          "expected": "a language select in the tray",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the item surface offers its play path",
+          "expected": "a /player link",
+          "observed": "/player?id=wfxitm_697J0HQ2190CBNABTQE90HETKB&connector=wfx-experience-service&ref=ZR1HI21eSM0&title=8+Hours+Of+Space+%26+Our+Extraordinary+Universe+%7C+BBC+Earth+Science&type=video&duration=29371000",
+          "pass": true
+        },
+        {
+          "description": "the live captions surface renders on the deployed player (progressively disclosed)",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the live lane answers the legal-audio gate's honest typed state (audio-unavailable — never a fabricated live lane)",
+          "expected": "data-wfx-live-captions-state='audio-unavailable'",
+          "observed": "audio-unavailable",
+          "pass": true
+        },
+        {
+          "description": "the legal-audio gate states its no-bypass law verbatim",
+          "expected": "…there is no bypass, by design).",
+          "observed": "Live speech features need an audio stream WebFlix is legally allowed to process — this content's audio is not available to WebFlix, so live captions and live transcription stay off for it (there is no bypass, by design).",
+          "pass": true
+        },
+        {
+          "description": "the Model & AI surface lists the open models",
+          "expected": "[data-wfx-openmodels] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the R2T2 row carries its REAL license truth (the code/weights distinction)",
+          "expected": "Code Apache-2.0 · weights NetEase Model Use License Agreement",
+          "observed": "Code Apache-2.0 · weights NetEase Model Use License Agreement",
+          "pass": true
+        },
+        {
+          "description": "the deployed registry serves reads only (no in-page register action — the R23-J boundary)",
+          "expected": "0 register actions",
+          "observed": "0 register actions",
+          "pass": true
+        },
+        {
+          "description": "the registration drive answers its typed reads-only refusal (never a fabricated registration)",
+          "expected": "HTTP 503 · the web transport serves the registry reads only",
+          "observed": "HTTP 503: {\"error\":\"unavailable\",\"detail\":\"Open-model registration is served by the platform's model runtime (the service lane / the Desktop model runtime) — the web transport serves the registry reads only.\"}",
+          "pass": true
+        },
+        {
+          "description": "the multimodal intelligence walk ran entirely without a WebFlix account (the R23-K anonymous AI boundary)",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r41/chunk-d3-j39-prod-stability/j39-media-intelligence.png",
+        "evidence/r41/chunk-d3-j39-prod-stability/j39-multimodal-media-intelligence-semantic-moment-discovery.snapshot.txt",
+        "evidence/r41/chunk-d3-j39-prod-stability/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 22735
+    }
+  ],
+  "limitations": []
+}

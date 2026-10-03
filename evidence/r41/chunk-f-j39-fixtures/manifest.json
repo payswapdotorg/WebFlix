@@ -1,0 +1,227 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+  "branch": "work/wfx-r23-reval",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "http://localhost:3101",
+    "ci": false,
+    "startedAt": "2026-10-03T09:11:49.359Z",
+    "finishedAt": "2026-10-03T09:12:31.142Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1791018717208)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 1,
+    "failed": 0,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J39",
+      "title": "Multimodal media intelligence / semantic moment discovery",
+      "status": "pass",
+      "reason": null,
+      "failure": null,
+      "assertions": [
+        {
+          "description": "the boot states its mode loudly (the environment law — the typed branch truth)",
+          "expected": "data-wfx-mode='fixtures' or 'service'",
+          "observed": "fixtures",
+          "pass": true
+        },
+        {
+          "description": "the search surface offers matches by meaning (the multimodal lane)",
+          "expected": "[data-wfx-semantic-search] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the meaning result finds the space documentary by what it IS (not its name)",
+          "expected": "Deep Field Diary",
+          "observed": "Deep Field Diary — matched “A space documentary about captur",
+          "pass": true
+        },
+        {
+          "description": "the meaning result names WHY it matched (the honest matched text)",
+          "expected": "matched “…”",
+          "observed": "Deep Field Diary — matched “A space documentary about capturing a deep-field image of distant galaxi",
+          "pass": true
+        },
+        {
+          "description": "the semantic results carry their provenance (contributing models, named)",
+          "expected": "[data-wfx-semantic-provenance] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance names the signal models + the ownership law",
+          "expected": "open-model:… + your choices stay yours",
+          "observed": "Signals from open-model:moss-transcribe-diarize, open-model:qwen2.5-vl-7b-instruct, open-model:videoprism-base-f16r288, open-model:bge-m3 — ",
+          "pass": true
+        },
+        {
+          "description": "the show-me-the-part-where query lands on the findable moment with its jump path",
+          "expected": "[data-wfx-semantic-moment-jump] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the moment's jump path targets the player at its timestamp (the resume seam)",
+          "expected": "a player href with resume",
+          "observed": "/player?id=wfxitm_2KC2DXVAJSK7EWBJRT2500QR04&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&resume=46100",
+          "pass": true
+        },
+        {
+          "description": "the moment jump lands in the player",
+          "expected": "[data-wfx-surface='player'] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the player resumes AT the moment's timestamp (the jump honored)",
+          "expected": "[data-wfx-player-resume] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the title search offers the item too",
+          "expected": "an item link",
+          "observed": "/player?id=wfxitm_2KC2DXVAJSK7EWBJRT2500QR04&connector=fake-source&ref=fake%3Avideo-1&title=Deep+Field+Diary&type=video&duration=1800000",
+          "pass": true
+        },
+        {
+          "description": "the item hub carries its derived intelligence (transcript, chapters, moments)",
+          "expected": "[data-wfx-intelligence] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the chapters render with their jump paths",
+          "expected": "[data-wfx-intelligence-chapters] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the findable moments render with their jump paths",
+          "expected": "[data-wfx-intelligence-moments] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the transcript renders (speaker labels, timestamps)",
+          "expected": "[data-wfx-intelligence-transcript] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the transcript carries speaker attribution (the diarization truth)",
+          "expected": "Dr. Amara Osei",
+          "observed": "0:00Dr. Amara Osei: The observatory wakes an hour before dusk — every dome, one checklist.\n0:06Dr. Amara Osei: First light is a ritual: cooling the sensors, opening the shutter, listening for the sky.",
+          "pass": true
+        },
+        {
+          "description": "the per-feature availability truth renders (the R23-H honesty law)",
+          "expected": "[data-wfx-intelligence-features] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance block renders (where the intelligence came from)",
+          "expected": "[data-wfx-intelligence-provenance] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the provenance names the batch transcription + structural analysis models",
+          "expected": "open-model:moss-transcribe-diarize + open-model:qwen2.5-vl-7b-instruct",
+          "observed": "Where this came from\ntranscription by open-model:moss-transcribe-diarize at 94% confidence.\nstructural-analysis by open-model:qwen2.5-vl-7b-instruct at 88% confidence.\nvideo-embeddings by open-model:videoprism-base-f16r288 at 90% confidence",
+          "pass": true
+        },
+        {
+          "description": "the model-authority boundary renders ('no model authorizes a playback or acquisition action')",
+          "expected": "[data-wfx-intelligence-provenance-note] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the AI tray offers the translation action with its language choice",
+          "expected": "a language select in the tray",
+          "observed": "present",
+          "pass": true
+        },
+        {
+          "description": "the live captions surface renders on the player (progressively disclosed)",
+          "expected": "[data-wfx-live-captions] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the honest gap: no low-latency live route is registered (never a fake live lane)",
+          "expected": "[data-wfx-live-captions-state=\"no-route\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the typed gap carries its recovery (bind and register the R2T2 open model)",
+          "expected": "[data-wfx-live-captions-recovery] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the Model & AI surface lists the open models",
+          "expected": "[data-wfx-openmodels] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the R2T2 row carries its REAL license truth (the code/weights distinction)",
+          "expected": "Code Apache-2.0 · weights NetEase Model Use License Agreement",
+          "observed": "Code Apache-2.0 · weights NetEase Model Use License Agreement",
+          "pass": true
+        },
+        {
+          "description": "the registration truth updates (a catalog row becomes a provider)",
+          "expected": "[data-wfx-openmodel-registered=\"true\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the live captions route to R2T2 once registered (the live lane wired)",
+          "expected": "[data-wfx-live-captions-state=\"routed\"] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the route's envelope truth renders (committed output, 80 ms–2 s chunks)",
+          "expected": "[data-wfx-live-captions-envelope] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the multimodal intelligence walk ran entirely without a WebFlix account (the R23-K anonymous AI boundary)",
+          "expected": "text of [data-wfx-session-label] contains \"Signed out\"",
+          "observed": "\"Signed out\"",
+          "pass": true
+        }
+      ],
+      "artifacts": [
+        "evidence/r41/chunk-f-j39-fixtures/j39-media-intelligence.png",
+        "evidence/r41/chunk-f-j39-fixtures/j39-multimodal-media-intelligence-semantic-moment-discovery.snapshot.txt",
+        "evidence/r41/chunk-f-j39-fixtures/j39-multimodal-media-intelligence-semantic-moment-discovery.narration.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 31652
+    }
+  ],
+  "limitations": []
+}

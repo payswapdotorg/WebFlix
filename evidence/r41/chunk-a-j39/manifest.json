@@ -1,0 +1,58 @@
+{
+  "schema": "wfx-journey-manifest/1",
+  "commit": "abe6824b93edea99e1cd40e5c5ad35bac114b4cf",
+  "branch": "work/wfx-r23-reval",
+  "environment": {
+    "mode": "web-fixtures",
+    "webUrl": "https://webflix-steel.vercel.app",
+    "ci": false,
+    "startedAt": "2026-10-03T08:56:07.320Z",
+    "finishedAt": "2026-10-03T08:56:15.441Z",
+    "determinism": [
+      "the scripted acquisition drive state was reset before the run (J21–J26 assert the scripted sequence from step 0)",
+      "the scripted source-auth state was reset before the run (J28 drives expiry → recovery from the signed-in start)",
+      "one isolated agent-browser session per run (wfx-journeys-1791017767321)",
+      "a fixed 1280×800 viewport (every run the same layout math — clicks never depend on window size)",
+      "the fixture provider URLs (fixture.invalid) are network-blocked — the provider frames fail instantly and deterministically (the journeys assert the DOM containment grammar, never provider content)",
+      "the product booted in its documented deterministic fixtures mode (WFX_DEV_FIXTURES=1, port 3101)",
+      "journeys run in fixed catalog order; acquisition-driving journeys (J21–J26) are order-dependent by design"
+    ]
+  },
+  "summary": {
+    "total": 1,
+    "encoded": 1,
+    "passed": 0,
+    "failed": 1,
+    "notRun": 0
+  },
+  "journeys": [
+    {
+      "id": "J39",
+      "title": "Multimodal media intelligence / semantic moment discovery",
+      "status": "fail",
+      "reason": null,
+      "failure": "journey assertion failed: the meaning result finds the space documentary by what it IS (not its name)\n  expected: Deep Field Diary\n  observed: <none>",
+      "assertions": [
+        {
+          "description": "the search surface offers matches by meaning (the multimodal lane)",
+          "expected": "[data-wfx-semantic-search] present in the DOM",
+          "observed": "1 matching element(s)",
+          "pass": true
+        },
+        {
+          "description": "the meaning result finds the space documentary by what it IS (not its name)",
+          "expected": "Deep Field Diary",
+          "observed": "<none>",
+          "pass": false
+        }
+      ],
+      "artifacts": [
+        "evidence/r41/chunk-a-j39/j39-failure.png",
+        "evidence/r41/chunk-a-j39/j39-failure.snapshot.txt"
+      ],
+      "pageErrors": [],
+      "durationMs": 5491
+    }
+  ],
+  "limitations": []
+}

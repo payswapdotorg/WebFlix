@@ -1,0 +1,229 @@
+{
+  "probe": "WFX-R23R Web/API deployment parity",
+  "web": "https://webflix-steel.vercel.app",
+  "api": "https://webflix-api.vercel.app",
+  "capturedAt": "2026-10-03T09:15:29.442Z",
+  "checks": [
+    {
+      "id": "health-web",
+      "verdict": "PASS",
+      "expected": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}",
+      "identity": {
+        "url": "https://webflix-steel.vercel.app/api/health",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=0, must-revalidate",
+          "age": "0",
+          "server": "Vercel",
+          "x-vercel-cache": "MISS",
+          "x-vercel-id": "hkg1::iad1::q4qpq-1791018929463-c3509ef6fb21",
+          "x-matched-path": "/api/health",
+          "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          "date": "Sat, 03 Oct 2026 09:15:29 GMT"
+        },
+        "bodyBytes": 53,
+        "bodySha256": "24dc242037b4667dfc0a19a417ffaf943179526f4691bdbe9099cf82aefc44f9",
+        "bodyText": "{\"ok\":true,\"service\":\"webflix-web\",\"version\":\"0.1.0\"}"
+      }
+    },
+    {
+      "id": "health-api",
+      "verdict": "PASS",
+      "expected": "{\"ok\":true,\"service\":\"webflix-api\",\"version\":\"0.1.0\"}",
+      "identity": {
+        "url": "https://webflix-api.vercel.app/api/health",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=0, must-revalidate",
+          "age": "0",
+          "server": "Vercel",
+          "x-vercel-cache": "MISS",
+          "x-vercel-id": "hkg1::iad1::dqgd8-1791018929725-729ea3d886f3",
+          "x-matched-path": "/api/health",
+          "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          "date": "Sat, 03 Oct 2026 09:15:29 GMT"
+        },
+        "bodyBytes": 53,
+        "bodySha256": "c31735a2882e43496faa0d7316d40038c0f6eda2052bf6a56ea60057701bd6fa",
+        "bodyText": "{\"ok\":true,\"service\":\"webflix-api\",\"version\":\"0.1.0\"}"
+      }
+    },
+    {
+      "id": "api-identity-header-law",
+      "verdict": "PASS",
+      "expected": "HTTP 400 naming the absent x-wfx-user-id identity header",
+      "identity": {
+        "url": "https://webflix-api.vercel.app/experience/search?query=rain",
+        "status": 400,
+        "statusText": "Bad Request",
+        "headers": {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=0, must-revalidate",
+          "age": "0",
+          "server": "Vercel",
+          "x-vercel-cache": "MISS",
+          "x-vercel-id": "hkg1::iad1::dqgd8-1791018929954-4396d0a886a4",
+          "x-matched-path": "/experience/search",
+          "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+        },
+        "bodyBytes": 133,
+        "bodySha256": "0e462c1c7b0496bd724e845f626c8a329cb3893b27190573a23375f1f79da2f3",
+        "bodyText": "{\"error\":\"invalid-request\",\"detail\":\"x-wfx-user-id: required identity header is absent (identity travels as headers, never in URLs)\"}"
+      }
+    },
+    {
+      "id": "intelligence-chain",
+      "verdict": "PASS",
+      "expected": "web /api/intelligence projects the API /experience/intelligence wire (both meaningSearchAvailable:false, same empty meaning/moments)",
+      "webIdentity": {
+        "url": "https://webflix-steel.vercel.app/api/intelligence?q=a%20space%20documentary%20about%20telescopes%20and%20galaxies",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=0, must-revalidate",
+          "age": "0",
+          "server": "Vercel",
+          "x-vercel-cache": "MISS",
+          "x-vercel-id": "hkg1::iad1::85hsg-1791018930180-91827e812d92",
+          "x-matched-path": "/api/intelligence",
+          "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+        },
+        "bodyBytes": 142,
+        "bodySha256": "f3341b8619341870b9a54c3ba65a97179dcc308592cc13d843163764b293c0a2",
+        "bodyText": "{\"mode\":\"service\",\"kind\":\"semantic-search\",\"view\":{\"status\":\"ready\",\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}"
+      },
+      "apiIdentity": {
+        "url": "https://webflix-api.vercel.app/experience/intelligence?q=a%20space%20documentary%20about%20telescopes%20and%20galaxies",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=0, must-revalidate",
+          "age": "0",
+          "server": "Vercel",
+          "x-vercel-cache": "MISS",
+          "x-vercel-id": "hkg1::iad1::jh6fp-1791018930521-1f9dd42fa765",
+          "x-matched-path": "/experience/intelligence",
+          "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+        },
+        "bodyBytes": 100,
+        "bodySha256": "149aa39e7dc3ef79b52f9dfc546f542ccab92137efffea0572a2d3f5f9669a09",
+        "bodyText": "{\"kind\":\"served\",\"value\":{\"meaning\":[],\"moments\":[],\"provenance\":[],\"meaningSearchAvailable\":false}}"
+      }
+    },
+    {
+      "id": "search-round-trip",
+      "verdict": "PASS",
+      "expected": "the web host's rendered /search cards are the API's /experience/search answer (same refs, same order, non-zero)",
+      "apiIdentity": {
+        "url": "https://webflix-api.vercel.app/experience/search?query=rain",
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=0, must-revalidate",
+          "age": "0",
+          "server": "Vercel",
+          "x-vercel-cache": "MISS",
+          "x-vercel-id": "hkg1::iad1::jh6fp-1791018930759-6ea6873eb949",
+          "x-matched-path": "/experience/search",
+          "strict-transport-security": "max-age=63072000; includeSubDomains; preload",
+          "date": "Sat, 03 Oct 2026 09:15:30 GMT"
+        },
+        "bodyBytes": 5643,
+        "bodySha256": "76d19d54fb90cb6374d6195ad88759be7fe216a0e301316724f8c6449847b1d3",
+        "bodyText": "<5643 bytes, 19 items>"
+      },
+      "apiRefs": [
+        "3uyGhtARP4M",
+        "HOmzTwFuR0A",
+        "2XUnQ_c8500",
+        "EJ_GlSh8bec",
+        "sfn3lnBolFo",
+        "4QBB0phhhaE",
+        "DYFDc0dpc5g",
+        "9biNQf9byGM",
+        "H-IPPiLvN9Q",
+        "MYS0KCOQ-SI",
+        "Dfm2rB-nQ9Y",
+        "oH_pVgW5fEw",
+        "mPZkdNFkNps",
+        "JZ7Tw-FfopI",
+        "yDVBGy5bWx8",
+        "rpvXij-J3yU",
+        "Kl2v9ydanrI",
+        "v1zAYXKn4Ow",
+        "8rTTEMdMh8Q"
+      ],
+      "apiTitles": [
+        "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #1hourlofi",
+        "Best thunder sound for sleep #thunder #rain #sleep",
+        "Caught In Heavy Rain Storm!😱",
+        "Embrace the tranquility of a rainy day in a Japanese village 🌧️🏯 #Serenity #Japan #explorepage",
+        "Goodbye Insomnia with Heavy Rain & Thunder Growls on a Stale Tin Roof in Foggy Murky Forest at Night",
+        "Heavy Rain and Thunder Sounds for sleep, study or relaxation  - Rain sounds on the Roof"
+      ],
+      "webRender": {
+        "mode": "service",
+        "cardCount": 19,
+        "refs": [
+          "3uyGhtARP4M",
+          "HOmzTwFuR0A",
+          "2XUnQ_c8500",
+          "EJ_GlSh8bec",
+          "sfn3lnBolFo",
+          "4QBB0phhhaE",
+          "DYFDc0dpc5g",
+          "9biNQf9byGM",
+          "H-IPPiLvN9Q",
+          "MYS0KCOQ-SI",
+          "Dfm2rB-nQ9Y",
+          "oH_pVgW5fEw",
+          "mPZkdNFkNps",
+          "JZ7Tw-FfopI",
+          "yDVBGy5bWx8",
+          "rpvXij-J3yU",
+          "Kl2v9ydanrI",
+          "v1zAYXKn4Ow",
+          "8rTTEMdMh8Q"
+        ],
+        "titles": [
+          "1 HOUR Rainy Day in Airport ✈️ | Cozy Lofi for Relax, Study & Sleep #lofirainy #",
+          "Best thunder sound for sleep #thunder #rain #sleep (short)",
+          "Caught In Heavy Rain Storm!😱 (short)",
+          "Embrace the tranquility of a rainy day in a Japanese village 🌧️🏯 #Serenity #Ja",
+          "Goodbye Insomnia with Heavy Rain & Thunder Growls on a Stale Tin Roof in Foggy M",
+          "Heavy Rain and Thunder Sounds for sleep, study or relaxation  - Rain sounds on t",
+          "Inside the Wettest City on the Planet (Rains Every Day) (video, 48:06)",
+          "Lofi Rain & Night Vibes 🌙 Chill Beats for Relaxation & Focus | Cozy Ambience (s",
+          "Lofi Rain 🌧️ 1 Hour | Cozy Night Ambience for Study, Relax & Sleep (short)",
+          "Lofi Rain 🌧️ Rain Lofi for Study & Relax (short)",
+          "No Ads Rain Sounds for Sleeping - ASMR Rain and Thunder Sounds For Sleeping, Rel",
+          "Rain Bombs | Full Documentary | NOVA | PBS (video, 53:54)",
+          "Rain Sound On Window with Thunder SoundsㅣHeavy Rain for Sleep, Study and Relaxat",
+          "Rainy Lo-fi Study Café 📖 1 Hour Chill Lo-fi No Mid Ads to help you focus 🎧 Stu",
+          "Rainy Night Lofi ☕ Cozy Beats for Study, Work & Relax - Sleepy Train Window in t",
+          "Relaxing Lofi Music with Rain Sounds 🌧️ Cozy Ambience for Study, Sleep, Focus &",
+          "Thunderstorm with Heavy rain sounds for Sleep, Study and Relaxation - The Hideou",
+          "World Extremes - \"Living in the Rain: The Story of Mawsynram!\" (short)",
+          "🔴 Heavy Rain and Thunder Sounds for Sleeping - Black Screen | Perfect Thunderst"
+        ]
+      },
+      "agreement": {
+        "webCardCount": 19,
+        "apiItemCount": 19,
+        "overlapCount": 19,
+        "sameOrder": true
+      }
+    }
+  ],
+  "verdict": "PASS"
+}
